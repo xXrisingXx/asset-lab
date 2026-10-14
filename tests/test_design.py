@@ -115,6 +115,16 @@ class ChatRoutingTests(Base):
             result = self.themes.chat('put a santa hat on the icons')
         self.assertEqual(result['source'], 'design')
 
+    def test_complete_requests_skip_the_model_even_mid_conversation(self):
+        history = [dict(role='user', content='ocean theme'), dict(role='assistant', content='{}')]
+        called = []
+        with patch.object(theme, 'models', return_value=[dict(name='m', thinking=False, size=5e9)]), \
+             patch.object(theme, 'ollama', side_effect=lambda *a, **k: called.append(1) or {'message': {'content': '{"reply":"","operations":[]}'}}):
+            self.assertEqual(self.themes.chat('christmas theme', history=history)['source'], 'tags')
+            self.assertEqual(called, [])
+            self.themes.chat('make it darker', history=history)                     # leans on the last plan: the model is asked
+        self.assertEqual(called, [1])
+
     def test_moods_have_palettes(self):
         for words, preset in (('make everything spooky', 'halloween'), ('frozen panels', 'winter'), ('royal theme', 'royal')):
             op = theme.rule_plan(words)['operations'][0]

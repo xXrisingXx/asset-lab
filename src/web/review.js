@@ -44,7 +44,7 @@ function render(){
 
   // Art: one group per theme and one for hand edits, each item before → after.
   const groups=new Map();
-  for(const e of d.edits){const id=e.theme_id||'hand';if(!groups.has(id))groups.set(id,{title:e.theme?`Theme · “${e.theme.slice(0,80)}”`:'Your edits',items:[]});groups.get(id).items.push(e);}
+  for(const e of d.edits){const id=e.theme_id||(e.redraw_id&&'redraw:'+e.redraw_id)||'hand';if(!groups.has(id))groups.set(id,{title:e.theme?`Theme · “${e.theme.slice(0,80)}”`:e.redraw?`Redraw · “${e.redraw.slice(0,80)}”`:'Your edits',items:[]});groups.get(id).items.push(e);}
   for(const [,g] of groups){
     const keys=g.items.map(e=>e.key),allOut=keys.every(k=>R.out.has(k));
     const sec=section(body,`${g.title} · ${g.items.length} item${g.items.length===1?'':'s'}`,keys.length>1&&toggle('group',allOut,async()=>{await api('/api/stage-many',{keys,enabled:false});keys.forEach(k=>R.out.add(k));},async()=>{await api('/api/stage-many',{keys,enabled:true});keys.forEach(k=>R.out.delete(k));}));

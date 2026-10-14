@@ -183,7 +183,7 @@ class Designer:
         return rows[:limit]
 
     # ----- generating ---------------------------------------------------------------------------
-    def start(self, prompt, keys=None, count=2, base=None):
+    def start(self, prompt, keys=None, count=2, base=None, direction=None):
         """base: (job id, variant index) to refine a variant instead of the current art."""
         prompt = str(prompt or '').strip()[:800]
         if not prompt: raise ValueError('Describe the design you want.')
@@ -204,6 +204,7 @@ class Designer:
                        key=parent['key'] if base else key_for(prompt), base=base, at=time.time(), title=rows[0]['name'] == 'logo',
                        # Button and panel skins are stretched by the game, so their outline should stay; white icons are tinted by it.
                        stretched=rows[0]['group'] == 'Buttons & panels' and rows[0]['name'] != 'logo', tinted=tinted(self.lab.catalog.image(rows[0]['key'])))
+            if direction: job['direction'] = str(direction)[:700]   # shared by a set drawn together, so they match
             self.jobs[job['id']] = job
         threading.Thread(target=self._run, args=(job,), daemon=True).start()
         return dict(job)
@@ -233,7 +234,7 @@ class Designer:
                 size = canvas_size(source.width, source.height)
                 ref = reference(source, job['key'], size)
             ref.save(folder / 'reference.png')
-            if not job['base'] and getattr(self, 'director', None):
+            if not job['base'] and not job.get('direction') and getattr(self, 'director', None):
                 # A short request ("spooky") becomes a concrete art direction the image model can follow.
                 job['message'] = 'Writing the art direction…'
                 try: job['direction'] = (self.director(job['prompt'], self.subject(job)) or '').strip()[:700]

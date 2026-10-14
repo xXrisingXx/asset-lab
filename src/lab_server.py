@@ -172,7 +172,7 @@ def server_for(lab, port):
                 only = data.get('only') if isinstance(data.get('only'), list) else None
                 if path == '/api/design-start':
                     base = data.get('base') if isinstance(data.get('base'), list) and len(data['base']) == 2 else None
-                    return self.send(designer.start(data.get('prompt', ''), only, int(data.get('count') or 2), base))
+                    return self.send(designer.start(data.get('prompt', ''), only, int(data.get('count') or 2), base, data.get('direction') or None))
                 if path == '/api/design-apply':
                     result = designer.apply(data.get('job', ''), int(data.get('variant', 0)), {k: float(v) for k, v in (data.get('settings') or {}).items() if k in ('scale', 'dx', 'dy', 'tolerance', 'shape')})
                     return self.send(result)

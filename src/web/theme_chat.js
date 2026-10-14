@@ -186,22 +186,23 @@ function showDesign(box,d,keys,base,offer){
   const go=el('button','primary',groups.length>1?`Draw all ${groups.length}`:'Draw it');
   bar.append(go,count,el('small','hint',`about ${35*groups.length} s per variant`));box.append(bar);
   go.onclick=run(async()=>{go.disabled=true;count.disabled=true;
+    let direction=null;   // the first drawing's art direction is reused, so a set comes out in one style
     for(const g of groups){const part=el('div','design-part');if(groups.length>1)part.append(el('p','design-part-title',label(g)));box.append(part);
-      await drawDesign(part,d.prompt,g.map(t=>t.key),+count.value,base);}});
+      const done=await drawDesign(part,d.prompt,g.map(t=>t.key),+count.value,base,direction);if(done&&done.direction&&!direction)direction=done.direction;}});
   if(d.optional)go.textContent='Redraw it';
   if(autoBox.checked&&!d.optional)go.click();
 }
-async function drawDesign(box,prompt,keys,count,base){
+async function drawDesign(box,prompt,keys,count,base,direction){
   setBusy(true);const text=el('small','hint','Starting…');const barEl=el('div','theme-progress');const fill=el('span');barEl.append(fill);box.append(barEl,text);scroll();
   const stop=el('button','quiet','Cancel');stop.onclick=run(()=>api('/api/design-cancel',{job:job.id}));text.after(stop);
-  let job=await api('/api/design-start',{prompt,only:keys||null,count,base:base||null});const started=Date.now();
+  let job=await api('/api/design-start',{prompt,only:keys||null,count,base:base||null,direction:direction||null});const started=Date.now();
   try{while(job.state==='running'){await new Promise(r=>setTimeout(r,1000));job=await api('/api/design-job?job='+job.id);
       const m=job.message.match(/step (\d+) of (\d+)/);fill.style.width=(m?20+70*m[1]/m[2]:job.message.startsWith('Finishing')?92:8)+'%';
       text.textContent=`${job.message} · ${Math.round((Date.now()-started)/1000)} s`;}}
   finally{setBusy(false);stop.remove();}
   barEl.classList.add('done');text.textContent=job.message;
-  if(job.state!=='complete'){box.classList.add('error');return;}
-  designCard(box,job,keys);scroll();
+  if(job.state!=='complete'){box.classList.add('error');return job;}
+  designCard(box,job,keys);scroll();return job;
 }
 function designCard(box,job,keys){
   const card=el('div','design-card');box.append(card);

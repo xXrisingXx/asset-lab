@@ -20,10 +20,14 @@ Asset Lab finds your Mitos.is installation through Steam. It never needs adminis
   own names for assets, image search ("find similar"), and a removed-assets pool for things you never want to see.
 - **Editor:** paint, erase, import a replacement, adjust colors, and preview as a texture, tile, cell or button.
 - **Theme AI:** describe a look ("rainbow neon outlines with a subtle glow", "holographic glass panels", "dark ocean
-  theme, keep the logo") and review a plan with before/after samples before anything is saved. Check assets in the
-  library to theme only those.
-- **Redesign (local AI):** "make the title spooky with dripping blood and bats", "put a party hat on the logo". Pick a
-  variant, adjust its size and position, refine it with a follow-up, then apply.
+  theme, keep the logo", "make everything spooky") and review a plan with before/after samples before anything is
+  saved. Moods like spooky, christmas, winter, royal or cyberpunk have matching palettes. Check assets in the library
+  to theme only those. Say "undo" to take the last theme off, or "help".
+- **Redesign (local AI):** "make the title spooky with dripping blood and bats", "put a party hat on the logo", "make
+  the icons look like gold coins". The local language model first writes an art direction, then the image model
+  draws a few variants; pick one, adjust its size and position, keep the original outline if the game stretches it,
+  refine it with a follow-up, then apply. A group is redrawn one sprite at a time in one shared style.
+- **Both at once:** "christmas theme and put a santa hat on the title" shades the palette and redraws the title.
 - **Review and install:** see every change before and after, take any item out, install into the game, and update an
   installed mod without restoring first. **Restore original** puts the exact original files back.
 

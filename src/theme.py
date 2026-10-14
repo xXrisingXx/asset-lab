@@ -955,7 +955,10 @@ class Themes:
         available = models()
         names = [m['name'] for m in available]
         plan, source, note = None, 'rules', ''
-        if not history and not unknown_words(message, self.named):
+        # A follow-up that leans on the last plan ("make it darker", "more glow") needs the model's memory of it;
+        # a complete request in tag words ("christmas theme", "gold buttons") does not, even mid-conversation.
+        follow_up = history and re.search(r'\b(?:it|that|this|them|those|more|less|again|instead|too|also|rest|back)\b', message.lower())
+        if not follow_up and not unknown_words(message, self.named):
             # Written entirely in tag words ("rainbow outline, subtle glow, dark inside"): plan it exactly as
             # said. The model is for requests that need interpreting, and for follow-ups that build on a theme.
             exact = rule_plan(message, self.named)

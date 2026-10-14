@@ -599,6 +599,7 @@ class Lab:
                 row, recipe = self.row(r['key']), (self.current(r['key']).get('recipe') or {})
                 edits.append(dict(key=r['key'], name=row.get('label') or row['name'], source=row['source'], sheet=bool(self.catalog.children.get(r['key'])),
                                   size=[row['width'], row['height']], theme=recipe.get('prompt', '') if recipe.get('theme') else '', theme_id=recipe.get('theme', ''),
+                                  redraw=recipe.get('prompt', '') if recipe.get('design') else '', redraw_id=recipe.get('design', ''),
                                   installed=then.get(r['key']) == r['revision']))
             by_name = {}
             for row in self.catalog.rows.values():

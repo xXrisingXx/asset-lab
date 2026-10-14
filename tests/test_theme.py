@@ -421,7 +421,7 @@ class ThemeTests(Base):
             called.append(payload)
             return {'message': {'content': '{"reply":"ok","operations":[{"targets":["buttons"],"brightness":0.5}]}'}}
         with patch.object(theme, 'models', return_value=fake), patch.object(theme, 'ollama', side_effect=answer):
-            self.themes.chat('buttons darker', history=[dict(role='user', content='ocean theme'), dict(role='assistant', content='{}')])   # a follow-up needs the conversation
+            self.themes.chat('make them darker', history=[dict(role='user', content='ocean buttons'), dict(role='assistant', content='{}')])   # a follow-up needs the conversation
             subtle = theme.tame(clean_plan(dict(operations=[dict(targets=['icons'], rim_color='#ff0000', glow_color='auto', glow_size=14, glow_strength=2)])), 'red outline with a subtle glow')
         self.assertEqual(len(called), 1)
         self.assertEqual((subtle['operations'][0]['glow_size'], subtle['operations'][0]['glow_strength']), (8.0, 0.9))
