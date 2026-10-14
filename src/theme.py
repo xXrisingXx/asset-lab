@@ -457,14 +457,20 @@ def shade(pixels, op):
     if op['color_mode'] != 'none' and op['color_amount'] > 0:
         color = gradient_field(op, rgb) if op.get('gradient') else rgb_of(op['color'])
         value = rgb.max(axis=2)
-        if op['color_mode'] == 'fill' or op.get('gradient_type') == 'luminance' and op.get('gradient'):
+        mode = op['color_mode']
+        if mode == 'tint' and op.get('match'):
+            # A tint leaves white and grey alone, so on a plain white icon named outright ("the ranks icon gold") it would
+            # change nothing at all; that art is colored through instead. Broad themes keep white icons white.
+            visible = (value - rgb.min(axis=2))[alpha > 128]
+            if visible.size and np.percentile(visible, 95) < 0.06: mode = 'colorize'
+        if mode == 'fill' or op.get('gradient_type') == 'luminance' and op.get('gradient'):
             target, weight = np.broadcast_to(color, rgb.shape), np.full(value.shape, op['color_amount'], np.float32)
-            if op['color_mode'] == 'tint': weight = np.clip((value - rgb.min(axis=2)) / 0.125, 0, 1) * op['color_amount']
+            if mode == 'tint': weight = np.clip((value - rgb.min(axis=2)) / 0.125, 0, 1) * op['color_amount']
         else:
             # Shading comes from the art's own brightness, so gradients, outlines and highlights survive.
             target = value[..., None] * color
             chroma = value - rgb.min(axis=2)
-            weight = (np.clip(chroma / 0.125, 0, 1) if op['color_mode'] == 'tint' else 1.0) * op['color_amount']
+            weight = (np.clip(chroma / 0.125, 0, 1) if mode == 'tint' else 1.0) * op['color_amount']
             weight = np.broadcast_to(np.asarray(weight, np.float32), value.shape)
         rgb = rgb * (1 - weight[..., None]) + target * weight[..., None]
     if op['invert']: rgb = 1.0 - rgb
@@ -1219,7 +1225,13 @@ class Themes:
                 for step_op, _ in steps:
                     if not sheet['members'] or self.hit(step_op, row, families_of(row, sheet['row']['name']), scope, force) or row is sheet['row']: after = shade(after, step_op)
                 if np.array_equal(before, after): continue
-                samples.append(dict(name=row['name'], key=row['key'], family=family, before=thumb(before), after=thumb(after)))
+                tint = design.tints().get(row['name'], '')
+                if tint:
+                    # The game multiplies this white icon by its own color: show both the way the game will draw them.
+                    rgb = np.array([int(tint[i:i + 2], 16) for i in (1, 3, 5)], np.float32) / 255
+                    before, after = (np.dstack([(p[..., :3] * rgb + 0.5).astype(np.uint8), p[..., 3]]) for p in (before, after))
+                label = re.sub(r'\s*\([^)]*\)\s*$', '', row.get('label') or '')
+                samples.append(dict(name=row['name'], label=label, key=row['key'], family=family, before=thumb(before), after=thumb(after), tint=tint))
         ui = [dict(name=name, color=value, was=UI_COLORS[name][1], what=UI_COLORS[name][2]) for name, value in (plan.get('ui_colors') or {}).items()]
         hide = [dict(id=group, label=HIDE[group][0]) for group in plan.get('hide') or []]
         return dict(sheets=len(work), lines=lines, samples=samples, scoped=bool(scope), forced=force, ui_colors=ui, hide=hide)

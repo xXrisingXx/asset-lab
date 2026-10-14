@@ -144,6 +144,8 @@ class ChatRoutingTests(Base):
             gold, darker = self.themes.chat('make the ranks button icon gold'), self.themes.chat('make the ranks button icon darker')
         self.assertIn('The game colors Ranks button icon with #40BDC4', gold['note'])
         self.assertNotIn('The game colors', darker['note'])                                            # shades are fine
+        sample = next(s for s in gold['preview']['samples'] if s['name'] == 'virus-pale')
+        self.assertEqual((sample['tint'], sample['label']), ('#40BDC4', 'Ranks button icon'))        # shown as the game draws it
 
     def test_a_group_can_be_redrawn_one_sprite_at_a_time(self):
         rows = self.designer.family_rows('put a tiny santa hat on every icon')

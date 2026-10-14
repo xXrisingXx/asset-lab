@@ -100,7 +100,7 @@ function showPlan(box,result,prompt,keys){
     li.append(el('b','',targetText(line)),document.createTextNode(' — '+line.effect));
     li.append(el('small','',line.sheets?`${line.sheets} sheet${line.sheets===1?'':'s'}${line.regions?` · ${line.regions} sprites`:''}`:'matches nothing'));list.append(li);}
   box.append(list);
-  if(preview.samples.length){const grid=el('div','theme-samples');for(const s of preview.samples){const fig=el('button','theme-sample');fig.title='Open '+s.name;const a=new Image(),b=new Image();a.src=s.before;b.src=s.after;a.alt='before';b.alt='after';fig.append(a,el('span','','→'),b,el('small','',s.name));fig.onclick=run(()=>select(s.key));grid.append(fig);}box.append(grid);}
+  if(preview.samples.length){const grid=el('div','theme-samples');for(const s of preview.samples){const fig=el('button','theme-sample');fig.title='Open '+s.name;const a=new Image(),b=new Image();a.src=s.before;b.src=s.after;a.alt='before';b.alt='after';fig.append(a,el('span','','→'),b,el('small','',(s.label||s.name)+(s.tint?' · in game':'')));if(s.tint)fig.title+=` · shown as the game draws it (× ${s.tint})`;fig.onclick=run(()=>select(s.key));grid.append(fig);}box.append(grid);}
   const colorsOnly=!preview.sheets&&code;
   const bar=el('div','theme-actions');const apply=el('button','primary',colorsOnly?(preview.ui_colors?.length?'Apply game colors':'Apply'):'Apply');apply.disabled=!preview.sheets&&!colorsOnly;
   const scope=[preview.sheets?`up to ${preview.sheets} sheet${preview.sheets===1?'':'s'}`:'',preview.ui_colors?.length?'game colors':'',preview.hide?.length?'menu':'',keys?`${keys.length} checked only`:''].filter(Boolean).join(' + ');

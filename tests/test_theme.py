@@ -117,6 +117,13 @@ class ShadeTests(unittest.TestCase):
         for i in (1, 2, 3): self.assertEqual(out[0, i].tolist(), self.pixels[0, i].tolist())
         self.assertEqual(out[0, 4].tolist(), self.pixels[0, 4].tolist())  # invisible pixels are never rewritten
 
+    def test_a_named_plain_white_sprite_is_colored_by_a_tint(self):
+        white = np.full((4, 4, 4), 255, np.uint8)
+        self.assertEqual(shade(white, op(color='#f5c542', color_mode='tint'))[0, 0].tolist(), [255, 255, 255, 255])   # a theme keeps white icons white
+        named = shade(white, op(color='#f5c542', color_mode='tint', match=['icon-crown']))[0, 0].tolist()
+        self.assertEqual(named[3], 255)
+        self.assertGreater(named[0], named[2] + 100)                                                                    # gold now
+
     def test_colorize_and_fill(self):
         tinted = shade(self.pixels, op(color='#ff0000', color_mode='colorize'))
         self.assertEqual(tinted[0, 1].tolist(), [255, 0, 0, 255])
