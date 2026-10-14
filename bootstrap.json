@@ -1,6 +1,6 @@
 {
     "//":  "What the Asset Lab launcher downloads, each from its official source and checked against its SHA-256. Edit with care.",
-    "repo":  "OWNER/asset-lab",
+    "repo":  "xXrisingXx/asset-lab",
     "python":  {
                    "version":  "3.13.16",
                    "url":  "https://www.python.org/ftp/python/3.13.16/python-3.13.16-embed-amd64.zip",
