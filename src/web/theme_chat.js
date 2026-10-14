@@ -194,8 +194,8 @@ function showDesign(box,d,keys,base,offer){
 }
 async function drawDesign(box,prompt,keys,count,base,direction){
   setBusy(true);const text=el('small','hint','Starting…');const barEl=el('div','theme-progress');const fill=el('span');barEl.append(fill);box.append(barEl,text);scroll();
-  const stop=el('button','quiet','Cancel');stop.onclick=run(()=>api('/api/design-cancel',{job:job.id}));text.after(stop);
-  let job=await api('/api/design-start',{prompt,only:keys||null,count,base:base||null,direction:direction||null});const started=Date.now();
+  let job=null;const stop=el('button','quiet','Cancel');stop.onclick=run(async()=>{if(job)await api('/api/design-cancel',{job:job.id});});text.after(stop);
+  job=await api('/api/design-start',{prompt,only:keys||null,count,base:base||null,direction:direction||null});const started=Date.now();
   try{while(job.state==='running'){await new Promise(r=>setTimeout(r,1000));job=await api('/api/design-job?job='+job.id);
       const m=job.message.match(/step (\d+) of (\d+)/);fill.style.width=(m?20+70*m[1]/m[2]:job.message.startsWith('Finishing')?92:8)+'%';
       text.textContent=`${job.message} · ${Math.round((Date.now()-started)/1000)} s`;}}
@@ -236,7 +236,7 @@ function designCard(box,job,keys){
     const undoD=el('button','quiet','Undo design');undoD.onclick=run(async()=>{await api('/api/design-undo',{job:job.id});undoD.remove();apply.disabled=false;apply.textContent='Apply to the game art';S.build=null;await status();await library();});
     const inst=el('button','primary',S.status?.active?'Update Mitosis':'Install in Mitosis');inst.onclick=install.onclick;actions.append(undoD,inst);
     S.build=null;await status();await library();if(S.asset&&!S.dirty)await select(S.asset.key,true);});
-  more.onclick=run(()=>drawDesign(box,job.prompt,job.targets,2,null));
+  more.onclick=run(()=>drawDesign(box,job.prompt,job.targets,2,null,job.direction));   // same art direction: the new variants match
   again.onclick=run(()=>{const extra=refine.value.trim();if(!extra)return refine.focus();return drawDesign(box,extra,null,2,[job.id,S2.variant]);});
   refine.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();again.click();}};
   const refineRow=el('div','design-refine-row');refineRow.append(refine,again);
