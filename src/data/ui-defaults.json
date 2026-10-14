@@ -1,0 +1,784 @@
+{
+ "version": 1,
+ "note": "The Mitosis UI map that ships with Asset Lab: names for the interface sprites found on the game screens, and sprites removed from the pool because the game never shows them. Each entry is added once; renaming or restoring it later sticks.",
+ "labels": [
+  {
+   "id": "image||cached-1c7aa7786f8dac5685f8645dffaf28b0.png",
+   "label": "Coin icon (Main menu)"
+  },
+  {
+   "id": "image||cached-3f37c240fe2d190633444d605dcdd292.png",
+   "label": "Coin icon (Main menu)"
+  },
+  {
+   "id": "image||cached-42f21c9524c0527fa47d092b6e9c4725.png",
+   "label": "Coin icon (Main menu)"
+  },
+  {
+   "id": "image||cached-769f5e90a48c84731b351f957cc87e5c.png",
+   "label": "Coin icon (Main menu)"
+  },
+  {
+   "id": "image||cached-7fe8f4f9825be0a395b04fdcd9c82673.png",
+   "label": "Coin icon (Main menu)"
+  },
+  {
+   "id": "image||images/coins.png",
+   "label": "Coin icon (Main menu)"
+  },
+  {
+   "id": "sprite|icons.png|icon-og",
+   "label": "OG tag (Main menu)"
+  },
+  {
+   "id": "sprite|theme.png|back-icon",
+   "label": "Back arrow (Menus)"
+  },
+  {
+   "id": "sprite|theme.png|button-x",
+   "label": "Quit game button icon (Main menu)"
+  },
+  {
+   "id": "sprite|theme.png|forward-icon",
+   "label": "Forward arrow (Achievements)"
+  },
+  {
+   "id": "sprite|theme.png|icon-add",
+   "label": "Add (+) button (Main menu)"
+  },
+  {
+   "id": "sprite|theme.png|icon-android",
+   "label": "Google Play badge (Main menu)"
+  },
+  {
+   "id": "sprite|theme.png|icon-coin",
+   "label": "Coin icon (Main menu)"
+  },
+  {
+   "id": "sprite|theme.png|icon-crown",
+   "label": "Ranks button icon (Main menu)"
+  },
+  {
+   "id": "sprite|theme.png|icon-discord",
+   "label": "Discord button (Main menu)"
+  },
+  {
+   "id": "sprite|theme.png|icon-edit",
+   "label": "Copy username pencil (Player profile)"
+  },
+  {
+   "id": "sprite|theme.png|icon-expand",
+   "label": "Collapse arrow (Friends list)"
+  },
+  {
+   "id": "sprite|theme.png|icon-facebook",
+   "label": "Facebook button (My profile)"
+  },
+  {
+   "id": "sprite|theme.png|icon-flag",
+   "label": "Server region flag (Ranks)"
+  },
+  {
+   "id": "sprite|theme.png|icon-friends",
+   "label": "Friends button icon (Main menu)"
+  },
+  {
+   "id": "sprite|theme.png|icon-goto-next",
+   "label": "Next arrow (Main menu)"
+  },
+  {
+   "id": "sprite|theme.png|icon-goto-previous",
+   "label": "Previous arrow (Main menu)"
+  },
+  {
+   "id": "sprite|theme.png|icon-iphone",
+   "label": "App Store badge (Main menu)"
+  },
+  {
+   "id": "sprite|theme.png|icon-menu-invite",
+   "label": "Invite a friend icon (Main menu)"
+  },
+  {
+   "id": "sprite|theme.png|icon-menu-profile",
+   "label": "Profile button icon (Main menu)"
+  },
+  {
+   "id": "sprite|theme.png|icon-menu-settings",
+   "label": "Settings button icon (Main menu)"
+  },
+  {
+   "id": "sprite|theme.png|icon-music-off",
+   "label": "Sound off button icon (Main menu)"
+  },
+  {
+   "id": "sprite|theme.png|icon-music-on",
+   "label": "Sound on button icon (Main menu)"
+  },
+  {
+   "id": "sprite|theme.png|icon-play",
+   "label": "Play button (Main menu)"
+  },
+  {
+   "id": "sprite|theme.png|icon-quest",
+   "label": "Quests icon (Main menu)"
+  },
+  {
+   "id": "sprite|theme.png|icon-rate",
+   "label": "Star button icon (Main menu)"
+  },
+  {
+   "id": "sprite|theme.png|icon-share",
+   "label": "Achievements button icon (Main menu)"
+  },
+  {
+   "id": "sprite|theme.png|icon-star",
+   "label": "Star button icon (Main menu)"
+  },
+  {
+   "id": "sprite|theme.png|logo",
+   "label": "MITOSIS title logo (Main menu)"
+  },
+  {
+   "id": "sprite|theme.png|logo0",
+   "label": "MITOSIS title logo (Main menu)"
+  },
+  {
+   "id": "sprite|theme.png|logo4",
+   "label": "MITOSIS title logo (Main menu)"
+  },
+  {
+   "id": "sprite|theme.png|popup-close",
+   "label": "Remove friend X (Friends list)"
+  },
+  {
+   "id": "sprite|theme.png|vip_icon",
+   "label": "Battle Pass button icon (Main menu)"
+  },
+  {
+   "id": "sprite|theme2.png|back-icon",
+   "label": "Back arrow (Menus)"
+  },
+  {
+   "id": "sprite|theme2.png|button-x",
+   "label": "Quit game button icon (Main menu)"
+  },
+  {
+   "id": "sprite|theme2.png|forward-icon",
+   "label": "Forward arrow (Achievements)"
+  },
+  {
+   "id": "sprite|theme2.png|icon-add",
+   "label": "Add (+) button (Main menu)"
+  },
+  {
+   "id": "sprite|theme2.png|icon-android",
+   "label": "Google Play badge (Main menu)"
+  },
+  {
+   "id": "sprite|theme2.png|icon-coin",
+   "label": "Coin icon (Main menu)"
+  },
+  {
+   "id": "sprite|theme2.png|icon-crown",
+   "label": "Ranks button icon (Main menu)"
+  },
+  {
+   "id": "sprite|theme2.png|icon-discord",
+   "label": "Discord button (Main menu)"
+  },
+  {
+   "id": "sprite|theme2.png|icon-edit",
+   "label": "Copy username pencil (Player profile)"
+  },
+  {
+   "id": "sprite|theme2.png|icon-expand",
+   "label": "Collapse arrow (Friends list)"
+  },
+  {
+   "id": "sprite|theme2.png|icon-facebook",
+   "label": "Facebook button (My profile)"
+  },
+  {
+   "id": "sprite|theme2.png|icon-flag",
+   "label": "Server region flag (Ranks)"
+  },
+  {
+   "id": "sprite|theme2.png|icon-friends",
+   "label": "Friends button icon (Main menu)"
+  },
+  {
+   "id": "sprite|theme2.png|icon-goto-next",
+   "label": "Next arrow (Main menu)"
+  },
+  {
+   "id": "sprite|theme2.png|icon-goto-previous",
+   "label": "Previous arrow (Main menu)"
+  },
+  {
+   "id": "sprite|theme2.png|icon-iphone",
+   "label": "App Store badge (Main menu)"
+  },
+  {
+   "id": "sprite|theme2.png|icon-menu-invite",
+   "label": "Invite a friend icon (Main menu)"
+  },
+  {
+   "id": "sprite|theme2.png|icon-menu-profile",
+   "label": "Profile button icon (Main menu)"
+  },
+  {
+   "id": "sprite|theme2.png|icon-menu-settings",
+   "label": "Settings button icon (Main menu)"
+  },
+  {
+   "id": "sprite|theme2.png|icon-mitosis",
+   "label": "New Players mode icon (Main menu)"
+  },
+  {
+   "id": "sprite|theme2.png|icon-music-off",
+   "label": "Sound off button icon (Main menu)"
+  },
+  {
+   "id": "sprite|theme2.png|icon-music-on",
+   "label": "Sound on button icon (Main menu)"
+  },
+  {
+   "id": "sprite|theme2.png|icon-play",
+   "label": "Play button (Main menu)"
+  },
+  {
+   "id": "sprite|theme2.png|icon-quest",
+   "label": "Quests icon (Main menu)"
+  },
+  {
+   "id": "sprite|theme2.png|icon-rate",
+   "label": "Star button icon (Main menu)"
+  },
+  {
+   "id": "sprite|theme2.png|icon-share",
+   "label": "Achievements button icon (Main menu)"
+  },
+  {
+   "id": "sprite|theme2.png|icon-star",
+   "label": "Star button icon (Main menu)"
+  },
+  {
+   "id": "sprite|theme2.png|popup-close",
+   "label": "Remove friend X (Friends list)"
+  },
+  {
+   "id": "sprite|theme2.png|vip_icon",
+   "label": "Battle Pass button icon (Main menu)"
+  },
+  {
+   "id": "sprite|theme4.png|back-icon",
+   "label": "Back arrow (Menus)"
+  },
+  {
+   "id": "sprite|theme4.png|button-x",
+   "label": "Quit game button icon (Main menu)"
+  },
+  {
+   "id": "sprite|theme4.png|forward-icon",
+   "label": "Forward arrow (Achievements)"
+  },
+  {
+   "id": "sprite|theme4.png|icon-add",
+   "label": "Add (+) button (Main menu)"
+  },
+  {
+   "id": "sprite|theme4.png|icon-android",
+   "label": "Google Play badge (Main menu)"
+  },
+  {
+   "id": "sprite|theme4.png|icon-coin",
+   "label": "Coin icon (Main menu)"
+  },
+  {
+   "id": "sprite|theme4.png|icon-crown",
+   "label": "Ranks button icon (Main menu)"
+  },
+  {
+   "id": "sprite|theme4.png|icon-discord",
+   "label": "Discord button (Main menu)"
+  },
+  {
+   "id": "sprite|theme4.png|icon-edit",
+   "label": "Copy username pencil (Player profile)"
+  },
+  {
+   "id": "sprite|theme4.png|icon-expand",
+   "label": "Collapse arrow (Friends list)"
+  },
+  {
+   "id": "sprite|theme4.png|icon-facebook",
+   "label": "Facebook button (My profile)"
+  },
+  {
+   "id": "sprite|theme4.png|icon-flag",
+   "label": "Server region flag (Ranks)"
+  },
+  {
+   "id": "sprite|theme4.png|icon-friends",
+   "label": "Friends button icon (Main menu)"
+  },
+  {
+   "id": "sprite|theme4.png|icon-goto-next",
+   "label": "Next arrow (Main menu)"
+  },
+  {
+   "id": "sprite|theme4.png|icon-goto-previous",
+   "label": "Previous arrow (Main menu)"
+  },
+  {
+   "id": "sprite|theme4.png|icon-iphone",
+   "label": "App Store badge (Main menu)"
+  },
+  {
+   "id": "sprite|theme4.png|icon-menu-invite",
+   "label": "Invite a friend icon (Main menu)"
+  },
+  {
+   "id": "sprite|theme4.png|icon-menu-profile",
+   "label": "Profile button icon (Main menu)"
+  },
+  {
+   "id": "sprite|theme4.png|icon-menu-settings",
+   "label": "Settings button icon (Main menu)"
+  },
+  {
+   "id": "sprite|theme4.png|icon-music-off",
+   "label": "Sound off button icon (Main menu)"
+  },
+  {
+   "id": "sprite|theme4.png|icon-music-on",
+   "label": "Sound on button icon (Main menu)"
+  },
+  {
+   "id": "sprite|theme4.png|icon-play",
+   "label": "Play button (Main menu)"
+  },
+  {
+   "id": "sprite|theme4.png|icon-quest",
+   "label": "Quests icon (Main menu)"
+  },
+  {
+   "id": "sprite|theme4.png|icon-rate",
+   "label": "Star button icon (Main menu)"
+  },
+  {
+   "id": "sprite|theme4.png|icon-share",
+   "label": "Achievements button icon (Main menu)"
+  },
+  {
+   "id": "sprite|theme4.png|icon-star",
+   "label": "Star button icon (Main menu)"
+  },
+  {
+   "id": "sprite|theme4.png|popup-close",
+   "label": "Remove friend X (Friends list)"
+  },
+  {
+   "id": "sprite|theme4.png|vip_icon",
+   "label": "Battle Pass button icon (Main menu)"
+  }
+ ],
+ "removed": [
+  {
+   "id": "image||diamond.png",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "image||icon1024.png",
+   "why": "app icon, not on any screen"
+  },
+  {
+   "id": "image||icon120.png",
+   "why": "app icon, not on any screen"
+  },
+  {
+   "id": "image||icon128.png",
+   "why": "app icon, not on any screen"
+  },
+  {
+   "id": "image||icon144.png",
+   "why": "app icon, not on any screen"
+  },
+  {
+   "id": "image||icon152.png",
+   "why": "app icon, not on any screen"
+  },
+  {
+   "id": "image||icon167.png",
+   "why": "app icon, not on any screen"
+  },
+  {
+   "id": "image||icon180.png",
+   "why": "app icon, not on any screen"
+  },
+  {
+   "id": "image||icon184.png",
+   "why": "app icon, not on any screen"
+  },
+  {
+   "id": "image||icon256.png",
+   "why": "app icon, not on any screen"
+  },
+  {
+   "id": "image||icon48.png",
+   "why": "app icon, not on any screen"
+  },
+  {
+   "id": "image||icon512.png",
+   "why": "app icon, not on any screen"
+  },
+  {
+   "id": "image||icon57.png",
+   "why": "app icon, not on any screen"
+  },
+  {
+   "id": "image||icon72.png",
+   "why": "app icon, not on any screen"
+  },
+  {
+   "id": "image||icon76.png",
+   "why": "app icon, not on any screen"
+  },
+  {
+   "id": "image||icon96.png",
+   "why": "app icon, not on any screen"
+  },
+  {
+   "id": "sprite|icons.png|icon-accounts",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|icons.png|icon-accounts-0",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|icons.png|icon-accounts-1",
+   "why": "digits drawn with a font"
+  },
+  {
+   "id": "sprite|icons.png|icon-accounts-2",
+   "why": "digits drawn with a font"
+  },
+  {
+   "id": "sprite|icons.png|icon-accounts-3",
+   "why": "digits drawn with a font"
+  },
+  {
+   "id": "sprite|theme.png|b1",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme.png|baloon-noworker",
+   "why": "a stale rectangle cutting the title"
+  },
+  {
+   "id": "sprite|theme.png|bubble-no-exit",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme.png|icon-big-worker",
+   "why": "pixel art in an achievement"
+  },
+  {
+   "id": "sprite|theme.png|icon-cell",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme.png|icon-emerald",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme.png|icon-game-human",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme.png|icon-game-zombie",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme.png|icon-game-zombie-bar",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme.png|icon-guild-promote",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme.png|icon-human-bomber-small",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme.png|icon-human-research-arrowsfire-small",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme.png|icon-human-research-ram-small",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme.png|icon-human-research-rogue-small",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme.png|icon-info-frame-iron",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme.png|icon-ingame-chat",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme.png|icon-ingame-chat-desktop",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme.png|icon-menu-private",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme.png|icon-pause-button",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme.png|icon-purple",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme.png|icon-remove-ads",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme.png|icon-ruby",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme.png|icon-speed",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme.png|icons-container",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme.png|minimap-icon-flag",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme.png|minimap-icon-tower",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme.png|minus-five",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme2.png|baloon-noworker",
+   "why": "a stale rectangle cutting the title"
+  },
+  {
+   "id": "sprite|theme2.png|bubble-no-exit",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme2.png|icon-button-frame",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme2.png|icon-cell",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme2.png|icon-emerald",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme2.png|icon-game-human",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme2.png|icon-game-zombie",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme2.png|icon-game-zombie-bar",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme2.png|icon-guild-promote",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme2.png|icon-human-bomber-small",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme2.png|icon-human-research-arrowsfire-small",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme2.png|icon-human-research-ram-small",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme2.png|icon-human-research-rogue-small",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme2.png|icon-info-frame-iron",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme2.png|icon-ingame-chat",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme2.png|icon-ingame-chat-desktop",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme2.png|icon-menu-private",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme2.png|icon-pause-button",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme2.png|icon-purple",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme2.png|icon-remove-ads",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme2.png|icon-ruby",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme2.png|icon-speed",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme2.png|icons-container",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme2.png|minimap-icon-flag",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme2.png|minimap-icon-tower",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme4.png|baloon-noworker",
+   "why": "a stale rectangle cutting the title"
+  },
+  {
+   "id": "sprite|theme4.png|bubble-no-exit",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme4.png|icon-big-worker",
+   "why": "pixel art in an achievement"
+  },
+  {
+   "id": "sprite|theme4.png|icon-cell",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme4.png|icon-emerald",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme4.png|icon-game-human",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme4.png|icon-game-zombie",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme4.png|icon-game-zombie-bar",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme4.png|icon-guild-promote",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme4.png|icon-human-bomber-small",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme4.png|icon-human-research-arrowsfire-small",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme4.png|icon-human-research-ram-small",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme4.png|icon-human-research-rogue-small",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme4.png|icon-info-frame-iron",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme4.png|icon-ingame-chat",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme4.png|icon-ingame-chat-desktop",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme4.png|icon-menu-private",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme4.png|icon-pause-button",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme4.png|icon-purple",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme4.png|icon-remove-ads",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme4.png|icon-ruby",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme4.png|icon-speed",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme4.png|icons-container",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme4.png|minimap-icon-flag",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme4.png|minimap-icon-tower",
+   "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "sprite|theme4.png|minus-five",
+   "why": "never on a screen and never named by the game"
+  }
+ ]
+}

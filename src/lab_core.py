@@ -29,6 +29,8 @@ from asset_notes import AssetNotes
 ROOT = Path(__file__).resolve().parent
 # The release number (the launcher passes it; a source checkout reads the VERSION file beside src).
 VERSION = os.environ.get('ASSET_LAB_VERSION') or ((ROOT.parent / 'VERSION').read_text().strip() if (ROOT.parent / 'VERSION').is_file() else 'dev')
+# The Mitosis UI map that ships with Asset Lab: names for interface sprites and art the game never shows (see merge_defaults).
+DEFAULTS = ROOT / 'data' / 'ui-defaults.json'
 MAX_IMAGE = 4096 * 4096
 
 
@@ -217,7 +219,30 @@ class Lab:
         self.pool = Pool(self.catalog, self.root.parent / 'removed-assets.json')
         self.favorites = Favorites(self.catalog, self.root.parent / 'favorite-assets.json')
         self.labels = Labels(self.catalog, self.root.parent / 'asset-names.json')
+        self.merge_defaults()
         self.similar = similar.Index(self.catalog)
+
+    def merge_defaults(self):
+        """Add the shipped UI map (names for interface sprites; art the game never shows taken out of the pool), each entry
+        once and only for sprites this game has. Whatever you rename, unname or restore afterwards stays as you left it."""
+        doc = read_json(DEFAULTS, {}) or {}
+        record = self.root.parent / 'defaults-applied.json'
+        seen = set((read_json(record, {}) or {}).get('applied') or [])
+        rows = {self.pool.ident(row): row for row in self.catalog.rows.values()}
+        fresh = [(marks, kind, entry) for marks, kind, field in ((self.labels, 'label', 'labels'), (self.pool, 'removed', 'removed'))
+                 for entry in doc.get(field) or []
+                 if isinstance(entry, dict) and entry.get('id') in rows and f"{kind}:{entry['id']}" not in seen]
+        if not fresh: return
+        for marks, kind, entry in fresh:
+            if entry['id'] in marks.entries: continue
+            row = rows[entry['id']]
+            item = dict(id=entry['id'], name=row['name'], kind=row['kind'], sheet=marks.sheet_name(row))
+            if kind == 'label': item['label'] = ' '.join(str(entry.get('label') or '').split())[:80]
+            else: item.update(group=row['group'], at=time.strftime('%Y-%m-%d %H:%M:%S'), by='Asset Lab UI map')
+            if kind == 'removed' or item['label']: marks.entries[entry['id']] = item
+        for marks in (self.labels, self.pool): marks.apply(); marks.store()
+        atomic_json(record, {'note': 'UI map entries Asset Lab already added once (renames and restores are kept). Delete this file to add them all again.',
+                             'applied': sorted(seen | {f"{kind}:{entry['id']}" for _, kind, entry in fresh})})
 
     def persist(self): atomic_json(self.state_path, self.state)
 

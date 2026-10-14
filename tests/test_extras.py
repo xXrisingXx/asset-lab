@@ -21,6 +21,25 @@ def image_bytes(color, size=(24, 24), inner=(4, 4, 20, 20)):
 class NameTests(Base):
     def key(self, name): return next(r['key'] for r in self.rows(name) if r.get('primary', True))
 
+    def test_the_shipped_ui_map_is_added_once_and_user_changes_stick(self):
+        ident = lambda name: self.lab.pool.ident(next(r for r in self.rows(name) if r.get('primary', True)))
+        defaults = self.root / 'ui-defaults.json'
+        defaults.write_text(json.dumps(dict(labels=[dict(id=ident('icon-a'), label='Ranks button icon (Main menu)'), dict(id='sprite|nope.png|missing', label='Gone')],
+                                            removed=[dict(id=ident('free-x'), why='never shown')])))
+        with patch.object(lab_core, 'DEFAULTS', defaults):
+            lab = Lab(self.game, self.root / 'workspace', self.root / 'ledgers', process_check=lambda: [])
+            self.assertEqual(next(r for r in lab.catalog.rows.values() if r['name'] == 'icon-a')['label'], 'Ranks button icon (Main menu)')
+            self.assertTrue(all(r['removed'] for r in lab.catalog.rows.values() if r['name'] == 'free-x'))
+            applied = json.loads((self.root / 'defaults-applied.json').read_text())['applied']
+            self.assertNotIn('label:sprite|nope.png|missing', applied)                               # only sprites this game has
+            # The player renames one and restores the other; the next start leaves both alone.
+            key = next(r['key'] for r in lab.catalog.rows.values() if r['name'] == 'free-x' and r.get('primary', True))
+            lab.pool.restore(key)
+            lab.labels.name([next(r['key'] for r in lab.catalog.rows.values() if r['name'] == 'icon-a' and r.get('primary', True))], 'My crown')
+            again = Lab(self.game, self.root / 'workspace', self.root / 'ledgers', process_check=lambda: [])
+        self.assertEqual(next(r for r in again.catalog.rows.values() if r['name'] == 'icon-a')['label'], 'My crown')
+        self.assertFalse(any(r['removed'] for r in again.catalog.rows.values() if r['name'] == 'free-x'))
+
     def test_names_are_searchable_shared_by_copies_and_kept(self):
         result = self.lab.labels.name([self.key('virus-pale'), self.key('virus-deep')], '  Speed   potion ')
         self.assertEqual((result['label'], result['count']), ('Speed potion', 2))
