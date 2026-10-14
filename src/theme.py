@@ -270,6 +270,39 @@ def hide_in(text):
     return hide_targets(text) if re.search(HIDE_VERB, text) else []
 
 
+# How the art route words each control: the bar behind the OG tag is drawn by the game, so only the tag goes.
+ART_LABELS = {'top_banner': 'the OG tag (the “Mitos.is” bar stays)', 'left_banner_1': 'the Worm.is and Strike.is promos',
+              'left_banner_2': 'the Worm.is and Strike.is promos'}
+
+
+def listing(items):
+    items = list(dict.fromkeys(items))
+    return items[0] if len(items) == 1 else ', '.join(items[:-1]) + ' and ' + items[-1]
+
+
+def art_hide(plan, present):
+    """With Mitosis.exe off limits, hide menu controls by making the art they are drawn from fully transparent.
+
+    present: sprite names in the library. Returns the plan with the hiding as an operation, and a note.
+    """
+    groups = plan.get('hide') or []
+    if not groups: return plan, ''
+    names, done, left = [], [], []
+    for group in groups:
+        mine = [name for name in exe_palette.HIDE_SPRITES.get(group, []) if name in present]
+        (done if mine else left).append(ART_LABELS.get(group, HIDE[group][0]))
+        names += mine
+    ops = clean_plan(dict(operations=[dict(targets=['everything'], match=list(dict.fromkeys(names)), opacity=0)]))['operations'] if names else []
+    notes = []
+    if done:
+        text = listing(done)
+        notes.append(f'{text[0].upper() + text[1:]} will be hidden by making the art fully transparent (the empty spot can still be clicked).')
+    if left:
+        one = len(dict.fromkeys(left)) == 1 and not listing(left).endswith('promos')
+        notes.append(f"{listing(left)[0].upper() + listing(left)[1:]} {'is' if one else 'are'} not drawn from art Asset Lab can change, so {'it stays' if one else 'they stay'}.")
+    return dict(plan, operations=plan['operations'] + ops, hide=[]), ' '.join(notes)
+
+
 SCHEMA['properties']['ui_colors']['properties'] = {name: {'type': 'string'} for name in UI_COLORS}
 SCHEMA['properties']['hide']['items']['enum'] = list(HIDE)
 
@@ -325,6 +358,7 @@ def spatial(op): return any(op.get(field) for field in SPATIAL)
 
 
 def describe(op):
+    if op['opacity'] == 0: return 'hidden (made fully transparent)'
     parts = []
     verb = {'tint': 'recolor', 'colorize': 'colorize', 'fill': 'fill', 'none': ''}[op['color_mode']]
     strength = '' if op['color_amount'] == 1 else f" at {round(op['color_amount']*100)}%"
@@ -569,12 +603,14 @@ def rule_plan(prompt, lookup=None):
         # Game colors from the code: "make the pink red", "arrows cyan", "menu background navy" (not the pattern),
         # "light mode background white", "header bars purple", "menu buttons gold".
         paints = [hex_color(c) for c in re.findall(any_color, re.sub(r'\bthe pink\b|\bthe teal\b', ' ', clause))]
-        # With the exe off limits, "menu background navy" falls through to the menu pattern art below.
-        if len(paints) == 1 and not exe_palette.BLOCKED and not re.search(r'\bpattern|overlay|triangles?\b', clause):
+        # With the exe off limits a named game color is still noted (the chat explains it) rather than painted on
+        # art: the game multiplies that art by its own color, so gold on teal-tinted white would come out olive.
+        # "menu background navy" falls through to the menu pattern art below instead.
+        if len(paints) == 1 and not re.search(r'\bpattern|overlay|triangles?\b', clause):
             named_ui = next((name for name, phrase in UI_PHRASES if re.search(phrase, clause)), '')
             if named_ui:
                 ui[named_ui] = paints[0]; continue
-            if re.search(r'\b(?:background|backdrop|bg)\b', clause) and not re.search(r'\b(?:world|game|arena|map|in-?game)\s*(?:background|bg)\b|\bgrid|arena|floor\b', clause):
+            if not exe_palette.BLOCKED and re.search(r'\b(?:background|backdrop|bg)\b', clause) and not re.search(r'\b(?:world|game|arena|map|in-?game)\s*(?:background|bg)\b|\bgrid|arena|floor\b', clause):
                 ui['background'] = paints[0]; continue
         names = list(dict.fromkeys(n for word, found in known.items() if re.search(rf'\b{re.escape(word)}\b', clause) for n in found))
         if re.search(rf'\b(?:{GLASS_WORDS})\b', clause):
@@ -689,6 +725,10 @@ class Themes:
         self.lab, self.lock, self.jobs = lab, threading.RLock(), {}
         self.file = lab.root / 'themes.json'
         self.reindex()
+
+    def present(self):
+        """Names of the sprites in the library (not removed from the pool)."""
+        with self.lab.lock: return {row['name'] for row in self.lab.catalog.rows.values() if not row.get('removed')}
 
     def reindex(self):
         """Rebuild the sheet index; art removed from the pool is never planned, sampled or shaded."""
@@ -1006,9 +1046,14 @@ class Themes:
         elif plan is None: note = 'Ollama is not running, so the keyword planner was used. Start Ollama for full prompts.'
         if plan is None: plan = rule_plan(message, self.named)
         if exe_palette.BLOCKED and (plan['ui_colors'] or plan['hide']):
-            # These live in Mitosis.exe, which the game refuses to run once edited; say so instead of planning them.
-            plan = dict(plan, ui_colors={}, hide=[])
-            note = (note + ' ' if note else '') + exe_palette.BLOCKED
+            # Mitosis.exe refuses to run once edited: menu controls drawn from art are hidden through that art instead,
+            # and game colors (set in its code) are explained rather than planned.
+            plan, hidden = art_hide(plan, self.present())
+            notes = [hidden] if hidden else []
+            if plan['ui_colors']: notes.append(exe_palette.COLORS_BLOCKED)
+            plan = dict(plan, ui_colors={})
+            if not plan['operations']: plan['reply'], notes = ' '.join(notes), []   # nothing left to do: the explanation is the answer
+            note = ' '.join(([note] if note else []) + notes)
         if re.search(r'\b(?:bigger|smaller|larger|tinier|resize|enlarge|shrink|move|reposition|relocate)\b', message.lower()):
             note = (note + ' ' if note else '') + ('Sizes and positions are set by the game itself (each sprite has a fixed box in its sheet), '
                                                    'so I can change how things look but not how big they are or where they sit.')
@@ -1151,7 +1196,7 @@ class Themes:
     def apply(self, plan, prompt='', only=None):
         """only: catalog keys of checked assets; when given, nothing else is changed."""
         plan, scope = clean_plan(plan), self.scope(only)
-        if exe_palette.BLOCKED: plan = dict(plan, ui_colors={}, hide=[])
+        if exe_palette.BLOCKED: plan = dict(art_hide(plan, self.present())[0], ui_colors={})
         if only and not scope: raise ValueError('The selected assets are no longer in the library.')
         if not changes_anything(plan): raise ValueError('This plan changes nothing.')
         with self.lock:

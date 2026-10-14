@@ -80,12 +80,34 @@ class ExeBlockedTests(Base):
         self.assertEqual(rule_plan('menu background navy')['operations'][0]['targets'], ['menu_background'])
         with patch.object(theme, 'models', return_value=[]):
             result = self.themes.chat('hide the discord button')
-        self.assertEqual(result['plan']['hide'], [])
-        self.assertIn('checks its own', result['note'])
+            colors = self.themes.chat('make the header bars purple')
+        self.assertEqual((result['plan']['hide'], result['plan']['operations']), ([], []))
+        self.assertIn('not drawn from art', result['plan']['reply'])          # this fixture has no Discord art
+        # A game color is explained, not painted over all the art (the game multiplies art by its own colors).
+        self.assertEqual((colors['plan']['operations'], colors['plan']['ui_colors']), ([], {}))
+        self.assertIn('set inside Mitosis.exe', colors['plan']['reply'])
         # A workspace saved before the switch-off loses its exe edits on the next start.
         self.lab.state.update(palette={'BG_COLOR': '#0B1D3A'}, hide=['discord']); self.lab.persist()
         again = Lab(self.game, self.root / 'workspace', self.root / 'ledgers', process_check=lambda: [])
         self.assertEqual((again.palette(), again.hidden()), ({}, []))
+
+
+    def test_menu_controls_drawn_from_art_are_hidden_through_the_art(self):
+        sheet = next(k for k, s in self.themes.sheets.items() if s['row']['name'] == 'theme4.png')
+        self.assertEqual(self.lab.image(sheet).getpixel((50, 10))[3], 255)          # inside icon-b
+        with patch.dict(lab_core.exe_palette.HIDE_SPRITES, {'discord': ['icon-b']}), patch.object(theme, 'models', return_value=[]):
+            result = self.themes.chat('hide the discord button and the worm.is promo')
+            op = result['plan']['operations'][-1]
+            self.assertEqual((op['targets'], op['match'], op['opacity'], result['plan']['hide']), (['everything'], ['icon-b'], 0.0, []))
+            self.assertIn('Discord button will be hidden', result['note'])
+            self.assertIn('Worm.is and Strike.is promos are not drawn from art', result['note'])
+            self.assertEqual(result['preview']['lines'][-1]['effect'], 'hidden (made fully transparent)')
+            job = PaletteTests.wait(self, self.themes.apply(result['plan'], 'hide discord'))
+        self.assertEqual(job['state'], 'complete')
+        hidden = self.lab.image(sheet)
+        self.assertEqual(hidden.getpixel((50, 10))[3], 0)
+        self.assertEqual(hidden.getpixel((5, 5))[3], 255)                            # icon-a untouched
+        self.assertEqual(self.lab.hidden(), [])                                      # Mitosis.exe is left alone
 
 
 class PaletteTests(Base):

@@ -61,7 +61,11 @@ HIDE = {
     'left_banner_2': (0x5D3242, bytes.fromhex('0f 85 63 01 00 00'), bytes.fromhex('90 e9 63 01 00 00'), 'Second left promo (Worm.is / Strike.is)'),
 }
 
+# The art each control is drawn from (checked against captures of the menu). Hiding that art (fully transparent)
+# works without touching Mitosis.exe; Worm.is and Strike.is are not drawn from art the lab can edit.
 HIDE_SPRITES = {'mobile_store_badges': ['icon-iphone', 'icon-android'], 'discord': ['icon-discord'], 'top_banner': ['icon-og']}
+COLORS_BLOCKED = ('Game colors are set inside Mitosis.exe, and Mitosis closes itself when that file was changed, '
+                  'so they are switched off. Art edits are not affected.')
 
 
 def parse_color(value):
