@@ -44,6 +44,15 @@ class CutOutTests(Base):
         self.assertGreaterEqual(width(filled), 195)                       # filled: the letters span the frame
         self.assertEqual(design.core_box(art)[1], 80)                     # the bat's rows are not part of the core
 
+    def test_a_faint_line_at_the_canvas_edge_does_not_shrink_the_drawing(self):
+        art = Image.new('RGBA', (400, 400), (0, 0, 0, 0))
+        art.paste((230, 180, 40, 255), (100, 100, 300, 300))           # the coin
+        art.paste((200, 200, 200, 60), (0, 399, 400, 400))             # a faint line the model left along the bottom edge
+        art.paste((200, 200, 200, 60), (399, 0, 400, 400))             # and along the right edge
+        out = fit(art, (128, 128))
+        box = out.getchannel('A').point(lambda v: 255 if v > 128 else 0).getbbox()
+        self.assertGreaterEqual(box[2] - box[0], 115)                   # the coin fills the frame (minus the glow margin)
+
     def test_fit_crops_to_the_art_and_keeps_proportions(self):
         art = unkey(drawn(), 'green')
         out = fit(art, (120, 30))

@@ -130,10 +130,23 @@ def core_box(art, share=0.3):
     return int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1
 
 
+def content_box(art, threshold=40, border=3, margin=0.04):
+    """Where the drawing is. The model sometimes leaves a faint line along the canvas edge, which made every drawing look
+    small once fitted into its frame: specks and the outermost pixels are ignored, and a small margin keeps soft glows."""
+    a = np.asarray(art.getchannel('A')) > threshold
+    if a.shape[0] > 4 * border and a.shape[1] > 4 * border:
+        a[:border] = False; a[-border:] = False; a[:, :border] = False; a[:, -border:] = False
+    ys, xs = np.nonzero(a)
+    if not len(xs): return None
+    x0, y0, x1, y1 = int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1
+    mx, my = round((x1 - x0) * margin), round((y1 - y0) * margin)
+    return max(border, x0 - mx), max(border, y0 - my), min(art.width - border, x1 + mx), min(art.height - border, y1 + my)
+
+
 def fit(art, frame, scale=1.0, dx=0.0, dy=0.0, fill=False):
     """Crop to the drawn content and fit it into a sprite frame (w, h), keeping its proportions.
     fill: size by the dense core instead, so the main shape fills the frame and sparse edges may be trimmed."""
-    box = art.getchannel('A').point(lambda v: 255 if v > 10 else 0).getbbox()
+    box = content_box(art)
     if not box: return Image.new('RGBA', frame, (0, 0, 0, 0))
     if fill:
         core = core_box(art)
