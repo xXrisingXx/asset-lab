@@ -164,6 +164,8 @@ class ChatRoutingTests(Base):
         self.assertNotIn('The game colors', darker['note'])                                            # shades are fine
         sample = next(s for s in gold['preview']['samples'] if s['name'] == 'virus-pale')
         self.assertEqual((sample['tint'], sample['label']), ('#40BDC4', 'Ranks button icon'))        # shown as the game draws it
+        with patch.object(design, 'tints', return_value={'virus-pale': '#40BDC4'}):
+            self.assertIn('the game itself colors #40BDC4', ' '.join(self.themes.hints('make the ranks button icon shimmer')))   # the model is told too
 
     def test_a_group_can_be_redrawn_one_sprite_at_a_time(self):
         rows = self.designer.family_rows('put a tiny santa hat on every icon')

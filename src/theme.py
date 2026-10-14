@@ -842,10 +842,13 @@ class Themes:
     def hints(self, message):
         """One line per named thing, telling the model the real sprite names and whether they are light or dark."""
         found, _ = self.named(message)
-        lines = []
+        lines, tints = [], design.tints()
         for word, names in found.items():
+            colored = sorted({tints[name] for name in names if name in tints})
+            # The game multiplies these white icons by its own color, so the model should know a new color mixes with it.
+            extra = f' (white art the game itself colors {", ".join(colored)}: any color you add, glows included, mixes with that; lighter or darker work best)' if colored else ''
             if word in self.labelled:
-                lines.append(f'"{word}" (your name for these sprites): ' + ', '.join(names))
+                lines.append(f'"{word}" (your name for these sprites): ' + ', '.join(names) + extra)
                 continue
             rows = {row['name']: (key, row) for key, row in self.tokens.get(word, self.tokens.get(word.rstrip('s'), [])) if row['name'] in names}
             lines.append(f'{word}: ' + ', '.join(f"{name} ({'light' if self.tone(*rows[name]) > 0.55 else 'dark'})" if name in rows else name for name in names))
