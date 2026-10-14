@@ -18,15 +18,22 @@ Asset Lab finds your Mitos.is installation through Steam. It never needs adminis
 
 - **Library:** every sprite, sheet, font glyph and background in the game, with search, categories, favorites, your
   own names for assets, image search ("find similar"), and a removed-assets pool for things you never want to see.
+  The menus' parts come named (Play button, Ranks button icon, Discord button...; ask Theme AI "what can I change?"),
+  and art the game never shows is already out of the pool.
 - **Editor:** paint, erase, import a replacement, adjust colors, and preview as a texture, tile, cell or button.
 - **Theme AI:** describe a look ("rainbow neon outlines with a subtle glow", "holographic glass panels", "dark ocean
   theme, keep the logo", "make everything spooky") and review a plan with before/after samples before anything is
-  saved. Moods like spooky, christmas, winter, royal or cyberpunk have matching palettes. Check assets in the library
-  to theme only those. Say "undo" to take the last theme off, or "help".
+  saved. Moods like spooky, christmas, winter, royal or cyberpunk have matching palettes. Name one part to change just
+  that ("make the play button gold"), or "hide the discord button" (also the App Store and Google Play badges and the
+  OG tag). Check assets in the library to theme only those. Say "undo" to take the last theme off, or "help".
+- **Game-colored icons:** most menu icons are white pictures that the game colors itself (teal, or pink for the
+  arrows). Previews show them the way the game will draw them, so a gold crown that would come out green is no surprise.
 - **Redesign (local AI):** "make the title spooky with dripping blood and bats", "put a party hat on the logo", "make
   the icons look like gold coins". The local language model first writes an art direction, then the image model
   draws a few variants; pick one, adjust its size and position, keep the original outline if the game stretches it,
-  refine it with a follow-up, then apply. A group is redrawn one sprite at a time in one shared style.
+  refine it with a follow-up, then apply. A group is redrawn one sprite at a time in one shared style. "Make the title
+  say MITOSIS 2" changes the words; "turn the coin into a diamond" redraws the coin. For a game-colored icon, **Keep it
+  white** turns the drawing into white-and-gray detail, so it takes the game's color instead of mixing with it.
 - **Both at once:** "christmas theme and put a santa hat on the title" shades the palette and redraws the title.
 - **Review and install:** see every change before and after, take any item out, install into the game, and update an
   installed mod without restoring first. **Restore original** puts the exact original files back.
