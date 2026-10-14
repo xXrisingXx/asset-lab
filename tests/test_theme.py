@@ -401,14 +401,14 @@ class ThemeTests(Base):
             sent.update(payload)
             return {'message': {'content': '{"reply":"ok","operations":[{"targets":["cells"],"rim_color":"#ff0000"}]}'}}
         with patch.object(theme, 'models', return_value=fake), patch.object(theme, 'ollama', side_effect=answer):
-            result = self.themes.chat('spooky red outline on the white virus')
+            result = self.themes.chat('eerie red outline on the white virus')
         self.assertIn('Sprites named in this request: virus: virus-pale (light)', sent['messages'][-1]['content'])
         self.assertEqual((result['plan']['operations'][0]['targets'], result['plan']['operations'][0]['match']), (['everything'], ['virus-pale']))  # the model forgot to name it
 
     def test_requests_written_in_tag_words_are_planned_exactly_without_the_model(self):
         self.assertEqual(theme.unknown_words('On the white virus give me a rainbow outline with a subtle glow and the inside something on the dark side with flare', self.themes.named), [])
         self.assertEqual(theme.unknown_words('theme it rainbow with proper glows'), [])
-        self.assertEqual(theme.unknown_words('cyberpunk neon theme with a hot pink logo'), ['cyberpunk', 'hot'])
+        self.assertEqual(theme.unknown_words('cyberpunk neon theme with a hot pink logo'), ['hot'])   # cyberpunk is a palette
         self.assertEqual(theme.unknown_words('molten buttons, charcoal panels'), ['molten', 'charcoal'])
         fake = [dict(name='m', thinking=False, size=5e9)]
         def never(*args, **kwargs): raise AssertionError('the model must not be asked')

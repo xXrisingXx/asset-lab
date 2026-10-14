@@ -59,7 +59,17 @@ GRADIENTS = {
     'candy': ['#ff70a6', '#ff9770', '#ffd670', '#e9ff70', '#70d6ff'], 'lava': ['#1a0000', '#7f0000', '#ff3c00', '#ffb300'],
     'gold': ['#5a3a00', '#c98b00', '#ffd54a', '#fff6c2', '#e0a100'], 'chrome': ['#1c1f26', '#8d99ae', '#f8f9fa', '#6c757d', '#e9ecef'],
     'pastel': ['#ffc6ff', '#bdb2ff', '#a0c4ff', '#9bf6ff', '#caffbf', '#fdffb6'],
-    'holographic': ['#ffb3ec', '#c9b6ff', '#a8d8ff', '#a9fff1', '#f3ffb0', '#ffd0a8', '#ffb3ec']}  # soap-bubble sheen
+    'holographic': ['#ffb3ec', '#c9b6ff', '#a8d8ff', '#a9fff1', '#f3ffb0', '#ffd0a8', '#ffb3ec'],  # soap-bubble sheen
+    # Seasonal and mood palettes, so "spooky", "xmas" or "royal" can be shaded without the image model.
+    'halloween': ['#0b0710', '#3d1a5c', '#ff6a00', '#ffb347', '#b6ff3b'], 'christmas': ['#0b3d1a', '#1a7f37', '#f1faee', '#d62828', '#ffd166'],
+    'winter': ['#0b2545', '#13315c', '#8ecae6', '#e0fbfc', '#ffffff'], 'forest': ['#132a13', '#31572c', '#4f772d', '#90a955', '#ecf39e'],
+    'royal': ['#240046', '#5a189a', '#9d4edd', '#ffd60a', '#fff3b0'], 'cyberpunk': ['#0d0221', '#ff00a0', '#00f0ff', '#fcee0c'],
+    'blood': ['#120000', '#5c0000', '#a4161a', '#e5383b', '#ffccd5'], 'midnight': ['#020617', '#0b1d3a', '#3a0ca3', '#7b8cde']}
+# Everyday words for those palettes.
+MOOD_WORDS = {'halloween': r'spooky|creepy|scary|horror|haunted|halloween|pumpkins?', 'christmas': r'christmas|xmas|festive|santa',
+              'winter': r'winter|wintery|snowy|frozen|frosty|icy', 'forest': r'forest|nature|natural|jungle|woodland|earthy',
+              'royal': r'royal|regal|king(?:ly)?|queen|luxury|luxurious', 'cyberpunk': r'cyberpunk|cyber|futuristic|sci-?fi|hacker',
+              'blood': r'bloody|blood|gory|vampire', 'midnight': r'midnight|nocturnal|night sky|starry'}
 # Words in a request that never name a sprite, even though some sprite's name contains them.
 STOP = set('''make give want need theme style look looks like more less with without into onto from that this them they their have has some something
     side keep leave alone only every each whole game mitosis main menu screen color colour colors colours gradient outline inside glow flare neon rainbow
@@ -515,6 +525,7 @@ def unknown_words(prompt, lookup=None):
     """Content words the keyword planner has no meaning for. An empty list means the request was written
     entirely in tag words, so it can be planned exactly instead of being interpreted by the model."""
     text = re.sub(r'\b(worm|strike|mitos)\.is\b', r'\1is', prompt.lower().replace('black and white', 'monochrome'))  # a dot in a name is not a sentence end
+    for preset, words in MOOD_WORDS.items(): text = re.sub(rf'\b(?:{words})\b', preset, text)   # "spooky" is the halloween palette
     known, text = lookup(text) if lookup else ({}, text)
     vocabulary = [*(phrase.replace(r'\b', '') for _, phrase in UI_PHRASES), *(words for _, words in HIDE.values()), HIDE_ALL, HIDE_VERB.replace(r'\b', ''), r'banners?|promos?',
                   *WORDS.values(), *(pattern for pattern, _ in MOODS), EDGE, INSIDE, QUIET_WORDS, LOUD_WORDS, GLASS_WORDS, *COLORS, *GRADIENTS, *map(re.escape, known),
@@ -532,6 +543,7 @@ def rule_plan(prompt, lookup=None):
     lookup(text) -> ({word: [sprite names]}, text) resolves words that name a specific sprite ("the white virus").
     """
     text = re.sub(r'\b(worm|strike|mitos)\.is\b', r'\1is', prompt.lower().replace('black and white', 'monochrome'))  # a dot in a name is not a sentence end
+    for preset, words in MOOD_WORDS.items(): text = re.sub(rf'\b(?:{words})\b', preset, text)   # "spooky" is the halloween palette
     known, text = lookup(text) if lookup else ({}, text)
     operations = []
     parts = [(index, part.strip()) for index, sentence in enumerate(re.split(r'[.;\n,]| but ', text))
@@ -801,6 +813,7 @@ class Themes:
                 '- hue_shift (-180..180 degrees), saturation (0 = greyscale, 1 = unchanged, up to 3), brightness (0.1-3), contrast (0.1-3), '
                 'opacity (0 hides, 1 unchanged, up to 4 strengthens faint art), invert (true/false).\n'
                 '- gradient: a list of 2-8 "#rrggbb" stops painted across EACH sprite instead of one flat color, or gradient_preset: one of ' + ', '.join(GRADIENTS) + '. '
+                'For a seasonal or mood theme start from its palette: ' + '; '.join(f'{preset} for {words.replace("|", ", ").replace("(?:", "").replace(")?", "").replace("?", "")}' for preset, words in MOOD_WORDS.items()) + '. '
                 'gradient_type "linear" (with gradient_angle in degrees: 0 = left to right, 90 = top to bottom, 45 = diagonal), "radial" (center outwards), "conic" (colors travel around the center, ideal for rings and frames) or "luminance" (dark pixels take the first stop and bright pixels the last: duotone and heat-map looks). '
                 'gradient_repeat 2-6 makes stripes. A gradient uses color_mode like a color does: "colorize" (default, keeps shading), "tint" (only colored pixels) or "fill" (flat paint).\n'
                 '- glow_color: "#rrggbb", or "auto" so each shape glows in its own color; glow_size 4-24 pixels, glow_strength 0.5-3, glow_inside true adds a bright rim inside the shape. '
@@ -865,19 +878,80 @@ class Themes:
                               hide=[dict(id=group, label=label) for group, (label, _) in HIDE.items()]))
 
     def chat(self, message, model='', history=None, only=None):
-        """only: catalog keys of checked assets; the plan is then previewed and applied to those alone."""
+        """only: catalog keys of checked assets; the plan is then previewed and applied to those alone.
+
+        One request can mix both tools: the parts that need drawing ("put a santa hat on the title") go to the
+        image model, the rest ("theme it christmas") to the shader. A whole-game mood also offers a title redraw."""
         scope = self.scope(only)
         message = str(message or '').strip()[:2000]
         if not message: raise ValueError('Describe the look you want.')
+        command = self.command(message)
+        if command: return command
         designer = getattr(self, 'designer', None)
-        if designer and design.wants_design(message, unknown_words(message, self.named)):
-            # New objects, materials or a different style: redraw the art with the image model instead of shading it.
-            rows = designer.targets(message, only)
-            if rows:
-                ready = designer.status()
-                return dict(plan=dict(reply='', operations=[], ui_colors={}, hide=[]), source='design', note='' if ready['available'] else
-                            'The image model is not installed (' + ', '.join(ready['missing']) + ').', preview=None,
-                            design=dict(prompt=message, available=ready['available'], targets=[dict(key=r['key'], name=r.get('label') or r['name'], size=[r['width'], r['height']]) for r in rows]))
+        drawn, rest = [], message
+        if designer:
+            pieces = [p.strip(' ,') for p in re.split(r'[.;\n]+|,?\s+(?:and then|then|also|plus)\s+|,?\s+and\s+(?=(?:make|give|put|add|draw|turn|theme|redesign|redraw|paint|stick)\b)', message) if p and p.strip(' ,')]
+            for piece in pieces:
+                if design.wants_design(piece, unknown_words(piece, self.named)) and designer.targets(piece, only): drawn.append(piece)
+            rest = '. '.join(p for p in pieces if p not in drawn)
+        if drawn:
+            rows, seen = [], set()
+            for piece in drawn:
+                for r in designer.targets(piece, only):
+                    if r['key'] not in seen: seen.add(r['key']); rows.append(r)
+            part = self.design_offer(designer, '. '.join(drawn), rows)
+            if not rest.strip():
+                return dict(plan=dict(reply='', operations=[], ui_colors={}, hide=[]), source='design', note=part.pop('note'), preview=None, design=part)
+            result = self.plan_request(rest, model, history, scope)
+            result['design'] = part
+            return result
+        result = self.plan_request(message, model, history, scope)
+        if designer and design.wants_design(message, unknown_words(message, self.named)) and designer.title_rows():
+            # "Make the game spooky": the palette is shaded now; redrawing the title is offered, not started.
+            result['design'] = dict(self.design_offer(designer, f'{message}. Redesign the game title to match.', designer.title_rows()), optional=True)
+        return result
+
+    HELP = ('I change how Mitosis looks. Ask for colors, moods or effects ("christmas theme", "rainbow outlines with a subtle glow", '
+            '"holographic glass panels", "make the buttons darker") and I shade the matching art. Ask for new things or a new style '
+            '("put a party hat on the title", "make the title spooky with dripping blood") and the local image model redraws it. '
+            'Check assets in the library to change only those. Say "undo" to take the last theme off.')
+
+    def command(self, message):
+        """A few things that are not looks: help, and undo by chat."""
+        low = message.lower().strip(' .!?')
+        empty = dict(reply='', operations=[], ui_colors={}, hide=[])
+        if re.fullmatch(r'help|commands|what can (?:you|i) do(?: here)?|what do you do|how does (?:this|it) work', low):
+            return dict(plan=dict(empty, reply=self.HELP), source='command', note='', preview=None)
+        if re.fullmatch(r'undo(?: (?:that|it|the last (?:theme|change|one)))?|go back|revert(?: that| it)?|take (?:that|it) (?:back )?off', low):
+            done = self.undo()
+            return dict(plan=dict(empty, reply=f"Undid “{done['prompt'][:80]}”: {done['reverted']} sheet(s) restored" + (f", {done['skipped']} edited since were left alone." if done['skipped'] else '.')),
+                        source='command', note='', preview=None, undone=True)
+        return None
+
+    def art_direction(self, prompt, subject):
+        """Expand a short design request ("spooky") into a concrete visual description for the image model, or None."""
+        available = models()
+        if not available: return None
+        model = available[0]['name']
+        system = ('You are the art director of a 2D mobile game. Rewrite the request as one short paragraph (at most 60 words) that says exactly '
+                  'what to draw: materials, colors, lighting, and small details or decorations. Keep the subject, and any text in it, exactly as '
+                  'it is. Do not describe a background or scenery. No preamble, no lists, no quotes.')
+        payload = dict(model=model, stream=False, keep_alive=0,   # unload at once: the image model needs the graphics card next
+                       messages=[dict(role='system', content=system), dict(role='user', content=f'Subject: {subject}\nRequest: {prompt}')],
+                       options=dict(temperature=0.7, num_predict=180, num_ctx=2048, **MODEL_OPTIONS.get(model, {})))
+        if available[0]['thinking']: payload['think'] = False
+        answer = ollama('/api/chat', payload, timeout=120)
+        text = re.sub(r'<think>.*?</think>', '', answer.get('message', {}).get('content', ''), flags=re.S).strip().strip('"')
+        return text if 20 <= len(text) <= 900 else None
+
+    @staticmethod
+    def design_offer(designer, prompt, rows):
+        ready = designer.status()
+        return dict(prompt=prompt, available=ready['available'], note='' if ready['available'] else 'The image model is not installed (' + ', '.join(ready['missing']) + ').',
+                    targets=[dict(key=r['key'], name=r.get('label') or r['name'], size=[r['width'], r['height']]) for r in rows])
+
+    def plan_request(self, message, model='', history=None, scope=None):
+        """Turn a request into a shading plan: exactly from tag words, else with the local model, else from keywords."""
         available = models()
         names = [m['name'] for m in available]
         plan, source, note = None, 'rules', ''
@@ -902,7 +976,14 @@ class Themes:
                 content = answer.get('message', {}).get('content', '')
                 found = re.search(r'\{.*\}', content, re.S)
                 said = ' '.join([message] + [t['content'] for t in turns[1:-1] if t['role'] == 'user'])
-                plan, source = tame(clean_plan(json.loads(found.group(0) if found else content)), said), model
+                try: raw = json.loads(found.group(0) if found else content)
+                except ValueError:
+                    # One repair round: small models sometimes stop mid-object or add prose around it.
+                    payload['messages'] = turns + [dict(role='assistant', content=content[:3000]), dict(role='user', content='That was not valid JSON for the schema. Reply with only the corrected JSON object.')]
+                    content = ollama('/api/chat', payload, timeout=300).get('message', {}).get('content', '')
+                    found = re.search(r'\{.*\}', content, re.S)
+                    raw = json.loads(found.group(0) if found else content)
+                plan, source = tame(clean_plan(raw), said), model
                 named = [name for names_ in self.named(message)[0].values() for name in names_]
                 if named and plan['operations'] and not any(op['match'] for op in plan['operations']) and not re.search(r'\b(?:everything|all|whole|entire|theme)\b', message.lower()):
                     # The request was about one named thing; a plan that forgot to name it would repaint a whole family.

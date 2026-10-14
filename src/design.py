@@ -106,6 +106,32 @@ def fit(art, frame, scale=1.0, dx=0.0, dy=0.0):
     return out
 
 
+def keep_shape(art, original, grow=2):
+    """Trim drawn art to the original sprite's silhouette (grown a little so soft edges survive)."""
+    from PIL import ImageFilter
+    mask = original.getchannel('A').point(lambda v: 255 if v > 24 else 0).filter(ImageFilter.MaxFilter(grow * 2 + 1)).filter(ImageFilter.GaussianBlur(1))
+    alpha = Image.fromarray((np.asarray(art.getchannel('A'), np.float32) * np.asarray(mask, np.float32) / 255).astype(np.uint8))
+    out = art.copy(); out.putalpha(alpha)
+    return out
+
+def tinted(image):
+    """True for a plain white glyph: the game multiplies those by a UI color, so a colorful redraw comes out tinted."""
+    a = np.asarray(image.convert('RGBA')).astype(np.float32) / 255
+    solid = a[..., 3] > 0.5
+    if solid.sum() < 16: return False
+    rgb = a[..., :3][solid]
+    return bool(rgb.min(axis=1).mean() > 0.85 and (rgb.max(axis=1) - rgb.min(axis=1)).mean() < 0.08)
+
+
+def leftover(art):
+    """A warning when the model ignored the flat background: the cut-out then keeps lots of solid pixels at the canvas edge."""
+    a = np.asarray(art.getchannel('A'))
+    band = max(2, min(a.shape) // 30)
+    edge = np.concatenate([a[:band].ravel(), a[-band:].ravel(), a[:, :band].ravel(), a[:, -band:].ravel()])
+    share = float((edge > 128).mean())
+    return 'The background did not cut out cleanly; try another variant or a lower cut-out.' if share > 0.2 else ''
+
+
 class Designer:
     def __init__(self, lab, themes):
         self.lab, self.themes = lab, themes
@@ -133,13 +159,28 @@ class Designer:
             return [r for r in rows if r['editable']][:6]
         if re.search(TITLE, prompt.lower()): return self.title_rows()
         names = {n for found in self.themes.named(prompt)[0].values() for n in found}
-        if not names: return []
+        if not names: return self.family_rows(prompt)
         rows = [r for r in self.lab.catalog.rows.values() if r['name'] in names and r['editable'] and r.get('primary', True) and not r.get('legacy')]
         seen, out = set(), []
         for r in rows:
             if r.get('dup') in seen: continue
             seen.add(r.get('dup')); out.append(r)
         return out[:6]
+
+    def family_rows(self, prompt, limit=6):
+        """A group named in the request ("the cells", "every icon"): its first few sprites the game actually uses, one per art."""
+        import theme as shading   # imported here: theme imports this module
+        text = prompt.lower()
+        wanted = [f for f, words in shading.WORDS.items() if f != 'everything' and re.search(rf'\b(?:{words})\b', text)]
+        if not wanted: return []
+        rows, seen = [], set()
+        for r in self.lab.catalog.rows.values():
+            if not r['editable'] or not r.get('primary', True) or r.get('legacy') or r.get('removed') or r.get('dup') in seen: continue
+            if r['width'] < 24 or r['height'] < 24 or self.lab.catalog.children.get(r['key']): continue   # whole sheets and specks are not drawn
+            if shading.families_of(r, self.lab.catalog.rows.get(r.get('parent', ''), {}).get('name', '')) in wanted:
+                seen.add(r.get('dup')); rows.append(r)
+        rows.sort(key=lambda r: (not r.get('live'), r['name']))   # sprites the game names in its code first
+        return rows[:limit]
 
     # ----- generating ---------------------------------------------------------------------------
     def start(self, prompt, keys=None, count=2, base=None):
@@ -154,20 +195,29 @@ class Designer:
         else:
             rows = self.targets(prompt, keys)
         if not rows: raise ValueError('Name what to redesign, or check it in the library first.')
+        # One drawing per sprite: different sprites are drawn one at a time (the title's sizes share one drawing).
+        rows = [r for r in rows if r['name'] == rows[0]['name']]
         with self.lock:
             if any(j['state'] == 'running' for j in self.jobs.values()): raise ValueError('A design is already being drawn.')
             job = dict(id=uuid.uuid4().hex, state='running', prompt=prompt, targets=[r['key'] for r in rows], names=[r.get('label') or r['name'] for r in rows],
                        frames=[[r['width'], r['height']] for r in rows], variants=[], message='Preparing…', progress=0, total=max(1, min(4, int(count))),
-                       key=parent['key'] if base else key_for(prompt), base=base, at=time.time(), title=rows[0]['name'] == 'logo')
+                       key=parent['key'] if base else key_for(prompt), base=base, at=time.time(), title=rows[0]['name'] == 'logo',
+                       # Button and panel skins are stretched by the game, so their outline should stay; white icons are tinted by it.
+                       stretched=rows[0]['group'] == 'Buttons & panels' and rows[0]['name'] != 'logo', tinted=tinted(self.lab.catalog.image(rows[0]['key'])))
             self.jobs[job['id']] = job
         threading.Thread(target=self._run, args=(job,), daemon=True).start()
         return dict(job)
 
+    @staticmethod
+    def subject(job):
+        return 'the game title logo that reads MITOSIS (the O is a round dot)' if job['title'] else f'a game sprite ({job["names"][0]})'
+
     def instruction(self, job):
-        what = 'the game title logo that reads MITOSIS (the O is a round dot)' if job['title'] else f'a game sprite ({job["names"][0]})'
+        what = self.subject(job)
         keep = 'Keep the exact word MITOSIS, spelled the same, in the same layout and size, centered.' if job['title'] else 'Keep its outline, size and position, centered.'
+        small = '' if job['title'] or max(job['frames'][0]) > 160 else ' It is shown small in the game, so use bold, simple shapes and strong contrast that read at a glance.'
         color = {'green': 'pure green (#00FF00)', 'magenta': 'pure magenta (#FF00FF)', 'blue': 'pure blue (#0040FF)'}[job['key']]
-        return (f'{job["prompt"]}. Edit {what}. {keep} Crisp, high quality game UI art. '
+        return (f'{job.get("direction") or job["prompt"]}. Edit {what}. {keep}{small} Crisp, high quality game UI art. '
                 f'The background must stay a perfectly flat solid {color} with nothing else on it: no scenery, no shadow, no frame, no extra text.')
 
     def _run(self, job):
@@ -183,6 +233,11 @@ class Designer:
                 size = canvas_size(source.width, source.height)
                 ref = reference(source, job['key'], size)
             ref.save(folder / 'reference.png')
+            if not job['base'] and getattr(self, 'director', None):
+                # A short request ("spooky") becomes a concrete art direction the image model can follow.
+                job['message'] = 'Writing the art direction…'
+                try: job['direction'] = (self.director(job['prompt'], self.subject(job)) or '').strip()[:700]
+                except Exception: job['direction'] = ''
             runtime.OLLAMA.unload()  # the planner and the image model do not both fit on an 8 GB card
             job['message'] = 'Loading the image model…'
             args = [str(runtime.path('sd')), '--diffusion-model', str(runtime.path('diffusion')), '--vae', str(runtime.path('vae')), '--llm', str(runtime.path('llm')),
@@ -205,7 +260,8 @@ class Designer:
             for index, raw in enumerate(raws):
                 art = unkey(Image.open(raw), job['key'])
                 art.save(folder / f'variant-{index}.png')
-                job['variants'].append(dict(index=index, settings=dict(scale=1.0, dx=0.0, dy=0.0, tolerance=1.0)))
+                job['variants'].append(dict(index=index, settings=dict(scale=1.0, dx=0.0, dy=0.0, tolerance=1.0, shape=1.0 if job.get('stretched') else 0.0),
+                                            warning=leftover(art)))
                 job['progress'] = index + 1
             job.update(state='complete', message=f'{len(raws)} variant{"s" if len(raws) != 1 else ""} ready. Pick one, adjust it, then apply.')
         except Exception as exc:  # a background job must always finish
@@ -232,10 +288,19 @@ class Designer:
         job = self.job(job_id)
         folder = self.folder / job['id']
         if raw: return Image.open(folder / f'raw-{int(index)}.png').convert('RGBA')
-        s = {'scale': 1.0, 'dx': 0.0, 'dy': 0.0, 'tolerance': 1.0, **(settings or {})}
+        s = {'scale': 1.0, 'dx': 0.0, 'dy': 0.0, 'tolerance': 1.0, 'shape': 1.0 if job.get('stretched') else 0.0, **(settings or {})}
         art = unkey(Image.open(folder / f'raw-{int(index)}.png'), job['key'], float(s['tolerance'])) if float(s['tolerance']) != 1.0 else \
             Image.open(folder / f'variant-{int(index)}.png').convert('RGBA')
-        return fit(art, tuple(job['frames'][int(target)]), float(s['scale']), float(s['dx']), float(s['dy']))
+        frame = tuple(job['frames'][int(target)])
+        if float(s['shape']) >= 0.5:
+            # Keep the original outline: line the drawing up with the original's content box, then trim gently to its shape.
+            original = self.lab.catalog.image(job['targets'][int(target)]).convert('RGBA')
+            box = original.getchannel('A').point(lambda v: 255 if v > 24 else 0).getbbox()
+            if original.size == frame and box:
+                inner = fit(art, (box[2] - box[0], box[3] - box[1]), float(s['scale']), float(s['dx']), float(s['dy']))
+                out = Image.new('RGBA', frame, (0, 0, 0, 0)); out.alpha_composite(inner, box[:2])
+                return keep_shape(out, original, grow=max(2, round(min(frame) * 0.05)))
+        return fit(art, frame, float(s['scale']), float(s['dx']), float(s['dy']))
 
     def apply(self, job_id, index, settings=None):
         job = self.job(job_id)

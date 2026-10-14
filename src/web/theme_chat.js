@@ -26,13 +26,14 @@ const log=el('div','theme-log');log.id='themeLog';log.setAttribute('role','log')
 const form=el('form','theme-form');const input=el('textarea');input.id='themeInput';input.rows=2;input.placeholder='Describe a look… e.g. “rainbow outline on the buttons with a subtle glow”';input.setAttribute('aria-label','Theme request');
 const row=el('div','theme-send');
 const ideas=el('details','theme-ideas');ideas.append(el('summary','', 'Ideas'));const ideaList=el('div','theme-idea-list');ideas.append(ideaList);
-for(const idea of ['Theme it rainbow with proper glows','Synthwave with a chrome logo and neon outlines','Fire gradient buttons with a strong orange glow','Holographic glass panels','Glossy gold everything','Retro 8-bit pixel look','Deep ocean blues, keep the logo','Hide the main menu pattern','Make the MITOSIS title spooky with dripping blood and bats','Put a party hat on the MITOSIS title']){
+for(const idea of ['Theme it rainbow with proper glows','Synthwave with a chrome logo and neon outlines','Fire gradient buttons with a strong orange glow','Holographic glass panels','Glossy gold everything','Retro 8-bit pixel look','Deep ocean blues, keep the logo','Hide the main menu pattern','Make the MITOSIS title spooky with dripping blood and bats','Put a party hat on the MITOSIS title','Christmas theme and put a santa hat on the title']){
   const b=el('button','', idea);b.type='button';b.onclick=()=>{input.value=idea;ideas.open=false;input.focus();};ideaList.append(b);}
 const tags=el('details','theme-ideas');tags.append(el('summary','', 'Words'));const tagList=el('div','theme-idea-list theme-tags');tags.append(tagList);
 for(const [label,words] of [['Parts','buttons · panels · icons · logo · cells · food · equipment · potions · effects · fonts · menu background · arena — or a sprite or your own name for it: “the white virus”, “the speed potion”'],
   ['Edge','outline · border · rim · ring (thin / thick)'],['Inside','inside · fill · body — recolor, gradient, darker, brighter'],
   ['Light','glow (subtle / strong / inner) · flare · sparkle · glossy'],
   ['Gradients','rainbow · sunset · synthwave · fire · lava · ocean · ice · aurora · galaxy · toxic · candy · gold · chrome · pastel · holographic · “from purple to cyan” · vertical · radial · striped'],
+  ['Moods','spooky · christmas · winter · forest · royal · cyberpunk · bloody · midnight — a matching palette for everything or the parts you name'],
   ['Redraw','“make the title spooky” · “put a top hat on the logo” · “add bats and dripping blood” · “turn the logo into graffiti” — drawn by the local image model; you pick a variant and adjust it'],
   ['Styles','neon · glass · pastel · greyscale · retro 8-bit · cartoon · scanlines · grainy · hide · more / less transparent']]){const p=el('p');p.append(el('b','',label+' '),document.createTextNode(words));tagList.append(p);}
 const auto=el('label','compact');const autoBox=el('input');autoBox.type='checkbox';autoBox.id='themeAuto';auto.title='Apply the plan as soon as it is ready';auto.append(autoBox,document.createTextNode(' Auto-apply'));
@@ -159,22 +160,36 @@ async function ask(text){
     const result=await api('/api/theme-chat',{message:text,model:model.value,history:T.history,only:keys});
     clearInterval(tick);wait.firstChild.textContent=result.plan.reply||'Here is the plan.';
     if(result.plan.operations.length||Object.keys(result.plan.ui_colors||{}).length||result.plan.hide?.length){T.history.push({role:'user',content:text},{role:'assistant',content:JSON.stringify(result.plan)});T.history=T.history.slice(-8);}
-    if(result.design){showDesign(wait,result.design,keys);scroll();return;}
-    showPlan(wait,result,text,keys);scroll();
+    if(result.undone){S.build=null;await status();await library();if(S.asset&&!S.dirty)await select(S.asset.key,true);await refresh();}
+    const planned=result.plan.operations.length||Object.keys(result.plan.ui_colors||{}).length||result.plan.hide?.length;
+    if(result.design&&!planned&&!result.design.optional){showDesign(wait,result.design,keys);scroll();return;}
+    showPlan(wait,result,text,keys);
+    if(result.design){const offer=el('div','design-offer');offer.append(el('p',''));wait.append(offer);showDesign(offer,result.design,keys,null,true);}
+    scroll();
     if(autoBox.checked&&result.preview&&(result.preview.sheets||result.preview.ui_colors?.length||result.preview.hide?.length)){setBusy(false);await applyPlan(result.plan,text,wait.querySelector('.theme-actions button'),keys);}
   }catch(e){clearInterval(tick);wait.classList.add('error');wait.firstChild.textContent=e.message;}
   finally{setBusy(false);}
 }
 // ----- design: redraw art with the local image model, then pick, adjust and apply ---------------------
 const GAME_BG='#0D2829';
-function showDesign(box,d,keys,base){
-  const names=[...new Set(d.targets.map(t=>t.name==='logo'?'the MITOSIS title':t.name))];
-  box.firstChild.textContent=d.available?`I'll redraw ${names.join(', ')}${d.targets.length>names.length?' (every size the game uses)':''} with the local image model. Pick a variant, adjust it, then apply.`:`This needs the image model, which is not installed.`;
+function showDesign(box,d,keys,base,offer){
+  // One drawing per distinct sprite; the title's sizes share one drawing.
+  const groups=[],title=d.targets.filter(t=>t.name==='logo');if(title.length)groups.push(title);
+  for(const t of d.targets)if(t.name!=='logo')groups.push([t]);
+  const label=g=>g[0].name==='logo'?'the MITOSIS title':g[0].name;
+  const what=groups.map(label).join(', ')+(title.length>1?' (every size the game uses)':'');
+  box.firstChild.textContent=!d.available?(offer?'':`This needs the image model, which is not installed.`):
+    d.optional?`Want ${what} redrawn to match? The local image model can draw it.`:
+    offer?`The rest needs drawing: I'll redraw ${what} with the local image model.`:`I'll redraw ${what} with the local image model. Pick a variant, adjust it, then apply.`;
   if(!d.available)return;
   const bar=el('div','theme-actions');const count=el('select');for(const n of [1,2,3,4]){const o=el('option','',`${n} variant${n>1?'s':''}`);o.value=n;count.append(o);}count.value=2;
-  const go=el('button','primary','Draw it');bar.append(go,count,el('small','hint','about 35 s per variant'));box.append(bar);
-  go.onclick=run(async()=>{go.disabled=true;count.disabled=true;await drawDesign(box,d.prompt,keys,+count.value,base);});
-  if(autoBox.checked)go.click();
+  const go=el('button','primary',groups.length>1?`Draw all ${groups.length}`:'Draw it');
+  bar.append(go,count,el('small','hint',`about ${35*groups.length} s per variant`));box.append(bar);
+  go.onclick=run(async()=>{go.disabled=true;count.disabled=true;
+    for(const g of groups){const part=el('div','design-part');if(groups.length>1)part.append(el('p','design-part-title',label(g)));box.append(part);
+      await drawDesign(part,d.prompt,g.map(t=>t.key),+count.value,base);}});
+  if(d.optional)go.textContent='Redraw it';
+  if(autoBox.checked&&!d.optional)go.click();
 }
 async function drawDesign(box,prompt,keys,count,base){
   setBusy(true);const text=el('small','hint','Starting…');const barEl=el('div','theme-progress');const fill=el('span');barEl.append(fill);box.append(barEl,text);scroll();
@@ -190,11 +205,17 @@ async function drawDesign(box,prompt,keys,count,base){
 }
 function designCard(box,job,keys){
   const card=el('div','design-card');box.append(card);
-  const S2={variant:0,settings:{scale:1,dx:0,dy:0,tolerance:1},applied:null};
+  const S2={variant:0,settings:{scale:1,dx:0,dy:0,tolerance:1,shape:job.stretched?1:0},applied:null};
+  if(job.tinted)card.append(el('p','theme-note','This icon is plain white because the game colors it (teal in the menu), so a colorful drawing will come out tinted. Light, mostly white designs keep their look.'));
+  if(job.direction){const dir=el('p','design-direction');dir.append(el('b','','Art direction: '),document.createTextNode(job.direction));card.append(dir);}
+  const warn=el('p','theme-note');warn.hidden=true;card.append(warn);
+  const showWarning=()=>{const w=(job.variants[S2.variant]||{}).warning;warn.textContent=w||'';warn.hidden=!w;};
   const url=(target,small)=>`/api/design-image?job=${job.id}&variant=${S2.variant}&target=${target}&${new URLSearchParams(Object.entries(S2.settings).map(([k,v])=>[k,String(v)]))}${small?'&small=1':''}&t=${Date.now()}`;
   const picks=el('div','design-variants');
   job.variants.forEach((v,i)=>{const b=el('button','design-variant'+(i===0?' on':''));b.type='button';b.title='Use variant '+(i+1);const im=new Image();im.src=`/api/design-image?job=${job.id}&variant=${i}&target=0&small=1`;b.append(im);
-    b.onclick=()=>{S2.variant=i;picks.querySelectorAll('.design-variant').forEach((x,j)=>x.classList.toggle('on',j===i));refresh();};picks.append(b);});
+    if(v.warning)b.title+=' · '+v.warning;
+    b.onclick=()=>{S2.variant=i;picks.querySelectorAll('.design-variant').forEach((x,j)=>x.classList.toggle('on',j===i));showWarning();refresh();};picks.append(b);});
+  showWarning();
   const views=el('div','design-views');
   const frames=job.frames.map((f,t)=>{const fig=el('figure','design-view');const im=new Image();im.alt=job.names[t];fig.append(im,el('figcaption','',`${job.names[t]} · ${f[0]}×${f[1]} frame in the game`));views.append(fig);return im;});
   const before=el('figure','design-view before');const old=new Image();old.src=`/api/thumb?key=${encodeURIComponent(job.targets[0])}&big=1`;before.append(old,el('figcaption','','Now'));views.prepend(before);
@@ -202,6 +223,9 @@ function designCard(box,job,keys){
   const sliders=el('div','design-sliders');
   for(const [k,label,min,max,step] of [['scale','Size',0.5,1.8,0.02],['dx','Left / right',-1,1,0.02],['dy','Up / down',-1,1,0.02],['tolerance','Background cut-out',0.6,1.6,0.05]]){
     const row=el('label');const r=el('input');r.type='range';r.min=min;r.max=max;r.step=step;r.value=S2.settings[k];r.oninput=()=>{S2.settings[k]=+r.value;refresh();};row.append(el('span','',label),r);sliders.append(row);}
+  const shapeRow=el('label','design-shape');const shape=el('input');shape.type='checkbox';shape.checked=!!S2.settings.shape;
+  shape.onchange=()=>{S2.settings.shape=shape.checked?1:0;refresh();};shapeRow.title='Trim the drawing to the original outline, so the game places and stretches it the same way';
+  shapeRow.append(shape,document.createTextNode(' Keep the original shape'));sliders.append(shapeRow);
   const actions=el('div','theme-actions');const apply=el('button','primary','Apply to the game art');const more=el('button','','More variants');
   const refine=el('input');refine.placeholder='Refine this one… e.g. “bigger bats, less blood”';refine.className='design-refine';const again=el('button','','Refine');
   apply.onclick=run(async()=>{apply.disabled=true;const r=await api('/api/design-apply',{job:job.id,variant:S2.variant,settings:S2.settings});S2.applied=r;apply.textContent='Applied ✓';
@@ -239,7 +263,7 @@ input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventD
 undo.onclick=run(async()=>{if(!await confirmAction('Undo the last theme?','Every sheet it changed goes back to how it was just before. Sheets you edited by hand afterwards are left alone.','Undo theme'))return;
   setBusy(true);try{const r=await api('/api/theme-undo',{});bubble('bot',`Undid “${r.prompt.slice(0,80)}”: ${r.reverted} sheet(s) restored${r.skipped?`, ${r.skipped} left alone`:''}.`);T.history=[];S.build=null;await status();await library();if(S.asset&&!S.dirty)await select(S.asset.key,true);}finally{setBusy(false);await refresh();}});
 function toggle(open){T.open=open;drawer.hidden=!open;showScope();document.body.classList.toggle('theme-on',open);button.classList.toggle('active',open);
-  if(open){run(refresh)();checkGame();input.focus();if(!log.childElementCount)bubble('bot','Describe the look you want: a color, a mood, or parts like buttons, panels, icons, cells, the logo or the menu pattern. I show a plan with samples; Apply saves it, and Install in Mitosis (below) puts it in the game.');}}
+  if(open){run(refresh)();checkGame();input.focus();if(!log.childElementCount)bubble('bot','Describe the look you want: a color, a mood, or parts like buttons, panels, icons, cells, the logo or the menu pattern. I show a plan with samples; Apply saves it, and Install in Mitosis (below) puts it in the game. Say “undo” to take a theme back off, or “help” for more.');}}
 button.onclick=()=>toggle(!T.open);close.onclick=()=>toggle(false);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&T.open&&!$('dialog').open&&document.activeElement!==input)toggle(false);});
 

@@ -53,6 +53,81 @@ class CutOutTests(Base):
         self.assertEqual(design.key_for('toxic slime logo'), 'magenta')
 
 
+class ShapeAndQualityTests(Base):
+    def test_keep_shape_trims_to_the_original_outline(self):
+        original = Image.new('RGBA', (40, 40), (0, 0, 0, 0)); original.paste((255, 255, 255, 255), (10, 10, 30, 30))
+        drawn_art = Image.new('RGBA', (40, 40), (200, 30, 30, 255))          # the model filled the whole frame
+        out = np.asarray(design.keep_shape(drawn_art, original))
+        self.assertEqual(out[20, 20, 3], 255)                                 # inside the outline: kept
+        self.assertEqual(out[2, 2, 3], 0)                                     # far outside: trimmed
+        self.assertEqual(tuple(out[20, 20, :3]), (200, 30, 30))               # colors untouched
+
+    def test_a_background_that_did_not_cut_out_is_flagged(self):
+        clean = unkey(drawn(), 'green')
+        self.assertEqual(design.leftover(clean), '')
+        busy = Image.new('RGB', (200, 100), (90, 60, 40))                      # the model painted scenery instead of green
+        self.assertIn('did not cut out', design.leftover(unkey(busy, 'green')))
+
+
+class ChatRoutingTests(Base):
+    def setUp(self):
+        super().setUp()
+        self.designer = Designer(self.lab, self.themes)
+        self.themes.designer = self.designer
+
+    def test_help_and_undo_are_chat_commands(self):
+        self.assertIn('image model', self.themes.chat('what can you do?')['plan']['reply'])
+        with self.assertRaisesRegex(ValueError, 'no theme to undo'): self.themes.chat('undo')
+        self.themes.apply(theme.clean_plan(dict(operations=[dict(targets=['everything'], brightness=0.5)])), 'dim')
+        for _ in range(400):
+            if all(j['state'] != 'running' for j in self.themes.jobs.values()): break
+            import time; time.sleep(0.02)
+        result = self.themes.chat('undo that')
+        self.assertTrue(result['undone']); self.assertIn('Undid', result['plan']['reply'])
+
+    def test_one_request_can_shade_and_draw(self):
+        with patch.object(design.runtime, 'missing', return_value=[]), patch.object(theme, 'models', return_value=[]):
+            result = self.themes.chat('theme it christmas and put a santa hat on the virus-pale')
+        self.assertTrue(result['plan']['operations'])                                         # the palette is shaded
+        self.assertEqual(result['plan']['operations'][0]['gradient'], theme.GRADIENTS['christmas'])
+        self.assertIn('virus-pale', [t['name'] for t in result['design']['targets']])          # the hat is drawn
+        self.assertIn('santa hat', result['design']['prompt'])
+        self.assertNotIn('christmas', result['design']['prompt'])
+
+    def test_broken_model_json_gets_one_repair_round(self):
+        answers = iter(['{"reply":"ok","operations":[{"targets":["cells"],"color":"#ff0000"', '{"reply":"fixed","operations":[{"targets":["cells"],"color":"#ff0000"}]}'])
+        calls = []
+        def fake(path, payload=None, timeout=0):
+            calls.append(payload['messages'][-1]['content']); return {'message': {'content': next(answers)}}
+        with patch.object(theme, 'models', return_value=[dict(name='m', thinking=False, size=5e9)]), patch.object(theme, 'ollama', side_effect=fake):
+            result = self.themes.chat('molten crimson cells')
+        self.assertEqual((result['source'], result['plan']['reply'], len(calls)), ('m', 'fixed', 2))
+        self.assertIn('not valid JSON', calls[1])
+
+    def test_a_group_can_be_redrawn_one_sprite_at_a_time(self):
+        rows = self.designer.family_rows('put a tiny santa hat on every icon')
+        self.assertTrue(rows)
+        self.assertTrue(all(theme.families_of(r, self.lab.catalog.rows.get(r.get('parent', ''), {}).get('name', '')) == 'icons' for r in rows))
+        self.assertEqual(len({r.get('dup') for r in rows}), len(rows))                         # one per distinct art
+        self.lab.pool.remove(rows[0]['key'])
+        self.assertNotIn(rows[0]['key'], [r['key'] for r in self.designer.family_rows('every icon')])   # removed art is skipped
+        with patch.object(design.runtime, 'missing', return_value=[]), patch.object(theme, 'models', return_value=[]):
+            result = self.themes.chat('put a santa hat on the icons')
+        self.assertEqual(result['source'], 'design')
+
+    def test_moods_have_palettes(self):
+        for words, preset in (('make everything spooky', 'halloween'), ('frozen panels', 'winter'), ('royal theme', 'royal')):
+            op = theme.rule_plan(words)['operations'][0]
+            self.assertEqual(op['gradient'], theme.GRADIENTS[preset], words)
+        self.assertEqual(theme.unknown_words('make everything spooky'), [])
+
+    def test_the_art_direction_leads_the_instruction(self):
+        job = dict(title=False, names=['icon-a'], frames=[[64, 64]], key='green', prompt='spooky', direction='Cracked bone, dripping red ink.')
+        text = self.designer.instruction(job)
+        self.assertTrue(text.startswith('Cracked bone'))
+        self.assertIn('bold, simple shapes', text)                                            # small sprites read at a glance
+
+
 class DesignFlowTests(Base):
     def setUp(self):
         super().setUp()

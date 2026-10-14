@@ -60,6 +60,9 @@
 .design-view img{width:100%;max-height:140px;object-fit:contain;display:block}
 .design-view figcaption{font-size:9px;color:var(--muted);margin-top:3px}.design-view.before{opacity:.75}
 .design-sliders{display:grid;gap:4px}.design-sliders label{display:grid;grid-template-columns:110px 1fr;align-items:center;font-size:10px;color:var(--muted)}
+.design-offer{margin-top:10px;padding-top:9px;border-top:1px dashed #3c4b5c}.design-offer>p{margin:0 0 6px;font-size:12px}
+.design-direction{margin:0;font-size:10.5px;line-height:1.45;color:var(--muted);background:#141c26;border-radius:6px;padding:6px 8px}.design-direction b{color:var(--text);font-weight:600}
+.design-shape{display:flex!important;align-items:center;gap:6px;font-size:10px;color:var(--muted);grid-template-columns:none!important}
 .design-refine-row{display:flex;gap:6px}.design-refine{flex:1;min-width:0;background:#101720;border:1px solid var(--line);color:var(--text);border-radius:6px;padding:6px 8px;font:inherit;font-size:11px}
 .design-refine-row button{font-size:11px;padding:6px 10px}
 
@@ -111,3 +114,4 @@ button.review-pair{cursor:pointer}
 .similar-chip{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--cyan);background:#1d2f3d;border:1px solid #405264;border-radius:6px;padding:5px 8px;margin-top:8px;overflow:hidden}
 .similar-chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.similar-chip button{margin-left:auto}
 .library.dropping{outline:2px dashed var(--cyan);outline-offset:-6px}
+.design-part{margin-top:8px}.design-part-title{margin:6px 0 2px;font-size:11px;font-weight:600;color:var(--cyan)}
