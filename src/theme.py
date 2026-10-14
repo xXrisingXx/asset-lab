@@ -1004,16 +1004,30 @@ class Themes:
         return result
 
     HELP = ('I change how Mitosis looks. Ask for colors, moods or effects ("christmas theme", "rainbow outlines with a subtle glow", '
-            '"holographic glass panels", "make the buttons darker") and I shade the matching art. Ask for new things or a new style '
-            '("put a party hat on the title", "make the title spooky with dripping blood") and the local image model redraws it. '
+            '"holographic glass panels", "make the buttons darker") and I shade the matching art. Name one thing ("make the play button gold") '
+            'to change just that. Ask for new things or a new style ("put a party hat on the title", "make the title say MITOSIS 2", '
+            '"turn the coin into a diamond") and the local image model redraws it. "Hide the discord button" hides the App Store, '
+            'Google Play and Discord badges or the OG tag. Ask "what can I change?" for every part I know by name. '
             'Check assets in the library to change only those. Say "undo" to take the last theme off.')
 
+    def names_reply(self):
+        """Every part known by name, grouped by the screen it is on."""
+        screens = {}
+        for label in sorted(self.labelled):
+            found = re.match(r'^(.*?)\s*\(([^)]*)\)$', label)
+            if found: screens.setdefault(found.group(2), []).append(found.group(1))
+        if not screens: return 'I do not know any parts by name yet. Name assets in the library (Name…) and I will understand them.'
+        return 'Parts I know by name: ' + ' '.join(f'{where.capitalize()}: {", ".join(names)}.' for where, names in sorted(screens.items(), key=lambda kv: (kv[0] != 'main menu', kv[0]))) + \
+            ' Everything else works by kind too: buttons, panels, icons, cells, food, the logo, the menu pattern.'
+
     def command(self, message):
-        """A few things that are not looks: help, and undo by chat."""
+        """A few things that are not looks: help, the names I know, and undo by chat."""
         low = message.lower().strip(' .!?')
         empty = dict(reply='', operations=[], ui_colors={}, hide=[])
         if re.fullmatch(r'help|commands|what can (?:you|i) do(?: here)?|what do you do|how does (?:this|it) work', low):
             return dict(plan=dict(empty, reply=self.HELP), source='command', note='', preview=None)
+        if re.fullmatch(r'what (?:can i|could i|do you let me) (?:change|edit|name|theme)(?: here)?|(?:list|show)(?: me)? (?:the |all )?(?:names|named (?:parts|things)|parts|ui parts)|what (?:parts|things|names) do you know', low):
+            return dict(plan=dict(empty, reply=self.names_reply()), source='command', note='', preview=None)
         if re.fullmatch(r'undo(?: (?:that|it|the last (?:theme|change|one)))?|go back|revert(?: that| it)?|take (?:that|it) (?:back )?off', low):
             done = self.undo()
             return dict(plan=dict(empty, reply=f"Undid “{done['prompt'][:80]}”: {done['reverted']} sheet(s) restored" + (f", {done['skipped']} edited since were left alone." if done['skipped'] else '.')),
@@ -1118,7 +1132,12 @@ class Themes:
                                                    '(gold on teal comes out green). Lighter or darker shades work; for a new look, redraw it and tick “Keep it white”.')
         if not changes_anything(plan) and not plan['reply']:
             plan['reply'] = 'I could not turn that into a visual change. Try naming a color, a mood, or a part of the game.'
-        return dict(plan=plan, source=source, note=note, preview=self.preview(plan, scope) if changes_anything(plan) else None)
+        preview = self.preview(plan, scope) if changes_anything(plan) else None
+        if preview and not plan['ui_colors'] and not plan.get('hide') and not any(line['sheets'] or line['regions'] for line in preview['lines']):
+            # The model can name art that does not exist ("title*"); say so instead of claiming a change.
+            plan['reply'] = ('That matched no art I can change, so nothing would happen. Try another name for the part '
+                             '(ask "what can I change?"), or check it in the library first.')
+        return dict(plan=plan, source=source, note=note, preview=preview)
 
     def matches(self, op, row, family):
         if op['targets'] != ['everything']:

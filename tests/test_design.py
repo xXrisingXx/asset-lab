@@ -131,6 +131,18 @@ class ChatRoutingTests(Base):
             result = self.themes.chat('make the friends button icon the same shade as its neighbour')
         self.assertEqual([op['match'] for op in result['plan']['operations']], [['virus-pale'], ['virus-pale']])   # nothing repaints everything
 
+    def test_names_are_listed_and_a_plan_that_matches_nothing_says_so(self):
+        self.lab.labels.name([next(r['key'] for r in self.rows('virus-pale') if r.get('primary', True))], 'Play button (Main menu)')
+        self.themes.reindex()
+        listing = self.themes.chat('what can I change?')
+        self.assertEqual(listing['source'], 'command')
+        self.assertIn('Main menu: play button.', listing['plan']['reply'])
+        answer = '{"reply":"The title now reads MITOSIS 2.","operations":[{"targets":["everything"],"match":["title*"],"color":"#ff0000"}]}'
+        with patch.object(theme, 'models', return_value=[dict(name='m', thinking=False, size=5e9)]), \
+                patch.object(theme, 'ollama', return_value={'message': {'content': answer}}):
+            result = self.themes.chat('make the wordmark thingy shimmer')
+        self.assertIn('matched no art', result['plan']['reply'])
+
     def test_the_menu_background_phrase_beats_sprite_names(self):
         self.lab.labels.name([next(r['key'] for r in self.rows('free-x') if r.get('primary', True))], 'Background panel')
         self.themes.reindex()
