@@ -97,10 +97,30 @@ def unkey(image, key, tolerance=1.0):
     return Image.fromarray(out, 'RGBA')
 
 
-def fit(art, frame, scale=1.0, dx=0.0, dy=0.0):
-    """Crop to the drawn content and fit it into a sprite frame (w, h), keeping its proportions."""
+def core_box(art, share=0.3):
+    """The dense part of a drawing (the letters), ignoring sparse extras such as bats or drip tails at its edges."""
+    a = np.asarray(art.getchannel('A')) > 40
+    rows, cols = a.sum(axis=1), a.sum(axis=0)
+    if not rows.any(): return None
+    ys, xs = np.nonzero(rows >= rows.max() * share)[0], np.nonzero(cols >= cols.max() * 0.03)[0]
+    return int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1
+
+
+def fit(art, frame, scale=1.0, dx=0.0, dy=0.0, fill=False):
+    """Crop to the drawn content and fit it into a sprite frame (w, h), keeping its proportions.
+    fill: size by the dense core instead, so the main shape fills the frame and sparse edges may be trimmed."""
     box = art.getchannel('A').point(lambda v: 255 if v > 10 else 0).getbbox()
     if not box: return Image.new('RGBA', frame, (0, 0, 0, 0))
+    if fill:
+        core = core_box(art)
+        if core:
+            w, h = frame
+            s = min(w / (core[2] - core[0]), h / (core[3] - core[1])) * max(0.2, min(2.0, scale))
+            big = art.resize((max(1, round(art.width * s)), max(1, round(art.height * s))), Image.Resampling.LANCZOS)
+            cx, cy = (core[0] + core[2]) / 2 * s, (core[1] + core[3]) / 2 * s
+            out = Image.new('RGBA', frame, (0, 0, 0, 0))
+            out.paste(big, (round(w / 2 - cx + dx * w / 2), round(h / 2 - cy + dy * h / 2)), big)
+            return out
     art = art.crop(box)
     w, h = frame
     s = min(w / art.width, h / art.height) * max(0.2, min(2.0, scale))
@@ -266,7 +286,7 @@ class Designer:
             for index, raw in enumerate(raws):
                 art = unkey(Image.open(raw), job['key'])
                 art.save(folder / f'variant-{index}.png')
-                job['variants'].append(dict(index=index, settings=dict(scale=1.0, dx=0.0, dy=0.0, tolerance=1.0, shape=1.0 if job.get('stretched') else 0.0),
+                job['variants'].append(dict(index=index, settings=dict(scale=1.0, dx=0.0, dy=0.0, tolerance=1.0, shape=1.0 if job.get('stretched') else 0.0, fill=1.0 if job['title'] else 0.0),
                                             warning=leftover(art)))
                 job['progress'] = index + 1
             job.update(state='complete', message=f'{len(raws)} variant{"s" if len(raws) != 1 else ""} ready. Pick one, adjust it, then apply.')
@@ -294,7 +314,7 @@ class Designer:
         job = self.job(job_id)
         folder = self.folder / job['id']
         if raw: return Image.open(folder / f'raw-{int(index)}.png').convert('RGBA')
-        s = {'scale': 1.0, 'dx': 0.0, 'dy': 0.0, 'tolerance': 1.0, 'shape': 1.0 if job.get('stretched') else 0.0, **(settings or {})}
+        s = {'scale': 1.0, 'dx': 0.0, 'dy': 0.0, 'tolerance': 1.0, 'shape': 1.0 if job.get('stretched') else 0.0, 'fill': 1.0 if job['title'] else 0.0, **(settings or {})}
         art = unkey(Image.open(folder / f'raw-{int(index)}.png'), job['key'], float(s['tolerance'])) if float(s['tolerance']) != 1.0 else \
             Image.open(folder / f'variant-{int(index)}.png').convert('RGBA')
         frame = tuple(job['frames'][int(target)])
@@ -306,7 +326,7 @@ class Designer:
                 inner = fit(art, (box[2] - box[0], box[3] - box[1]), float(s['scale']), float(s['dx']), float(s['dy']))
                 out = Image.new('RGBA', frame, (0, 0, 0, 0)); out.alpha_composite(inner, box[:2])
                 return keep_shape(out, original, grow=max(2, round(min(frame) * 0.05)))
-        return fit(art, frame, float(s['scale']), float(s['dx']), float(s['dy']))
+        return fit(art, frame, float(s['scale']), float(s['dx']), float(s['dy']), fill=float(s['fill']) >= 0.5)
 
     def apply(self, job_id, index, settings=None):
         job = self.job(job_id)

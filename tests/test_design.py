@@ -34,6 +34,16 @@ class CutOutTests(Base):
         self.assertLessEqual(glow[1], glow[0])                            # no green cast left anywhere
         self.assertEqual(tuple(art[50, 100][:3]), (220, 20, 30))          # solid art is untouched
 
+    def test_fill_sizes_by_the_dense_core_and_ignores_sparse_extras(self):
+        art = Image.new('RGBA', (400, 200), (0, 0, 0, 0))
+        art.paste((240, 240, 240, 255), (40, 80, 360, 140))           # the letters: a wide dense band
+        art.paste((20, 20, 20, 255), (190, 10, 210, 20))              # a small bat far above
+        plain, filled = fit(art, (200, 40)), fit(art, (200, 40), fill=True)
+        width = lambda im: (lambda b: b[2] - b[0])(im.getchannel('A').point(lambda v: 255 if v > 10 else 0).getbbox())
+        self.assertLess(width(plain), 150)                               # the bat makes the plain fit shrink the letters
+        self.assertGreaterEqual(width(filled), 195)                       # filled: the letters span the frame
+        self.assertEqual(design.core_box(art)[1], 80)                     # the bat's rows are not part of the core
+
     def test_fit_crops_to_the_art_and_keeps_proportions(self):
         art = unkey(drawn(), 'green')
         out = fit(art, (120, 30))

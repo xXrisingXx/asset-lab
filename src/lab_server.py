@@ -75,7 +75,7 @@ def server_for(lab, port):
                 if path == '/api/theme-status': return self.send(dict(themes.status(), design=designer.status(), planner_note=runtime.OLLAMA.note))
                 if path == '/api/design-job': return self.send(designer.job(q.get('job', '')))
                 if path == '/api/design-image':
-                    settings = {k: float(q[k]) for k in ('scale', 'dx', 'dy', 'tolerance', 'shape') if k in q}
+                    settings = {k: float(q[k]) for k in ('scale', 'dx', 'dy', 'tolerance', 'shape', 'fill') if k in q}
                     image = designer.render(q.get('job', ''), int(q.get('variant', 0)), int(q.get('target', 0)), settings, raw=q.get('raw') == '1')
                     if q.get('small'): image.thumbnail((640, 320), Image.Resampling.LANCZOS)
                     return self.send(png(image), 'image/png')
@@ -174,7 +174,7 @@ def server_for(lab, port):
                     base = data.get('base') if isinstance(data.get('base'), list) and len(data['base']) == 2 else None
                     return self.send(designer.start(data.get('prompt', ''), only, int(data.get('count') or 2), base, data.get('direction') or None))
                 if path == '/api/design-apply':
-                    result = designer.apply(data.get('job', ''), int(data.get('variant', 0)), {k: float(v) for k, v in (data.get('settings') or {}).items() if k in ('scale', 'dx', 'dy', 'tolerance', 'shape')})
+                    result = designer.apply(data.get('job', ''), int(data.get('variant', 0)), {k: float(v) for k, v in (data.get('settings') or {}).items() if k in ('scale', 'dx', 'dy', 'tolerance', 'shape', 'fill')})
                     return self.send(result)
                 if path == '/api/design-undo': return self.send(designer.undo(data.get('job', '')))
                 if path == '/api/design-cancel': return self.send(designer.cancel(data.get('job', '')))

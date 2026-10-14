@@ -206,7 +206,7 @@ async function drawDesign(box,prompt,keys,count,base,direction){
 }
 function designCard(box,job,keys){
   const card=el('div','design-card');box.append(card);
-  const S2={variant:0,settings:{scale:1,dx:0,dy:0,tolerance:1,shape:job.stretched?1:0},applied:null};
+  const S2={variant:0,settings:{scale:1,dx:0,dy:0,tolerance:1,shape:job.stretched?1:0,fill:job.title?1:0},applied:null};
   if(job.tinted)card.append(el('p','theme-note','This icon is plain white because the game colors it (teal in the menu), so a colorful drawing will come out tinted. Light, mostly white designs keep their look.'));
   if(job.direction){const dir=el('p','design-direction');dir.append(el('b','','Art direction: '),document.createTextNode(job.direction));card.append(dir);}
   const warn=el('p','theme-note');warn.hidden=true;card.append(warn);
@@ -227,6 +227,9 @@ function designCard(box,job,keys){
   const shapeRow=el('label','design-shape');const shape=el('input');shape.type='checkbox';shape.checked=!!S2.settings.shape;
   shape.onchange=()=>{S2.settings.shape=shape.checked?1:0;refresh();};shapeRow.title='Trim the drawing to the original outline, so the game places and stretches it the same way';
   shapeRow.append(shape,document.createTextNode(' Keep the original shape'));sliders.append(shapeRow);
+  const fillRow=el('label','design-shape');const fill=el('input');fill.type='checkbox';fill.checked=!!S2.settings.fill;
+  fill.onchange=()=>{S2.settings.fill=fill.checked?1:0;refresh();};fillRow.title='Size the drawing by its main shape so it fills the frame like the original; sparse extras at the edges may be trimmed';
+  fillRow.append(fill,document.createTextNode(' Fill the frame'));sliders.append(fillRow);
   const actions=el('div','theme-actions');const apply=el('button','primary','Apply to the game art');const more=el('button','','More variants');
   const refine=el('input');refine.placeholder='Refine this one… e.g. “bigger bats, less blood”';refine.className='design-refine';const again=el('button','','Refine');
   apply.onclick=run(async()=>{apply.disabled=true;const r=await api('/api/design-apply',{job:job.id,variant:S2.variant,settings:S2.settings});S2.applied=r;apply.textContent='Applied ✓';
