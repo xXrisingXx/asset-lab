@@ -18,9 +18,9 @@ jobs:
   release:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.13'
 
@@ -30,7 +30,7 @@ jobs:
       - name: Test
         env:
           PYTHONPATH: src;tests
-        run: python -B -X utf8 -m unittest discover -s tests
+        run: python -B -X utf8 -m unittest discover -v -s tests
 
       - name: Build
         shell: pwsh

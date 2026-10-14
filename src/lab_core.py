@@ -51,7 +51,15 @@ def atomic_bytes(path, data):
             f.write(data)
             f.flush()
             os.fsync(f.fileno())
-        os.replace(temp, path)
+        # Antivirus, OneDrive or Steam can hold a file open for a moment right after it was written; retry briefly
+        # instead of failing an install halfway.
+        for attempt in range(20):
+            try:
+                os.replace(temp, path)
+                break
+            except PermissionError:
+                if attempt == 19: raise
+                time.sleep(0.05 * (attempt + 1))
     finally:
         if temp.exists(): temp.unlink()
 
