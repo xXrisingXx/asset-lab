@@ -1,0 +1,51 @@
+# Every push to main: run the tests, build AssetLab.exe and the update package, and publish them as a release.
+# Installed copies of Asset Lab find the newest release on their next start (when the repository is public).
+name: Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install the lab's two packages
+        run: python -m pip install numpy==2.5.4 pillow==12.3.0
+
+      - name: Test
+        env:
+          PYTHONPATH: src;tests
+        run: python -B -X utf8 -m unittest discover -s tests
+
+      - name: Build
+        shell: pwsh
+        run: |
+          $base = ((Get-Content VERSION -Raw).Trim().Split('.')[0..1]) -join '.'
+          $version = "$base.${{ github.run_number }}"
+          "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          ./tools/build_release.ps1 -Version $version -Repository '${{ github.repository }}'
+
+      - name: Publish
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ env.VERSION }}
+          name: Asset Lab ${{ env.VERSION }}
+          body: ${{ github.event.head_commit.message }}
+          files: |
+            dist/AssetLab.exe
+            dist/asset-lab-app.zip

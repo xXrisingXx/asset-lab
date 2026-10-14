@@ -1,0 +1,24 @@
+# Built files and the downloaded AI runtime
+dist/
+runtime/
+launcher/*.exe
+launcher/launcher.sha256
+__pycache__/
+*.pyc
+*.lnk
+
+# Research and decompile work: kept on the developer's PC, not shared
+docs/
+tools/*
+!tools/build_release.ps1
+!tools/make_logo.py
+tests/evidence/
+tests/test_launcher.ps1
+src/data/exe-references.json
+src/data/decoded-visual-references.json
+src/data/visual-findings.json
+
+# The previous launcher, superseded by launcher/AssetLab.cs
+launcher/AssetLabLauncher.cs
+launcher/Build-Launcher.ps1
+launcher/Create-Shortcuts.ps1

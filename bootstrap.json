@@ -1,0 +1,56 @@
+{
+    "//":  "What the Asset Lab launcher downloads, each from its official source and checked against its SHA-256. Edit with care.",
+    "repo":  "OWNER/asset-lab",
+    "python":  {
+                   "version":  "3.13.16",
+                   "url":  "https://www.python.org/ftp/python/3.13.16/python-3.13.16-embed-amd64.zip",
+                   "sha256":  "97dae5274cc54867065e8d5a3226e48c35017ed332a0fdb0e27d5b5821961297",
+                   "size":  11439094
+               },
+    "wheels":  [
+                   {
+                       "name":  "numpy 2.5.4",
+                       "url":  "https://files.pythonhosted.org/packages/90/8c/140a40398a66b4471211be1affdb6ed24c486d581bd28d07b7f2fcb69540/numpy-2.5.4-cp313-cp313-win_amd64.whl",
+                       "sha256":  "8b4d2fd2d34e5f8c9235ee787de5631a37a28402b15cb80814df973d2be54129",
+                       "size":  12566113
+                   },
+                   {
+                       "name":  "pillow 12.3.0",
+                       "url":  "https://files.pythonhosted.org/packages/a6/9b/7a58e61d62be561da3a356fe2384d4059a6345fc130e23ef1c36a5b81d24/pillow-12.3.0-cp313-cp313-win_amd64.whl",
+                       "sha256":  "1cca606cd25738df4ed873d5ad46bbdb3d83b5cbca291f6b4ff13a4df6b0bbe8",
+                       "size":  7239691
+                   }
+               ],
+    "runtime":  [
+                    {
+                        "file":  "downloads/sd-master-1d0a58a-bin-win-vulkan-x64.zip",
+                        "url":  "https://github.com/leejet/stable-diffusion.cpp/releases/download/master-964-1d0a58a/sd-master-1d0a58a-bin-win-vulkan-x64.zip",
+                        "sha256":  "74211cb5c382aec2aeb086b64f2fdf525efec5faec4200a2d3257bc2328954ab",
+                        "size":  30155040
+                    },
+                    {
+                        "file":  "downloads/ollama-windows-amd64.zip",
+                        "url":  "https://github.com/ollama/ollama/releases/download/v0.40.4/ollama-windows-amd64.zip",
+                        "sha256":  "7485a1172f8527db4342a63521b9342fc466185ff0855da378cc864ecf6354cf",
+                        "size":  1469916992
+                    },
+                    {
+                        "file":  "models/flux-2-klein-4b-Q4_0.gguf",
+                        "url":  "https://huggingface.co/leejet/FLUX.2-klein-4B-GGUF/resolve/main/flux-2-klein-4b-Q4_0.gguf",
+                        "sha256":  "d1023499ef3f2f82ff7c50e6778495195c1b6cc34835741778868428111f9ff4",
+                        "size":  2460378560
+                    },
+                    {
+                        "file":  "models/Qwen3-4B-Q4_K_M.gguf",
+                        "url":  "https://huggingface.co/unsloth/Qwen3-4B-GGUF/resolve/main/Qwen3-4B-Q4_K_M.gguf",
+                        "sha256":  "f6f851777709861056efcdad3af01da38b31223a3ba26e61a4f8bf3a2195813a",
+                        "size":  2497281312
+                    },
+                    {
+                        "file":  "models/full_encoder_small_decoder.safetensors",
+                        "url":  "https://huggingface.co/black-forest-labs/FLUX.2-small-decoder/resolve/main/full_encoder_small_decoder.safetensors",
+                        "sha256":  "ea4273f02d1fafbf8e1d1c2cf6018ed8748652eb0bf34f2dd91171f16f15ab62",
+                        "size":  249519092
+                    }
+                ]
+}

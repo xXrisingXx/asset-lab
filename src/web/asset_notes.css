@@ -1,0 +1,6 @@
+#locationNotes .location-path{overflow-wrap:anywhere;color:var(--text,#dfebef)}
+#locationNotes .location-kind{color:#79ddd0;font-weight:650}
+#locationNotes p{margin:.65em 0;white-space:pre-wrap;overflow-wrap:anywhere}
+#locationNotes a.button{display:block;text-align:center;margin-top:9px;font-size:12px;text-decoration:none}
+#locationNotes .native-references{max-height:320px;overflow:auto;border-top:1px solid #31404b;font-size:11px;padding:6px 0}
+#findPotions{margin:10px 0 2px;font-size:12px}
