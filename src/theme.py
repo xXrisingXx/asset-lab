@@ -707,7 +707,12 @@ class Themes:
         self.tokens, self._tone, self.labelled = {}, {}, {}
         for sheet in sheets.values():
             for row, _ in (sheet['members'] or [(sheet['row'], sheet['family'])]):
-                if row.get('label'): self.labelled.setdefault(row['label'].lower(), set()).add(row['name'])
+                if row.get('label'):
+                    label = row['label'].lower()
+                    self.labelled.setdefault(label, set()).add(row['name'])
+                    # "Square flag icon (Ranks)" is also asked for as just "the square flag icon".
+                    short = re.sub(r'\s*\([^)]*\)\s*$', '', label).strip()
+                    if short and short != label: self.labelled.setdefault(short, set()).add(row['name'])
         for sheet_key, sheet in sheets.items():
             for row, _ in (sheet['members'] or [(sheet['row'], sheet['family'])]):
                 if sheet['family'] in QUIET or row['kind'] == 'glyph': continue
@@ -735,9 +740,10 @@ class Themes:
         # Names you gave ("speed potion") are matched as whole phrases before single words.
         scan = text
         for label in sorted(self.labelled, key=len, reverse=True):
-            if re.search(rf'\b{re.escape(label)}s?\b', scan):
+            phrase = rf'(?<![a-z0-9]){re.escape(label)}s?(?![a-z0-9])'   # also works for names ending in ")"
+            if re.search(phrase, scan):
                 found[label] = sorted(self.labelled[label])[:24]
-                scan = re.sub(rf'\b{re.escape(label)}s?\b', ' ', scan)
+                scan = re.sub(phrase, ' ', scan)
         for word in dict.fromkeys(re.findall(r'[a-z]{4,}', scan)):
             stem = next((s for s in (word, word[:-1] if word.endswith('s') else '', word[:-2] if word.endswith('es') else '') if s in self.tokens), '')
             if not stem or stem in STOP or word in STOP or stem in COLORS or stem in GRADIENTS or family_words.fullmatch(word): continue

@@ -32,6 +32,12 @@ class NameTests(Base):
         self.assertEqual({r['name'] for r in self.lab.search('speed', tidy=True)['items']}, {'virus-pale'})
         self.assertEqual(json.loads((self.root / 'asset-names.json').read_text())['label'][0]['label'], 'Speed potion')
 
+    def test_a_name_with_a_screen_in_brackets_is_found_without_it(self):
+        self.lab.labels.name([self.key('icon-a')], 'Square flag icon (Ranks)')
+        self.themes.reindex()
+        self.assertEqual(self.themes.named('make the square flag icon gold')[0], {'square flag icon': ['icon-a']})
+        self.assertEqual(self.themes.named('the square flag icon (ranks) in gold')[0], {'square flag icon (ranks)': ['icon-a']})
+
     def test_theme_ai_understands_a_given_name_as_one_phrase(self):
         self.lab.labels.name([self.key('virus-pale')], 'Speed potion')
         self.themes.reindex()
