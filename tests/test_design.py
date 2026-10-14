@@ -80,6 +80,12 @@ class ShapeAndQualityTests(Base):
         self.assertEqual(out[2, 2, 3], 0)                                     # far outside: trimmed
         self.assertEqual(tuple(out[20, 20, :3]), (200, 30, 30))               # colors untouched
 
+    def test_small_frames_are_sharpened_without_a_dark_edge(self):
+        art = Image.new('RGBA', (40, 40), (0, 0, 0, 0)); art.paste((240, 240, 240, 255), (10, 10, 30, 30))
+        out = np.asarray(design.crisp(art)).astype(int)
+        self.assertTrue((out[..., 3] == np.asarray(art)[..., 3]).all())                 # the outline is untouched
+        self.assertGreaterEqual(out[10:30, 10:30, :3].min(), 235)                        # no dark fringe inside the edge
+
     def test_a_background_that_did_not_cut_out_is_flagged(self):
         clean = unkey(drawn(), 'green')
         self.assertEqual(design.leftover(clean), '')

@@ -172,6 +172,21 @@ def tinted(image):
     return bool(rgb.min(axis=1).mean() > 0.85 and (rgb.max(axis=1) - rgb.min(axis=1)).mean() < 0.08)
 
 
+def crisp(art):
+    """A light unsharp mask on the colors (not the outline), for drawings shrunk into small sprite frames. Transparent
+    pixels first take the color of the art next to them, so the edge does not pick up a dark fringe from them."""
+    from PIL import ImageFilter
+    a = np.asarray(art.convert('RGBA')).astype(np.float32)
+    alpha = a[..., 3:4] / 255
+    soft = lambda channels: np.asarray(Image.fromarray(np.clip(channels, 0, 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(2))).astype(np.float32)
+    near_color = soft(a[..., :3] * alpha)
+    near_weight = soft(alpha[..., 0] * 255)[..., None] / 255
+    fill = near_color / np.maximum(near_weight, 0.01)
+    rgb = np.where(alpha > 0.02, a[..., :3], fill)
+    sharp = Image.fromarray(np.clip(rgb, 0, 255).astype(np.uint8)).filter(ImageFilter.UnsharpMask(radius=1.2, percent=70, threshold=2))
+    return Image.fromarray(np.dstack([np.asarray(sharp), a[..., 3].astype(np.uint8)]), 'RGBA')
+
+
 def whiten(art):
     """White-and-gray version of a drawing, for icons the game multiplies by a color: the game's color then shows
     everywhere, and the drawing's detail survives as lighter and darker shades of it."""
@@ -337,6 +352,11 @@ class Designer:
             if proc.returncode != 0 or not raws: raise RuntimeError('The image model failed: ' + ' / '.join(l for l in log[-6:] if l.strip())[:400])
             for index, raw in enumerate(raws):
                 art = unkey(Image.open(raw), job['key'])
+                # The model's "flat" background sometimes drifts: try a stronger cut-out before warning about it.
+                for stronger in (1.25, 1.5):
+                    if not leftover(art): break
+                    again = unkey(Image.open(raw), job['key'], stronger)
+                    if not leftover(again): art = again
                 art.save(folder / f'variant-{index}.png')
                 job['variants'].append(dict(index=index, settings=dict(scale=1.0, dx=0.0, dy=0.0, tolerance=1.0, shape=1.0 if job.get('stretched') else 0.0, fill=1.0 if job['title'] else 0.0),
                                             warning=leftover(art)))
@@ -370,6 +390,7 @@ class Designer:
         art = unkey(Image.open(folder / f'raw-{int(index)}.png'), job['key'], float(s['tolerance'])) if float(s['tolerance']) != 1.0 else \
             Image.open(folder / f'variant-{int(index)}.png').convert('RGBA')
         out = self._place(job, art, s, int(target))
+        if max(out.size) <= 96: out = crisp(out)                   # a big drawing shrunk into a small frame goes soft
         return whiten(out) if float(s['white']) >= 0.5 else out   # last, so the brightest pixel of the final art is white
 
     def _place(self, job, art, s, target):
