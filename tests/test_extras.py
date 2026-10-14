@@ -38,6 +38,12 @@ class NameTests(Base):
         self.assertEqual(self.themes.named('make the square flag icon gold')[0], {'square flag icon': ['icon-a']})
         self.assertEqual(self.themes.named('the square flag icon (ranks) in gold')[0], {'square flag icon (ranks)': ['icon-a']})
 
+    def test_the_screen_in_brackets_is_not_a_search_word(self):
+        self.lab.labels.name([self.key('icon-a')], 'Ranks button icon (Main menu)')
+        self.lab.labels.name([self.key('icon-b')], 'Server region flag (Ranks)')
+        self.themes.reindex()
+        self.assertEqual(rule_plan('make the ranks icon gold', self.themes.named)['operations'][0]['match'], ['icon-a'])
+
     def test_theme_ai_understands_a_given_name_as_one_phrase(self):
         self.lab.labels.name([self.key('virus-pale')], 'Speed potion')
         self.themes.reindex()

@@ -756,7 +756,9 @@ class Themes:
         for sheet_key, sheet in sheets.items():
             for row, _ in (sheet['members'] or [(sheet['row'], sheet['family'])]):
                 if sheet['family'] in QUIET or row['kind'] == 'glyph': continue
-                for token in set(re.findall(r'[a-z]{4,}', re.sub(r'\.png$', '', row['name'].lower()) + ' ' + row.get('label', '').lower())):
+                # The screen in brackets says where a thing is, not what it is: "Server region flag (Ranks)" is no "ranks icon".
+                label = re.sub(r'\([^)]*\)', ' ', row.get('label', '').lower())
+                for token in set(re.findall(r'[a-z]{4,}', re.sub(r'\.png$', '', row['name'].lower()) + ' ' + label)):
                     self.tokens.setdefault(token, []).append((sheet_key, row))
 
     def tone(self, sheet_key, row):
