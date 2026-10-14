@@ -23,6 +23,11 @@ DRAWN = (r'\b(?:hats?|horns?|crown|halo|blood(?:y)?|drips?|dripping|bats?|cobweb
          r'slime|slimy|graffiti|steampunk|cyberpunk|3d|stone|wooden|bone|rusty|melting|burning|on fire)\b')
 
 
+# Things that only exist once drawn (unlike a color or a mood).
+OBJECTS = (r'\b(?:hats?|horns?|crowns?|halos?|wings?|bats?|cobwebs?|skulls?|pumpkins?|ghosts?|eyes|teeth|fangs|mustaches?|moustaches?|'
+           r'glasses|sunglasses|bows?|ribbons?|flowers?|antlers?|beards?|scarf|scarves|tiaras?|masks?)\b')
+
+
 def wants_design(text, unknown=()):
     """A request to redraw art rather than recolor or shade it: something only drawing can do ("spooky", "a hat"), or a
     drawing verb ("add", "redesign") with words the shader does not understand. "Add a rainbow outline" stays a theme."""

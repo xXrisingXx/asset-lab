@@ -906,6 +906,10 @@ class Themes:
             result['design'] = part
             return result
         result = self.plan_request(message, model, history, scope)
+        if designer and re.search(design.OBJECTS, message.lower()):
+            # New objects need drawing, and drawing needs a target the request did not name.
+            result['note'] = (result['note'] + ' ' if result['note'] else '') + ('To draw new things, say what to draw them on (the title, the icons, '
+                                                                                 '"the speed potion") or check those assets in the library first.')
         if designer and design.wants_design(message, unknown_words(message, self.named)) and designer.title_rows():
             # "Make the game spooky": the palette is shaded now; redrawing the title is offered, not started.
             result['design'] = dict(self.design_offer(designer, f'{message}. Redesign the game title to match.', designer.title_rows()), optional=True)
@@ -999,6 +1003,9 @@ class Themes:
             # These live in Mitosis.exe, which the game refuses to run once edited; say so instead of planning them.
             plan = dict(plan, ui_colors={}, hide=[])
             note = (note + ' ' if note else '') + exe_palette.BLOCKED
+        if re.search(r'\b(?:bigger|smaller|larger|tinier|resize|enlarge|shrink|move|reposition|relocate)\b', message.lower()):
+            note = (note + ' ' if note else '') + ('Sizes and positions are set by the game itself (each sprite has a fixed box in its sheet), '
+                                                   'so I can change how things look but not how big they are or where they sit.')
         if not changes_anything(plan) and not plan['reply']:
             plan['reply'] = 'I could not turn that into a visual change. Try naming a color, a mood, or a part of the game.'
         return dict(plan=plan, source=source, note=note, preview=self.preview(plan, scope) if changes_anything(plan) else None)
