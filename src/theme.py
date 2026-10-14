@@ -75,9 +75,9 @@ STOP = set('''make give want need theme style look looks like more less with wit
     side keep leave alone only every each whole game mitosis main menu screen color colour colors colours gradient outline inside glow flare neon rainbow
     strong subtle soft dark darker light lighter bright brighter proper nice clean white black grey gray thing things part parts effect effects please
     also then over under around back front when where what which very really just still again same different normal default original
-    turn change changed replace swap switch show hide remove delete bigger smaller larger flash blink'''.split())
+    turn change changed replace swap switch show hide remove delete bigger smaller larger flash blink mode'''.split())
 # Words every name for a control has ("Play button", "New Players mode icon"): too common to pick out one sprite.
-GENERIC = {'button', 'buttons', 'icon', 'icons', 'arrow', 'arrows', 'badge', 'badges', 'mode', 'menu', 'main', 'list', 'screen', 'players', 'player'}
+GENERIC = {'button', 'buttons', 'icon', 'icons', 'badge', 'badges', 'mode', 'menu', 'main', 'list', 'screen', 'players', 'player'}
 GRADIENT_TYPES = ('linear', 'radial', 'conic', 'luminance')
 SCHEMA = {'type': 'object', 'required': ['reply', 'operations'], 'properties': {
     'reply': {'type': 'string'},
@@ -620,16 +620,17 @@ def rule_plan(prompt, lookup=None):
         # Game colors from the code: "make the pink red", "arrows cyan", "menu background navy" (not the pattern),
         # "light mode background white", "header bars purple", "menu buttons gold".
         paints = [hex_color(c) for c in re.findall(any_color, re.sub(r'\bthe pink\b|\bthe teal\b', ' ', clause))]
+        names = list(dict.fromkeys(n for word, found in known.items() if re.search(rf'\b{re.escape(word)}\b', clause) for n in found))
         # With the exe off limits a named game color is still noted (the chat explains it) rather than painted on
         # art: the game multiplies that art by its own color, so gold on teal-tinted white would come out olive.
-        # "menu background navy" falls through to the menu pattern art below instead.
-        if len(paints) == 1 and not re.search(r'\bpattern|overlay|triangles?\b', clause):
+        # A sprite named outright ("the ranks button icon") is its art, though, and "menu background navy" falls
+        # through to the menu pattern art below.
+        if len(paints) == 1 and not names and not re.search(r'\bpattern|overlay|triangles?\b', clause):
             named_ui = next((name for name, phrase in UI_PHRASES if re.search(phrase, clause)), '')
             if named_ui:
                 ui[named_ui] = paints[0]; continue
             if not exe_palette.BLOCKED and re.search(r'\b(?:background|backdrop|bg)\b', clause) and not re.search(r'\b(?:world|game|arena|map|in-?game)\s*(?:background|bg)\b|\bgrid|arena|floor\b', clause):
                 ui['background'] = paints[0]; continue
-        names = list(dict.fromkeys(n for word, found in known.items() if re.search(rf'\b{re.escape(word)}\b', clause) for n in found))
         if re.search(rf'\b(?:{GLASS_WORDS})\b', clause):
             # Soap-bubble glass: a pale iridescent edge, a soft glow that also blooms inward, and a glassy highlight.
             op.update(rim_color='gradient', rim_gradient=GRADIENTS['holographic'], rim_width=3, glow_color='auto', glow_size=10, glow_strength=0.9, glow_inside=True, gloss=0.3)
@@ -743,6 +744,16 @@ class Themes:
         self.file = lab.root / 'themes.json'
         self.reindex()
 
+    @staticmethod
+    def tinted_targets(plan):
+        """Named sprites a color change lands on although the game multiplies them by one of its colors: name -> color."""
+        tints, out = design.tints(), {}
+        for op in plan['operations']:
+            if op['color_mode'] == 'none' and not any(op[k] for k in ('hue_shift', 'invert', 'rim_color', 'glow_color', 'outline_color')): continue
+            for name in op['match']:
+                if name in tints: out[name] = tints[name]
+        return out
+
     def present(self):
         """Names of the sprites in the library (not removed from the pool)."""
         with self.lab.lock: return {row['name'] for row in self.lab.catalog.rows.values() if not row.get('removed')}
@@ -761,12 +772,13 @@ class Themes:
             for _, family in (members or [(row, families_of(row))]): counts[family] += 1
         self.sheets, self.counts, self._look = sheets, counts, None
         # Words that appear in sprite names, so a request can name one thing: "the virus", "the crown".
-        self.tokens, self._tone, self.labelled = {}, {}, {}
+        self.tokens, self._tone, self.labelled, self.label_of = {}, {}, {}, {}
         for sheet in sheets.values():
             for row, _ in (sheet['members'] or [(sheet['row'], sheet['family'])]):
                 if row.get('label'):
                     label = row['label'].lower()
                     self.labelled.setdefault(label, set()).add(row['name'])
+                    self.label_of[row['name']] = re.sub(r'\s*\([^)]*\)\s*$', '', row['label'])
                     # "Square flag icon (Ranks)" is also asked for as just "the square flag icon".
                     short = re.sub(r'\s*\([^)]*\)\s*$', '', label).strip()
                     if short and short != label: self.labelled.setdefault(short, set()).add(row['name'])
@@ -803,6 +815,8 @@ class Themes:
             if re.search(phrase, scan):
                 found[label] = sorted(self.labelled[label])[:24]
                 scan = re.sub(phrase, ' ', scan)
+        # "The menu background" is the menu pattern family, not every sprite with "background" in its name.
+        scan = re.sub(rf"\b(?:{WORDS['menu_background']}|{WORDS['world_background']})\b", ' ', scan)
         for word in dict.fromkeys(re.findall(r'[a-z]{4,}', scan)):
             stem = next((s for s in (word, word[:-1] if word.endswith('s') else '', word[:-2] if word.endswith('es') else '') if s in self.tokens), '')
             if not stem or stem in STOP or word in STOP or stem in COLORS or stem in GRADIENTS or family_words.fullmatch(word): continue
@@ -1070,9 +1084,10 @@ class Themes:
                     raw = json.loads(found.group(0) if found else content)
                 plan, source = tame(clean_plan(raw), said), model
                 named = [name for names_ in self.named(message)[0].values() for name in names_]
-                if named and plan['operations'] and not any(op['match'] for op in plan['operations']) and not re.search(r'\b(?:everything|all|whole|entire|theme)\b', message.lower()):
-                    # The request was about one named thing; a plan that forgot to name it would repaint a whole family.
-                    for op in plan['operations']: op.update(targets=['everything'], match=named[:12])
+                if named and not re.search(r'\b(?:everything|all|whole|entire|theme)\b', message.lower()):
+                    # The request was about named things; a step that forgot to name them would repaint a whole family.
+                    for op in plan['operations']:
+                        if not op['match']: op.update(targets=['everything'], match=named[:12])
             except (OSError, ValueError, KeyError, AttributeError) as exc:
                 note = f'The local model {model} did not return a usable plan ({str(exc)[:120]}); used the keyword planner instead.'
         elif plan is None: note = 'Ollama is not running, so the keyword planner was used. Start Ollama for full prompts.'
@@ -1088,6 +1103,13 @@ class Themes:
             note = ' '.join(([note] if note else []) + notes)
         if size: note = (note + ' ' if note else '') + SIZE_NOTE
         if motion: note = (note + ' ' if note else '') + MOTION_NOTE
+        tinted = self.tinted_targets(plan)
+        if tinted:
+            # The preview shows the art; the game then multiplies these icons by its own color, so say what that does.
+            things = listing([self.label_of.get(name, name) for name in tinted][:4])
+            color = next(iter(tinted.values())) if len(set(tinted.values())) == 1 else 'its own colors'
+            note = (note + ' ' if note else '') + (f'The game colors {things} with {color} itself, so a new color mixes with that in the game '
+                                                   '(gold on teal comes out green). Lighter or darker shades work; for a new look, redraw it and tick “Keep it white”.')
         if not changes_anything(plan) and not plan['reply']:
             plan['reply'] = 'I could not turn that into a visual change. Try naming a color, a mood, or a part of the game.'
         return dict(plan=plan, source=source, note=note, preview=self.preview(plan, scope) if changes_anything(plan) else None)

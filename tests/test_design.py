@@ -122,6 +122,29 @@ class ChatRoutingTests(Base):
         self.assertEqual((result['source'], result['plan']['reply'], len(calls)), ('m', 'fixed', 2))
         self.assertIn('not valid JSON', calls[1])
 
+    def test_a_model_step_that_forgets_the_named_thing_is_kept_to_it(self):
+        self.lab.labels.name([next(r['key'] for r in self.rows('virus-pale') if r.get('primary', True))], 'Friends button icon (Main menu)')
+        self.themes.reindex()
+        answer = '{"reply":"same color","operations":[{"targets":["everything"],"color":"#8b8995"},{"targets":["icons"],"match":["virus-pale"],"color":"#8b8995"}]}'
+        with patch.object(theme, 'models', return_value=[dict(name='m', thinking=False, size=5e9)]), \
+                patch.object(theme, 'ollama', return_value={'message': {'content': answer}}):
+            result = self.themes.chat('make the friends button icon the same shade as its neighbour')
+        self.assertEqual([op['match'] for op in result['plan']['operations']], [['virus-pale'], ['virus-pale']])   # nothing repaints everything
+
+    def test_the_menu_background_phrase_beats_sprite_names(self):
+        self.lab.labels.name([next(r['key'] for r in self.rows('free-x') if r.get('primary', True))], 'Background panel')
+        self.themes.reindex()
+        op = theme.rule_plan('change the menu background to a galaxy', self.themes.named)['operations'][0]
+        self.assertEqual((op['targets'], op['match']), (['menu_background'], []))
+
+    def test_recoloring_an_icon_the_game_colors_says_what_happens(self):
+        self.lab.labels.name([next(r['key'] for r in self.rows('virus-pale') if r.get('primary', True))], 'Ranks button icon (Main menu)')
+        self.themes.reindex()
+        with patch.object(design, 'tints', return_value={'virus-pale': '#40BDC4'}), patch.object(theme, 'models', return_value=[]):
+            gold, darker = self.themes.chat('make the ranks button icon gold'), self.themes.chat('make the ranks button icon darker')
+        self.assertIn('The game colors Ranks button icon with #40BDC4', gold['note'])
+        self.assertNotIn('The game colors', darker['note'])                                            # shades are fine
+
     def test_a_group_can_be_redrawn_one_sprite_at_a_time(self):
         rows = self.designer.family_rows('put a tiny santa hat on every icon')
         self.assertTrue(rows)
