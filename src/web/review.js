@@ -61,7 +61,12 @@ function render(){
       card.append(pair,text,toggle(e.name,out,()=>api('/api/stage',{key:e.key,enabled:false}).then(()=>R.out.add(e.key)),()=>api('/api/stage',{key:e.key,enabled:true}).then(()=>R.out.delete(e.key))));grid.append(card);}
     if(shown.length<g.items.length){const more=el('button','link',`Show all ${g.items.length}`);more.type='button';more.onclick=()=>{g.all=true;render();};sec.append(more);}
   }
-  if(!fields.length&&!d.hide.length&&!d.edits.length)body.append(el('p','hint',d.installed?'Everything is out of the mod. Update Mitosis now puts the original files back.':'Your mod is empty. Save an edit, apply a theme, or set game colors first.'));
+  // Fonts: the game's text drawn in another font. Changed or taken out in the Fonts panel.
+  if((d.fonts||[]).length){const sec=section(body,`Fonts · ${d.fonts.length}`);
+    for(const f of d.fonts){const row=el('div','review-row');const t=el('div','review-text');t.append(el('b','',f.label),el('small','',`Drawn in ${f.face||'a new style'}`));
+      if(d.installed&&!f.installed)t.firstChild.append(el('span','review-new','New'));
+      const change=el('button','','Change…');change.type='button';change.onclick=()=>{dlg.close();window.openFonts&&window.openFonts(f.id);};row.append(t,change);sec.append(row);}}
+  if(!fields.length&&!d.hide.length&&!d.edits.length&&!(d.fonts||[]).length)body.append(el('p','hint',d.installed?'Everything is out of the mod. Update Mitosis now puts the original files back.':'Your mod is empty. Save an edit, apply a theme, or set game colors first.'));
 
   // Footer: file check and install.
   const foot=el('div','review-foot');const files=el('details','review-files');files.append(el('summary','', 'Check the game files'));const pre=el('pre');files.append(pre);

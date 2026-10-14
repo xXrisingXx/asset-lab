@@ -82,6 +82,7 @@ def server_for(lab, port):
                     return self.send(png(image), 'image/png')
                 if path == '/api/theme-job': return self.send(themes.job(q.get('job', '')))
                 if path == '/api/asset': return self.send(lab.detail(key))
+                if path == '/api/fonts': return self.send(lab.font_catalog())
                 if path == '/api/asset-notes':
                     if q.get('download'):
                         return self.send(lab.asset_notes(key, text=True).encode('utf-8'), 'text/markdown; charset=utf-8', filename='mitosis-asset-notes.md')
@@ -179,6 +180,11 @@ def server_for(lab, port):
                     return self.send(result)
                 if path == '/api/design-undo': return self.send(designer.undo(data.get('job', '')))
                 if path == '/api/design-cancel': return self.send(designer.cancel(data.get('job', '')))
+                if path == '/api/font-preview':
+                    image = lab.font_preview(str(data.get('font', '')), data.get('style') or {}, str(data.get('text', ''))[:40])
+                    return self.send({'png': 'data:image/png;base64,' + base64.b64encode(image).decode()})
+                if path == '/api/font-apply': return self.send(lab.font_apply(str(data.get('font', '')), data.get('style') or {}))
+                if path == '/api/font-remove': return self.send(lab.font_remove(str(data.get('font', ''))))
                 if path == '/api/theme-chat': return self.send(themes.chat(data.get('message'), data.get('model', ''), data.get('history'), only))
                 if path == '/api/theme-preview': return self.send(themes.preview(clean_plan(data.get('plan')), themes.scope(only)))
                 if path == '/api/theme-apply': return self.send(themes.apply(data.get('plan'), data.get('prompt', ''), only))

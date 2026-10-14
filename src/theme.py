@@ -19,6 +19,7 @@ import numpy as np
 from PIL import Image, ImageFilter
 import design
 import exe_palette
+import fonts
 import runtime
 
 OLLAMA = 'http://127.0.0.1:11434'
@@ -271,6 +272,68 @@ def hide_targets(text):
 def hide_in(text):
     """Menu controls a request asks to leave out: "hide the discord button", "remove all the promos"."""
     return hide_targets(text) if re.search(HIDE_VERB, text) else []
+
+
+# One request can hold several asks: "theme it halloween and make the names spooky".
+CLAUSES = r'[.;\n]+|,?\s+(?:and then|then|also|plus)\s+|,?\s+and\s+(?=(?:make|give|put|add|draw|turn|theme|redesign|redraw|paint|stick|change|set)\b)'
+# Text: requests about the game's fonts become a font style with a preview ("player names black with a white glow").
+FONT_WORDS = r'\b(?:fonts?|typefaces?|lettering|player names?|nick ?names?|usernames?|names|name text|menu text)\b'
+TEXT_TARGETS = [('geosans_stroke_80', r'\boutlined (?:menu )?text'), ('geosans_80', r'\b(?:menu|ui|button|hud) (?:text|font|letters)'),
+                ('expinfo', r'\b(?:xp|small) numbers?\b'), ('nicktext', r'.')]
+FACE_WORDS = [(r'\b(?:condensed|tall|narrow|skinny)\b', 'Bahnschrift|Bold Condensed'), (r'\bcomic\b', 'Comic Sans MS|Bold'),
+              (r'\b(?:spooky|horror|creepy|halloween|scary)\b', 'Chiller|Regular'), (r'\b(?:mono|monospace|typewriter|code)\b', 'Consolas|Bold'),
+              (r'\b(?:handwritten|script|cursive|signature)\b', 'Segoe Script|Bold'), (r'\b(?:blocky|heavy|chunky)\b', 'Arial|Black')]
+
+
+def text_color(name):
+    """Letters want true black, not the soft black the UI palette uses."""
+    return '#000000' if name.strip() == 'black' else hex_color(name)
+
+
+def font_style(text, faces):
+    """A font style from a request: typeface (by name or by look), fill, gradient, outline, glow, shadow and more."""
+    low = text.lower()
+    any_color = r'(#[0-9a-f]{6}|\b(?:' + '|'.join(sorted(COLORS, key=len, reverse=True)) + r')\b)'
+    style, used = {}, []
+    for name, preset in fonts.PRESETS.items():
+        found = re.search(rf'\b{re.escape(name.lower())}\b', low)
+        if preset and found: style.update(preset); used.append(found.span())   # "gold names" is the Gold look, not a flat gold fill
+    families = sorted({f['family'] for f in faces}, key=len, reverse=True)
+    family = next((f for f in families if len(f) >= 4 and re.search(rf'(?<![a-z0-9]){re.escape(f.lower())}(?![a-z0-9])', low)), None)
+    if family: style['font'] = family
+    elif not style.get('font'): style['font'] = next((face for pattern, face in FACE_WORDS if re.search(pattern, low)), '')
+
+    def take(pattern):
+        """The color named with an effect ("white glow"): '' when the effect has no color, None when it is not asked for."""
+        found = re.search(pattern, low)
+        if not found: return None
+        if found.group(1): used.append(found.span(1))
+        return text_color(found.group(1)) if found.group(1) else ''
+    gradient = re.search(rf'{any_color}\s+(?:to|into|and)\s+{any_color}\s+gradient|gradient\s+(?:from\s+)?{any_color}\s+(?:to|into)\s+{any_color}', low)
+    if gradient:
+        a, b = [g for g in gradient.groups() if g]
+        style.update(fill=text_color(a), fill2=text_color(b)); used += [gradient.span()]
+    glow = take(rf'{any_color}?\s*(?:glow|halo|glowing)')
+    outline = take(rf'{any_color}?\s*(?:outlines?|borders?|strokes?|edges?)')
+    shadow = take(rf'{any_color}?\s*(?:drop\s+)?shadows?')
+    rest = low
+    for start, end in sorted(used, reverse=True): rest = rest[:start] + ' ' * (end - start) + rest[end:]
+    fill = re.search(any_color, rest)
+    if fill and not gradient: style['fill'] = text_color(fill.group(1)); style.pop('fill2', None)
+    dark = sum(int(style.get('fill', '#ffffff')[i:i + 2], 16) for i in (1, 3, 5)) < 200
+    if glow is not None:
+        style.update(glow=glow or ('#ffffff' if dark else style.get('fill', '#ffffff')), glow_size=8, glow_strength=1.4)
+        if dark and outline is None and not style.get('outline'): style.update(outline=style['glow'], outline_width=2)   # dark letters read with a light edge
+    if outline is not None: style.update(outline=outline or ('#ffffff' if dark else '#000000'), outline_width=4 if re.search(r'\b(?:thick|big|fat)\s+(?:\w+\s+)?(?:outline|border)', low) else 3)
+    if shadow is not None: style.update(shadow=shadow or '#000000', shadow_x=2, shadow_y=4, shadow_blur=3, shadow_opacity=0.8)
+    if re.search(r'\b(?:extra bold|thicker|fatter)\b', low): style['bold'] = 4
+    elif re.search(r'\bbold\b', low): style['bold'] = 2
+    if re.search(r'\b(?:italic|slanted|leaning|tilted)\b', low): style['italic'] = 0.2
+    if re.search(r'\b(?:all caps|caps|capitals?|uppercase|capital letters)\b', low): style['caps'] = True
+    if re.search(r'\bhuge|massive\b', low): style['size'] = 1.45
+    elif re.search(r'\b(?:bigger|larger)\b', low): style['size'] = 1.2
+    elif re.search(r'\b(?:smaller|tiny|little)\b', low): style['size'] = 0.85
+    return style
 
 
 SIZE_WORDS = r'\b(?:bigger|smaller|larger|tinier|resize|enlarge|shrink|move|reposition|relocate)\b'
@@ -750,6 +813,30 @@ class Themes:
         self.file = lab.root / 'themes.json'
         self.reindex()
 
+    def font_request(self, message):
+        """A request about the game's text: a font style for one of its fonts, with a preview of example text."""
+        low = message.lower()
+        if not re.search(FONT_WORDS, low): return None
+        try:
+            faces = self.lab.typefaces()
+            game = fonts.game_fonts(self.lab.game)
+        except (OSError, ValueError, AttributeError): return None
+        fid = next((f for f, pattern in TEXT_TARGETS if f in game and re.search(pattern, low)), None)
+        if not fid: return None
+        style = fonts.clean_style(font_style(message, faces), faces)
+        quoted = re.search(r'["“]([^"”]{1,24})["”]', message)
+        sample = quoted.group(1) if quoted else ('Cellmate' if fid == 'nicktext' else 'Settings' if fid.startswith('geosans') else '12345')
+        image = 'data:image/png;base64,' + base64.b64encode(self.lab.font_preview(fid, style, sample)).decode()
+        face = (fonts.find_font(faces, style['font']) or {}).get('family') if style['font'] else ''
+        names = {v: k for k, v in reversed(list(COLORS.items()))} | {'#000000': 'black'}
+        say = lambda c: names.get(c, c)
+        parts = [face or "the game's own letters", 'all caps' if style['caps'] else '', f"{say(style['fill'])}{' to ' + say(style['fill2']) if style['fill2'] else ''} letters",
+                 f"{say(style['outline'])} outline" if style['outline'] else '', f"{say(style['glow'])} glow" if style['glow'] else '', f"{say(style['shadow'])} shadow" if style['shadow'] else '']
+        reply = f"{game[fid]['label']}: " + ', '.join(p for p in parts if p) + '. Apply puts it in your mod; Fine-tune has every setting.'
+        note = '' if fid == 'nicktext' else game[fid]['note']
+        return dict(plan=dict(reply=reply, operations=[], ui_colors={}, hide=[]), source='font', note=note, preview=None,
+                    font=dict(id=fid, label=game[fid]['label'], style=style, image=image, text=sample))
+
     @staticmethod
     def tinted_targets(plan):
         """Named sprites a color change lands on although the game multiplies them by one of its colors: name -> color."""
@@ -978,10 +1065,20 @@ class Themes:
         if not message: raise ValueError('Describe the look you want.')
         command = self.command(message)
         if command: return command
+        pieces = [p.strip(' ,') for p in re.split(CLAUSES, message) if p and p.strip(' ,')]
+        texts = [p for p in pieces if re.search(FONT_WORDS, p.lower())]
+        font = texts and self.font_request('. '.join(texts))
+        if font:                                    # "theme it halloween and make the names spooky": the font card plus the theme
+            others = [p for p in pieces if p not in texts]
+            if not others: return font
+            result = self.chat('. '.join(others), model, history, only)
+            plan = result.get('plan') or {}
+            if not (plan.get('operations') or plan.get('ui_colors') or plan.get('hide') or result.get('design')): return font
+            result['font'] = font['font']
+            return result
         designer = getattr(self, 'designer', None)
         drawn, rest = [], message
         if designer:
-            pieces = [p.strip(' ,') for p in re.split(r'[.;\n]+|,?\s+(?:and then|then|also|plus)\s+|,?\s+and\s+(?=(?:make|give|put|add|draw|turn|theme|redesign|redraw|paint|stick)\b)', message) if p and p.strip(' ,')]
             for piece in pieces:
                 if design.wants_design(piece, unknown_words(piece, self.named)) and designer.targets(piece, only): drawn.append(piece)
             rest = '. '.join(p for p in pieces if p not in drawn)

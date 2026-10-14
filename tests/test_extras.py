@@ -75,7 +75,7 @@ class NameTests(Base):
         self.lab.labels.name([self.key('icon-a')], 'Quests icon (Main menu)')
         self.themes.reindex()
         with patch.object(theme, 'models', return_value=[]):
-            bigger, flash = self.themes.chat('make the font bigger'), self.themes.chat('make the quests icon flash')
+            bigger, flash = self.themes.chat('make the buttons bigger'), self.themes.chat('make the quests icon flash')
             mixed = self.themes.chat('make the buttons red and bigger')
         self.assertEqual((bigger['plan']['operations'], flash['plan']['operations']), ([], []))
         self.assertIn('Sizes and positions', bigger['plan']['reply'])

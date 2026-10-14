@@ -48,7 +48,9 @@ const install=el('button','primary','Install in Mitosis');install.id='themeInsta
 const restore=el('button','', 'Restore original');const launch=el('button','', 'Open Mitosis');
 const undo=el('button','quiet','Undo theme');undo.id='themeUndo';undo.title='Take the last theme back off';
 const gameButton=el('button','', 'Game colors…');gameButton.id='gameColorsButton';
-actions.append(review,install,restore,launch,gameButton,undo);dock.append(modLine,actions);
+const fontsButton=el('button','', 'Fonts…');fontsButton.id='fontsButton';fontsButton.title='Draw the game’s text (player names, menu text) in any font, with outline, glow and shadow';
+fontsButton.onclick=()=>window.openFonts&&window.openFonts();
+actions.append(review,install,restore,launch,gameButton,fontsButton,undo);dock.append(modLine,actions);
 
 // Game colors & menu: the colors Mitosis.exe sets in code, by hand, and the main-menu promos it can leave out.
 const game=el('div','theme-game');game.id='gamePanel';game.hidden=true;
@@ -162,9 +164,12 @@ async function ask(text){
     if(result.plan.operations.length||Object.keys(result.plan.ui_colors||{}).length||result.plan.hide?.length){T.history.push({role:'user',content:text},{role:'assistant',content:JSON.stringify(result.plan)});T.history=T.history.slice(-8);}
     if(result.undone){S.build=null;await status();await library();if(S.asset&&!S.dirty)await select(S.asset.key,true);await refresh();}
     const planned=result.plan.operations.length||Object.keys(result.plan.ui_colors||{}).length||result.plan.hide?.length;
-    if(result.design&&!planned&&!result.design.optional){showDesign(wait,result.design,keys);scroll();return;}
+    if(result.font&&!planned&&!result.design){showFont(wait,result.font,result.note);scroll();return;}
+    const addFont=()=>{if(!result.font)return;const offer=el('div','design-offer');offer.append(el('p','',`Text · ${result.font.label}`));wait.append(offer);showFont(offer,result.font);};
+    if(result.design&&!planned&&!result.design.optional){showDesign(wait,result.design,keys);addFont();scroll();return;}
     showPlan(wait,result,text,keys);
     if(result.design){const offer=el('div','design-offer');offer.append(el('p',''));wait.append(offer);showDesign(offer,result.design,keys,null,true);}
+    addFont();
     scroll();
     if(autoBox.checked&&result.preview&&(result.preview.sheets||result.preview.ui_colors?.length||result.preview.hide?.length)){setBusy(false);await applyPlan(result.plan,text,wait.querySelector('.theme-actions button'),keys);}
   }catch(e){clearInterval(tick);wait.classList.add('error');wait.firstChild.textContent=e.message;}
@@ -203,6 +208,16 @@ async function drawDesign(box,prompt,keys,count,base,direction){
   barEl.classList.add('done');text.textContent=job.message;
   if(job.state!=='complete'){box.classList.add('error');return job;}
   designCard(box,job,keys);scroll();return job;
+}
+function showFont(box,font,note){
+  // A text request: the game font in the asked style, previewed; Apply puts it in the mod, Fine-tune opens every setting.
+  if(note)box.append(el('p','theme-note',note));
+  const img=el('img','font-offer');img.src=font.image;img.alt=font.label+' preview';
+  const actions=el('div','theme-actions');const apply=el('button','primary','Apply');const tune=el('button','','Fine-tune…');
+  apply.onclick=run(async()=>{apply.disabled=true;const r=await api('/api/font-apply',{font:font.id,style:font.style});apply.textContent='Applied ✓';
+    message(`${r.label} saved in ${r.face}. Install in Mitosis to see it.`);S.build=null;await status();await refresh();});
+  tune.onclick=()=>window.openFonts&&window.openFonts(font.id,font.style,font.text);
+  actions.append(apply,tune);box.append(img,actions);
 }
 function designCard(box,job,keys){
   const card=el('div','design-card');box.append(card);

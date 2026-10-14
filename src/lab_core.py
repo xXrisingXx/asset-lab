@@ -25,6 +25,7 @@ import similar
 
 EXE = 'Mitosis.exe'
 from asset_notes import AssetNotes
+import fonts as fontlab
 
 ROOT = Path(__file__).resolve().parent
 # The release number (the launcher passes it; a source checkout reads the VERSION file beside src).
@@ -245,6 +246,65 @@ class Lab:
                              'applied': sorted(seen | {f"{kind}:{entry['id']}" for _, kind, entry in fresh})})
 
     def persist(self): atomic_json(self.state_path, self.state)
+
+    # ----- fonts: the game's text re-rendered in any installed typeface ---------------------------------------------
+    def typefaces(self):
+        if getattr(self, '_typefaces', None) is None: self._typefaces = fontlab.system_fonts(self.root.parent / 'typefaces.json')
+        return self._typefaces
+
+    def font_source(self, fid):
+        """(font info, original .fnt text, original page image) of one of the game's fonts."""
+        game = fontlab.game_fonts(self.game)
+        if fid not in game: raise ValueError('Unknown game font.')
+        f = game[fid]
+        for path in (f['fnt'], f['page']):
+            if path not in self.state['baseline']:
+                live = self.game_file(path)   # first use: the game's own file, before any font of ours was installed
+                self.state['baseline'][path] = {'sha256': file_hash(live), 'size': live.stat().st_size}
+                self.persist()
+        text = self.snapshot(f['fnt']).read_text(encoding='utf-8', errors='replace')
+        with Image.open(self.snapshot(f['page'])) as page: page = page.convert('RGBA')
+        return f, text, page
+
+    def font_catalog(self):
+        with self.lock:
+            saved = self.state.get('fonts') or {}
+            game = [dict(f, style=(saved.get(fid) or {}).get('style'), staged=bool((saved.get(fid) or {}).get('staged')))
+                    for fid, f in fontlab.game_fonts(self.game).items()]
+        faces = self.typefaces()
+        presets = {name: dict(p, font=(fontlab.find_font(faces, p.get('font')) or {}).get('id', '')) for name, p in fontlab.PRESETS.items()}   # ids the font list knows
+        return dict(game=game, typefaces=faces, presets=presets, defaults=fontlab.DEFAULT, limits=fontlab.LIMITS)
+
+    def font_preview(self, fid, style, text):
+        with self.lock: f, fnt, page = self.font_source(fid)
+        faces = self.typefaces()
+        return png(fontlab.preview(fnt, page, fontlab.clean_style(style, faces), faces, text))
+
+    def font_apply(self, fid, style):
+        """Render the whole font in a style, keep it in the workspace and put it in the mod."""
+        with self.lock:
+            f, fnt, page = self.font_source(fid)
+            faces = self.typefaces()
+            style = fontlab.clean_style(style, faces)
+            sheet, text, info = fontlab.build(fnt, page, style, faces)
+            version = uuid.uuid4().hex
+            atomic_bytes(self.root / 'fonts' / version / 'page.png', png(sheet))
+            atomic_bytes(self.root / 'fonts' / version / 'font.fnt', text.encode('utf-8'))
+            self.state.setdefault('fonts', {})[fid] = dict(style=style, version=version, at=time.time(), staged=True, info=info)
+            self.persist()
+            return dict(id=fid, label=f['label'], **info)
+
+    def font_remove(self, fid):
+        """Back to the game's own font (at the next install)."""
+        with self.lock:
+            (self.state.get('fonts') or {}).pop(fid, None)
+            self.persist()
+            return dict(id=fid, removed=True)
+
+    def staged_fonts(self):
+        game = fontlab.game_fonts(self.game)
+        return [dict(game[fid], version=e['version'], style=e['style'], info=e.get('info') or {})
+                for fid, e in sorted((self.state.get('fonts') or {}).items()) if e.get('staged') and fid in game]
 
     def game_file(self, relative):
         if relative.startswith('cache/'):
@@ -610,8 +670,9 @@ class Lab:
         """True when the mod as it is now differs from what is installed, so an update would change the game."""
         journal = self.active()
         if not journal: return False
-        now = (sorted((r['key'], r['revision']) for r in self.staged()), self.palette(), self.hidden())
-        then = (sorted((r['key'], r['revision']) for r in journal.get('edits', [])), journal.get('palette') or {}, journal.get('hide') or [])
+        now = (sorted((r['key'], r['revision']) for r in self.staged()), self.palette(), self.hidden(), sorted((f['id'], f['version']) for f in self.staged_fonts()))
+        then = (sorted((r['key'], r['revision']) for r in journal.get('edits', [])), journal.get('palette') or {}, journal.get('hide') or [],
+                sorted((f['id'], f['version']) for f in journal.get('fonts') or []))
         return now != then
 
     def mod(self):
@@ -630,7 +691,9 @@ class Lab:
             for row in self.catalog.rows.values():
                 if row.get('editable') and row.get('primary', True) and not row.get('legacy'): by_name.setdefault(row['name'], row['key'])
             sprites = lambda group: [by_name[n] for n in exe_palette.HIDE_SPRITES.get(group, []) if n in by_name]
-            return dict(edits=edits, palette=self.palette(), hide=self.hidden(), hide_sprites={g: sprites(g) for g in exe_palette.HIDE},
+            installed_fonts = {f['id']: f['version'] for f in (journal or {}).get('fonts') or []}
+            fonts = [dict(id=f['id'], label=f['label'], face=f['info'].get('face', ''), installed=installed_fonts.get(f['id']) == f['version']) for f in self.staged_fonts()]
+            return dict(edits=edits, palette=self.palette(), hide=self.hidden(), hide_sprites={g: sprites(g) for g in exe_palette.HIDE}, fonts=fonts,
                         installed=journal and dict(edits=list(then), palette=journal.get('palette') or {}, hide=journal.get('hide') or []),
                         pending=self.pending())
 
@@ -639,13 +702,23 @@ class Lab:
             journal = self.active()
             if journal and journal['state'] != 'installed': raise ValueError('An install was interrupted. Restore it before building another.')
             keys = [r['key'] for r in self.staged()]
-            colors, hide = self.palette(), self.hidden()
-            if not keys and not colors and not hide and not journal: raise ValueError('Save and include at least one edit in the mod.')
+            colors, hide, fonts = self.palette(), self.hidden(), self.staged_fonts()
+            if not keys and not colors and not hide and not fonts and not journal: raise ValueError('Save and include at least one edit in the mod.')
             for k in keys: self.snapshot(self.row(k)['source'])
             replacements = self._compose(keys) if keys else {}
             build_id = uuid.uuid4().hex
             folder = self.root / 'builds' / build_id
             files = []
+            for f in fonts:
+                # A new font replaces its page outright, so recolors of the old page give way to it.
+                replacements.pop(f['page'], None)
+                for path, name in ((f['page'], 'page.png'), (f['fnt'], 'font.fnt')):
+                    original = self.snapshot(path).read_bytes()
+                    if file_hash(self.game_file(path)) not in self.accepted(path): raise ValueError('The installed source differs from the saved original: ' + path)
+                    rebuilt = (self.root / 'fonts' / f['version'] / name).read_bytes()
+                    atomic_bytes(folder / 'files' / path, rebuilt)
+                    files.append(dict(path=path, original_sha256=self.state['baseline'][path]['sha256'], edited_sha256=digest(rebuilt), original_bytes=len(original),
+                                      edited_bytes=len(rebuilt), entries=[f"Font: {f['label']} in {f['info'].get('face', 'a new style')}"], backup=str(self.snapshot(path))))
             for source, values in replacements.items():
                 original = self.snapshot(source).read_bytes()
                 baseline = self.state['baseline'][source]['sha256']
@@ -671,7 +744,8 @@ class Lab:
                 files.append(dict(path=EXE, original_sha256=self.state['baseline'][EXE]['sha256'], edited_sha256=digest(rebuilt), original_bytes=len(original),
                                   edited_bytes=len(rebuilt), entries=[f"Hide: {c['phase']}" if c['field'] == 'HIDE' else f"{c['field']} {c['color']} ({c['phase']})" for c in changes],
                                   backup=str(self.snapshot(EXE))))
-            manifest = dict(id=build_id, game=str(self.game), at=time.time(), files=files, edits=self.staged(), palette=colors, hide=hide, state='ready')
+            manifest = dict(id=build_id, game=str(self.game), at=time.time(), files=files, edits=self.staged(), palette=colors, hide=hide,
+                            fonts=[dict(id=f['id'], version=f['version']) for f in fonts], state='ready')
             atomic_json(folder / 'build.json', manifest)
             return manifest
 
