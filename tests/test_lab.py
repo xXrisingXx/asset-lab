@@ -178,7 +178,7 @@ class Case(unittest.TestCase):
         real=lab_core.atomic_bytes;writes=0
         def fail_second(path,data):
             nonlocal writes
-            if Path(path).is_relative_to(self.game):
+            if Path(path).resolve().is_relative_to(self.lab.game):  # the lab resolves short (8.3) temp paths
                 writes+=1
                 if writes==2:raise OSError('simulated disk failure')
             return real(path,data)
@@ -236,7 +236,7 @@ class Case(unittest.TestCase):
         writes=0
         def fail_second(path,data):
             nonlocal writes
-            if Path(path).is_relative_to(self.game):
+            if Path(path).resolve().is_relative_to(self.lab.game):  # the lab resolves short (8.3) temp paths
                 writes+=1
                 if writes==2:raise OSError('simulated disk failure')
             return real(path,data)
