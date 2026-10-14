@@ -25,12 +25,18 @@ jobs:
           python-version: '3.13'
 
       - name: Install the lab's two packages
-        run: python -m pip install numpy==2.5.4 pillow==12.3.0
+        shell: pwsh
+        run: |
+          python -m pip install numpy==2.5.4 pillow==12.3.0 *> ci-install.log
+          $code = $LASTEXITCODE; Get-Content ci-install.log; exit $code
 
       - name: Test
+        shell: pwsh
         env:
           PYTHONPATH: src;tests
-        run: python -B -X utf8 -m unittest discover -v -s tests
+        run: |
+          python -B -X utf8 -m unittest discover -v -s tests *> ci-test.log
+          $code = $LASTEXITCODE; Get-Content ci-test.log; exit $code
 
       - name: Build
         shell: pwsh
@@ -38,7 +44,9 @@ jobs:
           $base = ((Get-Content VERSION -Raw).Trim().Split('.')[0..1]) -join '.'
           $version = "$base.${{ github.run_number }}"
           "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
-          ./tools/build_release.ps1 -Version $version -Repository '${{ github.repository }}'
+          try { & ./tools/build_release.ps1 -Version $version -Repository '${{ github.repository }}' *> ci-build.log; $code = 0 }
+          catch { ($_ | Out-String) + $_.ScriptStackTrace | Add-Content ci-build.log; $code = 1 }
+          Get-Content ci-build.log; exit $code
 
       - name: Publish
         uses: softprops/action-gh-release@v2
@@ -49,3 +57,20 @@ jobs:
           files: |
             dist/AssetLab.exe
             dist/asset-lab-app.zip
+
+      # When something fails, keep the logs on a ci-logs branch so they can be read with plain git.
+      - name: Save logs
+        if: failure()
+        shell: pwsh
+        run: |
+          git config user.name 'Asset Lab CI'
+          git config user.email 'ci@users.noreply.github.com'
+          $logs = Get-ChildItem ci-*.log -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory ci-logs -Force | Out-Null
+          $logs | Copy-Item -Destination ci-logs
+          "run ${{ github.run_number }} on $(Get-Date -Format s)" | Out-File ci-logs/run.txt
+          git checkout --orphan ci-logs
+          git rm -rf --cached . *> $null
+          git add -f ci-logs
+          git commit -m "CI logs for run ${{ github.run_number }}"
+          git push -f origin ci-logs
