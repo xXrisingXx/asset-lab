@@ -185,6 +185,16 @@ class DesignFlowTests(Base):
         (folder / 'job.json').write_text(json.dumps(job))
         return job
 
+    def test_keep_it_white_turns_a_drawing_into_shades_for_tinted_icons(self):
+        job = self.fake_job()
+        colorful = np.asarray(self.designer.render(job['id'], 0, 0, {})).astype(int)
+        white = np.asarray(self.designer.render(job['id'], 0, 0, dict(white=1))).astype(int)
+        solid = white[..., 3] > 128
+        self.assertTrue(solid.any())
+        self.assertTrue((white[..., 0][solid] == white[..., 1][solid]).all() and (white[..., 1][solid] == white[..., 2][solid]).all())   # gray
+        self.assertEqual(int(white[..., 0][solid].max()), 255)                                        # the brightest part is white
+        self.assertTrue((white[..., 3] == colorful[..., 3]).all())                                    # same shape
+
     def test_apply_saves_each_target_and_undo_takes_it_back(self):
         job = self.fake_job()
         key = job['targets'][0]

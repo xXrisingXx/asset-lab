@@ -1007,7 +1007,8 @@ class Themes:
         model = available[0]['name']
         system = ('You are the art director of a 2D mobile game. Rewrite the request as one short paragraph (at most 60 words) that says exactly '
                   'what to draw: materials, colors, lighting, and small details or decorations. Keep the subject, and any text in it, exactly as '
-                  'it is. Do not describe a background or scenery. No preamble, no lists, no quotes.')
+                  'it is. Do not describe a background, scenery, or a shadow, floor or stand under it (the art is cut out). '
+                  'No preamble, no lists, no quotes.')
         payload = dict(model=model, stream=False, keep_alive=0,   # unload at once: the image model needs the graphics card next
                        messages=[dict(role='system', content=system), dict(role='user', content=f'Subject: {subject}\nRequest: {prompt}')],
                        options=dict(temperature=0.7, num_predict=180, num_ctx=2048, **MODEL_OPTIONS.get(model, {})))

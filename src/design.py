@@ -172,6 +172,18 @@ def tinted(image):
     return bool(rgb.min(axis=1).mean() > 0.85 and (rgb.max(axis=1) - rgb.min(axis=1)).mean() < 0.08)
 
 
+def whiten(art):
+    """White-and-gray version of a drawing, for icons the game multiplies by a color: the game's color then shows
+    everywhere, and the drawing's detail survives as lighter and darker shades of it."""
+    a = np.asarray(art.convert('RGBA')).astype(np.float32) / 255
+    lum = a[..., :3] @ np.array([0.2126, 0.7152, 0.0722], np.float32)
+    solid = a[..., 3] > 0.5
+    top = float(np.percentile(lum[solid], 98)) if solid.sum() > 16 else 1.0
+    shade = np.clip(lum / max(top, 0.05), 0, 1) ** 0.75   # brightest part pure white, mid-tones lifted a little
+    out = np.dstack([shade, shade, shade, a[..., 3]])
+    return Image.fromarray((out * 255 + 0.5).astype(np.uint8), 'RGBA')
+
+
 def tints():
     """White icons the game multiplies by one of its UI colors, measured on captures of the menus: name -> '#RRGGBB'."""
     try: return json.loads((Path(__file__).parent / 'data' / 'ui-tints.json').read_text(encoding='utf-8')).get('tints', {})
@@ -284,7 +296,7 @@ class Designer:
         small = '' if job['title'] or max(job['frames'][0]) > 160 else ' It is shown small in the game, so use bold, simple shapes and strong contrast that read at a glance.'
         color = {'green': 'pure green (#00FF00)', 'magenta': 'pure magenta (#FF00FF)', 'blue': 'pure blue (#0040FF)'}[job['key']]
         return (f'{job.get("direction") or job["prompt"]}. Edit {what}. {keep}{small} Crisp, high quality game UI art. '
-                f'The background must stay a perfectly flat solid {color} with nothing else on it: no scenery, no shadow, no frame, no extra text.')
+                f'The background must stay a perfectly flat solid {color} with nothing else on it: no scenery, no shadow or floor under the art, no frame, no extra text.')
 
     def _run(self, job):
         folder = self.folder / job['id']
@@ -354,9 +366,13 @@ class Designer:
         job = self.job(job_id)
         folder = self.folder / job['id']
         if raw: return Image.open(folder / f'raw-{int(index)}.png').convert('RGBA')
-        s = {'scale': 1.0, 'dx': 0.0, 'dy': 0.0, 'tolerance': 1.0, 'shape': 1.0 if job.get('stretched') else 0.0, 'fill': 1.0 if job['title'] else 0.0, **(settings or {})}
+        s = {'scale': 1.0, 'dx': 0.0, 'dy': 0.0, 'tolerance': 1.0, 'shape': 1.0 if job.get('stretched') else 0.0, 'fill': 1.0 if job['title'] else 0.0, 'white': 0.0, **(settings or {})}
         art = unkey(Image.open(folder / f'raw-{int(index)}.png'), job['key'], float(s['tolerance'])) if float(s['tolerance']) != 1.0 else \
             Image.open(folder / f'variant-{int(index)}.png').convert('RGBA')
+        out = self._place(job, art, s, int(target))
+        return whiten(out) if float(s['white']) >= 0.5 else out   # last, so the brightest pixel of the final art is white
+
+    def _place(self, job, art, s, target):
         frame = tuple(job['frames'][int(target)])
         if float(s['shape']) >= 0.5:
             # Keep the original outline: line the drawing up with the original's content box, then trim gently to its shape.
