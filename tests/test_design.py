@@ -175,6 +175,10 @@ class ChatRoutingTests(Base):
         with patch.object(design.runtime, 'missing', return_value=[]), patch.object(theme, 'models', return_value=[]):
             result = self.themes.chat('put a santa hat on the icons')
         self.assertEqual(result['source'], 'design')
+        # A part known by name (seen on a game screen) comes first.
+        last = self.designer.family_rows('every icon')[-1]
+        self.lab.labels.name([last['key']], 'Play button (Main menu)')
+        self.assertEqual(self.designer.family_rows('every icon')[0]['key'], last['key'])
 
     def test_complete_requests_skip_the_model_even_mid_conversation(self):
         history = [dict(role='user', content='ocean theme'), dict(role='assistant', content='{}')]

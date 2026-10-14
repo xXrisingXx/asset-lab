@@ -262,7 +262,8 @@ class Designer:
             if r['width'] < 24 or r['height'] < 24 or self.lab.catalog.children.get(r['key']): continue   # whole sheets and specks are not drawn
             if shading.families_of(r, self.lab.catalog.rows.get(r.get('parent', ''), {}).get('name', '')) in wanted:
                 seen.add(r.get('dup')); rows.append(r)
-        rows.sort(key=lambda r: (not r.get('live'), r['name']))   # sprites the game names in its code first
+        # Parts known by name (found on the game's screens) first, then sprites the game names in its code.
+        rows.sort(key=lambda r: (not r.get('label'), not r.get('live'), r['name']))
         return rows[:limit]
 
     # ----- generating ---------------------------------------------------------------------------
