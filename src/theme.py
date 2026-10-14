@@ -74,7 +74,10 @@ MOOD_WORDS = {'halloween': r'spooky|creepy|scary|horror|haunted|halloween|pumpki
 STOP = set('''make give want need theme style look looks like more less with without into onto from that this them they their have has some something
     side keep leave alone only every each whole game mitosis main menu screen color colour colors colours gradient outline inside glow flare neon rainbow
     strong subtle soft dark darker light lighter bright brighter proper nice clean white black grey gray thing things part parts effect effects please
-    also then over under around back front when where what which very really just still again same different normal default original'''.split())
+    also then over under around back front when where what which very really just still again same different normal default original
+    turn change changed replace swap switch show hide remove delete bigger smaller larger flash blink'''.split())
+# Words every name for a control has ("Play button", "New Players mode icon"): too common to pick out one sprite.
+GENERIC = {'button', 'buttons', 'icon', 'icons', 'arrow', 'arrows', 'badge', 'badges', 'mode', 'menu', 'main', 'list', 'screen', 'players', 'player'}
 GRADIENT_TYPES = ('linear', 'radial', 'conic', 'luminance')
 SCHEMA = {'type': 'object', 'required': ['reply', 'operations'], 'properties': {
     'reply': {'type': 'string'},
@@ -270,6 +273,12 @@ def hide_in(text):
     return hide_targets(text) if re.search(HIDE_VERB, text) else []
 
 
+SIZE_WORDS = r'\b(?:bigger|smaller|larger|tinier|resize|enlarge|shrink|move|reposition|relocate)\b'
+SIZE_NOTE = ('Sizes and positions are set by the game itself (each sprite has a fixed box in its sheet), '
+             'so I can change how things look but not how big they are or where they sit.')
+MOTION_WORDS = (r'\b(?:flash(?:es|ing)?|blink(?:s|ing)?|animat(?:e|ed|es|ing|ion)|spin(?:s|ning)?|rotat(?:e|es|ing)|bounc(?:e|es|ing)|'
+                r'wiggl(?:e|es|ing)|shak(?:e|es|ing)|puls(?:e|es|ing|ate)|flicker(?:s|ing)?)\b')
+MOTION_NOTE = 'Sprites are still pictures, so I can change how they look but not make them flash, spin or move.'
 # How the art route words each control: the bar behind the OG tag is drawn by the game, so only the tag goes.
 ART_LABELS = {'top_banner': 'the OG tag (the “Mitos.is” bar stays)', 'left_banner_1': 'the Worm.is and Strike.is promos',
               'left_banner_2': 'the Worm.is and Strike.is promos'}
@@ -280,17 +289,25 @@ def listing(items):
     return items[0] if len(items) == 1 else ', '.join(items[:-1]) + ' and ' + items[-1]
 
 
-def art_hide(plan, present):
+def art_hide(plan, present, text=''):
     """With Mitosis.exe off limits, hide menu controls by making the art they are drawn from fully transparent.
 
-    present: sprite names in the library. Returns the plan with the hiding as an operation, and a note.
+    present: sprite names in the library; text: the request, so "the app store badge" leaves Google Play alone (the
+    game hides the two badges together, but each is its own picture). Returns the plan with the hiding as an
+    operation, and a note.
     """
     groups = plan.get('hide') or []
     if not groups: return plan, ''
+    text = text.lower()
+    apple, google = re.search(r'app ?store|iphone|apple|\bios\b', text), re.search(r'google|android|play ?store', text)
     names, done, left = [], [], []
     for group in groups:
         mine = [name for name in exe_palette.HIDE_SPRITES.get(group, []) if name in present]
-        (done if mine else left).append(ART_LABELS.get(group, HIDE[group][0]))
+        label = ART_LABELS.get(group, HIDE[group][0])
+        if group == 'mobile_store_badges' and bool(apple) != bool(google):
+            mine = [name for name in mine if name == ('icon-iphone' if apple else 'icon-android')]
+            label = 'the App Store badge' if apple else 'the Google Play badge'
+        (done if mine else left).append(label)
         names += mine
     ops = clean_plan(dict(operations=[dict(targets=['everything'], match=list(dict.fromkeys(names)), opacity=0)]))['operations'] if names else []
     notes = []
@@ -757,8 +774,8 @@ class Themes:
             for row, _ in (sheet['members'] or [(sheet['row'], sheet['family'])]):
                 if sheet['family'] in QUIET or row['kind'] == 'glyph': continue
                 # The screen in brackets says where a thing is, not what it is: "Server region flag (Ranks)" is no "ranks icon".
-                label = re.sub(r'\([^)]*\)', ' ', row.get('label', '').lower())
-                for token in set(re.findall(r'[a-z]{4,}', re.sub(r'\.png$', '', row['name'].lower()) + ' ' + label)):
+                label = {word for word in re.findall(r'[a-z]{4,}', re.sub(r'\([^)]*\)', ' ', row.get('label', '').lower())) if word not in GENERIC}
+                for token in set(re.findall(r'[a-z]{4,}', re.sub(r'\.png$', '', row['name'].lower()))) | label:
                     self.tokens.setdefault(token, []).append((sheet_key, row))
 
     def tone(self, sheet_key, row):
@@ -790,6 +807,9 @@ class Themes:
             stem = next((s for s in (word, word[:-1] if word.endswith('s') else '', word[:-2] if word.endswith('es') else '') if s in self.tokens), '')
             if not stem or stem in STOP or word in STOP or stem in COLORS or stem in GRADIENTS or family_words.fullmatch(word): continue
             rows = self.tokens[stem]
+            # A word that is part of a name you gave means those sprites: "the star icon" is the Star button, not every star effect.
+            given = [(k, r) for k, r in rows if re.search(rf'\b{stem}', re.sub(r'\([^)]*\)', ' ', r.get('label', '').lower()))]
+            if given: rows = given
             described = re.search(rf'\b(white|light|bright|pale|dark|black)\s+{word}\b', text)
             if described:
                 light = described.group(1) in ('white', 'light', 'bright', 'pale')
@@ -1004,6 +1024,15 @@ class Themes:
 
     def plan_request(self, message, model='', history=None, scope=None):
         """Turn a request into a shading plan: exactly from tag words, else with the local model, else from keywords."""
+        low = message.lower()
+        size, motion = re.search(SIZE_WORDS, low), re.search(MOTION_WORDS, low)
+        if size or motion:
+            # "Make the font bigger", "make the quests icon flash": nothing else asked, so say what is possible instead of
+            # handing the model a request it would answer with an unrelated tweak.
+            rest = re.sub(f'{SIZE_WORDS}|{MOTION_WORDS}', ' ', low)
+            if not changes_anything(rule_plan(rest, self.named)) and not unknown_words(rest, self.named):
+                reply = ' '.join(note for note in (SIZE_NOTE if size else '', MOTION_NOTE if motion else '') if note)
+                return dict(plan=dict(reply=reply, operations=[], ui_colors={}, hide=[]), source='rules', note='', preview=None)
         available = models()
         names = [m['name'] for m in available]
         plan, source, note = None, 'rules', ''
@@ -1050,15 +1079,14 @@ class Themes:
         if exe_palette.BLOCKED and (plan['ui_colors'] or plan['hide']):
             # Mitosis.exe refuses to run once edited: menu controls drawn from art are hidden through that art instead,
             # and game colors (set in its code) are explained rather than planned.
-            plan, hidden = art_hide(plan, self.present())
+            plan, hidden = art_hide(plan, self.present(), message)
             notes = [hidden] if hidden else []
             if plan['ui_colors']: notes.append(exe_palette.COLORS_BLOCKED)
             plan = dict(plan, ui_colors={})
             if not plan['operations']: plan['reply'], notes = ' '.join(notes), []   # nothing left to do: the explanation is the answer
             note = ' '.join(([note] if note else []) + notes)
-        if re.search(r'\b(?:bigger|smaller|larger|tinier|resize|enlarge|shrink|move|reposition|relocate)\b', message.lower()):
-            note = (note + ' ' if note else '') + ('Sizes and positions are set by the game itself (each sprite has a fixed box in its sheet), '
-                                                   'so I can change how things look but not how big they are or where they sit.')
+        if size: note = (note + ' ' if note else '') + SIZE_NOTE
+        if motion: note = (note + ' ' if note else '') + MOTION_NOTE
         if not changes_anything(plan) and not plan['reply']:
             plan['reply'] = 'I could not turn that into a visual change. Try naming a color, a mood, or a part of the game.'
         return dict(plan=plan, source=source, note=note, preview=self.preview(plan, scope) if changes_anything(plan) else None)
@@ -1198,7 +1226,7 @@ class Themes:
     def apply(self, plan, prompt='', only=None):
         """only: catalog keys of checked assets; when given, nothing else is changed."""
         plan, scope = clean_plan(plan), self.scope(only)
-        if exe_palette.BLOCKED: plan = dict(art_hide(plan, self.present())[0], ui_colors={})
+        if exe_palette.BLOCKED: plan = dict(art_hide(plan, self.present(), prompt)[0], ui_colors={})
         if only and not scope: raise ValueError('The selected assets are no longer in the library.')
         if not changes_anything(plan): raise ValueError('This plan changes nothing.')
         with self.lock:

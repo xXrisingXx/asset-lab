@@ -61,6 +61,14 @@ class CutOutTests(Base):
             self.assertFalse(wants_design(text, []), text)
         self.assertFalse(wants_design('add a rainbow outline to the logo', []))        # outlines are the shader's job
         self.assertEqual(design.key_for('toxic slime logo'), 'magenta')
+        # Redraw verbs and new wording are drawing even when every word is known.
+        self.assertTrue(wants_design('turn the coin into a diamond', []))
+        self.assertTrue(wants_design('make the title say MITOSIS 2', []))
+        self.assertFalse(wants_design('make the buttons look like glass', []))           # glass is a shader look
+        self.assertEqual(design.subject_part('turn the coin into a diamond').strip(), 'turn the coin')
+        self.assertEqual(design.wording('make the title say MITOSIS 2'), 'MITOSIS 2')
+        self.assertEqual(design.wording('change the title text to "Cell Wars" with a glow'), 'Cell Wars')
+        self.assertEqual(design.wording('make the title gold'), '')
 
 
 class ShapeAndQualityTests(Base):
@@ -146,6 +154,20 @@ class ChatRoutingTests(Base):
         text = self.designer.instruction(job)
         self.assertTrue(text.startswith('Cracked bone'))
         self.assertIn('bold, simple shapes', text)                                            # small sprites read at a glance
+
+    def test_new_title_wording_and_clean_subjects(self):
+        title = dict(title=True, names=['logo'], frames=[[500, 110]], key='green', prompt='make the title say MITOSIS 2', text='MITOSIS 2')
+        text = self.designer.instruction(title)
+        self.assertIn('reads exactly "MITOSIS 2"', text)
+        self.assertNotIn('Keep the exact word MITOSIS', text)
+        self.assertEqual(Designer.subject(dict(title=False, names=['Play button (Main menu)'])), 'a game sprite: Play button')
+        self.assertEqual(Designer.subject(dict(title=False, names=['icon-crown'])), 'a game sprite: icon crown')
+        self.assertEqual(design.tints().get('icon-crown'), '#40BDC4')                         # measured: the menu's teal
+
+    def test_turn_one_thing_into_another_redraws_only_the_first(self):
+        self.lab.labels.name([next(r['key'] for r in self.rows('virus-pale') if r.get('primary', True))], 'Speed potion')
+        self.themes.reindex()
+        self.assertEqual([r['name'] for r in self.designer.targets('turn the speed potion into a free-x')], ['virus-pale'])
 
 
 class DesignFlowTests(Base):

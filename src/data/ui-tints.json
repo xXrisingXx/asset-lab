@@ -1,0 +1,19 @@
+{
+ "note": "White icons the game multiplies by one of its UI colors, measured on screen captures of the menus (night mode). Used to preview a redraw as it will look in the game.",
+ "tints": {
+  "back-icon": "#40BDC4",
+  "button-x": "#40BDC4",
+  "forward-icon": "#247276",
+  "icon-add": "#F7C663",
+  "icon-crown": "#40BDC4",
+  "icon-edit": "#40BDC4",
+  "icon-expand": "#247276",
+  "icon-flag": "#40BDC4",
+  "icon-friends": "#40BDC4",
+  "icon-goto-next": "#E52C58",
+  "icon-goto-previous": "#E52C58",
+  "icon-menu-invite": "#40BDC4",
+  "icon-menu-profile": "#40BDC4",
+  "icon-share": "#40BDC4"
+ }
+}

@@ -207,7 +207,8 @@ async function drawDesign(box,prompt,keys,count,base,direction){
 function designCard(box,job,keys){
   const card=el('div','design-card');box.append(card);
   const S2={variant:0,settings:{scale:1,dx:0,dy:0,tolerance:1,shape:job.stretched?1:0,fill:job.title?1:0},applied:null};
-  if(job.tinted)card.append(el('p','theme-note','This icon is plain white because the game colors it (teal in the menu), so a colorful drawing will come out tinted. Light, mostly white designs keep their look.'));
+  if(job.tint)card.append(el('p','theme-note',`The game colors this white icon ${job.tint} in the menu, so “In game” shows each variant the way the game will draw it. Light, mostly white designs keep their look.`));
+  else if(job.tinted)card.append(el('p','theme-note','This icon is plain white because the game colors it (teal in the menu), so a colorful drawing will come out tinted. Light, mostly white designs keep their look.'));
   if(job.direction){const dir=el('p','design-direction');dir.append(el('b','','Art direction: '),document.createTextNode(job.direction));card.append(dir);}
   const warn=el('p','theme-note');warn.hidden=true;card.append(warn);
   const showWarning=()=>{const w=(job.variants[S2.variant]||{}).warning;warn.textContent=w||'';warn.hidden=!w;};
@@ -220,6 +221,13 @@ function designCard(box,job,keys){
   const views=el('div','design-views');
   const frames=job.frames.map((f,t)=>{const fig=el('figure','design-view');const im=new Image();im.alt=job.names[t];fig.append(im,el('figcaption','',`${job.names[t]} · ${f[0]}×${f[1]} frame in the game`));views.append(fig);return im;});
   const before=el('figure','design-view before');const old=new Image();old.src=`/api/thumb?key=${encodeURIComponent(job.targets[0])}&big=1`;before.append(old,el('figcaption','','Now'));views.prepend(before);
+  if(job.tint){
+    // The game multiplies this icon by one of its colors: show the drawing that way too (white turns into that color).
+    const fig=el('figure','design-view ingame');const cv=document.createElement('canvas');fig.append(cv,el('figcaption','',`In game (× ${job.tint})`));views.append(fig);
+    frames[0].addEventListener('load',()=>{const im=frames[0];cv.width=im.naturalWidth;cv.height=im.naturalHeight;const c=cv.getContext('2d');
+      c.clearRect(0,0,cv.width,cv.height);c.drawImage(im,0,0);c.globalCompositeOperation='multiply';c.fillStyle=job.tint;c.fillRect(0,0,cv.width,cv.height);
+      c.globalCompositeOperation='destination-in';c.drawImage(im,0,0);c.globalCompositeOperation='source-over';});
+  }
   let timer;function refresh(){clearTimeout(timer);timer=setTimeout(()=>frames.forEach((im,t)=>im.src=url(t)),150);}
   const sliders=el('div','design-sliders');
   for(const [k,label,min,max,step] of [['scale','Size',0.5,1.8,0.02],['dx','Left / right',-1,1,0.02],['dy','Up / down',-1,1,0.02],['tolerance','Background cut-out',0.6,1.6,0.05]]){

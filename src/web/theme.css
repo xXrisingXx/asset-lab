@@ -57,7 +57,7 @@
 .design-variant img{width:100%;height:50px;object-fit:contain;display:block}.design-variant.on{border-color:var(--cyan)}
 .design-views{display:flex;flex-direction:column;gap:6px}
 .design-view{margin:0;background:#0D2829;border:1px solid #2c4a4a;border-radius:7px;padding:6px}
-.design-view img{width:100%;max-height:140px;object-fit:contain;display:block}
+.design-view img,.design-view canvas{width:100%;max-height:140px;object-fit:contain;display:block}
 .design-view figcaption{font-size:9px;color:var(--muted);margin-top:3px}.design-view.before{opacity:.75}
 .design-sliders{display:grid;gap:4px}.design-sliders label{display:grid;grid-template-columns:110px 1fr;align-items:center;font-size:10px;color:var(--muted)}
 .design-offer{margin-top:10px;padding-top:9px;border-top:1px dashed #3c4b5c}.design-offer>p{margin:0 0 6px;font-size:12px}

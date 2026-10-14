@@ -5,6 +5,7 @@ background is then keyed out with proper unmixing (so glows and drips keep soft 
 each target sprite's fixed atlas frame. Variants are kept, so the user can pick, nudge, refine and only then apply.
 """
 import json
+from pathlib import Path
 import re
 import subprocess
 import threading
@@ -28,11 +29,34 @@ OBJECTS = (r'\b(?:hats?|horns?|crowns?|halos?|wings?|bats?|cobwebs?|skulls?|pump
            r'glasses|sunglasses|bows?|ribbons?|flowers?|antlers?|beards?|scarf|scarves|tiaras?|masks?)\b')
 
 
+# Verbs that always mean drawing, whatever follows ("turn the coin into a diamond", even though diamonds exist as sprites).
+REDRAW = r'\b(?:redesign|re-?draw|reimagine|turn (?:it|them|the \w+(?: \w+)?) into|replace (?:it|them|the \w+(?: \w+)?) with)\b'
+# New wording for the title: "make the title say MITOSIS 2", "change the title text to Cell Wars".
+WORDING = r'\b(?:say|says|read|reads|spell|spells)\s+(.+)$|\b(?:text|wording|word|name)\s+(?:to|into)\s+(.+)$'
+
+
 def wants_design(text, unknown=()):
-    """A request to redraw art rather than recolor or shade it: something only drawing can do ("spooky", "a hat"), or a
-    drawing verb ("add", "redesign") with words the shader does not understand. "Add a rainbow outline" stays a theme."""
+    """A request to redraw art rather than recolor or shade it: something only drawing can do ("spooky", "a hat"), a
+    redraw verb ("turn it into"), new wording for the title, or a drawing verb ("add") with words the shader does not
+    understand. "Add a rainbow outline" stays a theme."""
     text = text.lower()
-    return bool(re.search(DRAWN, text) or (re.search(VERBS, text) and unknown))
+    return bool(re.search(DRAWN, text) or re.search(REDRAW, text) or (re.search(TITLE, text) and re.search(WORDING, text))
+                or (re.search(VERBS, text) and unknown))
+
+
+def wording(prompt):
+    """The new text a request wants on the title, as written ("MITOSIS 2"), or ''."""
+    found = re.search(WORDING, prompt, re.I)
+    if not found: return ''
+    text = re.split(r'\s+(?:and|with|in|but|instead)\s+|[.!?;]', (found.group(1) or found.group(2)).strip())[0]
+    return text.strip(' "“”\'').strip()[:32]
+
+
+def subject_part(prompt):
+    """The thing to redraw: what comes before "into" / "look like" / "with" in "turn the coin into a diamond"."""
+    if re.search(r'\b(?:turn|make|replace|change)\b.*\b(?:into|look like|looks like|with)\b', prompt.lower()):
+        return re.split(r'\b(?:into|look like|looks like|with)\b', prompt, maxsplit=1, flags=re.I)[0]
+    return prompt
 
 
 def key_for(prompt):
@@ -148,6 +172,12 @@ def tinted(image):
     return bool(rgb.min(axis=1).mean() > 0.85 and (rgb.max(axis=1) - rgb.min(axis=1)).mean() < 0.08)
 
 
+def tints():
+    """White icons the game multiplies by one of its UI colors, measured on captures of the menus: name -> '#RRGGBB'."""
+    try: return json.loads((Path(__file__).parent / 'data' / 'ui-tints.json').read_text(encoding='utf-8')).get('tints', {})
+    except (OSError, ValueError, AttributeError): return {}
+
+
 def leftover(art):
     """A warning when the model ignored the flat background: the cut-out then keeps lots of solid pixels at the canvas edge."""
     a = np.asarray(art.getchannel('A'))
@@ -182,15 +212,16 @@ class Designer:
         if only:
             rows = [self.lab.row(k) for k in only if k in self.lab.catalog.rows]
             return [r for r in rows if r['editable']][:6]
-        if re.search(TITLE, prompt.lower()): return self.title_rows()
-        names = {n for found in self.themes.named(prompt)[0].values() for n in found}
-        if not names: return self.family_rows(prompt)
+        subject = subject_part(prompt)
+        if re.search(TITLE, subject.lower()): return self.title_rows()
+        names = {n for found in self.themes.named(subject)[0].values() for n in found}
+        if not names: return self.family_rows(subject)
         rows = [r for r in self.lab.catalog.rows.values() if r['name'] in names and r['editable'] and r.get('primary', True) and not r.get('legacy')]
         seen, out = set(), []
         for r in rows:
             if r.get('dup') in seen: continue
             seen.add(r.get('dup')); out.append(r)
-        return out[:6]
+        return out[:8]
 
     def family_rows(self, prompt, limit=6):
         """A group named in the request ("the cells", "every icon"): its first few sprites the game actually uses, one per art."""
@@ -220,27 +251,36 @@ class Designer:
         else:
             rows = self.targets(prompt, keys)
         if not rows: raise ValueError('Name what to redesign, or check it in the library first.')
-        # One drawing per sprite: different sprites are drawn one at a time (the title's sizes share one drawing).
-        rows = [r for r in rows if r['name'] == rows[0]['name']]
+        # One drawing per sprite: different sprites are drawn one at a time (the title's sizes share one drawing, and so do
+        # copies that share a name you gave and a size, such as the coin the game also downloads).
+        first = rows[0]
+        rows = [r for r in rows if r['name'] == first['name'] or (first.get('label') and r.get('label') == first['label'] and (r['width'], r['height']) == (first['width'], first['height']))]
         with self.lock:
             if any(j['state'] == 'running' for j in self.jobs.values()): raise ValueError('A design is already being drawn.')
             job = dict(id=uuid.uuid4().hex, state='running', prompt=prompt, targets=[r['key'] for r in rows], names=[r.get('label') or r['name'] for r in rows],
                        frames=[[r['width'], r['height']] for r in rows], variants=[], message='Preparing…', progress=0, total=max(1, min(4, int(count))),
                        key=parent['key'] if base else key_for(prompt), base=base, at=time.time(), title=rows[0]['name'] == 'logo',
                        # Button and panel skins are stretched by the game, so their outline should stay; white icons are tinted by it.
-                       stretched=rows[0]['group'] == 'Buttons & panels' and rows[0]['name'] != 'logo', tinted=tinted(self.lab.catalog.image(rows[0]['key'])))
+                       stretched=rows[0]['group'] == 'Buttons & panels' and rows[0]['name'] != 'logo', tinted=tinted(self.lab.catalog.image(rows[0]['key'])),
+                       tint=tints().get(rows[0]['name'], ''))   # the color the game multiplies this icon by, when measured
             if direction: job['direction'] = str(direction)[:700]   # shared by a set drawn together, so they match
+            if job['title'] and wording(prompt): job['text'] = wording(prompt)
             self.jobs[job['id']] = job
         threading.Thread(target=self._run, args=(job,), daemon=True).start()
         return dict(job)
 
     @staticmethod
     def subject(job):
-        return 'the game title logo that reads MITOSIS (the O is a round dot)' if job['title'] else f'a game sprite ({job["names"][0]})'
+        if job['title']: return 'the game title logo that reads MITOSIS (the O is a round dot)'
+        # "Play button (Main menu)" -> "play button"; "icon-crown" -> "icon crown".
+        name = re.sub(r'[-_]+', ' ', re.sub(r'\.png$|\s*\([^)]*\)\s*$', '', job['names'][0])).strip()
+        return f'a game sprite: {name}'
 
     def instruction(self, job):
         what = self.subject(job)
-        keep = 'Keep the exact word MITOSIS, spelled the same, in the same layout and size, centered.' if job['title'] else 'Keep its outline, size and position, centered.'
+        if job.get('text'): keep = f'Change the word MITOSIS so it reads exactly "{job["text"]}", in the same lettering style, on one line, centered.'
+        elif job['title']: keep = 'Keep the exact word MITOSIS, spelled the same, in the same layout and size, centered.'
+        else: keep = 'Keep its outline, size and position, centered.'
         small = '' if job['title'] or max(job['frames'][0]) > 160 else ' It is shown small in the game, so use bold, simple shapes and strong contrast that read at a glance.'
         color = {'green': 'pure green (#00FF00)', 'magenta': 'pure magenta (#FF00FF)', 'blue': 'pure blue (#0040FF)'}[job['key']]
         return (f'{job.get("direction") or job["prompt"]}. Edit {what}. {keep}{small} Crisp, high quality game UI art. '

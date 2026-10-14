@@ -44,6 +44,34 @@ class NameTests(Base):
         self.themes.reindex()
         self.assertEqual(rule_plan('make the ranks icon gold', self.themes.named)['operations'][0]['match'], ['icon-a'])
 
+    def test_common_words_in_names_do_not_pick_a_sprite_but_given_names_win(self):
+        self.lab.labels.name([self.key('icon-a')], 'New Players mode icon (Main menu)')
+        self.lab.labels.name([self.key('virus-pale')], 'Virus button (Main menu)')
+        self.themes.reindex()
+        dark = rule_plan('make everything dark mode', self.themes.named)['operations'][0]
+        self.assertEqual((dark['targets'], dark['match'], dark['brightness'] < 1), (['everything'], [], True))
+        self.assertEqual(rule_plan('make the virus gold', self.themes.named)['operations'][0]['match'], ['virus-pale'])   # not virus-deep
+
+    def test_size_and_motion_alone_are_answered_not_planned(self):
+        self.lab.labels.name([self.key('icon-a')], 'Quests icon (Main menu)')
+        self.themes.reindex()
+        with patch.object(theme, 'models', return_value=[]):
+            bigger, flash = self.themes.chat('make the font bigger'), self.themes.chat('make the quests icon flash')
+            mixed = self.themes.chat('make the buttons red and bigger')
+        self.assertEqual((bigger['plan']['operations'], flash['plan']['operations']), ([], []))
+        self.assertIn('Sizes and positions', bigger['plan']['reply'])
+        self.assertIn('still pictures', flash['plan']['reply'])
+        self.assertTrue(mixed['plan']['operations'])
+        self.assertIn('Sizes and positions', mixed['note'])
+
+    def test_one_store_badge_can_be_hidden_alone(self):
+        plan = clean_plan(dict(operations=[], hide=['mobile_store_badges']))
+        apple, note = theme.art_hide(plan, {'icon-iphone', 'icon-android'}, 'remove the app store badge')
+        self.assertEqual(apple['operations'][0]['match'], ['icon-iphone'])
+        self.assertIn('The App Store badge will be hidden', note)
+        both, _ = theme.art_hide(plan, {'icon-iphone', 'icon-android'}, 'hide the store badges')
+        self.assertEqual(both['operations'][0]['match'], ['icon-iphone', 'icon-android'])
+
     def test_theme_ai_understands_a_given_name_as_one_phrase(self):
         self.lab.labels.name([self.key('virus-pale')], 'Speed potion')
         self.themes.reindex()
