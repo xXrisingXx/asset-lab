@@ -7,6 +7,9 @@ const dlg=el('dialog','review');dlg.id='reviewDialog';dlg.setAttribute('aria-lab
 const R={data:null,out:new Set(),colorsOut:{},hideOut:new Set(),changed:false};
 
 function thumb(key,original,alt){const im=new Image();im.loading='lazy';im.decoding='async';im.alt=alt;im.src=`/api/thumb?key=${encodeURIComponent(key)}${original?'&original=1':''}&big=1`;return im;}
+// A fully transparent "after" is art hidden on purpose ("hide the discord button"): say so instead of showing nothing.
+function markHidden(im,pair){im.addEventListener('load',()=>{try{const c=document.createElement('canvas');c.width=c.height=24;const x=c.getContext('2d');x.drawImage(im,0,0,24,24);
+  const a=x.getImageData(0,0,24,24).data;for(let i=3;i<a.length;i+=4)if(a[i])return;pair.classList.add('hidden-art');pair.append(el('span','review-hidden','Hidden in the game'));}catch(e){}});}
 function toggle(label,out,onRemove,onBack){
   const b=el('button','review-toggle',out?'Put back':'Remove');b.type='button';b.title=out?'Include this in the mod again':'Leave this out of the mod';
   b.onclick=run(async()=>{b.disabled=true;try{await (out?onBack():onRemove());R.changed=true;render();}finally{b.disabled=false;}});return b;}
@@ -51,7 +54,7 @@ function render(){
     const grid=el('div','review-grid');sec.append(grid);
     const shown=g.items.length>24&&!g.all?g.items.slice(0,24):g.items;
     for(const e of shown){const out=R.out.has(e.key);const card=el('div','review-card'+(out?' out':''));
-      const pair=el('button','review-pair big');pair.type='button';pair.title='Open '+e.name+' in the editor';pair.append(thumb(e.key,true,'before'),el('span','review-arrow','→'),thumb(e.key,false,'after'));
+      const pair=el('button','review-pair big');pair.type='button';pair.title='Open '+e.name+' in the editor';const after=thumb(e.key,false,'after');markHidden(after,pair);pair.append(thumb(e.key,true,'before'),el('span','review-arrow','→'),after);
       pair.onclick=run(async()=>{dlg.close();await select(e.key);});
       const text=el('div','review-text');text.append(el('b','',e.name),el('small','',`${e.size[0]} × ${e.size[1]}${e.sheet?' · whole sheet':''} · ${e.source}`));
       if(d.installed&&!e.installed)text.firstChild.append(el('span','review-new','New'));
