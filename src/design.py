@@ -238,7 +238,7 @@ class Designer:
     def targets(self, prompt, only=None):
         if only:
             rows = [self.lab.row(k) for k in only if k in self.lab.catalog.rows]
-            return [r for r in rows if r['editable']][:6]
+            return [r for r in rows if r['editable']][:8]   # room for a sprite and its identical copies (the coin has 7)
         subject = subject_part(prompt)
         if re.search(TITLE, subject.lower()): return self.title_rows()
         names = {n for found in self.themes.named(subject)[0].values() for n in found}
