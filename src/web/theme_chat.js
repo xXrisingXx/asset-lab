@@ -35,6 +35,7 @@ for(const [label,words] of [['Parts','buttons · panels · icons · logo · cell
   ['Gradients','rainbow · sunset · synthwave · fire · lava · ocean · ice · aurora · galaxy · toxic · candy · gold · chrome · pastel · holographic · “from purple to cyan” · vertical · radial · striped'],
   ['Moods','spooky · christmas · winter · forest · royal · cyberpunk · bloody · midnight — a matching palette for everything or the parts you name'],
   ['Redraw','“make the title spooky” · “put a top hat on the logo” · “add bats and dripping blood” · “turn the logo into graffiti” — drawn by the local image model; you pick a variant and adjust it'],
+  ['Text','player names · menu text — a look (gold · neon sign · candy cane · galaxy…) · a font (“in impact”) · “red, orange and yellow gradient” · left to right · diagonal · 45 degrees · hollow · wide / narrow · white glow · black outline'],
   ['Styles','neon · glass · pastel · greyscale · retro 8-bit · cartoon · scanlines · grainy · hide · more / less transparent']]){const p=el('p');p.append(el('b','',label+' '),document.createTextNode(words));tagList.append(p);}
 const auto=el('label','compact');const autoBox=el('input');autoBox.type='checkbox';autoBox.id='themeAuto';auto.title='Apply the plan as soon as it is ready';auto.append(autoBox,document.createTextNode(' Auto-apply'));
 const send=el('button','primary','Plan');send.id='themeSend';send.type='submit';row.append(ideas,tags,auto,send);form.append(input,row);
@@ -165,7 +166,9 @@ async function ask(text){
     if(result.undone){S.build=null;await status();await library();if(S.asset&&!S.dirty)await select(S.asset.key,true);await refresh();}
     const planned=result.plan.operations.length||Object.keys(result.plan.ui_colors||{}).length||result.plan.hide?.length;
     if(result.font&&!planned&&!result.design){showFont(wait,result.font,result.note);scroll();return;}
-    const addFont=()=>{if(!result.font)return;const offer=el('div','design-offer');offer.append(el('p','',`Text · ${result.font.label}`));wait.append(offer);showFont(offer,result.font);};
+    const addFont=()=>{if(!result.font)return;const offer=el('div','design-offer');
+      offer.append(el('p','',result.font.offer?`Want the player names to match? Here they are in the ${result.font.look} look; flip through the others below.`:`Text · ${result.font.label}`));
+      wait.append(offer);showFont(offer,result.font);};
     if(result.design&&!planned&&!result.design.optional){showDesign(wait,result.design,keys);addFont();scroll();return;}
     showPlan(wait,result,text,keys);
     if(result.design){const offer=el('div','design-offer');offer.append(el('p',''));wait.append(offer);showDesign(offer,result.design,keys,null,true);}
@@ -210,14 +213,21 @@ async function drawDesign(box,prompt,keys,count,base,direction){
   designCard(box,job,keys);scroll();return job;
 }
 function showFont(box,font,note){
-  // A text request: the game font in the asked style, previewed; Apply puts it in the mod, Fine-tune opens every setting.
+  // A text style, asked for or offered with a whole-game theme: the game font in that look, previewed. The looks menu
+  // switches the preview instantly; Apply puts the look shown in the mod (never by itself), Fine-tune opens every setting.
   if(note)box.append(el('p','theme-note',note));
   const img=el('img','font-offer');img.src=font.image;img.alt=font.label+' preview';
+  let style=font.style;
   const actions=el('div','theme-actions');const apply=el('button','primary','Apply');const tune=el('button','','Fine-tune…');
-  apply.onclick=run(async()=>{apply.disabled=true;const r=await api('/api/font-apply',{font:font.id,style:font.style});apply.textContent='Applied ✓';
-    message(`${r.label} saved in ${r.face}. Install in Mitosis to see it.`);S.build=null;await status();await refresh();});
-  tune.onclick=()=>window.openFonts&&window.openFonts(font.id,font.style,font.text);
-  actions.append(apply,tune);box.append(img,actions);
+  const pick=window.LabFonts&&window.LabFonts.picker({font:font.id,text:font.text,style:font.style,img,first:font.offer?undefined:'Your request',
+    onPick:s=>{style=s;apply.disabled=false;apply.textContent='Apply';}});
+  apply.onclick=run(async()=>{apply.disabled=true;
+    try{const r=await api('/api/font-apply',{font:font.id,style});apply.textContent='Applied ✓';message(`${r.label} saved in ${r.face}. Install in Mitosis to see it.`);}
+    catch(e){apply.disabled=false;throw e;}
+    window.LabFonts&&window.LabFonts.reload().catch(()=>{});S.build=null;await status();await refresh();});
+  tune.onclick=()=>window.openFonts&&window.openFonts(font.id,style,font.text);
+  actions.append(apply,tune);if(font.offer)actions.append(el('small','hint','Nothing changes until you click Apply.'));
+  box.append(img);if(pick)box.append(pick);box.append(actions);
 }
 function designCard(box,job,keys){
   const card=el('div','design-card');box.append(card);

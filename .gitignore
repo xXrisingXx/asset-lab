@@ -6,6 +6,7 @@ launcher/launcher.sha256
 __pycache__/
 *.pyc
 *.lnk
+tests/browser/output/
 
 # Research and decompile work: kept on the developer's PC, not shared
 docs/

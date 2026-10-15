@@ -19,8 +19,56 @@
                        "url":  "https://files.pythonhosted.org/packages/a6/9b/7a58e61d62be561da3a356fe2384d4059a6345fc130e23ef1c36a5b81d24/pillow-12.3.0-cp313-cp313-win_amd64.whl",
                        "sha256":  "1cca606cd25738df4ed873d5ad46bbdb3d83b5cbca291f6b4ff13a4df6b0bbe8",
                        "size":  7239691
+                   },
+                   {
+                       "name":  "soundfile 0.14.0",
+                       "url":  "https://files.pythonhosted.org/packages/ed/97/b39c18ac1df45e755ca22b8b00e872929da5d107998a207a5e4ac831bfda/soundfile-0.14.0-py2.py3-none-win_amd64.whl",
+                       "sha256":  "299491d3499460fb1b74bb4bd78b57ffc2d243a5fafa7b6ec1b264875c78453e",
+                       "size":  1021480
+                   },
+                   {
+                       "name":  "cffi 2.1.1",
+                       "url":  "https://files.pythonhosted.org/packages/60/a6/8b149b2c3f2e11aaa1618ef64500b45f50f22c57a977a4dff1aff1f91042/cffi-2.1.1-cp313-cp313-win_amd64.whl",
+                       "sha256":  "1aa5645c30469b09530c4ebca77ebf8f17618293c58f8549cb1a543a50236e7d",
+                       "size":  185688
+                   },
+                   {
+                       "name":  "pycparser 3.11",
+                       "url":  "https://files.pythonhosted.org/packages/90/11/0e6f11117525ff0eec40ebac3d313376f102df93ca44ad9e893ee85e4f89/pycparser-3.11-py3-none-any.whl",
+                       "sha256":  "51d5a8ba2be0bbe440b99d2112604c95bbbc3c2748a64260186c541e1729cd80",
+                       "size":  51178
+                   },
+                   {
+                       "name":  "typing_extensions 4.16.0",
+                       "url":  "https://files.pythonhosted.org/packages/49/d3/b8441a820a491ddfc024b0b0cf0393375b75ea13866d9c66727e54c2fc80/typing_extensions-4.16.0-py3-none-any.whl",
+                       "sha256":  "481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8",
+                       "size":  45571
                    }
                ],
+    "//tools":  "The sound editor's link helper, downloaded by the lab itself (not the launcher) the first time a player pastes a page link and agrees. into: its place in <runtime>/tools.",
+    "tools":  [
+                  {
+                      "name":  "yt-dlp 2026.08.19",
+                      "url":  "https://github.com/yt-dlp/yt-dlp/releases/download/2026.08.19/yt-dlp.exe",
+                      "sha256":  "66674953fe251b89f4d08c5f0e35e0728679bd67ab3d7d05c0562af101dd3e7a",
+                      "size":  17840399,
+                      "into":  "yt-dlp.exe"
+                  },
+                  {
+                      "name":  "Deno 2.9.7",
+                      "url":  "https://github.com/denoland/deno/releases/download/v2.9.7/deno-x86_64-pc-windows-msvc.zip",
+                      "sha256":  "a0c3101b4158d1dfb7d6a78a7bf0f3de80c96bb423c152beec8beb22786f2238",
+                      "size":  42630221,
+                      "into":  "deno"
+                  },
+                  {
+                      "name":  "PyAV 19.0.1",
+                      "url":  "https://files.pythonhosted.org/packages/e6/dc/a87a5a5e3ac462734f9befd8bad1447301e5802d8c111e22bf708fba7af3/av-19.0.1-cp312-abi3-win_amd64.whl",
+                      "sha256":  "906fc3db09288319a75ea23ffefb59961c7dbe0d1c074601507a89de7d8593d8",
+                      "size":  28149519,
+                      "into":  "pylib"
+                  }
+              ],
     "runtime":  [
                     {
                         "file":  "downloads/sd-master-1d0a58a-bin-win-vulkan-x64.zip",

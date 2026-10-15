@@ -280,60 +280,193 @@ CLAUSES = r'[.;\n]+|,?\s+(?:and then|then|also|plus)\s+|,?\s+and\s+(?=(?:make|gi
 FONT_WORDS = r'\b(?:fonts?|typefaces?|lettering|player names?|nick ?names?|usernames?|names|name text|menu text)\b'
 TEXT_TARGETS = [('geosans_stroke_80', r'\boutlined (?:menu )?text'), ('geosans_80', r'\b(?:menu|ui|button|hud) (?:text|font|letters)'),
                 ('expinfo', r'\b(?:xp|small) numbers?\b'), ('nicktext', r'.')]
-FACE_WORDS = [(r'\b(?:condensed|tall|narrow|skinny)\b', 'Bahnschrift|Bold Condensed'), (r'\bcomic\b', 'Comic Sans MS|Bold'),
-              (r'\b(?:spooky|horror|creepy|halloween|scary)\b', 'Chiller|Regular'), (r'\b(?:mono|monospace|typewriter|code)\b', 'Consolas|Bold'),
-              (r'\b(?:handwritten|script|cursive|signature)\b', 'Segoe Script|Bold'), (r'\b(?:blocky|heavy|chunky)\b', 'Arial|Black')]
+FACE_WORDS = [(r'\b(?:condensed|tall)\b', 'Bahnschrift|Bold Condensed'), (r'\bcomic\b', 'Comic Sans MS|Bold'),
+              (r'\b(?:spooky|horror|creepy|halloween|scary)\b', 'Chiller|Regular, Ink Free|Regular'), (r'\b(?:mono|monospace|typewriter|code)\b', 'Consolas|Bold, Cascadia Code|Bold'),
+              (r'\b(?:handwritten|handwriting|script|cursive|signature)\b', 'Segoe Script|Bold, Segoe Print|Bold'), (r'\b(?:blocky|heavy|chunky)\b', 'Arial|Black')]
+# The text look a mood calls for: "christmas names" uses it, and a whole-game mood ("halloween theme") offers it for the
+# player names next to the theme plan. First match wins, so the more specific moods come first.
+MOOD_TEXT = [(r'halloween|spooky|creepy|scary|horror|pumpkins?|witch(?:es|y)?|zombies?', 'Pumpkin'), (r'christmas|xmas|festive|santa|candy canes?', 'Christmas'),
+             (r'ghosts?|ghostly|haunted', 'Ghost'), (r'bloody|blood|gory|gore|vampires?', 'Blood'), (r'winter|wintery|snowy?|frost|frosty|frozen|blizzard', 'Frost'),
+             (r'ice|icy|glaciers?', 'Ice'), (r'ocean|sea|underwater|aquatic|beach|deep blue', 'Ocean'), (r'synthwave|vaporwave|retrowave|outrun|80s', 'Synthwave'),
+             (r'cyberpunk|cyber|hacker|futuristic|sci-?fi', 'Cyber'), (r'neon', 'Neon pink'), (r'gold|golden|luxury|luxurious|bling', 'Gold'),
+             (r'royal|regal|kingly|king|queen|majestic', 'Royal'), (r'lava|volcan(?:o|ic)|magma|molten', 'Lava'),
+             (r'fire|fiery|flames?|flaming|burning|inferno|hellfire', 'Fire'), (r'galaxy|space|cosmic|cosmos|nebula|starry|universe', 'Galaxy'),
+             (r'toxic|radioactive|nuclear|acid|poison(?:ous)?|biohazard', 'Toxic'), (r'slime|slimy|goo|gooey', 'Slime'), (r'valentines?|romantic|romance', 'Valentine'),
+             (r'rainbow|pride|colou?rful|lgbtq?', 'Rainbow'), (r'forest|nature|natural|jungle|woodland|earthy', 'Forest'), (r'candy|sweets|bubblegum', 'Bubblegum'),
+             (r'pastel|cute|kawaii', 'Pastel'), (r'easter|spring(?:time)?', 'Spring'), (r"st\.? ?patrick'?s?|lucky|clover|shamrock|irish", 'Lucky'),
+             (r'chrome|metal(?:lic)?|steel|silver', 'Chrome'), (r'aurora|northern lights', 'Aurora'), (r'sunset|summer|tropical|sunny', 'Sunset'),
+             (r'storm(?:y)?|thunder|lightning', 'Storm'), (r'electric', 'Electric'), (r'hologram|holographic|holo|iridescent', 'Hologram'),
+             (r'diamonds?|crystal', 'Diamond'), (r'retro|arcade|8-?bit', 'Retro arcade'), (r'western|cowboy|wild west', 'Wild west')]
+WHOLE_GAME = r'\b(?:theme[ds]?|everything|whole|entire|all of it|the game|vibes?)\b'
+TEXT_COLOR = r'(?:#[0-9a-f]{6}|\b(?:(?:light|pale|dark|deep|bright)\s+)?(?:' + '|'.join(sorted(COLORS, key=len, reverse=True)) + r')\b)'
+TEXT_GRADIENT = r'(?:gradients?|fad(?:e|es|ed|ing)|ombre|blend(?:s|ed|ing)?)'
+# Colors in a row: "red, white and blue", "red to gold", "red-to-blue", "red white and blue", "blue green gradient"; "sky blue" alone is one color.
+TEXT_SEP = rf'(?:\s*,\s*(?:and\s+|then\s+)?|\s+(?:to|into|then|and|through|via)\s+|\s*-\s*(?:to\s*-\s*)?|\s+(?={TEXT_COLOR}\s*(?:,|and\b|{TEXT_GRADIENT})))'
+# Which way a gradient runs, in the angle the fonts tool uses: 0 = left to right, 90 = top to bottom.
+TEXT_DIRECTIONS = [(r'left[- ]to[- ]right|horizontal(?:ly)?|sideways', 0), (r'right[- ]to[- ]left', 180), (r'top[- ]to[- ]bottom|vertical(?:ly)?|downwards?|up and down', 90),
+                   (r'bottom[- ]to[- ]top|upwards?', 270), (r'diagonal(?:ly)?', 45)]
 
 
 def text_color(name):
-    """Letters want true black, not the soft black the UI palette uses."""
-    return '#000000' if name.strip() == 'black' else hex_color(name)
+    """A color a request names: true black for letters (not the UI palette's soft black); "light" and "pale" mix in white,
+    "dark" and "deep" black."""
+    shade, _, base = name.strip().rpartition(' ')
+    color = '#000000' if base == 'black' else hex_color(base)
+    toward = {'light': 'ffffff', 'pale': 'ffffff', 'dark': '000000', 'deep': '000000'}.get(shade)
+    return '#' + ''.join(f'{round(int(color[i:i + 2], 16) * 0.55 + int(toward[i - 1:i + 1], 16) * 0.45):02x}' for i in (1, 3, 5)) if toward else color
+
+
+def same_hue(a, b):
+    """Whether two colors are the same kind ("emerald" and "green"): a color named right after a look ("emerald green
+    names", "ocean blue") is then the look's own, not a new fill."""
+    (h1, s1, _), (h2, s2, _) = (Image.new('RGB', (1, 1), c).convert('HSV').getpixel((0, 0)) for c in (a, b))
+    return max(s1, s2) < 40 if min(s1, s2) < 40 else min(abs(h1 - h2), 256 - abs(h1 - h2)) < 32   # grays match grays; hues within 45 degrees
+
+
+def font_named(low, faces):
+    """A typeface the request names, with where: 'arial black' (a family and its style), 'comic sans' (Comic Sans MS),
+    'impact'. Its words are then neither colors nor looks."""
+    names = {}
+    for f in faces:
+        for alias in {f['family'].lower(), re.sub(r'\s+(?:ms|mt|ui)$', '', f['family'].lower())}:
+            if f['style'].lower() not in ('regular', 'normal', 'roman', 'book'): names.setdefault(f"{alias} {f['style'].lower()}", f"{f['family']}|{f['style']}")
+            if len(alias) >= 4: names.setdefault(alias, f['family'])
+    for name in sorted(names, key=len, reverse=True):
+        found = re.search(rf'(?<![a-z0-9]){re.escape(name)}(?![a-z0-9])', low)
+        if found: return names[name], found.span()
+    return '', None
+
+
+def text_look(low):
+    """The look a request names ("gold", "neon sign", "fire and ice") or, failing that, the one its mood calls for
+    ("christmas", "toxic"): (look name, where it was said), or None. "Hollow" is also how letters are drawn, so in
+    "hollow neon names" the mood picks the look and the letters come out hollow."""
+    best = None
+    for name, preset in fonts.PRESETS.items():
+        found = preset and re.search(rf"\b{re.escape(name.lower().replace('&', 'and'))}\b", low)
+        if found and (best is None or len(name) > len(best[0])): best = (name, found.span())
+    mood = next(((name, found.span()) for pattern, name in MOOD_TEXT for found in [re.search(rf'\b(?:{pattern})\b', low)] if found), None)
+    return mood if mood and (not best or best[0] == 'Hollow') else best
 
 
 def font_style(text, faces):
-    """A font style from a request: typeface (by name or by look), fill, gradient, outline, glow, shadow and more."""
-    low = text.lower()
-    any_color = r'(#[0-9a-f]{6}|\b(?:' + '|'.join(sorted(COLORS, key=len, reverse=True)) + r')\b)'
-    style, used = {}, []
-    for name, preset in fonts.PRESETS.items():
-        found = re.search(rf'\b{re.escape(name.lower())}\b', low)
-        if preset and found: style.update(preset); used.append(found.span())   # "gold names" is the Gold look, not a flat gold fill
-    families = sorted({f['family'] for f in faces}, key=len, reverse=True)
-    family = next((f for f in families if len(f) >= 4 and re.search(rf'(?<![a-z0-9]){re.escape(f.lower())}(?![a-z0-9])', low)), None)
-    if family: style['font'] = family
-    elif not style.get('font'): style['font'] = next((face for pattern, face in FACE_WORDS if re.search(pattern, low)), '')
+    """A font style from a request: a look by name or mood, a typeface (by name or by feel), the fill or a gradient of
+    up to eight colors in any direction, outline, glow, shadow, hollow or see-through letters, width and more."""
+    low = re.sub(r'\boutlined (?:menu )?text\b', ' ', re.sub(r'\s*&\s*', ' and ', text.lower()))   # which font, not an outline
+    low = re.sub(r'\b(pink|blue|green)\s+neon\b', r'neon \1', low)   # "green neon" is the Neon green look (same length: places stay)
+    any_color, used = f'({TEXT_COLOR})', []
+    blank = lambda: ''.join(' ' if any(a <= i < b for a, b in used) else ch for i, ch in enumerate(low))
 
     def take(pattern):
-        """The color named with an effect ("white glow"): '' when the effect has no color, None when it is not asked for."""
-        found = re.search(pattern, low)
-        if not found: return None
+        """The color named with an effect ("white glow"): '' when the effect has no color, None when it is not asked for.
+        A mention with a color wins ("outline only, with a pink outline")."""
+        every = list(re.finditer(pattern, low))
+        if not every: return None
+        found = next((f for f in every if f.group(1)), every[0])
         if found.group(1): used.append(found.span(1))
         return text_color(found.group(1)) if found.group(1) else ''
-    gradient = re.search(rf'{any_color}\s+(?:to|into|and)\s+{any_color}\s+gradient|gradient\s+(?:from\s+)?{any_color}\s+(?:to|into)\s+{any_color}', low)
-    if gradient:
-        a, b = [g for g in gradient.groups() if g]
-        style.update(fill=text_color(a), fill2=text_color(b)); used += [gradient.span()]
+    # A color named with an effect is the effect's: "a gold outline" is not the Gold look.
     glow = take(rf'{any_color}?\s*(?:glow|halo|glowing)')
     outline = take(rf'{any_color}?\s*(?:outlines?|borders?|strokes?|edges?)')
     shadow = take(rf'{any_color}?\s*(?:drop\s+)?shadows?')
-    rest = low
-    for start, end in sorted(used, reverse=True): rest = rest[:start] + ' ' * (end - start) + rest[end:]
+    font, said = font_named(blank(), faces)                    # "arial black" is a font, not black letters
+    if said: used.append(said)
+    # The letters' colors. Two or more in a row blend: "red, white and blue", "a red-to-gold fade", "a gradient at 30
+    # degrees from red to blue" (the row nearest the word gradient). Two joined by "and" without the word are the
+    # letters and their outline: "gold and black names".
+    word = re.search(rf'\b{TEXT_GRADIENT}\b', low)
+    runs = list(re.finditer(rf'{TEXT_COLOR}(?:{TEXT_SEP}{TEXT_COLOR})+', blank()))
+    run = min(runs, key=lambda m: abs(m.start() - word.start()) if word else m.start()) if runs else None
+    colors = [text_color(c) for c in re.findall(TEXT_COLOR, run.group(0))][:fonts.MAX_STOPS] if run else []
+    pair = len(colors) == 2 and not word and outline is None and re.search(r',|\band\b', run.group(0))
+    stops = fonts.even(*colors) if colors and not pair else []
+    if run: used.append(run.span())
+    look = text_look(blank())                                  # "gold names" is the Gold look, not a flat gold fill
+    style = dict(fonts.PRESETS[look[0]], look=look[0]) if look else {}   # 'look' only names the starting point; styles ignore it
+    if look:
+        used.append(look[1])
+        tint, own = re.match(rf'\s+({TEXT_COLOR})', low[look[1][1]:]), style['stops'][len(style['stops']) // 2][1] if style.get('stops') else style.get('fill', '#ffffff')
+        if tint and same_hue(text_color(tint.group(1)), own): used.append((look[1][1], look[1][1] + tint.end()))   # "ocean blue" is the Ocean look
+    rest = blank()
+    if font: style['font'] = font
+    elif not style.get('font'): style['font'] = next((face for pattern, face in FACE_WORDS if re.search(pattern, low)), '')
+    if not colors:
+        ramp = re.search(rf"\b({'|'.join(GRADIENTS)})\s+(?:colou?red\s+)?{TEXT_GRADIENT}", rest)   # "sunset gradient"; a look's own colors win
+        if ramp: stops = fonts.even(*GRADIENTS[ramp.group(1)][:fonts.MAX_STOPS])
     fill = re.search(any_color, rest)
-    if fill and not gradient: style['fill'] = text_color(fill.group(1)); style.pop('fill2', None)
-    dark = sum(int(style.get('fill', '#ffffff')[i:i + 2], 16) for i in (1, 3, 5)) < 200
-    if glow is not None:
-        style.update(glow=glow or ('#ffffff' if dark else style.get('fill', '#ffffff')), glow_size=8, glow_strength=1.4)
+    neon = style.get('glow') and style.get('glow') == style.get('outline') and sum(int(style.get('fill', '#ffffff')[i:i + 2], 16) for i in (1, 3, 5)) > 600
+    if pair: style.update(fill=colors[0], stops=[]); outline = colors[1]
+    elif stops: style['stops'] = stops
+    elif fill and neon: style.update(outline=text_color(fill.group(1)), glow=text_color(fill.group(1)))   # "red neon": the tube's color
+    elif fill and word: style['stops'] = fonts.even(text_color(f'light {fill.group(1)}'), text_color(fill.group(1)))   # "a blue gradient"
+    elif fill: style.update(fill=text_color(fill.group(1)), stops=[])
+    elif word and not style.get('stops'): style['stops'] = fonts.even('#ffffff', '#7fd8ff')   # "a gradient", no colors named
+    direction = next((angle for pattern, angle in TEXT_DIRECTIONS if re.search(rf'\b(?:{pattern})\b', low)), None)
+    degrees = re.search(r'\b(\d{1,3})\s*(?:°|-?\s*deg(?:ree)?s?\b)', low)
+    if degrees or direction is not None: style['angle'] = int(degrees.group(1)) % 360 if degrees else direction
+    main = style['stops'][len(style['stops']) // 2][1] if style.get('stops') else style.get('fill', '#ffffff')
+    dark = sum(int(main[i:i + 2], 16) for i in (1, 3, 5)) < 200
+    thick = re.search(r'\b(?:thick|big|fat)\s+(?:\w+\s+)?(?:outline|border)', low)
+    # An effect named without a color keeps the look's own ("gold names with a glow", "bold outline names").
+    if glow is not None and (glow or not style.get('glow')):
+        style.update(glow=glow or ('#ffffff' if dark else main), glow_size=8, glow_strength=1.4)
         if dark and outline is None and not style.get('outline'): style.update(outline=style['glow'], outline_width=2)   # dark letters read with a light edge
-    if outline is not None: style.update(outline=outline or ('#ffffff' if dark else '#000000'), outline_width=4 if re.search(r'\b(?:thick|big|fat)\s+(?:\w+\s+)?(?:outline|border)', low) else 3)
-    if shadow is not None: style.update(shadow=shadow or '#000000', shadow_x=2, shadow_y=4, shadow_blur=3, shadow_opacity=0.8)
-    if re.search(r'\b(?:extra bold|thicker|fatter)\b', low): style['bold'] = 4
-    elif re.search(r'\bbold\b', low): style['bold'] = 2
-    if re.search(r'\b(?:italic|slanted|leaning|tilted)\b', low): style['italic'] = 0.2
-    if re.search(r'\b(?:all caps|caps|capitals?|uppercase|capital letters)\b', low): style['caps'] = True
-    if re.search(r'\bhuge|massive\b', low): style['size'] = 1.45
-    elif re.search(r'\b(?:bigger|larger)\b', low): style['size'] = 1.2
-    elif re.search(r'\b(?:smaller|tiny|little)\b', low): style['size'] = 0.85
+    if outline is not None and (outline or thick or not style.get('outline')):
+        style.update(outline=outline or style.get('outline') or ('#ffffff' if dark else '#000000'), outline_width=4 if thick else max(3, style.get('outline_width') or 0) if outline == '' else 3)
+    if shadow is not None and (shadow or not style.get('shadow')): style.update(shadow=shadow or '#000000', shadow_x=2, shadow_y=4, shadow_blur=3, shadow_opacity=0.8)
+    if re.search(r'\b(?:hollow|outlines? only|only (?:an? |the )?outlines?|outline-only|empty letters|no fill|unfilled)\b', low):
+        style['fill_opacity'] = 0.0                            # only the outline is drawn: it takes the letters' color unless one was named
+        keep = style.get('outline') and not (fill or colors) and (style.get('glow') == style.get('outline') or look and look[0] == 'Hollow')   # neon tubes, Hollow
+        if outline is None and not keep:
+            if style.get('outline') and style.get('stops'): style.update(outline2=style['outline'], outline2_width=2)   # the look's own edge frames it
+            style.update(outline=main, outline_width=max(3, style.get('outline_width', 0)))
+    elif re.search(r'\b(?:see-?through|translucent|semi-?transparent|half[- ]transparent|transparent|ghostly)\b', low): style['fill_opacity'] = 0.5
+    shape = blank()                                            # what the font's and the look's own names say is theirs ("arial bold", "wide & loud")
+    if re.search(r'\b(?:extra|very|super|really) (?:wide|stretched|broad)\b', shape): style['stretch'] = 1.6
+    elif re.search(r'\b(?:wide|wider|stretched|extended|broad)\b', shape): style['stretch'] = 1.3
+    elif re.search(r'\b(?:extra|very|super|really) (?:narrow|skinny|squished|squeezed|thin)\b', shape): style['stretch'] = 0.65
+    elif re.search(r'\b(?:narrow|narrower|squished|squeezed|skinny|compressed|slim|thin (?:letters|text|font))\b', shape): style['stretch'] = 0.8
+    if re.search(r'\b(?:extra bold|thicker|fatter)\b', shape): style['bold'] = 4
+    elif re.search(r'\bbold\b', shape): style['bold'] = 2
+    if re.search(r'\b(?:italic|slanted|leaning|tilted)\b', shape): style['italic'] = 0.2
+    if re.search(r'\b(?:all caps|caps|capitals?|uppercase|capital letters)\b', shape): style['caps'] = True
+    if re.search(r'\bhuge|massive\b', shape): style['size'] = 1.45
+    elif re.search(r'\b(?:bigger|larger)\b', shape): style['size'] = 1.2
+    elif re.search(r'\b(?:smaller|tiny|little)\b', shape): style['size'] = 0.85
     return style
+
+
+def color_word(color):
+    """The nearest everyday name for a color, for replies ("#fff3b0" reads as yellow)."""
+    if color == '#000000': return 'black'
+    near = lambda name: sum((int(COLORS[name][i:i + 2], 16) - int(color[i:i + 2], 16)) ** 2 for i in (1, 3, 5))
+    return min((n for n in COLORS if n not in ('gray', 'aqua')), key=near)
+
+
+def describe_text(style, face, look='', based=''):
+    """A text style in plain words: "Impact, all caps, black letters, white outline, white glow"; look: the ready-made look
+    it is, based: the one it started from."""
+    say = color_word
+    direction = {0: 'left to right', 45: 'diagonal', 90: 'top to bottom', 180: 'right to left', 270: 'bottom to top'}.get(int(style['angle']), f"at {style['angle']:g}°")
+    colors = list(dict.fromkeys(say(c) for _, c in style['stops']))
+    letters = (f"{' to '.join(colors)} gradient letters ({direction})" if len(colors) <= 4 else f"{len(style['stops'])}-color gradient letters ({direction})") if style['stops'] else f"{say(style['fill'])} letters"
+    if style['fill_opacity'] == 0: letters = 'hollow letters'
+    elif style['fill_opacity'] < 1: letters = f"see-through {letters} ({round(style['fill_opacity'] * 100)}%)"
+    parts = ['all caps' if style['caps'] else '', 'wide' if style['stretch'] > 1.05 else 'narrow' if style['stretch'] < 0.95 else '', letters,
+             f"{say(style['outline'])} outline" if style['outline'] else '', f"{say(style['outline2'])} second outline" if style['outline2'] else '',
+             f"{say(style['glow'])} glow" if style['glow'] else '', f"{say(style['shadow'])} shadow" if style['shadow'] else '']
+    details, face = ', '.join(p for p in parts if p), face or "the game's own letters"
+    return f'the {look} look ({face}): {details}' if look else f'the {based} look with your changes ({face}): {details}' if based else f'{face}, {details}'
+
+
+def text_split(clause):
+    """A clause about the game's text less the parts that ask for something else: "christmas theme and red names" is a
+    theme and a text style. Returns (the text request, [the other requests]); "names in red, white and blue" stays whole."""
+    parts = [p.strip() for p in re.split(r'\s*,\s*|\s+and\s+', clause) if p.strip()]
+    elsewhere = rf"\b(?:{'|'.join(v for k, v in WORDS.items() if k != 'fonts')})\b|{WHOLE_GAME}"
+    others = [p for p in parts if not re.search(FONT_WORDS, p.lower()) and re.search(elsewhere, p.lower())]
+    text = ', '.join(p for p in parts if p not in others) if others else clause
+    return (clause if font_style(text, []) == {'font': ''} else text), others   # "names and buttons gold": the gold is for both
 
 
 SIZE_WORDS = r'\b(?:bigger|smaller|larger|tinier|resize|enlarge|shrink|move|reposition|relocate)\b'
@@ -823,19 +956,34 @@ class Themes:
         except (OSError, ValueError, AttributeError): return None
         fid = next((f for f, pattern in TEXT_TARGETS if f in game and re.search(pattern, low)), None)
         if not fid: return None
-        style = fonts.clean_style(font_style(message, faces), faces)
         quoted = re.search(r'["“]([^"”]{1,24})["”]', message)
         sample = quoted.group(1) if quoted else ('Cellmate' if fid == 'nicktext' else 'Settings' if fid.startswith('geosans') else '12345')
-        image = 'data:image/png;base64,' + base64.b64encode(self.lab.font_preview(fid, style, sample)).decode()
-        face = (fonts.find_font(faces, style['font']) or {}).get('family') if style['font'] else ''
-        names = {v: k for k, v in reversed(list(COLORS.items()))} | {'#000000': 'black'}
-        say = lambda c: names.get(c, c)
-        parts = [face or "the game's own letters", 'all caps' if style['caps'] else '', f"{say(style['fill'])}{' to ' + say(style['fill2']) if style['fill2'] else ''} letters",
-                 f"{say(style['outline'])} outline" if style['outline'] else '', f"{say(style['glow'])} glow" if style['glow'] else '', f"{say(style['shadow'])} shadow" if style['shadow'] else '']
-        reply = f"{game[fid]['label']}: " + ', '.join(p for p in parts if p) + '. Apply puts it in your mod; Fine-tune has every setting.'
+        raw = font_style(message, faces)
+        card = self.font_card(fid, raw, sample)
+        reply = (f"{card['label']}: {describe_text(card['style'], card['face'], card['look'], raw.get('look', ''))}. "
+                 'Flip through more looks below; Apply puts it in your mod and Fine-tune has every setting.')
         note = '' if fid == 'nicktext' else game[fid]['note']
-        return dict(plan=dict(reply=reply, operations=[], ui_colors={}, hide=[]), source='font', note=note, preview=None,
-                    font=dict(id=fid, label=game[fid]['label'], style=style, image=image, text=sample))
+        return dict(plan=dict(reply=reply, operations=[], ui_colors={}, hide=[]), source='font', note=note, preview=None, font=card)
+
+    def font_card(self, fid, style, sample):
+        """A text style ready for the chat: the cleaned style, the look it is (if it is one), and a preview of example text."""
+        faces, game = self.lab.typefaces(), fonts.game_fonts(self.lab.game)
+        style = fonts.clean_style(style, faces)
+        image = 'data:image/png;base64,' + base64.b64encode(self.lab.font_preview(fid, style, sample)).decode()
+        look = next((name for name, preset in fonts.PRESETS.items() if preset and fonts.clean_style(preset, faces) == style), '')
+        return dict(id=fid, label=game[fid]['label'], style=style, image=image, text=sample, look=look,
+                    face=(fonts.find_font(faces, style['font']) or {}).get('family', '') if style['font'] else '')
+
+    def text_offer(self, result, text):
+        """A whole-game mood ("halloween theme", "make everything gold") also offers the player names in the matching look,
+        as a card to try: it is never applied by itself. Requests about some parts ("make the buttons red") get none."""
+        low = str(text).lower()
+        look = None if result.get('font') or re.search(FONT_WORDS, low) else next((name for pattern, name in MOOD_TEXT if re.search(rf'\b(?:{pattern})\b', low)), None)
+        whole = re.search(WHOLE_GAME, low) or any(op.get('targets') == ['everything'] and not op.get('match') for op in (result.get('plan') or {}).get('operations') or [])
+        if look and whole:
+            try: result['font'] = dict(self.font_card('nicktext', fonts.PRESETS[look], 'Cellmate'), offer=True)
+            except (OSError, ValueError, KeyError, AttributeError): pass
+        return result
 
     @staticmethod
     def tinted_targets(plan):
@@ -1066,10 +1214,11 @@ class Themes:
         command = self.command(message)
         if command: return command
         pieces = [p.strip(' ,') for p in re.split(CLAUSES, message) if p and p.strip(' ,')]
-        texts = [p for p in pieces if re.search(FONT_WORDS, p.lower())]
+        split = [text_split(p) for p in pieces if re.search(FONT_WORDS, p.lower())]   # "christmas theme and red names": both
+        texts = [t for t, _ in split]
         font = texts and self.font_request('. '.join(texts))
         if font:                                    # "theme it halloween and make the names spooky": the font card plus the theme
-            others = [p for p in pieces if p not in texts]
+            others = [p for p in pieces if not re.search(FONT_WORDS, p.lower())] + [o for _, more in split for o in more]
             if not others: return font
             result = self.chat('. '.join(others), model, history, only)
             plan = result.get('plan') or {}
@@ -1089,10 +1238,10 @@ class Themes:
                     if r['key'] not in seen: seen.add(r['key']); rows.append(r)
             part = self.design_offer(designer, '. '.join(drawn), rows)
             if not rest.strip():
-                return dict(plan=dict(reply='', operations=[], ui_colors={}, hide=[]), source='design', note=part.pop('note'), preview=None, design=part)
+                return self.text_offer(dict(plan=dict(reply='', operations=[], ui_colors={}, hide=[]), source='design', note=part.pop('note'), preview=None, design=part), message)
             result = self.plan_request(rest, model, history, scope)
             result['design'] = part
-            return result
+            return self.text_offer(result, rest)
         result = self.plan_request(message, model, history, scope)
         if designer and re.search(design.OBJECTS, message.lower()):
             # New objects need drawing, and drawing needs a target the request did not name.
@@ -1101,14 +1250,15 @@ class Themes:
         if designer and design.wants_design(message, unknown_words(message, self.named)) and designer.title_rows():
             # "Make the game spooky": the palette is shaded now; redrawing the title is offered, not started.
             result['design'] = dict(self.design_offer(designer, f'{message}. Redesign the game title to match.', designer.title_rows()), optional=True)
-        return result
+        return self.text_offer(result, message)   # a whole-game mood also offers the player names in a matching look
 
     HELP = ('I change how Mitosis looks. Ask for colors, moods or effects ("christmas theme", "rainbow outlines with a subtle glow", '
             '"holographic glass panels", "make the buttons darker") and I shade the matching art. Name one thing ("make the play button gold") '
             'to change just that. Ask for new things or a new style ("put a party hat on the title", "make the title say MITOSIS 2", '
             '"turn the coin into a diamond") and the local image model redraws it. "Hide the discord button" hides the App Store, '
             'Google Play and Discord badges or the OG tag. Ask "what can I change?" for every part I know by name. '
-            'Check assets in the library to change only those. Say "undo" to take the last theme off.')
+            'Check assets in the library to change only those. Say "undo" to take the last theme off. '
+            'For the game\'s text, name it: "gold player names", "names in a red, orange and yellow gradient", "hollow neon names".')
 
     def names_reply(self):
         """Every part known by name, grouped by the screen it is on."""

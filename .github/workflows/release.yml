@@ -27,7 +27,7 @@ jobs:
       - name: Install the lab's two packages
         shell: pwsh
         run: |
-          python -m pip install numpy==2.5.4 pillow==12.3.0 *> ci-install.log
+          python -m pip install numpy==2.5.4 pillow==12.3.0 soundfile==0.14.0 *> ci-install.log
           $code = $LASTEXITCODE; Get-Content ci-install.log; exit $code
 
       - name: Test

@@ -1,0 +1,60 @@
+/* Sounds & music (audio.js): the sound editor in the studio's #nonvisual area, and the review's play buttons. */
+#nonvisual.ae-on #audio{display:none}
+.viewport.ae-open #canvasCaption,.viewport.ae-open #viewNote{display:none}
+.studio:has(.viewport.ae-open) :is(.viewbar,.paintbar,.ed-optionsbar,.ed-tools){display:none}   /* image tools mean nothing for a sound: more room */
+.audio-editor{max-width:880px;margin:0 auto;display:flex;flex-direction:column;gap:12px;padding:2px 2px 16px}
+.audio-editor.dropping{outline:2px dashed var(--cyan);outline-offset:6px;border-radius:12px}
+.audio-editor.ae-float{position:absolute;inset:20px;overflow:auto;z-index:3;max-width:none;background:var(--bg)}
+.ae-card{background:#151d28;border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.ae-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ae-row .hint{margin:0}
+.ae-titles{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
+.ae-titles b{font-size:14px;font-weight:600;overflow-wrap:anywhere}
+.ae-titles small{color:var(--muted);font-size:11px;overflow-wrap:anywhere}
+.ae-badge{font-size:10px;padding:4px 9px;border-radius:12px;border:1px solid var(--line);background:#1b2430;color:var(--muted);white-space:nowrap}
+.ae-badge.saved{border-color:#2f6b64;background:#173431;color:var(--cyan)}
+.ae-badge.unsaved{border-color:#6e4b2f;background:#352b24;color:var(--orange)}
+.ae-round{width:38px;height:38px;border-radius:50%;padding:0;font-size:13px;flex:none}
+canvas.ae-mini{flex:1 1 220px;min-width:140px;height:40px;display:block;border-radius:6px;background:#0f161f}
+.ae-game .ae-titles{flex:0 1 240px}
+.ae-replace .ae-link{flex:1 1 320px}
+canvas.ae-wave{width:100%;height:150px;display:block;border-radius:8px;background:#0f161f;cursor:pointer;touch-action:none}
+canvas.ae-wave:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.ae-link{display:flex;gap:8px}
+.ae-link input{flex:1;min-width:0;background:#101720;border:1px solid var(--line);color:var(--text);border-radius:6px;padding:9px;font:inherit}
+.ae-progress{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--muted)}
+.ae-progress span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ae-progress button{padding:5px 10px;font-size:11px}
+.ae-bar{flex:0 0 180px;height:6px;border-radius:3px;background:#22303f;overflow:hidden;position:relative}
+.ae-bar i{position:absolute;left:0;top:0;bottom:0;width:0;background:linear-gradient(90deg,var(--cyan),#f472b6);border-radius:3px;transition:width .2s}
+.ae-bar.busy i{width:30%;animation:ae-slide 1.1s ease-in-out infinite}
+@keyframes ae-slide{from{left:-30%}to{left:100%}}
+.ae-problem{color:var(--orange);font-size:12px;line-height:1.5;padding:9px 11px;background:#352b24;border:1px solid #6e4b2f;border-radius:6px}
+.ae-consent{font-size:12px;line-height:1.55;padding:12px 14px;background:#172631;border:1px solid #34515a;border-radius:8px;display:flex;flex-direction:column;gap:6px}
+.ae-consent p{margin:0;color:var(--muted);white-space:normal}
+.ae-consent ul{margin:0 0 6px 18px;padding:0}
+.ae-rights{margin:0;font-size:11px}
+.ae-helper{font-size:11px;display:flex;align-items:center;gap:4px}
+.ae-helper .hint,.ae-helper .link{margin:0;font-size:11px}
+.ae-times{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:11px;color:var(--muted)}
+.ae-times input{width:78px;padding:6px}
+.ae-times .ae-length{color:var(--text);margin-left:6px}
+.ae-now{color:var(--cyan);font-variant-numeric:tabular-nums}
+.ae-transport{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ae-play{min-width:92px}
+.ae-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 18px}
+.ae-controls>label{font-size:11px;color:var(--muted);display:flex;flex-direction:column;gap:6px}
+.ae-controls output{color:var(--text);font-variant-numeric:tabular-nums;float:right;margin-left:6px}
+.ae-controls label.ae-check{flex-direction:row;align-items:center;gap:7px;grid-column:1/-1;color:var(--text);font-size:12px}
+.ae-warnings{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px}
+.ae-warnings:empty{display:none}
+.ae-warnings li{font-size:11.5px;line-height:1.5;color:var(--orange);background:#2a231d;border:1px solid #5a412b;border-radius:6px;padding:7px 10px}
+.ae-warnings .link{font-size:11.5px}
+.ae-info{font-size:11px;color:var(--muted);margin:0}
+.ae-note{font-size:11px;color:var(--muted);margin:0}
+/* Save to mod stays in sight at the bottom of the panel while the rest scrolls. */
+.ae-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;position:sticky;bottom:0;z-index:2;background:#101620;padding:10px 0 4px;box-shadow:0 -12px 12px -10px #000}
+.ae-actions .ae-note{flex:1;min-width:160px}
+.review-listen{font-size:10px;padding:5px 8px;min-width:68px}
+@media(max-width:1200px){.ae-controls{grid-template-columns:1fr 1fr}.ae-bar{flex-basis:120px}}
+@media(max-height:900px){.audio-editor{gap:9px}.ae-card{padding:10px 14px;gap:8px}canvas.ae-wave{height:112px}canvas.ae-mini{height:34px}}

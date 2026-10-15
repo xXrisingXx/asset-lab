@@ -18,6 +18,8 @@ from lab_core import Lab, VERSION, ROOT, adjust, png
 from theme import Themes, clean_plan, UI_COLORS, HIDE
 from design import Designer
 import runtime
+import audio as soundlab
+AUDIO_REQUEST = 210 * 1024 * 1024   # a 150 MB sound file, even sent as base64 in JSON (only /api/audio-source)
 DESIGN_SETTINGS = ('scale', 'dx', 'dy', 'tolerance', 'shape', 'fill', 'white')
 from PIL import Image
 
@@ -95,6 +97,7 @@ def server_for(lab, port):
                     names = {field: dict(name=name.replace('_', ' '), was=was, what=what) for name, (field, was, what) in UI_COLORS.items()}
                     return self.send(dict(lab.mod(), colors=names, hide_labels={g: label for g, (label, _) in HIDE.items()}))
                 if path == '/api/image': return self.send(png(lab.image(key, q.get('original') != '1')), 'image/png', filename='mitosis-texture.png' if q.get('download') else None)
+                if path == '/api/document': return self.send(b'{"document":' + (lab.layers_file(key, q.get('revision') or None) or b'null') + b'}')   # the editor's saved layers
                 if path == '/api/recipe': return self.send(lab.export_recipe(key), 'application/zip', filename='mitosis-asset-recipe.zip')
                 if path == '/api/raw':
                     row = lab.row(key)
@@ -104,6 +107,7 @@ def server_for(lab, port):
                     row = lab.row(key)
                     data = lab.catalog.raw(row)
                     return self.send({'text': data[:250000].decode('utf-8', 'replace'), 'truncated': len(data) > 250000})
+                if path.startswith('/api/audio'): return self.audio_get(path, q)   # the sound editor (see audio_get)
                 static = ROOT / 'web'
                 file = (static / ('index.html' if path == '/' else path.lstrip('/'))).resolve()
                 if not file.is_relative_to(static) or not file.is_file(): return self.send({'error': 'Not found'}, status=404)
@@ -118,12 +122,13 @@ def server_for(lab, port):
                 origin = self.headers.get('Origin')
                 if origin and origin != 'http://' + self.headers['Host']: raise ValueError('Cross-origin writes are blocked.')
                 length = int(self.headers.get('Content-Length', 0))
-                if not 0 <= length <= 96 * 1024 * 1024: raise ValueError('Request too large')
+                if not 0 <= length <= (AUDIO_REQUEST if path == '/api/audio-source' else 96 * 1024 * 1024): raise ValueError('Request too large')
                 raw = self.rfile.read(length)
+                if path.startswith('/api/audio'): return self.audio_post(path, q, raw)   # the sound editor (see audio_post)
                 data = json.loads(raw) if raw else {}
                 key = data.get('key', '')
                 if path == '/api/save':
-                    return self.send(lab.save(key, base64.b64decode(data['png'], validate=True), data['revision'], data.get('recipe')))
+                    return self.send(lab.save(key, base64.b64decode(data['png'], validate=True), data['revision'], data.get('recipe'), data.get('document')))
                 if path == '/api/adjust':
                     output = adjust(base64.b64decode(data['png'], validate=True), data.get('settings', {}))
                     return self.send({'png': base64.b64encode(output).decode()})
@@ -204,10 +209,59 @@ def server_for(lab, port):
             except (BrokenPipeError, ConnectionResetError): pass
             except (ValueError, OSError, KeyError, RuntimeError) as exc: self.send({'error': str(exc)}, status=400)
 
+        # ----- sounds: the sound editor's endpoints (Lab.audio_* and audio.py) ---------------------------------------
+        # GET  /api/audio?key=            the game's sound and the saved replacement     /api/audio-tools   link helper state
+        # GET  /api/audio-preview?key=&source=&settings=JSON[&info=1]   WAV of the edit (report in X-Lab-Audio) or the report
+        # GET  /api/audio-file?key=       the saved replacement (OGG)                    /api/audio-job?id= a job's progress
+        # POST /api/audio-source          a sound file: raw bytes (name in X-Lab-Name) or JSON {name, data: base64}
+        # POST /api/audio-link {url, key} -> job      /api/audio-cancel {id}      /api/audio-apply {key, source, settings}
+        # POST /api/audio-remove {key}   /api/audio-stage {key, enabled}   /api/audio-tools-install   /api/audio-tools-update
+        def end_headers(self):
+            for name, value in self.__dict__.pop('extra_headers', {}).items(): self.send_header(name, value)
+            super().end_headers()
+
+        def audio_get(self, path, q):
+            key = q.get('key', '')
+            try:
+                if path == '/api/audio': return self.send(lab.audio_info(key))
+                if path == '/api/audio-preview':
+                    settings = json.loads(q.get('settings') or '{}')
+                    data, report = lab.audio_preview(key, q.get('source', ''), settings if isinstance(settings, dict) else {}, info_only=q.get('info') == '1')
+                    if data is None: return self.send(report)
+                    self.extra_headers = {'X-Lab-Audio': json.dumps(report, ensure_ascii=True)}
+                    return self.send(data, 'audio/wav')
+                if path == '/api/audio-file': return self.send(lab.audio_file(key), 'audio/ogg')
+                if path == '/api/audio-job': return self.send(lab.audio_job(q.get('id', '')))
+                if path == '/api/audio-tools': return self.send(lab.audio_tools_status())
+                return self.send({'error': 'Not found'}, status=404)
+            except soundlab.AudioError as exc: return self.send({'error': str(exc), 'code': exc.code}, status=400)
+
+        def audio_post(self, path, q, raw):
+            try:
+                if path == '/api/audio-source':
+                    if (self.headers.get('Content-Type') or '').startswith('application/octet-stream'):
+                        return self.send(lab.audio_source_add(urllib.parse.unquote(self.headers.get('X-Lab-Name') or ''), raw))
+                    data = json.loads(raw) if raw else {}
+                    return self.send(lab.audio_source_add(str(data.get('name', '')), base64.b64decode(str(data.get('data', '')), validate=True)))
+                data = json.loads(raw) if raw else {}
+                if not isinstance(data, dict): raise ValueError('Invalid request')
+                if path == '/api/audio-link': return self.send(lab.audio_link(str(data.get('url', '')), str(data.get('key', ''))))
+                if path == '/api/audio-cancel': return self.send(lab.audio_cancel(str(data.get('id', ''))))
+                if path == '/api/audio-apply':
+                    settings = data.get('settings') if isinstance(data.get('settings'), dict) else {}
+                    return self.send(lab.audio_apply(str(data.get('key', '')), str(data.get('source', '')), settings))
+                if path == '/api/audio-remove': return self.send(lab.audio_remove(str(data.get('key', ''))))
+                if path == '/api/audio-stage': return self.send(lab.audio_stage(str(data.get('key', '')), bool(data.get('enabled'))))
+                if path == '/api/audio-tools-install': return self.send(lab.audio_tools_install())
+                if path == '/api/audio-tools-update': return self.send(lab.audio_tools_update())
+                return self.send({'error': 'Unknown action'}, status=404)
+            except soundlab.AudioError as exc: return self.send({'error': str(exc), 'code': exc.code}, status=400)
+
     class Server(ThreadingHTTPServer):
         daemon_threads = False
         block_on_close = True
         restart = False
+        request_queue_size = 64   # a page load asks for ~45 files at once; the default backlog of 5 refused some (a missing editor script)
     # A restarted server can start before the old one has released the port; give it a moment.
     for attempt in range(40):
         try: return Server(('127.0.0.1', port), Handler)

@@ -22,8 +22,9 @@ async function saveHide(){await api('/api/hide',{groups:R.data.hide.filter(h=>!R
 function render(){
   const d=R.data;dlg.replaceChildren();
   const edits=d.edits.filter(e=>!R.out.has(e.key)).length,colors=Object.keys(d.palette).filter(f=>!(f in R.colorsOut)).length,hidden=d.hide.filter(h=>!R.hideOut.has(h)).length;
+  const sounds=(d.audio||[]).filter(a=>a.staged).length;
   const head=el('div','review-head');const h=el('h2','', 'Review your mod');const x=el('button','quiet','✕');x.type='button';x.onclick=()=>dlg.close();head.append(h,x);
-  const summary=[`${edits} edit${edits===1?'':'s'}`,colors&&`${colors} game color${colors===1?'':'s'}`,hidden&&`${hidden} hidden menu control${hidden===1?'':'s'}`].filter(Boolean).join(' · ');
+  const summary=[`${edits} edit${edits===1?'':'s'}`,colors&&`${colors} game color${colors===1?'':'s'}`,hidden&&`${hidden} hidden menu control${hidden===1?'':'s'}`,sounds&&`${sounds} sound${sounds===1?'':'s'}`].filter(Boolean).join(' · ');
   const sub=el('p','review-sub',(d.installed?'Installed in Mitosis now. Items marked New are not in the game yet; Update Mitosis puts the list below in. ':'Nothing is installed yet. ')+`This mod: ${summary}. Remove leaves an item out without deleting your work; Put back includes it again.`);
   const body=el('div','review-body');dlg.append(head,sub,body);
 
@@ -66,17 +67,38 @@ function render(){
     for(const f of d.fonts){const row=el('div','review-row');const t=el('div','review-text');t.append(el('b','',f.label),el('small','',`Drawn in ${f.face||'a new style'}`));
       if(d.installed&&!f.installed)t.firstChild.append(el('span','review-new','New'));
       const change=el('button','','Change…');change.type='button';change.onclick=()=>{dlg.close();window.openFonts&&window.openFonts(f.id);};row.append(t,change);sec.append(row);}}
-  if(!fields.length&&!d.hide.length&&!d.edits.length&&!(d.fonts||[]).length)body.append(el('p','hint',d.installed?'Everything is out of the mod. Update Mitosis now puts the original files back.':'Your mod is empty. Save an edit, apply a theme, or set game colors first.'));
+  soundSection(d,body);
+  if(!fields.length&&!d.hide.length&&!d.edits.length&&!(d.fonts||[]).length&&!(d.audio||[]).length)body.append(el('p','hint',d.installed?'Everything is out of the mod. Update Mitosis now puts the original files back.':'Your mod is empty. Save an edit, apply a theme, or set game colors first.'));
 
   // Footer: file check and install.
   const foot=el('div','review-foot');const files=el('details','review-files');files.append(el('summary','', 'Check the game files'));const pre=el('pre');files.append(pre);
   files.ontoggle=run(async()=>{if(!files.open||pre.textContent)return;pre.textContent='Building…';try{const b=await build();pre.textContent=buildText(b)||'No game files change.';}catch(e){pre.textContent=e.message;}});
   const close=el('button','', 'Close');close.type='button';close.onclick=()=>dlg.close();
-  const go=el('button','primary',d.installed?'Update Mitosis':'Install in Mitosis');go.type='button';go.disabled=!d.installed&&!(edits||colors||hidden);
+  const go=el('button','primary',d.installed?'Update Mitosis':'Install in Mitosis');go.type='button';go.disabled=!d.installed&&!(edits||colors||hidden||sounds);
   go.onclick=()=>{dlg.close();setTimeout(()=>$('installButton').click(),0);};
   foot.append(files,close,go);dlg.append(foot);
 }
 function section(body,title,action){const sec=el('section','review-section');const h=el('div','review-section-head');h.append(el('span','section-label',title));if(action)h.append(action);sec.append(h);body.append(sec);return sec;}
+
+// ----- sounds: game music and effects replaced in the sound editor (audio.js), with before / after play buttons ------
+const ear=new Audio();let earButton=null;
+const clock=s=>{s=Math.max(0,+s||0);const m=Math.floor(s/60),d=s<1?2:1;return `${m}:${(s-m*60).toFixed(d).padStart(d+3,'0')}`;};   // as audio.js
+function listen(url,label,what){
+  const b=el('button','review-listen','▶ '+label);b.type='button';b.title='Play '+what;
+  const reset=()=>{b.textContent='▶ '+label;if(earButton===b)earButton=null;};
+  b.onclick=()=>{if(earButton===b){ear.pause();reset();return;}if(earButton)earButton.dispatchEvent(new Event('stopped'));
+    ear.src=url;ear.onended=reset;earButton=b;b.textContent='■ '+label;ear.play().catch(e=>{reset();message(e.message,true);});};
+  b.addEventListener('stopped',reset);return b;}
+function soundSection(d,body){
+  const sounds=d.audio||[];if(!sounds.length)return;
+  const sec=section(body,`Sounds · ${sounds.length}`);
+  for(const a of sounds){const out=!a.staged;const row=el('div','review-row review-sound'+(out?' out':''));const pair=el('div','review-pair');
+    pair.append(listen('/api/raw?key='+encodeURIComponent(a.key),'Before','the game’s sound'),el('span','review-arrow','→'),listen(`/api/audio-file?key=${encodeURIComponent(a.key)}&v=${a.version}`,'After','your sound'));
+    const text=el('div','review-text');text.append(el('b','',a.name),el('small','',[a.label,a.duration?clock(a.duration):''].filter(Boolean).join(' · ')));
+    if(d.installed&&a.staged&&!a.installed)text.firstChild.append(el('span','review-new','New'));
+    row.append(pair,text,toggle(a.name,out,async()=>{await api('/api/audio-stage',{key:a.key,enabled:false});a.staged=false;},async()=>{await api('/api/audio-stage',{key:a.key,enabled:true});a.staged=true;}));
+    sec.append(row);}}
+dlg.addEventListener('close',()=>{ear.pause();if(earButton)earButton.dispatchEvent(new Event('stopped'));});
 
 dlg.addEventListener('close',run(async()=>{if(!R.changed)return;S.build=null;await status();await library();}));
 $('reviewButton').onclick=run(open);

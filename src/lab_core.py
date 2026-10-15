@@ -26,6 +26,7 @@ import similar
 EXE = 'Mitosis.exe'
 from asset_notes import AssetNotes
 import fonts as fontlab
+import audio as soundlab   # game sounds and music (see the "sounds" section of Lab)
 
 ROOT = Path(__file__).resolve().parent
 # The release number (the launcher passes it; a source checkout reads the VERSION file beside src).
@@ -253,10 +254,12 @@ class Lab:
         return self._typefaces
 
     def font_source(self, fid):
-        """(font info, original .fnt text, original page image) of one of the game's fonts."""
+        """(font info, original .fnt text, original page image) of one of the game's fonts, read once."""
         game = fontlab.game_fonts(self.game)
         if fid not in game: raise ValueError('Unknown game font.')
         f = game[fid]
+        known = self.__dict__.setdefault('_font_sources', {}).get(fid)
+        if known and known[0] == f: return known
         for path in (f['fnt'], f['page']):
             if path not in self.state['baseline']:
                 live = self.game_file(path)   # first use: the game's own file, before any font of ours was installed
@@ -264,21 +267,39 @@ class Lab:
                 self.persist()
         text = self.snapshot(f['fnt']).read_text(encoding='utf-8', errors='replace')
         with Image.open(self.snapshot(f['page'])) as page: page = page.convert('RGBA')
+        self._font_sources[fid] = (f, text, page)
         return f, text, page
 
     def font_catalog(self):
+        faces = self.typefaces()
         with self.lock:
             saved = self.state.get('fonts') or {}
-            game = [dict(f, style=(saved.get(fid) or {}).get('style'), staged=bool((saved.get(fid) or {}).get('staged')))
-                    for fid, f in fontlab.game_fonts(self.game).items()]
-        faces = self.typefaces()
-        presets = {name: dict(p, font=(fontlab.find_font(faces, p.get('font')) or {}).get('id', '')) for name, p in fontlab.PRESETS.items()}   # ids the font list knows
+            game = [dict(f, style=fontlab.clean_style(saved[fid]['style'], faces) if (saved.get(fid) or {}).get('style') else None,
+                         staged=bool((saved.get(fid) or {}).get('staged'))) for fid, f in fontlab.game_fonts(self.game).items()]
+        # Every look with its font list resolved to a typeface installed on this PC, so the menu and the previews agree.
+        presets = [dict(group=group, items=[dict(name=name, style=fontlab.clean_style(p, faces)) for name, p in items.items()])
+                   for group, items in fontlab.PRESET_GROUPS.items()]
         return dict(game=game, typefaces=faces, presets=presets, defaults=fontlab.DEFAULT, limits=fontlab.LIMITS)
 
     def font_preview(self, fid, style, text):
+        """PNG of example text in a style. Recent ones are kept, so going back to a look, or a player clicking through the
+        looks, costs nothing."""
         with self.lock: f, fnt, page = self.font_source(fid)
         faces = self.typefaces()
-        return png(fontlab.preview(fnt, page, fontlab.clean_style(style, faces), faces, text))
+        style = fontlab.clean_style(style, faces)
+        key = (fid, fontlab.style_key(style), text)
+        with fontlab.LOCK:
+            kept = self.__dict__.setdefault('_font_previews', {})
+            if key in kept:
+                data = kept[key] = kept.pop(key)
+                return data
+        out = io.BytesIO()
+        fontlab.preview(fnt, page, style, faces, text).save(out, format='PNG', compress_level=1)   # local and short-lived: speed over size
+        data = out.getvalue()
+        with fontlab.LOCK:
+            kept[key] = data
+            while len(kept) > 300: kept.pop(next(iter(kept)))
+        return data
 
     def font_apply(self, fid, style):
         """Render the whole font in a style, keep it in the workspace and put it in the mod."""
@@ -305,6 +326,243 @@ class Lab:
         game = fontlab.game_fonts(self.game)
         return [dict(game[fid], version=e['version'], style=e['style'], info=e.get('info') or {})
                 for fid, e in sorted((self.state.get('fonts') or {}).items()) if e.get('staged') and fid in game]
+
+    # ----- sounds: the game's music and effects, replaced from a file on this PC or from a link --------------------
+    # Kept like a font: workspace/audio/<version>.ogg and state['audio'][key] = {version, at, label, settings, staged,
+    # info, source, sha256}. A chosen sound (a "source") waits in workspace/audio-sources as FLAC plus its JSON.
+    audio_tools = soundlab.TOOLS   # where the link helper lives (tests point it elsewhere)
+
+    def _sound(self):
+        """The sound editor's caches (decoded sources and their K-weighted power), its background jobs, and 'render':
+        at most two renders at a time (a 20-minute song takes about a gigabyte while it is rendered)."""
+        with self.lock:
+            if '_sounds' not in self.__dict__: self._sounds = dict(lock=threading.RLock(), samples={}, power={}, originals=None, jobs=soundlab.Jobs(), render=threading.BoundedSemaphore(2))
+            return self._sounds
+
+    def audio_row(self, key):
+        row = self.row(key)
+        if row['kind'] != 'audio': raise ValueError('This item is not a sound.')
+        return row
+
+    def audio_original(self, key):
+        """The game's own sound: length, rate, channels, loudness and waveform, decoded once from the saved original of
+        its file (inside assets.zip, or the loose file) and remembered in audio-originals.cache (JSON; not a .json name,
+        so the launcher's settings backup leaves this rebuildable cache out)."""
+        row, cache = self.audio_row(key), self._sound()
+        sha, path = self.state['baseline'][row['source']]['sha256'], self.root / 'audio-originals.cache'
+        with cache['lock']:
+            if cache['originals'] is None: cache['originals'] = read_json(path, {}) or {}
+            hit = cache['originals'].get(key)
+            if hit and hit.get('sha256') == sha and hit.get('v') == 1: return hit
+        with self.lock: original = self.snapshot(row['source'])
+        if row['entry']:
+            with zipfile.ZipFile(original) as z: data = z.read(row['entry'])
+        else: data = original.read_bytes()
+        samples, rate = soundlab.decode(data)
+        info = dict(soundlab.describe(samples, rate), **soundlab.measure(samples, rate), bytes=len(data), sha256=sha, v=1, peaks=soundlab.peaks(samples, 800))
+        with cache['lock']:
+            cache['originals'][key] = info
+            atomic_json(path, cache['originals'])
+        return info
+
+    def audio_info(self, key):
+        """What the sound editor shows: the game's sound, the saved replacement (if any) and the link helper's state."""
+        row = self.audio_row(key)
+        original = self.audio_original(key)
+        with self.lock:
+            edit = dict((self.state.get('audio') or {}).get(key) or {}) or None
+            journal = self.active()
+        if edit: edit['installed'] = (journal or {}).get('state') == 'installed' and any(a['key'] == key and a['version'] == edit['version'] for a in journal.get('audio') or [])
+        return dict(key=key, name=row['name'], label=row.get('label', ''), file=row['source'] + (' → ' + row['entry'] if row['entry'] else ''), original=original, edit=edit,
+                    chosen=self.audio_source(edit['source']) if edit and edit.get('source') else None, helper=self.audio_tools_status(),
+                    limits=dict(seconds=soundlab.MAX_SECONDS, bytes=soundlab.MAX_BYTES))
+
+    def audio_source(self, sid):
+        """A chosen sound's details (name, length, rate, waveform), or None once it has been cleaned up."""
+        if not re.fullmatch(r'[a-f0-9]{32}', str(sid or '')): return None
+        meta = read_json(self.root / 'audio-sources' / (sid + '.json'))
+        return meta if meta and (self.root / 'audio-sources' / (sid + '.flac')).is_file() else None
+
+    def audio_source_add(self, name, data):
+        """A sound file from this PC: decoded (by PyAV for formats libsndfile lacks), resampled if needed, and kept."""
+        if not data: raise ValueError('The file is empty.')
+        if len(data) > soundlab.MAX_BYTES: raise ValueError(f'Use a sound file of at most {soundlab.mb(soundlab.MAX_BYTES)}.')
+        info = {}
+        samples, rate = soundlab.decode(data, self.audio_tools, info=info)
+        return self._audio_keep(samples, rate, dict(info, name=soundlab.clean_name(name) or 'Your sound', via='file'))
+
+    def _audio_keep(self, samples, rate, meta):
+        samples, rate = soundlab.normalize(samples, rate)
+        sid, folder = uuid.uuid4().hex, self.root / 'audio-sources'
+        meta = dict(meta, id=sid, at=time.time(), **soundlab.describe(samples, rate), peak_db=soundlab.peak_db(samples), peaks=soundlab.peaks(samples, 1200))
+        atomic_json(folder / (sid + '.json'), meta)   # before the sound itself: a cleanup never sees a sound without its details
+        soundlab.write_flac(folder / (sid + '.flac'), samples, rate)
+        cache = self._sound()
+        with cache['lock']: cache['samples'] = {**dict(list(cache['samples'].items())[-1:]), sid: (samples, rate)}
+        self.audio_cleanup()
+        return meta
+
+    def _audio_samples(self, sid):
+        cache = self._sound()
+        with cache['lock']:
+            if sid in cache['samples']: return cache['samples'][sid]
+        if not self.audio_source(sid): raise ValueError('This sound is no longer kept. Choose it again.')
+        samples, rate = soundlab.decode(self.root / 'audio-sources' / (sid + '.flac'))
+        with cache['lock']: cache['samples'] = {**dict(list(cache['samples'].items())[-1:]), sid: (samples, rate)}
+        return samples, rate
+
+    def _audio_power(self, sid, samples, rate, channels):
+        cache = self._sound()
+        with cache['lock']:
+            if (sid, channels) in cache['power']: return cache['power'][(sid, channels)]
+        power = soundlab.kweighted(soundlab.to_channels(samples, channels), rate)
+        with cache['lock']: cache['power'] = {**dict(list(cache['power'].items())[-1:]), (sid, channels): power}
+        return power
+
+    def audio_render(self, key, sid, settings):
+        """The replacement as the game will play it: (float32 samples, rate, report with warnings). It takes the game
+        sound's channel count, and its loudness when settings['match'] is on."""
+        original = self.audio_original(key)
+        samples, rate = self._audio_samples(sid)
+        clean = soundlab.clean_settings(settings, len(samples) / rate)
+        channels = original['channels'] if original['channels'] in (1, 2) else None
+        power = self._audio_power(sid, samples, rate, channels) if clean['match'] and original.get('loudness') is not None else None
+        out, report = soundlab.process(samples, rate, clean, dict(loudness=original.get('loudness'), block=original.get('block')), power, channels)
+        report['warnings'] = soundlab.warnings(original, report, self.audio_source(sid))
+        return out, rate, report
+
+    def audio_preview(self, key, sid, settings, info_only=False):
+        """(WAV bytes or None, report): the editor's preview, rendered exactly as it will be saved."""
+        with self._sound()['render']:
+            out, rate, report = self.audio_render(key, sid, settings)
+            return (None if info_only else soundlab.wav(out, rate)), report
+
+    def audio_apply(self, key, sid, settings):
+        """Convert the replacement to OGG Vorbis, keep it in the workspace and put it in the mod."""
+        row = self.audio_row(key)
+        with self._sound()['render']:
+            out, rate, report = self.audio_render(key, sid, settings)
+            data = soundlab.encode_ogg(out, rate, report['settings']['quality'])
+            del out
+        got_rate, got_channels, frames = soundlab.probe(data)
+        chosen = self.audio_source(sid) or {}
+        with self.lock:
+            self.snapshot(row['source'])   # the original file is kept safe before anything can be installed
+            version = uuid.uuid4().hex
+            atomic_bytes(self.root / 'audio' / (version + '.ogg'), data)
+            info = dict(duration=report['duration'], rate=got_rate, channels=got_channels, frames=frames, bytes=len(data), gain_db=report['gain_db'], match_db=report['match_db'],
+                        limited_db=report['limited_db'], short_db=report['short_db'], loudness=report['loudness'], warnings=report['warnings'])
+            self.state.setdefault('audio', {})[key] = dict(version=version, at=time.time(), label=str(chosen.get('title') or chosen.get('name') or 'Your sound')[:120],
+                                                          settings=report['settings'], staged=True, info=info, source=sid, sha256=digest(data),
+                                                          url=chosen.get('url', ''), license=chosen.get('license', ''))
+            self.persist()
+        self.audio_cleanup()
+        return self.audio_info(key)
+
+    def audio_remove(self, key):
+        """Back to the game's own sound (at the next install)."""
+        self.audio_row(key)
+        with self.lock:
+            (self.state.get('audio') or {}).pop(key, None)
+            self.persist()
+        self.audio_cleanup()
+        return self.audio_info(key)
+
+    def audio_stage(self, key, enabled):
+        """Leave a saved sound out of the mod, or put it back, without deleting it."""
+        self.audio_row(key)
+        with self.lock:
+            entry = (self.state.get('audio') or {}).get(key)
+            if not entry: raise ValueError('Save a sound for this first.')
+            entry['staged'] = bool(enabled)
+            self.persist()
+            return dict(key=key, staged=entry['staged'])
+
+    def audio_file(self, key):
+        """The saved replacement itself (OGG), for the review's play button."""
+        self.audio_row(key)
+        with self.lock: entry = (self.state.get('audio') or {}).get(key)
+        if not entry: raise ValueError('No sound is saved for this.')
+        return (self.root / 'audio' / (entry['version'] + '.ogg')).read_bytes()
+
+    def staged_audio(self):
+        return [dict(key=k, version=e['version'], sha256=e.get('sha256', ''), name=self.row(k)['name'], source=self.row(k)['source'], entry=self.row(k)['entry'],
+                     label=e.get('label', ''), info=e.get('info') or {}) for k, e in sorted((self.state.get('audio') or {}).items()) if e.get('staged') and k in self.catalog.rows]
+
+    def audio_chips(self):
+        """Staged sounds as entries of the editor's mod list, beside the image edits."""
+        return [dict(key=a['key'], name='♫ ' + (self.row(a['key']).get('label') or a['name']), source=a['source'], revision=a['version']) for a in self.staged_audio()]
+
+    def audio_mod(self, journal=None):
+        """Every saved sound for the review, in the mod or left out, and whether that version is installed."""
+        installed = {a['key']: a['version'] for a in (journal or {}).get('audio') or []}
+        return [dict(key=k, name=self.row(k).get('label') or self.row(k)['name'], file=self.row(k)['name'], label=e.get('label', ''), version=e['version'],
+                     staged=bool(e.get('staged')), duration=(e.get('info') or {}).get('duration'), installed=installed.get(k) == e['version'])
+                for k, e in sorted((self.state.get('audio') or {}).items()) if k in self.catalog.rows]
+
+    def _audio_build(self, sounds, replacements, folder, files):
+        """Put the staged sounds in a build. Entries of a ZIP join that file's other replacements, so images and sounds
+        in assets.zip go in together; a loose sound file (logo.ogg) is written here. Each saved file is checked first."""
+        for a in sounds:
+            data = (self.root / 'audio' / (a['version'] + '.ogg')).read_bytes()
+            if digest(data) != a['sha256']: raise ValueError('A saved sound changed on disk. Open it and save it again: ' + a['name'])
+            if self.catalog.containers.get(a['source']) == 'zip':
+                replacements.setdefault(a['source'], {})[a['entry']] = data
+                continue
+            path = a['source']
+            original = self.snapshot(path).read_bytes()
+            if file_hash(self.game_file(path)) not in self.accepted(path): raise ValueError('The installed source differs from the saved original: ' + path)
+            atomic_bytes(folder / 'files' / path, data)
+            files.append(dict(path=path, original_sha256=self.state['baseline'][path]['sha256'], edited_sha256=digest(data), original_bytes=len(original),
+                              edited_bytes=len(data), entries=['Sound: ' + a['name']], backup=str(self.snapshot(path))))
+
+    def audio_link(self, url, key=''):
+        """Start getting a sound from a link: a background job the editor follows (see audio.fetch)."""
+        url = soundlab.check_url(url, resolve=False)[0]
+        folder = self.root / 'audio-downloads'
+        def work(update, cancel):
+            samples, rate, meta = soundlab.fetch(url, folder, update, cancel, self.audio_tools)
+            update(None, 'Getting it ready…')
+            return self._audio_keep(samples, rate, dict(meta, name=meta.get('title') or 'Sound from a link'))
+        return self._sound()['jobs'].start('link', work, key=str(key)[:64], url=url[:500])
+
+    def audio_job(self, jid): return self._sound()['jobs'].get(str(jid))
+
+    def audio_cancel(self, jid): return self._sound()['jobs'].cancel(str(jid))
+
+    def audio_tools_status(self): return dict(soundlab.tools_status(self.audio_tools), job=self._sound()['jobs'].running('tools'))
+
+    def audio_tools_install(self):
+        """Download the link helper (after the player agreed in the editor). One install at a time."""
+        jobs = self._sound()['jobs']
+        return jobs.running('tools') or jobs.start('tools', lambda update, cancel: soundlab.install_tools(self.audio_tools, None, update, cancel))
+
+    def audio_tools_update(self):
+        jobs = self._sound()['jobs']
+        return jobs.running('update') or jobs.start('update', lambda update, cancel: soundlab.update_tools(self.audio_tools, update, cancel))
+
+    def audio_cleanup(self, keep=6):
+        """Forget chosen sounds no saved edit uses (apart from the newest few), saved versions nothing points to, and
+        leftovers of stopped downloads."""
+        with self.lock:
+            sounds = self.state.get('audio') or {}
+            used = {e.get('source') for e in sounds.values()}
+            versions = {e.get('version') for e in sounds.values()} | {a.get('version') for a in (self.active() or {}).get('audio') or []}
+            folder = self.root / 'audio-sources'
+            if folder.is_dir():
+                metas = sorted(folder.glob('*.json'), key=lambda p: p.stat().st_mtime, reverse=True)
+                for p in [p for p in metas if p.stem not in used][keep:]:
+                    for f in (p, p.with_suffix('.flac')): f.unlink(missing_ok=True)
+                for f in folder.glob('*.flac'):
+                    if not f.with_suffix('.json').is_file(): f.unlink(missing_ok=True)
+            if (self.root / 'audio').is_dir():
+                for f in (self.root / 'audio').glob('*.ogg'):
+                    if f.stem not in versions: f.unlink(missing_ok=True)
+            downloads = self.root / 'audio-downloads'
+            for d in downloads.iterdir() if downloads.is_dir() else []:
+                try:
+                    if time.time() - d.stat().st_mtime > 6 * 3600: shutil.rmtree(d, ignore_errors=True) if d.is_dir() else d.unlink()
+                except OSError: pass
 
     def game_file(self, relative):
         if relative.startswith('cache/'):
@@ -367,7 +625,7 @@ class Lab:
         with self.lock:
             return dict(app='Asset Lab', version=VERSION, game=str(self.game), cache=str(self.cache) if self.cache else None, workspace=str(self.root), token=self.session,
                         stats=self.catalog.stats, groups=GROUPS, sources=sorted({r['source'] for r in self.catalog.rows.values()}),
-                        warnings=self.catalog.warnings, active=self.active(), staged=self.staged(), saved_count=sum(bool(self.current(k)) for k in self.state['edits']),
+                        warnings=self.catalog.warnings, active=self.active(), staged=self.staged() + self.audio_chips(), saved_count=sum(bool(self.current(k)) for k in self.state['edits']),
                         stuck=self.drift(), palette=self.palette(), hidden=self.hidden(), pending=self.pending(),
                         game_colors=self.game_colors(), research=(ROOT / 'data' / 'exe-references.json').is_file())
 
@@ -414,6 +672,7 @@ class Lab:
         words = query.casefold().split()
         target = self.similar.query(like) if like else None
         with self.lock:
+            sounds = self.state.get('audio') or {}   # sounds with a saved replacement count as saved edits
             # Tidy hides leftover atlas rectangles and shows one card per identical copy.
             rows = [r for r in self.catalog.rows.values()
                     if (not group or r['group'] == group) and (not kind or (r['editable'] if kind == 'visual' else r['kind'] == kind))
@@ -421,7 +680,7 @@ class Lab:
                     and (not tidy or saved or removed or (not r.get('legacy') and (parent or r.get('primary', True))))
                     and (not parent or r.get('parent') == parent)
                     and (not origin or r['source'].startswith('cache/' if origin == 'cache' else 'assets/'))
-                    and (not saved or self.current(r['key']))
+                    and (not saved or self.current(r['key']) or r['key'] in sounds)
                     and all(w in (r['name']+' '+r['source']+' '+r.get('source_label','')+' '+r['entry']+' '+r['group']+' '+r.get('label', '')).casefold() for w in words)]
             if target is not None:
                 scores = self.similar.rank(target, [r['key'] for r in rows])
@@ -429,7 +688,8 @@ class Lab:
                 return {'total': len(rows), 'items': [{**r, 'similarity': round(1 - scores[r['key']], 3), 'saved': bool(self.current(r['key'])), 'staged': r['key'] in self.state['staged']}
                                                        for r in rows[max(0, offset):max(0, offset)+min(120, limit)]]}
             rows.sort(key=lambda r: (r['group'] == 'Metadata', r['group'] == 'Audio', r['kind'] != 'image', r['name'].casefold(), r['source']))
-            return {'total': len(rows), 'items': [{**r, 'saved': bool(self.current(r['key'])), 'staged': r['key'] in self.state['staged']} for r in rows[max(0, offset):max(0, offset)+min(120, limit)]]}
+            return {'total': len(rows), 'items': [{**r, 'saved': bool(self.current(r['key'])) or r['key'] in sounds, 'staged': r['key'] in self.state['staged'] or bool((sounds.get(r['key']) or {}).get('staged'))}
+                                                   for r in rows[max(0, offset):max(0, offset)+min(120, limit)]]}
 
     def history(self, key): return self.state['edits'].get(key, {'versions': [], 'cursor': -1})
 
@@ -502,7 +762,7 @@ class Lab:
             atomic_bytes(snapshot, data)
         return snapshot
 
-    def save(self, key, data, revision, recipe=None):
+    def save(self, key, data, revision, recipe=None, document=None):
         with self.lock:
             row = self.row(key)
             self.assert_revision(key, revision)
@@ -511,17 +771,80 @@ class Lab:
             if im.size != (row['width'], row['height']):
                 raise ValueError(f'Keep the original {row["width"]} × {row["height"]} size. Resize the import to fit in the editor.')
             if len(json.dumps(recipe or {})) > 64000: raise ValueError('Recipe is too large')
+            layers = self.layer_document(document, row['width'], row['height']) if document is not None else None
             self.snapshot(row['source'])
             current = self.image(key)
-            if im.tobytes() == current.tobytes(): return self.detail(key)
+            if im.tobytes() == current.tobytes():
+                # Same picture: only the layers changed. They join the current revision (the original gets a revision).
+                if self.current(key):
+                    if layers: atomic_json(self.root / 'revisions' / key / (self.current(key)['id'] + '.layers.json'), layers)
+                    return self.detail(key)
+                if not layers: return self.detail(key)
             version = uuid.uuid4().hex
             data = png(im)
             atomic_bytes(self.root / 'revisions' / key / (version + '.png'), data)
+            if layers: atomic_json(self.root / 'revisions' / key / (version + '.layers.json'), layers)
             h = self.history(key)
             self.state['edits'][key] = {'versions': h['versions'][:h['cursor']+1] + [dict(id=version, at=time.time(), sha256=digest(data), recipe=recipe or {})], 'cursor': h['cursor']+1}
             if key not in self.state['staged']: self.state['staged'].append(key)
             self.persist()
             return self.detail(key)
+
+    # ----- layered documents: the editor's layers, kept beside a revision as revisions/<key>/<version>.layers.json.
+    # The flattened PNG stays what installs, exports and themes use; the layers only reopen the editor as it was.
+    MAX_LAYERS, MAX_DOCUMENT = 100, 80 * 1024 * 1024
+
+    @classmethod
+    def layer_document(cls, doc, width, height):
+        """Check an editor document (layer settings plus each layer and mask as base64 PNG) before it is stored."""
+        import base64
+        if not isinstance(doc, dict) or doc.get('version') != 1: raise ValueError('The layers could not be saved: unknown layer format.')
+        if doc.get('width') != width or doc.get('height') != height: raise ValueError(f'The layers must be {width} × {height}, like the asset.')
+        layers = doc.get('layers')
+        if not isinstance(layers, list) or not 1 <= len(layers) <= cls.MAX_LAYERS: raise ValueError(f'Save between 1 and {cls.MAX_LAYERS} layers.')
+        def text(v, n, default=''): return v[:n] if isinstance(v, str) else default
+        def unit(v, default=1.0):
+            if not isinstance(v, (int, float)) or isinstance(v, bool): return default
+            try: v = float(v)
+            except OverflowError: v = 1.0 if v > 0 else 0.0   # an integer too long for a float
+            return min(1.0, max(0.0, v)) if v == v else default   # NaN gets the default
+        def blob(v, what):
+            # NaN and Infinity are refused: Python would store them, but the editor's JSON.parse could not read the file back.
+            try: size = len(json.dumps(v or {}, allow_nan=False)) if isinstance(v, (dict, type(None))) else -1
+            except ValueError: size = -1
+            if not 0 <= size <= 256 * 1024: raise ValueError(f'A layer’s {what} settings are damaged or too large.')
+            return v
+        out = []
+        for layer in layers:
+            if not isinstance(layer, dict): raise ValueError('A layer is damaged.')
+            clean = dict(id=text(layer.get('id'), 32), name=text(layer.get('name'), 255, 'Layer'), kind='adjustment' if layer.get('kind') == 'adjustment' else 'pixel',
+                         visible=layer.get('visible') is not False, opacity=unit(layer.get('opacity')), fill=unit(layer.get('fill')),
+                         blend=layer.get('blend') if isinstance(layer.get('blend'), str) and re.fullmatch(r'[a-z][a-z0-9-]{0,39}', layer['blend']) else 'normal',
+                         locks={k: bool((layer.get('locks') or {}).get(k)) for k in ('alpha', 'pixels', 'position', 'all')} if isinstance(layer.get('locks') or {}, dict) else {},
+                         maskEnabled=layer.get('maskEnabled') is not False, clip=bool(layer.get('clip')),
+                         effects=blob(layer.get('effects'), 'effect') or {}, adjustment=blob(layer.get('adjustment'), 'adjustment'), data=blob(layer.get('data'), 'module') or {})
+            for field in ('png', 'mask_png'):
+                if field == 'mask_png' and layer.get(field) is None: continue
+                try:
+                    with Image.open(io.BytesIO(base64.b64decode(layer.get(field) or '', validate=True))) as im: size, kind = im.size, im.format
+                except Exception: raise ValueError('A layer’s picture is damaged.') from None
+                if kind != 'PNG' or size != (width, height): raise ValueError(f'Every layer must be a {width} × {height} PNG.')
+                clean[field] = layer[field]
+            out.append(clean)
+        active = doc.get('activeIndex')
+        result = dict(version=1, width=width, height=height, activeIndex=active if isinstance(active, int) and 0 <= active < len(out) else len(out) - 1,
+                      target='mask' if doc.get('target') == 'mask' else 'pixels', layers=out)
+        if len(json.dumps(result)) > cls.MAX_DOCUMENT: raise ValueError('These layers are too big to save. Merge or delete some layers first.')
+        return result
+
+    def layers_file(self, key, revision=None):
+        """The stored layered document of a revision (default: the current one) as JSON bytes, or None."""
+        with self.lock:
+            self.row(key)
+            revision = revision or self.revision(key)
+            if revision not in {v['id'] for v in self.history(key)['versions']}: return None
+            path = self.root / 'revisions' / key / (revision + '.layers.json')
+            return path.read_bytes() if path.is_file() else None
 
     def commit(self, key, im, recipe, persist=True):
         """Save a finished RGBA image as the next revision; batch callers skip the inspector detail."""
@@ -673,7 +996,8 @@ class Lab:
         now = (sorted((r['key'], r['revision']) for r in self.staged()), self.palette(), self.hidden(), sorted((f['id'], f['version']) for f in self.staged_fonts()))
         then = (sorted((r['key'], r['revision']) for r in journal.get('edits', [])), journal.get('palette') or {}, journal.get('hide') or [],
                 sorted((f['id'], f['version']) for f in journal.get('fonts') or []))
-        return now != then
+        sounds = sorted((a['key'], a['version']) for a in self.staged_audio()) != sorted((a['key'], a['version']) for a in journal.get('audio') or [])
+        return now != then or sounds
 
     def mod(self):
         """Everything the next install would put in the game, item by item, for the review."""
@@ -695,7 +1019,7 @@ class Lab:
             fonts = [dict(id=f['id'], label=f['label'], face=f['info'].get('face', ''), installed=installed_fonts.get(f['id']) == f['version']) for f in self.staged_fonts()]
             return dict(edits=edits, palette=self.palette(), hide=self.hidden(), hide_sprites={g: sprites(g) for g in exe_palette.HIDE}, fonts=fonts,
                         installed=journal and dict(edits=list(then), palette=journal.get('palette') or {}, hide=journal.get('hide') or []),
-                        pending=self.pending())
+                        pending=self.pending(), audio=self.audio_mod(journal))
 
     def build(self):
         with self.lock, self.install_lock():
@@ -703,12 +1027,14 @@ class Lab:
             if journal and journal['state'] != 'installed': raise ValueError('An install was interrupted. Restore it before building another.')
             keys = [r['key'] for r in self.staged()]
             colors, hide, fonts = self.palette(), self.hidden(), self.staged_fonts()
-            if not keys and not colors and not hide and not fonts and not journal: raise ValueError('Save and include at least one edit in the mod.')
+            sounds = self.staged_audio()
+            if not keys and not colors and not hide and not fonts and not sounds and not journal: raise ValueError('Save and include at least one edit in the mod.')
             for k in keys: self.snapshot(self.row(k)['source'])
             replacements = self._compose(keys) if keys else {}
             build_id = uuid.uuid4().hex
             folder = self.root / 'builds' / build_id
             files = []
+            self._audio_build(sounds, replacements, folder, files)   # sounds join the same rebuilt files as the images
             for f in fonts:
                 # A new font replaces its page outright, so recolors of the old page give way to it.
                 replacements.pop(f['page'], None)
@@ -745,7 +1071,7 @@ class Lab:
                                   edited_bytes=len(rebuilt), entries=[f"Hide: {c['phase']}" if c['field'] == 'HIDE' else f"{c['field']} {c['color']} ({c['phase']})" for c in changes],
                                   backup=str(self.snapshot(EXE))))
             manifest = dict(id=build_id, game=str(self.game), at=time.time(), files=files, edits=self.staged(), palette=colors, hide=hide,
-                            fonts=[dict(id=f['id'], version=f['version']) for f in fonts], state='ready')
+                            fonts=[dict(id=f['id'], version=f['version']) for f in fonts], audio=[dict(key=a['key'], version=a['version']) for a in sounds], state='ready')
             atomic_json(folder / 'build.json', manifest)
             return manifest
 
