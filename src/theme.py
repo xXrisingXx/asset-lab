@@ -459,6 +459,19 @@ def describe_text(style, face, look='', based=''):
     return f'the {look} look ({face}): {details}' if look else f'the {based} look with your changes ({face}): {details}' if based else f'{face}, {details}'
 
 
+# "...to match our other themes like the mitosis menu text": text named only as an example, not as what to change.
+TEXT_REFERENCE = r'\b(?:like|match(?:es|ing)?|same as|similar to|as)\b(?:\s+(?:our|the|my|other|mitosis|game|\w+s?)){0,4}\s+' + FONT_WORDS[2:]
+THIS = r'\b(?:this|these|it|that|those|selected|checked)\b'
+
+
+def about_text(clause, only=None):
+    """Whether a clause asks to change the game's text (not just mentions it as an example). With assets checked, a clause
+    about "this"/"it" is about those assets, whatever text it mentions."""
+    low = re.sub(TEXT_REFERENCE, ' ', clause.lower())
+    if not re.search(FONT_WORDS, low): return False
+    return not (only and re.search(THIS, low))
+
+
 def text_split(clause):
     """A clause about the game's text less the parts that ask for something else: "christmas theme and red names" is a
     theme and a text style. Returns (the text request, [the other requests]); "names in red, white and blue" stays whole."""
@@ -1214,11 +1227,11 @@ class Themes:
         command = self.command(message)
         if command: return command
         pieces = [p.strip(' ,') for p in re.split(CLAUSES, message) if p and p.strip(' ,')]
-        split = [text_split(p) for p in pieces if re.search(FONT_WORDS, p.lower())]   # "christmas theme and red names": both
+        split = [text_split(p) for p in pieces if about_text(p, only)]   # "christmas theme and red names": both
         texts = [t for t, _ in split]
         font = texts and self.font_request('. '.join(texts))
         if font:                                    # "theme it halloween and make the names spooky": the font card plus the theme
-            others = [p for p in pieces if not re.search(FONT_WORDS, p.lower())] + [o for _, more in split for o in more]
+            others = [p for p in pieces if not about_text(p, only)] + [o for _, more in split for o in more]
             if not others: return font
             result = self.chat('. '.join(others), model, history, only)
             plan = result.get('plan') or {}
