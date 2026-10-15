@@ -105,7 +105,7 @@ class EditorCore(EditorTestCase):
         b = self.browser
         self.assertTrue(b.eval('await Ed.ready; !!Ed.doc === false && typeof Ed.registerTool === "function"'))
         self.assertEqual(b.eval("[...document.querySelectorAll('#edMenubar .ed-menu-top')].map(e => e.textContent)"),
-                         ['File', 'Edit', 'Image', 'Layer', 'Select', 'Filter', 'View'])
+                         ['File', 'Edit', 'Image', 'Layer', 'Select', 'View'])   # Filter appears once a module adds a filter
         tools = b.eval("[...document.querySelectorAll('#edTools .ed-tool')].map(e => [e.dataset.tool, e.title])")
         self.assertEqual([t[0] for t in tools], ['eyedropper', 'brush', 'eraser', 'hand', 'zoom'], 'Photoshop order')
         self.assertIn(['brush', 'Brush (B)'], tools)
@@ -857,6 +857,7 @@ class EditorCore(EditorTestCase):
         self.assertEqual(b.eval('__ran'), {'amount': 3})
         b.key('Ctrl+Shift+F12')
         self.assertIsNone(b.eval('__ran'), 'the shortcut runs it with no params (it would open its dialog)')
+        b.wait_for("!!document.querySelector('#edMenubar [data-menu=\"Filter\"]')")   # the menubar rebuilds when a menu is added
         b.click_selector('#edMenubar [data-menu="Filter"]')
         b.wait_for("!!document.querySelector('.ed-menu [aria-haspopup]')")
         b.eval("document.querySelector('.ed-menu .ed-menu-item[aria-haspopup]').dispatchEvent(new PointerEvent('pointerenter'))")

@@ -974,13 +974,13 @@ class Themes:
         return dict(id=fid, label=game[fid]['label'], style=style, image=image, text=sample, look=look,
                     face=(fonts.find_font(faces, style['font']) or {}).get('family', '') if style['font'] else '')
 
-    def text_offer(self, result, text):
+    def text_offer(self, result, text, only=None):
         """A whole-game mood ("halloween theme", "make everything gold") also offers the player names in the matching look,
         as a card to try: it is never applied by itself. Requests about some parts ("make the buttons red") get none."""
         low = str(text).lower()
         look = None if result.get('font') or re.search(FONT_WORDS, low) else next((name for pattern, name in MOOD_TEXT if re.search(rf'\b(?:{pattern})\b', low)), None)
         whole = re.search(WHOLE_GAME, low) or any(op.get('targets') == ['everything'] and not op.get('match') for op in (result.get('plan') or {}).get('operations') or [])
-        if look and whole:
+        if look and whole and not only:   # checked assets: the request is about those, not the whole game
             try: result['font'] = dict(self.font_card('nicktext', fonts.PRESETS[look], 'Cellmate'), offer=True)
             except (OSError, ValueError, KeyError, AttributeError): pass
         return result
@@ -1238,10 +1238,11 @@ class Themes:
                     if r['key'] not in seen: seen.add(r['key']); rows.append(r)
             part = self.design_offer(designer, '. '.join(drawn), rows)
             if not rest.strip():
-                return self.text_offer(dict(plan=dict(reply='', operations=[], ui_colors={}, hide=[]), source='design', note=part.pop('note'), preview=None, design=part), message)
+                # about drawing chosen art ("make the potion spooky"): no player-name offer
+                return dict(plan=dict(reply='', operations=[], ui_colors={}, hide=[]), source='design', note=part.pop('note'), preview=None, design=part)
             result = self.plan_request(rest, model, history, scope)
             result['design'] = part
-            return self.text_offer(result, rest)
+            return self.text_offer(result, rest, only)
         result = self.plan_request(message, model, history, scope)
         if designer and re.search(design.OBJECTS, message.lower()):
             # New objects need drawing, and drawing needs a target the request did not name.
@@ -1250,7 +1251,7 @@ class Themes:
         if designer and design.wants_design(message, unknown_words(message, self.named)) and designer.title_rows():
             # "Make the game spooky": the palette is shaded now; redrawing the title is offered, not started.
             result['design'] = dict(self.design_offer(designer, f'{message}. Redesign the game title to match.', designer.title_rows()), optional=True)
-        return self.text_offer(result, message)   # a whole-game mood also offers the player names in a matching look
+        return self.text_offer(result, message, only)   # a whole-game mood also offers the player names in a matching look
 
     HELP = ('I change how Mitosis looks. Ask for colors, moods or effects ("christmas theme", "rainbow outlines with a subtle glow", '
             '"holographic glass panels", "make the buttons darker") and I shade the matching art. Name one thing ("make the play button gold") '
@@ -1278,6 +1279,12 @@ class Themes:
             return dict(plan=dict(empty, reply=self.HELP), source='command', note='', preview=None)
         if re.fullmatch(r'what (?:can i|could i|do you let me) (?:change|edit|name|theme)(?: here)?|(?:list|show)(?: me)? (?:the |all )?(?:names|named (?:parts|things)|parts|ui parts)|what (?:parts|things|names) do you know', low):
             return dict(plan=dict(empty, reply=self.names_reply()), source='command', note='', preview=None)
+        if len(low) < 60 and re.search(r'\b(?:install|download|get|add|set ?up|enable)\b', low) and re.search(r'\b(?:it|that|model|ai|image|drawing|redraws?)\b', low):
+            ready = not runtime.missing('sd', 'diffusion', 'llm', 'vae')
+            return dict(plan=dict(empty, reply='The image model is installed, so you can ask for redraws now.' if ready else
+                                  "I can't download it from in here. Close Asset Lab and open it again: its start window offers to "
+                                  'download the local AI (about 5 GB, one time), and has a "Get the local AI" button. Then ask me again.'),
+                        source='command', note='', preview=None)
         if re.fullmatch(r'undo(?: (?:that|it|the last (?:theme|change|one)))?|go back|revert(?: that| it)?|take (?:that|it) (?:back )?off', low):
             done = self.undo()
             return dict(plan=dict(empty, reply=f"Undid “{done['prompt'][:80]}”: {done['reverted']} sheet(s) restored" + (f", {done['skipped']} edited since were left alone." if done['skipped'] else '.')),

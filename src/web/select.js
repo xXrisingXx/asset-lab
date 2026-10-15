@@ -22,6 +22,9 @@ function changed(){sessionStorage.setItem('lab-picked',JSON.stringify([...picked
   for(const card of list.querySelectorAll('.asset-card')){const on=picked.has(card.dataset.key);card.classList.toggle('picked',on);card.querySelector('.pick')?.setAttribute('aria-checked',on);}
   document.dispatchEvent(new CustomEvent('lab-selection',{detail:{count:n}}));}
 function decorate(){
+  // Checked assets come first on the page (only when a page loads, so cards don't jump while you check them).
+  const all=[...list.querySelectorAll('.asset-card')],first=all.filter(c=>picked.has(c.dataset.key));
+  if(first.length&&first.length<all.length&&first.some((c,i)=>all[i]!==c)){observer.disconnect();list.prepend(...first);observer.observe(list,{childList:true});}
   for(const card of list.querySelectorAll('.asset-card')){
     names.set(card.dataset.key,card.querySelector('.asset-label')?.textContent||'');
     if(!card.querySelector('.pick')){const box=el('span','pick');box.setAttribute('role','checkbox');box.title='Check to include in a mass action or a Theme AI request';card.prepend(box);
@@ -29,7 +32,10 @@ function decorate(){
     card.classList.toggle('favorite',favorites.has(card.dataset.key));card.classList.toggle('picked',picked.has(card.dataset.key));
     card.querySelector('.pick').setAttribute('aria-checked',picked.has(card.dataset.key));
   }}
-new MutationObserver(decorate).observe(list,{childList:true});
+const observer=new MutationObserver(decorate);observer.observe(list,{childList:true});
+// Double-click a card to check or uncheck it.
+list.addEventListener('dblclick',e=>{const card=e.target.closest('.asset-card');if(!card||e.target.closest('.pick,.fav'))return;
+  e.preventDefault();const key=card.dataset.key;picked.has(key)?picked.delete(key):picked.add(key);anchor=key;changed();});
 // Capture phase: the card itself is a button that opens the asset, so its own click must not fire for these two controls.
 list.addEventListener('click',run(async e=>{
   const box=e.target.closest('.pick'),fav=e.target.closest('.fav');if(!box&&!fav)return;

@@ -225,7 +225,7 @@ internal static class Setup {
                         }
                     }
                 }
-                report(label, "Checking the file…", 1);
+                report(label, L.T("Checking the file…"), 1);
                 if (Sha256(part) != sha) { File.Delete(part); throw new InvalidDataException(label + ": the download did not match its checksum."); }
                 if (File.Exists(dest)) File.Delete(dest);
                 File.Move(part, dest);
@@ -264,7 +264,7 @@ internal static class Setup {
         if (Program.DevRoot != null) return;
         string embedded = EmbeddedVersion(), installed = InstalledVersion();
         if (installed != null && Compare(installed, embedded) >= 0) return;
-        report("Unpacking Asset Lab " + embedded, "", 0.5);
+        report(L.T("Unpacking Asset Lab") + " " + embedded, "", 0.5);
         string zip = Path.Combine(Program.Home, "downloads", "app-" + embedded + ".zip");
         Directory.CreateDirectory(Path.GetDirectoryName(zip));
         using (var s = Program.Resource("app.zip")) using (var f = File.Create(zip)) s.CopyTo(f);
@@ -312,14 +312,14 @@ internal static class Setup {
         string downloads = Path.Combine(Program.Home, "downloads"), staging = Path.Combine(Program.Home, "python.new");
         var py = D(m["python"]);
         string zip = Path.Combine(downloads, "python-" + py["version"] + ".zip");
-        Download(Convert.ToString(py["url"]), zip, Convert.ToString(py["sha256"]), Convert.ToInt64(py["size"]), "Downloading Python " + py["version"], report, cancel);
+        Download(Convert.ToString(py["url"]), zip, Convert.ToString(py["sha256"]), Convert.ToInt64(py["size"]), L.T("Downloading Python") + " " + py["version"], report, cancel);
         var wheels = new List<string>();
         foreach (var w in List(m["wheels"])) {
             string file = Path.Combine(downloads, Path.GetFileName(new Uri(Convert.ToString(w["url"])).LocalPath));
             Download(Convert.ToString(w["url"]), file, Convert.ToString(w["sha256"]), Convert.ToInt64(w["size"]), "Downloading " + w["name"], report, cancel);
             wheels.Add(file);
         }
-        report("Setting up Python", "", 0.95);
+        report(L.T("Setting up Python"), "", 0.95);
         if (Directory.Exists(staging)) Directory.Delete(staging, true);
         Extract(zip, staging);
         string site = Path.Combine(staging, "Lib", "site-packages");
@@ -357,7 +357,7 @@ internal static class Setup {
             long size = Convert.ToInt64(item["size"]); long start = before;
             string name = Path.GetFileName(Convert.ToString(item["file"]));
             Download(Convert.ToString(item["url"]), Path.Combine(RuntimeDir, Convert.ToString(item["file"]).Replace('/', '\\')), Convert.ToString(item["sha256"]), size,
-                     "Downloading the local AI", report == null ? null : (Progress)((s, d, f) => report(s, name + " · " + d, (start + f * size) / total)), cancel);
+                     L.T("Downloading the local AI"), report == null ? null : (Progress)((s, d, f) => report(s, name + " · " + d, (start + f * size) / total)), cancel);
             before += size;
         }
     }
@@ -391,13 +391,13 @@ internal static class Setup {
     internal static bool ApplyUpdate(Release release, Progress report, CancellationToken cancel) {
         BackupData(Version);
         string zip = Path.Combine(Program.Home, "downloads", "asset-lab-" + release.Version + ".zip");
-        Download(release.AppUrl, zip, release.AppSha, release.AppSize, "Downloading Asset Lab " + release.Version, report, cancel);
-        report("Installing Asset Lab " + release.Version, "Your workspace and edits are kept.", 1);
+        Download(release.AppUrl, zip, release.AppSha, release.AppSize, L.T("Downloading Asset Lab") + " " + release.Version, report, cancel);
+        report(L.T("Installing Asset Lab") + " " + release.Version, L.T("Your workspace and edits are kept."), 1);
         InstallApp(zip, release.Version);
         string self = Assembly.GetExecutingAssembly().Location;
         if (release.ExeUrl == null || Sha256(self) == release.ExeSha) return false;
         string fresh = self + ".new";
-        Download(release.ExeUrl, fresh, release.ExeSha, release.ExeSize, "Updating the launcher", report, cancel);
+        Download(release.ExeUrl, fresh, release.ExeSha, release.ExeSize, L.T("Updating the launcher"), report, cancel);
         string old = self + ".old";
         if (File.Exists(old)) File.Delete(old);
         File.Move(self, old);   // a running exe can be renamed, not overwritten
@@ -464,7 +464,8 @@ internal sealed class Loader : Form {
     readonly Stopwatch clock = new Stopwatch();
     readonly Label title = new Label(), status = new Label(), detail = new Label(), version = new Label();
     readonly Bar bar = new Bar();
-    readonly FlatButton primary = new FlatButton(true), secondary = new FlatButton(false), close = new FlatButton(false), minimize = new FlatButton(false);
+    readonly FlatButton primary = new FlatButton(true), secondary = new FlatButton(false), close = new FlatButton(false), minimize = new FlatButton(false),
+        ai = new FlatButton(false), lang = new FlatButton(false);
     readonly TextBox log = new TextBox();
     readonly CancellationTokenSource cancel = new CancellationTokenSource();
     Rectangle full;
@@ -488,13 +489,14 @@ internal sealed class Loader : Form {
         TransparencyKey = Color.FromArgb(1, 2, 3); BackColor = TransparencyKey;   // only the logo shows during the intro
 
         title.Text = "Asset Lab"; title.Font = new Font("Segoe UI Semibold", 19f); title.AutoSize = true;
-        status.Font = new Font("Segoe UI Semibold", 11f); status.AutoSize = false; status.Text = "Starting…";
+        status.Font = new Font("Segoe UI Semibold", 11f); status.AutoSize = false; status.Text = L.T("Starting…");
         detail.ForeColor = Muted; detail.Font = new Font("Segoe UI", 9f); detail.AutoSize = false;
         version.ForeColor = Muted; version.Font = new Font("Segoe UI", 8f); version.AutoSize = true; version.TextAlign = ContentAlignment.MiddleRight;
         close.Text = "✕"; minimize.Text = "–";
         log.Multiline = true; log.ReadOnly = true; log.ScrollBars = ScrollBars.None; log.BackColor = Color.FromArgb(12, 16, 23); log.ForeColor = Muted;
         log.BorderStyle = BorderStyle.None; log.Font = new Font("Consolas", 8.5f); log.Visible = false;
-        foreach (Control c in new Control[] { title, status, detail, version, bar, primary, secondary, close, minimize, log }) { c.Visible = false; Controls.Add(c); }
+        foreach (Control c in new Control[] { title, status, detail, version, bar, primary, secondary, ai, close, minimize, lang, log }) { c.Visible = false; Controls.Add(c); }
+        lang.Text = L.Code.ToUpperInvariant(); lang.Font = new Font("Segoe UI Semibold", 8.5f); lang.Click += LangClick; ai.Click += AiClick;
         Layout2();
 
         close.Click += delegate { Close(); };
@@ -510,10 +512,10 @@ internal sealed class Loader : Form {
     Rectangle Centered(int w, int h) { return new Rectangle(full.X + (full.Width - w) / 2, full.Y + (full.Height - h) / 2, w, h); }
     void Layout2() {
         title.Location = new Point(S(28) + LogoSmall + S(12), S(26));
-        close.SetBounds(W - S(44), S(12), S(32), S(28)); minimize.SetBounds(W - S(78), S(12), S(32), S(28));
+        close.SetBounds(W - S(44), S(12), S(32), S(28)); minimize.SetBounds(W - S(78), S(12), S(32), S(28)); lang.SetBounds(W - S(124), S(12), S(42), S(28));
         status.SetBounds(S(28), S(110), W - S(56), S(26)); detail.SetBounds(S(28), S(138), W - S(56), S(84));
         bar.SetBounds(S(28), S(232), W - S(56), S(8));
-        primary.SetBounds(S(28), S(254), S(200), S(40)); secondary.SetBounds(S(238), S(254), S(150), S(40));
+        primary.SetBounds(S(28), S(254), S(200), S(40)); secondary.SetBounds(S(238), S(254), S(120), S(40)); ai.SetBounds(S(368), S(254), W - S(396), S(40));
         version.Location = new Point(W - S(24) - version.PreferredWidth, H - S(30));
         log.SetBounds(S(28), S(304), W - S(140), S(40));
     }
@@ -535,7 +537,7 @@ internal sealed class Loader : Form {
             }
             if (ms >= 1270) {
                 introDone = true; Bounds = full; Round();
-                foreach (Control c in new Control[] { title, status, detail, bar, close, minimize, version }) c.Visible = true;
+                foreach (Control c in new Control[] { title, status, detail, bar, close, minimize, lang, version }) c.Visible = true;
                 version.Text = "v" + Setup.Version; Layout2();
                 Run();
             }
@@ -584,15 +586,15 @@ internal sealed class Loader : Form {
     void RenderPreviews() {
         Directory.CreateDirectory(Program.Preview);
         introDone = true; intro = 2; Bounds = full; BackColor = Bg; TransparencyKey = Color.Empty;
-        foreach (Control c in new Control[] { title, status, detail, bar, close, minimize, version }) c.Visible = true;
+        foreach (Control c in new Control[] { title, status, detail, bar, close, minimize, lang, version }) c.Visible = true;
         version.Text = "v" + Setup.Version; Layout2();
         Action<string> snap = name => {
             using (var bmp = new Bitmap(Width, Height)) { DrawToBitmap(bmp, new Rectangle(0, 0, Width, Height)); bmp.Save(Path.Combine(Program.Preview, name + ".png")); }
         };
         Report("Downloading the local AI", "flux-2-klein-4b-Q4_0.gguf · 1.02 GB of 2.29 GB · 38.4 MB/s", 0.44); snap("1-downloading");
         string yes; var all = Setup.List(Setup.Manifest()["runtime"]).ToList();
-        Ask(AiQuestion(all, out yes), AiDetails(all), yes, "Not now"); snap("2-question");
-        primary.Visible = secondary.Visible = false; Running(); snap("3-running");
+        Ask(AiQuestion(all, out yes), AiDetails(all), yes, L.T("Not now")); snap("2-question");
+        primary.Visible = secondary.Visible = false; Running(); ai.Text = L.T("Get the local AI"); ai.Visible = true; snap("3-running"); ai.Visible = false;
         Fail("Asset Lab stopped while starting. The details are below."); log.Text = "Traceback (most recent call last):\r\n  ..."; snap("4-error");
         allowClose = true; Close();
     }
@@ -621,7 +623,7 @@ internal sealed class Loader : Form {
 
     async void Run() {
         try {
-            Report("Checking for updates…", "", -1);
+            Report(L.T("Checking for updates…"), "", -1);
             manifest = await Task.Run(() => Setup.Manifest());
             await Task.Run(() => Setup.EnsureApp(Report));
             manifest = await Task.Run(() => Setup.Manifest());
@@ -629,8 +631,8 @@ internal sealed class Loader : Form {
             bool auto = Environment.GetEnvironmentVariable("ASSET_LAB_AUTO_UPDATE") == "1";   // tests only
             if (release != null && (Program.Smoke == null || auto)) {
                 string notes = (release.Notes ?? "").Split('\n').Select(l => l.Trim()).FirstOrDefault(l => l.Length > 0) ?? "";
-                if (auto || await Ask("Asset Lab " + release.Version + " is available", "You have " + Setup.Version + ". " + (notes.Length > 90 ? notes.Substring(0, 90) + "…" : notes) +
-                              "\nYour workspace and edits are kept, and a backup of your settings is made first.", "Update now", "Not now")) {
+                if (auto || await Ask("Asset Lab " + release.Version + " " + L.T("is available"), L.T("You have") + " " + Setup.Version + ". " + (notes.Length > 90 ? notes.Substring(0, 90) + "…" : notes) +
+                              "\n" + L.T("Your workspace and edits are kept, and a backup of your settings is made first."), L.T("Update now"), L.T("Not now"))) {
                     bool newExe = await Task.Run(() => Setup.ApplyUpdate(release, Report, cancel.Token));
                     if (newExe) {
                         // The new launcher takes over with the same options; this one steps aside.
@@ -642,14 +644,14 @@ internal sealed class Loader : Form {
                 }
             }
             if (!Setup.PythonReady(manifest)) {
-                Report("Preparing Python", "First start only: about 30 MB from python.org and PyPI.", 0);
+                Report(L.T("Preparing Python"), L.T("First start only: about 30 MB from python.org and PyPI."), 0);
                 await Task.Run(() => Setup.EnsurePython(manifest, Report, cancel.Token));
             }
             var missing = Setup.MissingRuntime(manifest);
             string yes;
             string declined = Path.Combine(Program.Home, "ai-declined");
             if (missing.Count > 0 && !File.Exists(declined) && Program.Smoke == null) {
-                if (await Ask(AiQuestion(missing, out yes), AiDetails(missing), yes, "Not now")) {
+                if (await Ask(AiQuestion(missing, out yes), AiDetails(missing), yes, L.T("Not now"))) {
                     await Task.Run(() => Setup.DownloadRuntime(manifest, Report, cancel.Token));
                 } else { Directory.CreateDirectory(Program.Home); File.WriteAllText(declined, DateTime.Now.ToString("s")); }
             }
@@ -662,29 +664,29 @@ internal sealed class Loader : Form {
     // The one-time AI question, with this PC's memory, graphics card and disk against what the models need.
     string AiQuestion(List<Dictionary<string, object>> missing, out string yes) {
         bool weak = Specs.Ram() < Specs.MinRam || Specs.FreeDisk(Setup.RuntimeDir) < Setup.Bytes(missing) + (1L << 30);
-        yes = weak ? "Download anyway" : "Download";
-        return weak ? "This PC is below the local AI's needs" : "Download the local AI?";
+        yes = L.T(weak ? "Download anyway" : "Download");
+        return L.T(weak ? "This PC is below the local AI's needs" : "Download the local AI?");
     }
     string AiDetails(List<Dictionary<string, object>> missing) {
         long ram = Specs.Ram(), size = Setup.Bytes(missing), disk = Specs.FreeDisk(Setup.RuntimeDir); string gpu; long vram = Specs.Vram(out gpu);
-        string needs = "Needs 16 GB RAM (this PC " + Specs.Gb(ram) + ") and " + Specs.Gb(size + (1L << 30)) + " free disk (" + Specs.Gb(disk) + " free).";
-        string speed = vram >= Specs.GoodVram ? (gpu.Length > 0 ? gpu : "Graphics card") + ", " + Specs.Gb(vram) + ": about 35 s per image."
-                     : vram > 0 ? "Graphics card " + Specs.Gb(vram) + " (6 GB+ recommended): images may take minutes."
-                     : "No graphics card memory found: images will take several minutes.";
-        return Setup.Size(size) + " once: the smart Theme AI planner and image redesigns, all on this PC.\n" + needs + "\n" + speed +
-               "\nWithout it, Theme AI still works from keywords.";
+        string needs = L.T("Needs 16 GB RAM (this PC") + " " + Specs.Gb(ram) + ") " + L.T("and") + " " + Specs.Gb(size + (1L << 30)) + " " + L.T("free disk") + " (" + Specs.Gb(disk) + " " + L.T("free") + ").";
+        string speed = vram >= Specs.GoodVram ? (gpu.Length > 0 ? gpu : L.T("Graphics card")) + ", " + Specs.Gb(vram) + ": " + L.T("about 35 s per image.")
+                     : vram > 0 ? L.T("Graphics card") + " " + Specs.Gb(vram) + " " + L.T("(6 GB+ recommended): images may take minutes.")
+                     : L.T("No graphics card memory found: images will take several minutes.");
+        return Setup.Size(size) + " " + L.T("once: the smart Theme AI planner and image redesigns, all on this PC.") + "\n" + needs + "\n" + speed +
+               "\n" + L.T("Without it, Theme AI still works from keywords.");
     }
     void Fail(string message) {
         if (IsDisposed) return;
-        status.Text = "Something went wrong"; status.ForeColor = Bad; detail.Text = message; bar.Visible = false; bar.Busy = false;
-        log.Visible = true; primary.Text = "Try again"; primary.Visible = true; secondary.Visible = false;
+        status.Text = L.T("Something went wrong"); status.ForeColor = Bad; detail.Text = message; bar.Visible = false; bar.Busy = false;
+        log.Visible = true; primary.Text = L.T("Try again"); primary.Visible = true; secondary.Visible = false; ai.Visible = false;
         EventHandler retry = null; retry = delegate { primary.Click -= retry; primary.Visible = false; log.Visible = false; Run(); };
         primary.Click += retry;
         if (WindowState == FormWindowState.Minimized) WindowState = FormWindowState.Normal;
     }
 
     async Task StartServer(bool openBrowser) {
-        Report("Starting Asset Lab…", "", -1);
+        Report(L.T("Starting Asset Lab…"), "", -1);
         var h = await Task.Run(() => Program.Health());
         if (h == null) {
             if (child != null && !child.HasExited) await Task.Run(() => child.WaitForExit(30000));
@@ -703,10 +705,10 @@ internal sealed class Loader : Form {
             child.Start(); children = new ProcessGroup(child); child.BeginOutputReadLine(); child.BeginErrorReadLine();
             for (int i = 0; i < 240; i++) {
                 await Task.Delay(250);
-                if (child.HasExited) throw new InvalidOperationException("Asset Lab stopped while starting. The details are below.");
+                if (child.HasExited) throw new InvalidOperationException(L.T("Asset Lab stopped while starting. The details are below."));
                 h = await Task.Run(() => Program.Health()); if (h != null) break;
             }
-            if (h == null) throw new InvalidOperationException("Starting is taking longer than expected. The details are below.");
+            if (h == null) throw new InvalidOperationException(L.T("Starting is taking longer than expected. The details are below."));
         }
         Running();
         if (Program.Smoke != null) { await SmokeTest(); return; }
@@ -717,12 +719,34 @@ internal sealed class Loader : Form {
     }
     void Running() {
         running = true; bar.Busy = false; bar.Value = 1; bar.Visible = false;
-        status.Text = "Asset Lab is running"; status.ForeColor = Text1;
-        detail.Text = Program.Url + "\nClosing this window stops Asset Lab. Your work is saved in " + Setup.DataHome + ".";
-        primary.Text = "Open Asset Lab"; secondary.Text = "Stop"; primary.Visible = secondary.Visible = true;
+        status.Text = L.T("Asset Lab is running"); status.ForeColor = Text1;
+        detail.Text = Program.Url + "\n" + L.T("Closing this window stops Asset Lab. Your work is saved in") + " " + Setup.DataHome + ".";
+        primary.Text = L.T("Open Asset Lab"); secondary.Text = L.T("Stop"); primary.Visible = secondary.Visible = true;
         primary.Click -= OpenClick; secondary.Click -= StopClick; primary.Click += OpenClick; secondary.Click += StopClick;
         var m = manifest == null ? null : Setup.MissingRuntime(manifest);
-        if (m != null && m.Count > 0) { detail.Text += "\nThe local AI is not downloaded yet."; }
+        ai.Text = L.T("Get the local AI"); ai.Visible = m != null && m.Count > 0;
+        if (ai.Visible) { detail.Text += "\n" + L.T("The local AI is not downloaded yet."); }
+    }
+    // Get the local AI later, from the running window (players who said "Not now" at the first start).
+    async void AiClick(object s, EventArgs e) {
+        var missing = manifest == null ? null : Setup.MissingRuntime(manifest); if (missing == null || missing.Count == 0) { Running(); return; }
+        ai.Visible = false; string yes;
+        if (await Ask(AiQuestion(missing, out yes), AiDetails(missing), yes, L.T("Not now"))) {
+            try { if (!frame.Enabled) frame.Start(); await Task.Run(() => Setup.DownloadRuntime(manifest, Report, cancel.Token)); try { File.Delete(Path.Combine(Program.Home, "ai-declined")); } catch (Exception) { } }
+            catch (OperationCanceledException) { return; } catch (Exception x) { Fail(x.Message); return; }
+        }
+        Running();
+    }
+    // The launcher's language (saved in settings.json for the lab too); the visible words change at once.
+    void LangClick(object s, EventArgs e) {
+        var menu = new ContextMenuStrip();
+        for (int i = 0; i < L.Codes.Length; i++) {
+            string code = L.Codes[i];
+            var item = new ToolStripMenuItem(L.Names[i]) { Checked = code == L.Code };
+            item.Click += delegate { L.Code = code; lang.Text = code.ToUpperInvariant(); if (running) Running(); };
+            menu.Items.Add(item);
+        }
+        menu.Show(lang, new Point(0, lang.Height));
     }
     void OpenClick(object s, EventArgs e) { try { Program.OpenBrowser(); } catch (Exception x) { Write(x.Message); } }
     async void StopClick(object s, EventArgs e) { if (await Stop()) { allowClose = true; Close(); } }
@@ -732,14 +756,14 @@ internal sealed class Loader : Form {
         BeginInvoke((Action)(async () => {
             if (closing || sender != child) return;
             if (code == 75) { running = false; await StartServer(false); return; }   // the lab asked for a restart with new code
-            running = false; status.Text = "Asset Lab stopped"; detail.Text = code == 0 ? "" : "It exited with code " + code + ". The details are below.";
-            log.Visible = code != 0; primary.Text = "Start again"; primary.Visible = true; secondary.Visible = false;
+            running = false; status.Text = L.T("Asset Lab stopped"); detail.Text = code == 0 ? "" : L.T("It exited with code") + " " + code + ". " + L.T("The details are below.");
+            log.Visible = code != 0; primary.Text = L.T("Start again"); primary.Visible = true; secondary.Visible = false; ai.Visible = false;
             primary.Click -= OpenClick; EventHandler again = null; again = async delegate { primary.Click -= again; log.Visible = false; await StartServer(true); }; primary.Click += again;
             if (WindowState == FormWindowState.Minimized) WindowState = FormWindowState.Normal;
         }));
     }
     async Task<bool> Stop() {
-        status.Text = "Stopping after pending work…"; primary.Visible = secondary.Visible = false;
+        status.Text = L.T("Stopping after pending work…"); primary.Visible = secondary.Visible = ai.Visible = false;
         try {
             await Task.Run(() => Program.StopServer());
             if (child != null && !child.HasExited) await Task.Run(() => child.WaitForExit(30000));
@@ -763,6 +787,90 @@ internal sealed class Loader : Form {
     protected override void WndProc(ref Message message) {
         if (message.Msg == 0x8001) { bool open = message.WParam != IntPtr.Zero; if (running && open) OpenClick(null, null); return; }
         base.WndProc(ref message);
+    }
+}
+
+// The launcher's words in the player's language. The choice lives in <data home>\settings.json ("language"), shared with
+// the lab; without one, Windows' display language picks it. English text is the key, so a missing line stays English.
+internal static class L {
+    internal static readonly string[] Codes = { "en", "es", "pt", "fr", "de" };
+    internal static readonly string[] Names = { "English", "Español", "Português", "Français", "Deutsch" };
+    static readonly Dictionary<string, string[]> T9 = new Dictionary<string, string[]> {
+        // English                                            es / pt / fr / de
+        { "Starting…", new[] { "Iniciando…", "Iniciando…", "Démarrage…", "Wird gestartet…" } },
+        { "Checking for updates…", new[] { "Buscando actualizaciones…", "Procurando atualizações…", "Recherche de mises à jour…", "Suche nach Updates…" } },
+        { "Checking the file…", new[] { "Comprobando el archivo…", "Verificando o arquivo…", "Vérification du fichier…", "Datei wird geprüft…" } },
+        { "Unpacking Asset Lab", new[] { "Descomprimiendo Asset Lab", "Descompactando o Asset Lab", "Décompression d'Asset Lab", "Asset Lab wird entpackt" } },
+        { "Downloading Python", new[] { "Descargando Python", "Baixando o Python", "Téléchargement de Python", "Python wird heruntergeladen" } },
+        { "Setting up Python", new[] { "Configurando Python", "Configurando o Python", "Configuration de Python", "Python wird eingerichtet" } },
+        { "Preparing Python", new[] { "Preparando Python", "Preparando o Python", "Préparation de Python", "Python wird vorbereitet" } },
+        { "First start only: about 30 MB from python.org and PyPI.", new[] { "Solo la primera vez: unos 30 MB de python.org y PyPI.", "Só na primeira vez: cerca de 30 MB do python.org e PyPI.", "Premier démarrage seulement : environ 30 Mo depuis python.org et PyPI.", "Nur beim ersten Start: etwa 30 MB von python.org und PyPI." } },
+        { "Downloading the local AI", new[] { "Descargando la IA local", "Baixando a IA local", "Téléchargement de l'IA locale", "Lokale KI wird heruntergeladen" } },
+        { "Downloading Asset Lab", new[] { "Descargando Asset Lab", "Baixando o Asset Lab", "Téléchargement d'Asset Lab", "Asset Lab wird heruntergeladen" } },
+        { "Installing Asset Lab", new[] { "Instalando Asset Lab", "Instalando o Asset Lab", "Installation d'Asset Lab", "Asset Lab wird installiert" } },
+        { "Your workspace and edits are kept.", new[] { "Tu espacio de trabajo y tus ediciones se conservan.", "Seu espaço de trabalho e suas edições são mantidos.", "Votre espace de travail et vos modifications sont conservés.", "Dein Arbeitsbereich und deine Änderungen bleiben erhalten." } },
+        { L.T("Updating the launcher"), new[] { "Actualizando el lanzador", "Atualizando o inicializador", "Mise à jour du lanceur", "Starter wird aktualisiert" } },
+        { "is available", new[] { "está disponible", "está disponível", "est disponible", "ist verfügbar" } },
+        { "You have", new[] { "Tienes la", "Você tem a", "Vous avez la", "Du hast" } },
+        { "Your workspace and edits are kept, and a backup of your settings is made first.", new[] { "Tu espacio de trabajo y tus ediciones se conservan, y antes se hace una copia de tus ajustes.", "Seu espaço de trabalho e suas edições são mantidos, e antes é feito um backup das suas configurações.", "Votre espace de travail et vos modifications sont conservés, et vos réglages sont sauvegardés avant.", "Arbeitsbereich und Änderungen bleiben erhalten; deine Einstellungen werden vorher gesichert." } },
+        { "Update now", new[] { "Actualizar ahora", "Atualizar agora", "Mettre à jour", "Jetzt aktualisieren" } },
+        { "Not now", new[] { "Ahora no", "Agora não", "Pas maintenant", "Nicht jetzt" } },
+        { "Download", new[] { "Descargar", "Baixar", "Télécharger", "Herunterladen" } },
+        { "Download anyway", new[] { "Descargar igualmente", "Baixar mesmo assim", "Télécharger quand même", "Trotzdem herunterladen" } },
+        { "Download the local AI?", new[] { "¿Descargar la IA local?", "Baixar a IA local?", "Télécharger l'IA locale ?", "Lokale KI herunterladen?" } },
+        { "This PC is below the local AI's needs", new[] { "Este PC no llega a lo que necesita la IA local", "Este PC está abaixo do que a IA local precisa", "Ce PC est en dessous des besoins de l'IA locale", "Dieser PC erfüllt die Anforderungen der lokalen KI nicht" } },
+        { "once: the smart Theme AI planner and image redesigns, all on this PC.", new[] { "una sola vez: el planificador inteligente de Theme AI y los rediseños de imágenes, todo en este PC.", "uma vez só: o planejador inteligente do Theme AI e os redesenhos de imagens, tudo neste PC.", "une seule fois : le planificateur intelligent de Theme AI et les redessins d'images, tout sur ce PC.", "einmalig: der smarte Theme-AI-Planer und Bild-Neugestaltungen, alles auf diesem PC." } },
+        { "Needs 16 GB RAM (this PC", new[] { "Necesita 16 GB de RAM (este PC tiene", "Precisa de 16 GB de RAM (este PC tem", "Nécessite 16 Go de RAM (ce PC a", "Benötigt 16 GB RAM (dieser PC hat" } },
+        { "and", new[] { "y", "e", "et", "und" } },
+        { "free disk", new[] { "libres en disco", "livres em disco", "libres sur le disque", "freien Speicher" } },
+        { "free", new[] { "libres", "livres", "libres", "frei" } },
+        { "Graphics card", new[] { "Tarjeta gráfica", "Placa de vídeo", "Carte graphique", "Grafikkarte" } },
+        { "about 35 s per image.", new[] { "unos 35 s por imagen.", "cerca de 35 s por imagem.", "environ 35 s par image.", "etwa 35 s pro Bild." } },
+        { "(6 GB+ recommended): images may take minutes.", new[] { "(se recomiendan 6 GB o más): las imágenes pueden tardar minutos.", "(recomendado 6 GB ou mais): as imagens podem levar minutos.", "(6 Go ou plus recommandés) : les images peuvent prendre des minutes.", "(6 GB+ empfohlen): Bilder können Minuten dauern." } },
+        { "No graphics card memory found: images will take several minutes.", new[] { "No se encontró memoria de tarjeta gráfica: las imágenes tardarán varios minutos.", "Nenhuma memória de placa de vídeo encontrada: as imagens vão levar vários minutos.", "Aucune mémoire de carte graphique trouvée : les images prendront plusieurs minutes.", "Kein Grafikspeicher gefunden: Bilder dauern mehrere Minuten." } },
+        { "Without it, Theme AI still works from keywords.", new[] { "Sin ella, Theme AI sigue funcionando con palabras clave.", "Sem ela, o Theme AI ainda funciona com palavras-chave.", "Sans elle, Theme AI fonctionne quand même avec des mots-clés.", "Ohne sie funktioniert Theme AI weiterhin mit Stichwörtern." } },
+        { "Something went wrong", new[] { "Algo salió mal", "Algo deu errado", "Un problème est survenu", "Etwas ist schiefgelaufen" } },
+        { "Try again", new[] { "Reintentar", "Tentar de novo", "Réessayer", "Erneut versuchen" } },
+        { "Starting Asset Lab…", new[] { "Iniciando Asset Lab…", "Iniciando o Asset Lab…", "Démarrage d'Asset Lab…", "Asset Lab wird gestartet…" } },
+        { "Asset Lab stopped while starting. The details are below.", new[] { "Asset Lab se detuvo al iniciar. Los detalles están abajo.", "O Asset Lab parou ao iniciar. Os detalhes estão abaixo.", "Asset Lab s'est arrêté au démarrage. Les détails sont ci-dessous.", "Asset Lab wurde beim Start beendet. Details unten." } },
+        { "Starting is taking longer than expected. The details are below.", new[] { "El inicio está tardando más de lo esperado. Los detalles están abajo.", "A inicialização está demorando mais que o esperado. Os detalhes estão abaixo.", "Le démarrage prend plus de temps que prévu. Les détails sont ci-dessous.", "Der Start dauert länger als erwartet. Details unten." } },
+        { "Asset Lab is running", new[] { "Asset Lab está funcionando", "O Asset Lab está rodando", "Asset Lab est lancé", "Asset Lab läuft" } },
+        { "Closing this window stops Asset Lab. Your work is saved in", new[] { "Cerrar esta ventana detiene Asset Lab. Tu trabajo se guarda en", "Fechar esta janela encerra o Asset Lab. Seu trabalho é salvo em", "Fermer cette fenêtre arrête Asset Lab. Votre travail est enregistré dans", "Schließen dieses Fensters beendet Asset Lab. Deine Arbeit ist gespeichert in" } },
+        { "The local AI is not downloaded yet.", new[] { "La IA local aún no está descargada.", "A IA local ainda não foi baixada.", "L'IA locale n'est pas encore téléchargée.", "Die lokale KI ist noch nicht heruntergeladen." } },
+        { "Open Asset Lab", new[] { "Abrir Asset Lab", "Abrir o Asset Lab", "Ouvrir Asset Lab", "Asset Lab öffnen" } },
+        { "Stop", new[] { "Detener", "Parar", "Arrêter", "Beenden" } },
+        { "Get the local AI", new[] { "Obtener la IA local", "Obter a IA local", "Obtenir l'IA locale", "Lokale KI holen" } },
+        { "Asset Lab stopped", new[] { "Asset Lab se detuvo", "O Asset Lab parou", "Asset Lab s'est arrêté", "Asset Lab wurde beendet" } },
+        { "It exited with code", new[] { "Terminó con el código", "Saiu com o código", "Il s'est terminé avec le code", "Es wurde mit Code beendet:" } },
+        { "The details are below.", new[] { "Los detalles están abajo.", "Os detalhes estão abaixo.", "Les détails sont ci-dessous.", "Details unten." } },
+        { "Start again", new[] { "Iniciar de nuevo", "Iniciar de novo", "Relancer", "Erneut starten" } },
+        { "Stopping after pending work…", new[] { "Deteniendo tras terminar el trabajo pendiente…", "Parando após o trabalho pendente…", "Arrêt après le travail en cours…", "Wird nach laufender Arbeit beendet…" } },
+        { "Language", new[] { "Idioma", "Idioma", "Langue", "Sprache" } },
+    };
+    static string file { get { return Path.Combine(Setup.DataHome, "settings.json"); } }
+    static Dictionary<string, object> Read() {
+        try { var d = File.Exists(file) ? Program.Json.Deserialize<Dictionary<string, object>>(File.ReadAllText(file)) : null; return d ?? new Dictionary<string, object>(); }
+        catch (Exception) { return new Dictionary<string, object>(); }
+    }
+    static int index = -1;
+    internal static string Code {
+        get {
+            if (index < 0) {
+                object v; string saved = Read().TryGetValue("language", out v) ? Convert.ToString(v) : null;
+                index = Array.IndexOf(Codes, saved ?? System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName);
+                if (index < 0) index = 0;
+            }
+            return Codes[index];
+        }
+        set {
+            index = Math.Max(0, Array.IndexOf(Codes, value));
+            try { var d = Read(); d["language"] = Codes[index]; Directory.CreateDirectory(Setup.DataHome); File.WriteAllText(file, Program.Json.Serialize(d)); }
+            catch (Exception) { }   // the choice still holds for this session
+        }
+    }
+    internal static string T(string english) {
+        string[] t; var i = Array.IndexOf(Codes, Code) - 1;
+        return i >= 0 && T9.TryGetValue(english, out t) ? t[i] : english;
     }
 }
 

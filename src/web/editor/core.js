@@ -689,7 +689,7 @@ Ed.menu={
       parts.forEach((p,i)=>{if(i===parts.length-1){node.children.set(p+'\u0000'+m.path,{name:p,item:m,order:m.def.order??100,seq:m.seq});return;}
         if(!node.children.has(p))node.children.set(p,{name:p,children:new Map(),order:Infinity,seq:m.seq});node=node.children.get(p);node.order=Math.min(node.order,m.def.order??100);});}
     const sort=n=>[...n.children.values()].sort((a,b)=>a.order-b.order||a.seq-b.seq).map(c=>c.children?{name:c.name,children:sort(c),separatorBefore:false}:{name:c.name,...menuItem(c.item)});
-    const top=sort(root);return[...TOP.map(n=>top.find(t=>t.name===n)||{name:n,children:[]}),...top.filter(t=>!TOP.includes(t.name))];},
+    const top=sort(root);return[...TOP.map(n=>top.find(t=>t.name===n)).filter(Boolean),...top.filter(t=>!TOP.includes(t.name))];},   // a menu with nothing in it is not shown
   forEvent(e){for(const m of menus.values())if(m.def.shortcut&&Ed.keys.matches(e,m.def.shortcut))return m.path;return null;}};
 
 // ----- panels (rendered by the shell) -----------------------------------------------------------------------------------
