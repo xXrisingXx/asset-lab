@@ -252,7 +252,13 @@ def server_for(lab, port):
                     return self.send({'path': str(lab.root)})
                 if path == '/api/launch-game':
                     if lab.active() and lab.active()['state'] != 'installed': raise ValueError('Restore the incomplete install before launching.')
-                    if os.name == 'nt': os.startfile('steam://rungameid/389570')
+                    if lab.game_state().get('running'): return self.send({'opened': False, 'running': True})
+                    # Straight from Mitosis.exe: no Steam round trip, and Steam can't be left thinking the game still
+                    # runs after the lab closed it. Steam's own launch is the fallback.
+                    exe = lab.game / 'Mitosis.exe'
+                    if os.name == 'nt':
+                        try: subprocess.Popen([str(exe)], cwd=str(lab.game), creationflags=0x00000008 | 0x00000200, close_fds=True)
+                        except OSError: os.startfile('steam://rungameid/389570')
                     return self.send({'opened': True})
                 if path == '/api/shutdown':
                     self.send({'stopping': True})

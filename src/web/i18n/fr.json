@@ -1343,7 +1343,11 @@
   "Next": "Suivant",
   "Let’s go": "C’est parti",
   "Show the tour of Asset Lab": "Voir le tour d’Asset Lab",
-  "Asset Lab tour": "Tour d’Asset Lab"
+  "Asset Lab tour": "Tour d’Asset Lab",
+  "Opening Mitosis…": "Ouverture de Mitosis…",
+  "Mitosis is already open.": "Mitosis est déjà ouvert.",
+  "Mitosis updated. Opening Mitosis…": "Mitosis mis à jour. Ouverture de Mitosis…",
+  "Mod installed. Opening Mitosis…": "Mod installé. Ouverture de Mitosis…"
  },
  "patterns": {
   "{n} visuals": "{n} visuels",

@@ -421,7 +421,7 @@ class GeneralTests(SettingsCase):
         self.install_click()
         self.installed()
         b.wait_for("(window.__calls||{})['/api/launch-game'] === 1", 10, message='Mitosis was not opened after installing')
-        b.wait_for("document.getElementById('toast').textContent.includes('Opening Mitosis through Steam')")
+        b.wait_for("document.getElementById('toast').textContent.includes('Opening Mitosis')")
         self.restore()
         self.reset_all()
         self.reload()
