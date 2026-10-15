@@ -1,7 +1,7 @@
 'use strict';
 // Location notes stay separate from painting state and never change a draft.
 (() => {
- const panel=document.createElement('details');panel.id='locationNotes';panel.open=true;
+ const panel=document.createElement('details');panel.id='locationNotes';panel.open=true;panel.translate=false;   // research notes: English only (i18n.js)
  const title=document.createElement('summary');title.textContent='Image location & EXE references';panel.append(title);
  const content=document.createElement('div');content.id='locationContent';content.className='info';content.textContent='Select an image to see its exact storage location.';panel.append(content);
  const download=document.createElement('a');download.id='downloadAssetNotes';download.className='button full';download.textContent='Download this asset’s notes';download.hidden=true;panel.append(download);

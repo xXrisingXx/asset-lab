@@ -6,6 +6,7 @@
 // Uses app.js globals: $, api, message, library, run, select, S.
 (()=>{
 const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
+const t=text=>window.LabI18n?LabI18n.t(text):text;   // native dialogs are not in the page, so they are translated here
 
 // ----- 1. stale server ------------------------------------------------------------------------
 const banner=el('div','update-banner');banner.hidden=true;
@@ -13,7 +14,7 @@ const bannerText=el('span','', 'The lab was updated after it started, so some fe
 const restart=el('button','primary','Restart lab now');banner.append(bannerText,restart);document.body.prepend(banner);
 async function checkCode(){try{const r=await fetch('/api/code-stamp').then(x=>x.json());banner.hidden=!r.stale;}catch{}}
 restart.onclick=run(async()=>{
-  if(S.dirty&&!confirm('Restart the lab? Your unsaved draft in the editor will be lost; saved edits are kept.'))return;
+  if(S.dirty&&!confirm(t('Restart the lab? Your unsaved draft in the editor will be lost; saved edits are kept.')))return;
   const before=(await fetch('/api/code-stamp').then(x=>x.json())).pid;
   restart.disabled=true;bannerText.textContent='Restarting… the page reloads when the new server answers.';
   await api('/api/restart',{});
@@ -42,7 +43,7 @@ aside.addEventListener('drop',run(async e=>{aside.classList.remove('dropping');c
 // ----- 3. names ---------------------------------------------------------------------------------
 async function nameThese(keys,current=''){
   if(!keys.length)return;
-  const text=prompt(keys.length===1?'Name this asset (leave empty to remove the name):':`Name all ${keys.length} checked assets (leave empty to remove their names):`,current);
+  const text=prompt(t(keys.length===1?'Name this asset (leave empty to remove the name):':`Name all ${keys.length} checked assets (leave empty to remove their names):`),current);
   if(text===null)return;
   const r=await api('/api/label',{keys,name:text});
   message(r.label?`Named ${keys.length===1?'it':keys.length+' assets'} “${r.label}”. Search and Theme AI understand the name now.`:'Name removed.');

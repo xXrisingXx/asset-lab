@@ -3,9 +3,14 @@
 // Uses app.js globals: $, api, message, status, library, select, run, confirmAction, S.
 (()=>{
 const T={open:false,info:null,history:[],busy:false,job:null,plan:null,prompt:'',passing:false,game:null};
+// Chat history: the conversation, what was applied and any drawing still being made come back after a reload.
+const STORE='lab-theme-chat',J={entries:[]};
+function keepChat(){try{let e=J.entries.slice(-40);for(;;){try{localStorage.setItem(STORE,JSON.stringify({entries:e,history:T.history}));return;}
+  catch(x){if(e.length<=2){localStorage.removeItem(STORE);return;}e=e.slice(Math.ceil(e.length/4));}}}catch(x){}}
+function record(entry){J.entries.push(entry);keepChat();return entry;}
 const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
 const button=el('button','theme-open','✦ Theme AI');button.id='themeButton';button.title='Change the whole look from a prompt';
-document.querySelector('.topbar').insertBefore(button,$('workspaceButton'));
+document.querySelector('.topbar').insertBefore(button,$('launchButton'));
 const drawer=el('aside','theme-drawer');drawer.id='themeDrawer';drawer.hidden=true;drawer.setAttribute('aria-label','Theme AI');
 
 // Header: title, model and close on one line.
@@ -89,7 +94,7 @@ gameButton.onclick=run(async()=>{if(game.hidden&&!T.info)await refresh();showGam
 function scroll(){log.scrollTop=log.scrollHeight;}
 function bubble(kind,text){const b=el('div','theme-bubble '+kind);if(text)b.append(el('p','',text));log.append(b);scroll();return b;}
 function targetText(line){let t=line.targets.join(', ').replace(/_/g,' ');if(line.match.length)t+=' · only '+line.match.join(', ');if(line.exclude.length)t+=' · except '+line.exclude.join(', ');return t;}
-function showPlan(box,result,prompt,keys){
+function showPlan(box,result,prompt,keys,entry){
   const {plan,preview}=result;
   if(result.note)box.append(el('p','theme-note',result.note));
   if(preview?.forced)box.append(el('p','theme-note','None of the checked assets belong to the parts named, so every step applies to all of the checked assets.'));
@@ -107,15 +112,19 @@ function showPlan(box,result,prompt,keys){
   const colorsOnly=!preview.sheets&&code;
   const bar=el('div','theme-actions');const apply=el('button','primary',colorsOnly?(preview.ui_colors?.length?'Apply game colors':'Apply'):'Apply');apply.disabled=!preview.sheets&&!colorsOnly;
   const scope=[preview.sheets?`up to ${preview.sheets} sheet${preview.sheets===1?'':'s'}`:'',preview.ui_colors?.length?'game colors':'',preview.hide?.length?'menu':'',keys?`${keys.length} checked only`:''].filter(Boolean).join(' + ');
-  apply.onclick=run(()=>applyPlan(plan,prompt,apply,keys));bar.append(apply,el('small','hint',`${scope} · ${({rules:'keyword planner',tags:'exact, from your words'}[result.source]||result.source)}`));box.append(bar);
+  apply.onclick=run(async()=>{const job=await applyPlan(plan,prompt,apply,keys);if(entry&&job?.state==='complete'){entry.applied=true;keepChat();}});
+  if(entry?.applied){apply.textContent='Saved ✓';apply.disabled=true;}
+  bar.append(apply,el('small','hint',`${scope} · ${({rules:'keyword planner',tags:'exact, from your words'}[result.source]||result.source)}`));box.append(bar);
   T.plan=plan;T.prompt=prompt;
 }
 async function refresh(){
   T.info=await api('/api/theme-status');
-  const chosen=model.value;model.replaceChildren();
+  // The player's pick in this drawer wins; until they pick, Settings' model is used (it may load after the drawer).
+  const before=model.value,chosen=T.picked?before:'';model.replaceChildren();
   for(const m of T.info.models){const o=el('option','',m.name);o.value=m.name;model.append(o);}
   if(!T.info.models.length){const o=el('option','','Keyword planner');o.value='';model.append(o);}
-  if(chosen&&[...model.options].some(o=>o.value===chosen))model.value=chosen;
+  // The player's pick in this drawer, else Settings › Theme AI & drawing › Planner model when it is installed.
+  const wanted=chosen||setting('planner_model')||before;if(wanted&&[...model.options].some(o=>o.value===wanted))model.value=wanted;
   state.textContent=T.info.ollama?'local AI':'keywords only';state.title=T.info.ollama?`Local model via Ollama · ${T.info.sheets} sheets`:'Ollama is not running, so requests are planned from keywords.';
   state.classList.toggle('offline',!T.info.ollama);
   undo.disabled=!T.info.last||T.busy;undo.title=T.info.last?`Take “${T.info.last.prompt.slice(0,60)}” back off (${T.info.last.sheets} sheets)`:'No theme applied yet';
@@ -137,14 +146,19 @@ function dockState(){
 async function checkGame(){try{T.game=(await api('/api/game')).running;}catch{T.game=null;}dockState();return T.game;}
 new MutationObserver(dockState).observe($('modTitle'),{childList:true,characterData:true,subtree:true});
 setInterval(()=>{if(T.open)checkGame();},5000);
-// Installing or restoring replaces game files, so Mitosis has to be closed first: offer to close it.
+// Installing or restoring replaces game files, so Mitosis has to be closed first: offer to close it (or, with Settings ›
+// General › If Mitosis is open set to "Close it for me", close it without asking).
+const setting=k=>window.LabSettings?LabSettings.get(k):undefined;
 async function closedFirst(what){
   if(!await checkGame())return true;
-  if(!await confirmAction('Mitosis is open',`${what} replaces game files, so Mitosis has to be closed first. Close it now? Any match in progress ends.`,'Close Mitosis and continue'))return false;
+  if(setting('game_open')!=='close'&&!await confirmAction('Mitosis is open',`${what} replaces game files, so Mitosis has to be closed first. Close it now? Any match in progress ends.`,'Close Mitosis and continue'))return false;
   const r=await api('/api/close-game',{});await checkGame();
   if(!r.closed){message('Mitosis did not close. Close it yourself, then try again.',true);return false;}
   return true;}
-async function pass(target,what){if(!await closedFirst(what))return;T.passing=true;try{target.click();}finally{T.passing=false;}}
+// Settings › General › Ask before installing or restoring asks first (LabSettings.beforeGameChange).
+async function pass(target,what){
+  if(window.LabSettings&&LabSettings.beforeGameChange&&!await LabSettings.beforeGameChange(target.id))return;
+  if(!await closedFirst(what))return;T.passing=true;try{target.click();}finally{T.passing=false;}}
 // The same check guards the editor's own Install and Restore buttons.
 for(const [id,what] of [['installButton','Installing the mod'],['restoreButton','Restoring the original files']]){
   $(id).addEventListener('click',e=>{if(T.passing)return;e.stopImmediatePropagation();e.preventDefault();run(()=>pass($(id),what))();},true);}
@@ -156,31 +170,39 @@ launch.onclick=()=>$('launchButton').click();
 // ----- asking and applying -----------------------------------------------------------------------
 async function ask(text){
   if(T.busy||!text.trim())return;
-  bubble('user',text);input.value='';setBusy(true);
+  bubble('user',text);record({t:'user',text});input.value='';setBusy(true);
   const wait=bubble('bot','Thinking…');const started=Date.now();const tick=setInterval(()=>{wait.firstChild.textContent=`Thinking… ${Math.round((Date.now()-started)/1000)}s`+(Date.now()-started>12000?' (the first request loads the model)':'');},1000);
   try{
     const keys=only();
-    const result=await api('/api/theme-chat',{message:text,model:model.value,history:T.history,only:keys});
+    const result=await api('/api/theme-chat',{message:text,model:model.value,history:T.history,only:keys,language:window.LabI18n?.lang||'en'});   // the model replies in the lab's language
     clearInterval(tick);wait.firstChild.textContent=result.plan.reply||'Here is the plan.';
     if(result.plan.operations.length||Object.keys(result.plan.ui_colors||{}).length||result.plan.hide?.length){T.history.push({role:'user',content:text},{role:'assistant',content:JSON.stringify(result.plan)});T.history=T.history.slice(-8);}
+    const entry=record({t:'bot',text:wait.firstChild.textContent,result,prompt:text,keys});
     if(result.undone){S.build=null;await status();await library();if(S.asset&&!S.dirty)await select(S.asset.key,true);await refresh();}
-    const planned=result.plan.operations.length||Object.keys(result.plan.ui_colors||{}).length||result.plan.hide?.length;
-    if(result.font&&!planned&&!result.design){showFont(wait,result.font,result.note);scroll();return;}
-    const addFont=()=>{if(!result.font)return;const offer=el('div','design-offer');
-      offer.append(el('p','',result.font.offer?`Want the player names to match? Here they are in the ${result.font.look} look; flip through the others below.`:`Text · ${result.font.label}`));
-      wait.append(offer);showFont(offer,result.font);};
-    if(result.design&&!planned&&!result.design.optional){showDesign(wait,result.design,keys);addFont();scroll();return;}
-    showPlan(wait,result,text,keys);
-    if(result.design){const offer=el('div','design-offer');offer.append(el('p',''));wait.append(offer);showDesign(offer,result.design,keys,null,true);}
-    addFont();
-    scroll();
-    if(autoBox.checked&&result.preview&&(result.preview.sheets||result.preview.ui_colors?.length||result.preview.hide?.length)){setBusy(false);await applyPlan(result.plan,text,wait.querySelector('.theme-actions button'),keys);}
-  }catch(e){clearInterval(tick);wait.classList.add('error');wait.firstChild.textContent=e.message;}
+    renderResult(wait,entry,false);scroll();
+    if(autoBox.checked&&result.preview&&(result.preview.sheets||result.preview.ui_colors?.length||result.preview.hide?.length)){setBusy(false);
+      const job=await applyPlan(result.plan,text,wait.querySelector('.theme-actions button'),keys);if(job?.state==='complete'){entry.applied=true;keepChat();}}
+  }catch(e){clearInterval(tick);wait.classList.add('error');wait.firstChild.textContent=e.message;record({t:'bot',error:e.message});}
   finally{setBusy(false);}
+}
+// A reply's plan, drawings and text card: drawn when it arrives and again from the history after a reload (restoring:
+// nothing starts by itself, applied items stay applied, and drawings reconnect to their jobs).
+function renderResult(wait,entry,restoring){
+  const {result,prompt:text,keys}=entry;
+  const planned=result.plan.operations.length||Object.keys(result.plan.ui_colors||{}).length||result.plan.hide?.length;
+  if(result.font&&!planned&&!result.design){showFont(wait,result.font,result.note);return;}
+  const addFont=()=>{if(!result.font)return;const offer=el('div','design-offer');
+    offer.append(el('p','',result.font.offer?`Want the player names to match? Here they are in the ${result.font.look} look; flip through the others below.`:`Text · ${result.font.label}`));
+    wait.append(offer);showFont(offer,result.font);};
+  if(result.design&&!planned&&!result.design.optional){showDesign(wait,result.design,keys,null,false,entry,restoring);addFont();return;}
+  showPlan(wait,result,text,keys,entry);
+  if(result.design){const offer=el('div','design-offer');offer.append(el('p',''));wait.append(offer);showDesign(offer,result.design,keys,null,true,entry,restoring);}
+  addFont();
 }
 // ----- design: redraw art with the local image model, then pick, adjust and apply ---------------------
 const GAME_BG='#0D2829';
-function showDesign(box,d,keys,base,offer){
+const drawings=()=>{const n=+setting('drawings');return n>=1&&n<=4?n:2;};   // Settings › Theme AI & drawing › Drawings per request
+function showDesign(box,d,keys,base,offer,entry,restoring){
   // One drawing per distinct sprite; the title's sizes share one drawing.
   const groups=[],title=d.targets.filter(t=>t.name==='logo');if(title.length)groups.push(title);
   for(const t of d.targets)if(t.name!=='logo')groups.push([t]);
@@ -190,27 +212,40 @@ function showDesign(box,d,keys,base,offer){
     d.optional?`Want ${what} redrawn to match? The local image model can draw it.`:
     offer?`The rest needs drawing: I'll redraw ${what} with the local image model.`:`I'll redraw ${what} with the local image model. Pick a variant, adjust it, then apply.`;
   if(!d.available)return;
-  const bar=el('div','theme-actions');const count=el('select');for(const n of [1,2,3,4]){const o=el('option','',`${n} variant${n>1?'s':''}`);o.value=n;count.append(o);}count.value=2;
+  const bar=el('div','theme-actions');const count=el('select');count.className='design-count';for(const n of [1,2,3,4]){const o=el('option','',`${n} variant${n>1?'s':''}`);o.value=n;count.append(o);}count.value=String(drawings());
   const go=el('button','primary',groups.length>1?`Draw all ${groups.length}`:'Draw it');
   bar.append(go,count,el('small','hint',`about ${35*groups.length} s per variant`));box.append(bar);
   go.onclick=run(async()=>{go.disabled=true;count.disabled=true;
     let direction=null;   // the first drawing's art direction is reused, so a set comes out in one style
     for(const g of groups){const part=el('div','design-part');if(groups.length>1)part.append(el('p','design-part-title',label(g)));box.append(part);
-      const done=await drawDesign(part,d.prompt,g.map(t=>t.key),+count.value,base,direction);if(done&&done.direction&&!direction)direction=done.direction;}});
+      const done=await drawDesign(part,d.prompt,g.map(t=>t.key),+count.value,base,direction,entry,groups.length>1?label(g):'');if(done&&done.direction&&!direction)direction=done.direction;}});
   if(d.optional)go.textContent='Redraw it';
-  if(autoBox.checked&&!d.optional)go.click();
+  if(restoring&&entry?.jobs?.length){bar.hidden=true;(async()=>{for(const info of entry.jobs)await resumeDesign(box,info,entry);})();return;}
+  if(!restoring&&autoBox.checked&&!d.optional)go.click();
 }
-async function drawDesign(box,prompt,keys,count,base,direction){
-  setBusy(true);const text=el('small','hint','Starting…');const barEl=el('div','theme-progress');const fill=el('span');barEl.append(fill);box.append(barEl,text);scroll();
-  let job=null;const stop=el('button','quiet','Cancel');stop.onclick=run(async()=>{if(job)await api('/api/design-cancel',{job:job.id});});text.after(stop);
-  job=await api('/api/design-start',{prompt,only:keys||null,count,base:base||null,direction:direction||null});const started=Date.now();
-  try{while(job.state==='running'){await new Promise(r=>setTimeout(r,1000));job=await api('/api/design-job?job='+job.id);
-      const m=job.message.match(/step (\d+) of (\d+)/);fill.style.width=(m?20+70*m[1]/m[2]:job.message.startsWith('Finishing')?92:8)+'%';
-      text.textContent=`${job.message} · ${Math.round((Date.now()-started)/1000)} s`;}}
-  finally{setBusy(false);stop.remove();}
+async function drawDesign(box,prompt,keys,count,base,direction,entry,label){
+  let job=await api('/api/design-start',{prompt,only:keys||null,count,base:base||null,direction:direction||null});
+  const info={id:job.id,keys:keys||null,label:label||''};if(entry){(entry.jobs||(entry.jobs=[])).push(info);keepChat();}
+  return watchDesign(box,job,keys,entry,info);
+}
+// A drawing being made: progress until it is done (also after a reload, while the lab keeps running), then its card.
+async function watchDesign(box,job,keys,entry,info){
+  const text=el('small','hint',job.message||'Starting…');const barEl=el('div','theme-progress');const fill=el('span');barEl.append(fill);box.append(barEl,text);scroll();
+  const started=Date.now();
+  if(job.state==='running'){setBusy(true);const stop=el('button','quiet','Cancel');stop.onclick=run(async()=>{await api('/api/design-cancel',{job:job.id});});text.after(stop);
+    try{while(job.state==='running'){await new Promise(r=>setTimeout(r,1000));job=await api('/api/design-job?job='+job.id);
+        const m=job.message.match(/step (\d+) of (\d+)/);fill.style.width=(m?20+70*m[1]/m[2]:job.message.startsWith('Finishing')?92:8)+'%';
+        text.textContent=`${job.message} · ${Math.round((Date.now()-started)/1000)} s`;}}
+    finally{setBusy(false);stop.remove();}}
   barEl.classList.add('done');text.textContent=job.message;
   if(job.state!=='complete'){box.classList.add('error');return job;}
-  designCard(box,job,keys);scroll();return job;
+  designCard(box,job,keys,entry,info);scroll();return job;
+}
+async function resumeDesign(box,info,entry){
+  const part=el('div','design-part');if(info.label)part.append(el('p','design-part-title',info.label));box.append(part);
+  let job;try{job=await api('/api/design-job?job='+info.id);}
+  catch(e){part.append(el('p','theme-note','This drawing is no longer available because the lab was restarted since it was made. Ask again to redraw it.'));return;}
+  return watchDesign(part,job,info.keys,entry,info);
 }
 function showFont(box,font,note){
   // A text style, asked for or offered with a whole-game theme: the game font in that look, previewed. The looks menu
@@ -229,9 +264,10 @@ function showFont(box,font,note){
   actions.append(apply,tune);if(font.offer)actions.append(el('small','hint','Nothing changes until you click Apply.'));
   box.append(img);if(pick)box.append(pick);box.append(actions);
 }
-function designCard(box,job,keys){
+function designCard(box,job,keys,entry,info){
   const card=el('div','design-card');box.append(card);
-  const S2={variant:0,settings:{scale:1,dx:0,dy:0,tolerance:1,shape:job.stretched?1:0,fill:job.title?1:0,white:0},applied:null};
+  // Settings › Theme AI & drawing › Keep game-colored icons white ticks "Keep it white" for icons the game colors.
+  const S2={variant:0,settings:{scale:1,dx:0,dy:0,tolerance:1,shape:job.stretched?1:0,fill:job.title?1:0,white:(job.tint||job.tinted)&&setting('keep_white')?1:0},applied:null};
   if(job.tint)card.append(el('p','theme-note',`The game colors this white icon ${job.tint} in the menu, so “In game” shows each variant the way the game will draw it. Tick “Keep it white” to get the game’s color with the drawing’s detail.`));
   else if(job.tinted)card.append(el('p','theme-note','This icon is plain white because the game colors it (teal in the menu), so a colorful drawing will come out tinted. Light, mostly white designs keep their look.'));
   if(job.direction){const dir=el('p','design-direction');dir.append(el('b','','Art direction: '),document.createTextNode(job.direction));card.append(dir);}
@@ -269,11 +305,13 @@ function designCard(box,job,keys){
   const actions=el('div','theme-actions');const apply=el('button','primary','Apply to the game art');const more=el('button','','More variants');
   const refine=el('input');refine.placeholder='Refine this one… e.g. “bigger bats, less blood”';refine.className='design-refine';const again=el('button','','Refine');
   apply.onclick=run(async()=>{apply.disabled=true;const r=await api('/api/design-apply',{job:job.id,variant:S2.variant,settings:S2.settings});S2.applied=r;apply.textContent='Applied ✓';
-    const undoD=el('button','quiet','Undo design');undoD.onclick=run(async()=>{await api('/api/design-undo',{job:job.id});undoD.remove();apply.disabled=false;apply.textContent='Apply to the game art';S.build=null;await status();await library();});
+    if(info){info.applied=true;keepChat();}
+    const undoD=el('button','quiet','Undo design');undoD.onclick=run(async()=>{await api('/api/design-undo',{job:job.id});undoD.remove();apply.disabled=false;apply.textContent='Apply to the game art';if(info){info.applied=false;keepChat();}S.build=null;await status();await library();});
     const inst=el('button','primary',S.status?.active?'Update Mitosis':'Install in Mitosis');inst.onclick=install.onclick;actions.append(undoD,inst);
     S.build=null;await status();await library();if(S.asset&&!S.dirty)await select(S.asset.key,true);});
-  more.onclick=run(()=>drawDesign(box,job.prompt,job.targets,2,null,job.direction));   // same art direction: the new variants match
-  again.onclick=run(()=>{const extra=refine.value.trim();if(!extra)return refine.focus();return drawDesign(box,extra,null,2,[job.id,S2.variant]);});
+  if(info?.applied){apply.disabled=true;apply.textContent='Applied ✓';}
+  more.onclick=run(()=>drawDesign(box,job.prompt,job.targets,drawings(),null,job.direction,entry));   // same art direction: the new variants match
+  again.onclick=run(()=>{const extra=refine.value.trim();if(!extra)return refine.focus();return drawDesign(box,extra,null,drawings(),[job.id,S2.variant],null,entry);});
   refine.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();again.click();}};
   const refineRow=el('div','design-refine-row');refineRow.append(refine,again);
   actions.append(apply,more);card.append(picks,views,sliders,refineRow,actions);refresh();
@@ -295,16 +333,29 @@ async function applyPlan(plan,prompt,control,keys){
   if(T.busy)return;
   if(S.dirty&&!await confirmAction('Apply the theme?','You have an unsaved draft open. The theme saves new revisions of whole sheets; your draft stays in the editor.','Apply theme'))return;
   if(control)control.disabled=true;
-  try{const job=await api('/api/theme-apply',{plan,prompt,only:keys||null});await follow(job.id,control?control.closest('.theme-bubble'):bubble('bot','Applying…'),control);}
+  try{const job=await api('/api/theme-apply',{plan,prompt,only:keys||null});return await follow(job.id,control?control.closest('.theme-bubble'):bubble('bot','Applying…'),control);}
   catch(e){if(control)control.disabled=false;throw e;}
 }
 form.onsubmit=e=>{e.preventDefault();run(()=>ask(input.value))();};
 input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();form.requestSubmit();}});
 undo.onclick=run(async()=>{if(!await confirmAction('Undo the last theme?','Every sheet it changed goes back to how it was just before. Sheets you edited by hand afterwards are left alone.','Undo theme'))return;
-  setBusy(true);try{const r=await api('/api/theme-undo',{});bubble('bot',`Undid “${r.prompt.slice(0,80)}”: ${r.reverted} sheet(s) restored${r.skipped?`, ${r.skipped} left alone`:''}.`);T.history=[];S.build=null;await status();await library();if(S.asset&&!S.dirty)await select(S.asset.key,true);}finally{setBusy(false);await refresh();}});
+  setBusy(true);try{const r=await api('/api/theme-undo',{});const said=`Undid “${r.prompt.slice(0,80)}”: ${r.reverted} sheet(s) restored${r.skipped?`, ${r.skipped} left alone`:''}.`;bubble('bot',said);T.history=[];record({t:'note',text:said});S.build=null;await status();await library();if(S.asset&&!S.dirty)await select(S.asset.key,true);}finally{setBusy(false);await refresh();}});
+const WELCOME='Describe the look you want: a color, a mood, or parts like buttons, panels, icons, cells, the logo or the menu pattern. I show a plan with samples; Apply saves it, and Install in Mitosis (below) puts it in the game. Say “undo” to take a theme back off, or “help” for more.';
 function toggle(open){T.open=open;drawer.hidden=!open;showScope();document.body.classList.toggle('theme-on',open);button.classList.toggle('active',open);
-  if(open){run(refresh)();checkGame();input.focus();if(!log.childElementCount)bubble('bot','Describe the look you want: a color, a mood, or parts like buttons, panels, icons, cells, the logo or the menu pattern. I show a plan with samples; Apply saves it, and Install in Mitosis (below) puts it in the game. Say “undo” to take a theme back off, or “help” for more.');}}
-button.onclick=()=>toggle(!T.open);close.onclick=()=>toggle(false);
+  try{localStorage.setItem('lab-theme-open',open?'1':'');}catch(e){}
+  if(open){run(refresh)();checkGame();input.focus();if(!log.childElementCount)bubble('bot',WELCOME);}}
+button.onclick=()=>toggle(!T.open);close.onclick=()=>toggle(false);model.addEventListener('change',()=>{T.picked=true;});
+// The saved conversation, drawn again; a request cut off by a reload says so.
+function restoreChat(){let saved=null;try{saved=JSON.parse(localStorage.getItem(STORE)||'null');}catch(e){}
+  if(!saved?.entries?.length)return;J.entries=saved.entries;T.history=saved.history||[];bubble('bot',WELCOME);
+  J.entries.forEach((entry,i)=>{
+    if(entry.t==='user'){bubble('user',entry.text);if(J.entries[i+1]?.t!=='bot')bubble('bot','This request was interrupted by a reload. Send it again if you still want it.').classList.add('error');return;}
+    const b=bubble('bot',entry.error||entry.text);if(entry.error){b.classList.add('error');return;}
+    if(entry.result)try{renderResult(b,entry,true);}catch(e){b.append(el('p','theme-note','This part of the chat could not be shown again.'));}});
+  scroll();}
+const fresh=el('button','quiet','New chat');fresh.id='themeNewChat';fresh.title='Start a new conversation (your saved art is not touched)';close.before(fresh);
+fresh.onclick=()=>{if(T.busy)return;J.entries=[];T.history=[];keepChat();log.replaceChildren();bubble('bot',WELCOME);input.focus();};
+restoreChat();try{if(localStorage.getItem('lab-theme-open'))toggle(true);}catch(e){}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&T.open&&!$('dialog').open&&document.activeElement!==input)toggle(false);});
 
 // Recovery: an install that Steam or the game's cache has overwritten can no longer be restored normally.

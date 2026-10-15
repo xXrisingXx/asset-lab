@@ -730,11 +730,11 @@ def clean_name(name):
     return clean_text(re.split(r'[\\/]', str(name or ''))[-1], 120)
 
 
-def fetch(url, folder, progress=None, cancel=None, tools=None, command=None, deadline=900):
+def fetch(url, folder, progress=None, cancel=None, tools=None, command=None, deadline=900, pages=True):
     """Sound from a link: (samples, rate, info). A direct audio link is downloaded and decoded here; any other link is
     treated as a page for the link helper. progress(fraction or None, message); cancel: a threading.Event.
     command: the helper's command line before its arguments (tests use a stand-in for yt-dlp). deadline: seconds a
-    direct download may take in all."""
+    direct download may take in all. pages=False (Settings > Sound) refuses pages: only direct links work."""
     report = progress or (lambda fraction=None, message=None: None)
     url, parts, _ = check_url(url)
     folder = Path(folder)
@@ -761,6 +761,8 @@ def fetch(url, folder, progress=None, cancel=None, tools=None, command=None, dea
                         return samples, rate, dict(info, title=_filename(response, final), url=final, via='direct')
                 finally:
                     response.close(); conn.close()
+    if not pages: raise AudioError('This link is a web page, not a sound file, and page links are turned off in Settings › Sound. '
+                                   'Paste a direct link to a sound file, or turn page links back on.', 'pages_off')
     return _helper_fetch(url, folder, report, cancel, tools, command)
 
 

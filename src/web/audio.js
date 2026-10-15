@@ -76,7 +76,11 @@ async function call(path,data){
   if(!r.ok){const e=Error(j.error||'Something went wrong.');e.code=j.code||'';throw e;}return j;}
 async function refresh(){try{if(typeof S!=='undefined'&&S)S.build=null;if(typeof status==='function')await status();if(typeof library==='function')await library();}catch(e){}}
 const keyOf=()=>A.src?A.src.id+'|'+JSON.stringify(A.set):'';
-const defaults=src=>({start:0,end:+(+src.duration).toFixed(4),gain:0,fade_in:0,fade_out:0,match:true,quality:0.5});
+// A new sound starts with Settings › Sound: match the game's loudness, fade in, fade out (fades that would not fit the
+// sound are shortened together, so a short effect gets a shorter fade).
+const pref=(k,d)=>{const v=window.LabSettings?LabSettings.get(k):undefined;return v===undefined||v===null?d:v;};
+const defaults=src=>{const end=+(+src.duration).toFixed(4),s={start:0,end,gain:0,fade_in:Math.max(0,+pref('sound_fade_in',0)||0),fade_out:Math.max(0,+pref('sound_fade_out',0)||0),match:!!pref('sound_match',true),quality:0.5};
+  const k=s.fade_in+s.fade_out>end?end/(s.fade_in+s.fade_out):1;s.fade_in=+(s.fade_in*k).toFixed(4);s.fade_out=+(s.fade_out*k).toFixed(4);return s;};
 
 async function open(key){
   if(!mount())return;
@@ -297,7 +301,7 @@ save.onclick=async()=>{
 original.onclick=async()=>{
   const saved=!!(A.info&&A.info.edit);
   if(saved){const text='Your saved sound leaves the mod. The game plays its own sound again after the next install or update. You can choose a sound again at any time.';
-    if(!(typeof confirmAction==='function'?await confirmAction('Use the game’s own sound?',text,'Use the original sound'):confirm(text)))return;}
+    if(!(typeof confirmAction==='function'?await confirmAction('Use the game’s own sound?',text,'Use the original sound'):confirm(window.LabI18n?LabI18n.t(text):text)))return;}
   stop(false);
   try{if(saved){A.info=await call('/api/audio-remove',{key:A.key});await refresh();}
     Object.assign(A,{src:null,set:null,prev:null,report:null,saved:'',mode:'orig'});delete A.kept[A.key];notice(saved?'The game’s own sound is back in your mod.':'');}

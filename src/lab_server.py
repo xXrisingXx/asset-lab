@@ -7,6 +7,7 @@ import mimetypes
 import os
 from pathlib import Path
 import threading
+import traceback
 import urllib.parse
 import webbrowser
 import subprocess
@@ -14,11 +15,12 @@ import sys
 import time
 # The portable (embedded) Python ignores PYTHONPATH and does not add the script's folder to the path.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from lab_core import Lab, VERSION, ROOT, adjust, png
+from lab_core import Lab, VERSION, ROOT, adjust, png, data_home
 from theme import Themes, clean_plan, UI_COLORS, HIDE
 from design import Designer
 import runtime
 import audio as soundlab
+import settings as labsettings
 AUDIO_REQUEST = 210 * 1024 * 1024   # a 150 MB sound file, even sent as base64 in JSON (only /api/audio-source)
 DESIGN_SETTINGS = ('scale', 'dx', 'dy', 'tolerance', 'shape', 'fill', 'white')
 from PIL import Image
@@ -31,6 +33,22 @@ def code_stamp():
 
 
 STARTED_CODE = code_stamp()
+LANGUAGES = ('en', 'es', 'pt', 'fr', 'de')   # the lab's languages (web/i18n/<code>.json), as the launcher offers them
+
+
+def ui_language(lab):
+    """The language the player picked: "language" in settings.json ('' = follow the browser), as the launcher writes it."""
+    store = getattr(lab, 'settings', None)
+    if store is None: return ''
+    try: value = store.get('language')
+    except KeyError:   # a settings schema without the Language setting: the launcher's value as it is in the file
+        with store.lock: value = store._load().get('language', '')
+    return value if value in LANGUAGES else ''
+
+
+def page_language(page, language):
+    """index.html with the chosen language on <html>, so web/i18n.js translates before the first paint."""
+    return page.replace(b'<html lang="en">', f'<html lang="{language or "en"}" data-language="{language}">'.encode(), 1)
 
 
 def server_for(lab, port):
@@ -61,6 +79,20 @@ def server_for(lab, port):
             url = urllib.parse.urlsplit(self.path)
             return url.path, {k: v[0] for k, v in urllib.parse.parse_qs(url.query).items()}
 
+        def fail(self, exc):
+            """Every failed request gets a JSON answer, never a dropped connection. Problems the lab explains (ValueError...)
+            and values of the wrong kind in a request (a list where a name belongs) are 400; anything else is the lab's own
+            fault (500). Those two kinds also print their traceback to the log (the Asset Lab window), so no bug is hidden."""
+            if isinstance(exc, (BrokenPipeError, ConnectionResetError, ConnectionAbortedError)): return
+            if isinstance(exc, (TypeError, AttributeError)): status, text = 400, f'The request was not understood: a value has the wrong type ({exc}).'
+            elif isinstance(exc, (ValueError, OSError, KeyError, RuntimeError)): status, text = 400, str(exc)
+            else: status, text = 500, f'Something went wrong in the lab ({type(exc).__name__}: {exc}). The details are in the Asset Lab window.'
+            if status == 500 or isinstance(exc, (TypeError, AttributeError)):
+                print(f'Asset Lab: {self.command} {self.path.split("?")[0]} failed:', file=sys.stderr)
+                traceback.print_exception(exc, file=sys.stderr)
+            try: self.send({'error': text}, status=status)
+            except OSError: pass
+
         def do_GET(self):
             try:
                 path, q = self.route()
@@ -71,8 +103,14 @@ def server_for(lab, port):
                 if path == '/api/game': return self.send(lab.game_state())
                 if path == '/api/assets':
                     starred = q.get('group') == 'favorites'  # the Favorites entry in the category list
-                    return self.send(lab.search(q.get('q', ''), '' if starred else q.get('group', ''), q.get('kind', ''), q.get('parent', ''), int(q.get('offset', 0)), saved=q.get('saved') == '1',
-                                                origin=q.get('origin', ''), tidy=q.get('all') != '1' and not starred, removed=q.get('removed') == '1', favorite=starred, like=q.get('similar', '')))
+                    limit = max(1, min(120, int(q.get('limit') or lab.settings.get('page_size'))))   # Settings > Library > Assets per page
+                    found = lab.search(q.get('q', ''), '' if starred else q.get('group', ''), q.get('kind', ''), q.get('parent', ''), int(q.get('offset', 0)), saved=q.get('saved') == '1',
+                                       origin=q.get('origin', ''), tidy=q.get('all') != '1' and not starred, removed=q.get('removed') == '1', favorite=starred, like=q.get('similar', ''), limit=limit)
+                    return self.send(dict(found, limit=limit))   # the page turns by this many
+                if path == '/api/settings': return self.send(labsettings.payload(lab, VERSION))
+                if path == '/api/language': return self.send(dict(language=ui_language(lab), languages=list(LANGUAGES)))
+                if path == '/api/settings-usage': return self.send(labsettings.usage(lab))
+                if path == '/api/notices': return self.send(labsettings.notices())
                 if path == '/api/pool': return self.send(lab.pool.listing())
                 if path == '/api/marks': return self.send(dict(favorites=lab.favorites.keys(), removed=lab.pool.listing()['hidden'], labels=lab.labels.mapping()))
                 if path == '/api/theme-status': return self.send(dict(themes.status(), design=designer.status(), planner_note=runtime.OLLAMA.note))
@@ -111,9 +149,10 @@ def server_for(lab, port):
                 static = ROOT / 'web'
                 file = (static / ('index.html' if path == '/' else path.lstrip('/'))).resolve()
                 if not file.is_relative_to(static) or not file.is_file(): return self.send({'error': 'Not found'}, status=404)
-                return self.send(file.read_bytes(), mimetypes.guess_type(file)[0] or 'application/octet-stream')
-            except (BrokenPipeError, ConnectionResetError): pass
-            except (ValueError, OSError, KeyError, RuntimeError) as exc: self.send({'error': str(exc)}, status=400)
+                body = file.read_bytes()
+                if file == (static / 'index.html').resolve(): body = page_language(body, ui_language(lab))
+                return self.send(body, mimetypes.guess_type(file)[0] or 'application/octet-stream')
+            except Exception as exc: self.fail(exc)
 
         def do_POST(self):
             try:
@@ -126,7 +165,21 @@ def server_for(lab, port):
                 raw = self.rfile.read(length)
                 if path.startswith('/api/audio'): return self.audio_post(path, q, raw)   # the sound editor (see audio_post)
                 data = json.loads(raw) if raw else {}
+                if not isinstance(data, dict): raise ValueError('Send the request as a JSON object, like {"key": "…"}.')
                 key = data.get('key', '')
+                if not isinstance(key, str): raise ValueError('Send the asset’s key as text.')
+                if path == '/api/settings':
+                    # {values: {name: value}} changes settings; {reset: "all" | [names]} puts them back to their defaults.
+                    before = lab.settings.get('keep_builds')
+                    if 'reset' in data:
+                        reset = data['reset']
+                        if reset != 'all' and not (isinstance(reset, list) and all(isinstance(k, str) for k in reset)): raise ValueError('Send reset as "all" or a list of setting names.')
+                        values = lab.settings.reset(None if reset == 'all' else reset)
+                    else: values = lab.settings.update(data.get('values'))
+                    out = dict(values=values, changed=lab.settings.changed())
+                    if values['keep_builds'] != before: out['pruned'] = labsettings.prune_builds(lab)   # fewer builds kept: the old ones go now
+                    return self.send(out)
+                if path == '/api/settings-action': return self.send(labsettings.run_action(lab, str(data.get('id', '')), data))
                 if path == '/api/save':
                     return self.send(lab.save(key, base64.b64decode(data['png'], validate=True), data['revision'], data.get('recipe'), data.get('document')))
                 if path == '/api/adjust':
@@ -179,7 +232,7 @@ def server_for(lab, port):
                 only = data.get('only') if isinstance(data.get('only'), list) else None
                 if path == '/api/design-start':
                     base = data.get('base') if isinstance(data.get('base'), list) and len(data['base']) == 2 else None
-                    return self.send(designer.start(data.get('prompt', ''), only, int(data.get('count') or 2), base, data.get('direction') or None))
+                    return self.send(designer.start(data.get('prompt', ''), only, int(data.get('count') or labsettings.value(lab, 'drawings')), base, data.get('direction') or None))
                 if path == '/api/design-apply':
                     result = designer.apply(data.get('job', ''), int(data.get('variant', 0)), {k: float(v) for k, v in (data.get('settings') or {}).items() if k in DESIGN_SETTINGS})
                     return self.send(result)
@@ -190,7 +243,7 @@ def server_for(lab, port):
                     return self.send({'png': 'data:image/png;base64,' + base64.b64encode(image).decode()})
                 if path == '/api/font-apply': return self.send(lab.font_apply(str(data.get('font', '')), data.get('style') or {}))
                 if path == '/api/font-remove': return self.send(lab.font_remove(str(data.get('font', ''))))
-                if path == '/api/theme-chat': return self.send(themes.chat(data.get('message'), data.get('model', ''), data.get('history'), only))
+                if path == '/api/theme-chat': return self.send(themes.chat(data.get('message'), data.get('model', ''), data.get('history'), only, language=str(data.get('language') or '')))
                 if path == '/api/theme-preview': return self.send(themes.preview(clean_plan(data.get('plan')), themes.scope(only)))
                 if path == '/api/theme-apply': return self.send(themes.apply(data.get('plan'), data.get('prompt', ''), only))
                 if path == '/api/theme-undo': return self.send(themes.undo())
@@ -206,8 +259,7 @@ def server_for(lab, port):
                     threading.Thread(target=self.server.shutdown, daemon=True).start()
                     return
                 self.send({'error': 'Unknown action'}, status=404)
-            except (BrokenPipeError, ConnectionResetError): pass
-            except (ValueError, OSError, KeyError, RuntimeError) as exc: self.send({'error': str(exc)}, status=400)
+            except Exception as exc: self.fail(exc)
 
         # ----- sounds: the sound editor's endpoints (Lab.audio_* and audio.py) ---------------------------------------
         # GET  /api/audio?key=            the game's sound and the saved replacement     /api/audio-tools   link helper state
@@ -242,9 +294,10 @@ def server_for(lab, port):
                     if (self.headers.get('Content-Type') or '').startswith('application/octet-stream'):
                         return self.send(lab.audio_source_add(urllib.parse.unquote(self.headers.get('X-Lab-Name') or ''), raw))
                     data = json.loads(raw) if raw else {}
+                    if not isinstance(data, dict): raise ValueError('Send the sound as a file, or as a JSON object {name, data}.')
                     return self.send(lab.audio_source_add(str(data.get('name', '')), base64.b64decode(str(data.get('data', '')), validate=True)))
                 data = json.loads(raw) if raw else {}
-                if not isinstance(data, dict): raise ValueError('Invalid request')
+                if not isinstance(data, dict): raise ValueError('Send the request as a JSON object, like {"key": "…"}.')
                 if path == '/api/audio-link': return self.send(lab.audio_link(str(data.get('url', '')), str(data.get('key', ''))))
                 if path == '/api/audio-cancel': return self.send(lab.audio_cancel(str(data.get('id', ''))))
                 if path == '/api/audio-apply':
@@ -270,6 +323,14 @@ def server_for(lab, port):
             time.sleep(0.25)
 
 
+def open_page(lab, address, no_browser=False, opener=webbrowser.open):
+    """Open the lab in the browser unless --no-browser was given or Settings > General > Open the lab in your browser is
+    off. (The launcher always passes --no-browser and reads that setting itself.) Returns whether it opened."""
+    if no_browser or not lab.settings.get('open_browser'): return False
+    opener(address)
+    return True
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--game')
@@ -278,13 +339,16 @@ def main():
     parser.add_argument('--port', type=int, default=8753)
     parser.add_argument('--no-browser', action='store_true')
     args = parser.parse_args()
-    lab = Lab(args.game, args.workspace, args.ledger_dir)
+    # The settings file is the one the launcher reads, whichever workspace this lab uses.
+    lab = Lab(args.game, args.workspace, args.ledger_dir, settings_file=data_home() / 'settings.json')
     server = server_for(lab, args.port)
     address = f'http://127.0.0.1:{server.server_port}'
     print('Asset Lab: ' + address, flush=True)
     print('Game: ' + str(lab.game), flush=True)
     print('Workspace: ' + str(lab.root), flush=True)
-    if not args.no_browser: webbrowser.open(address)
+    lab.settings.values()   # reading them also checks settings.json
+    if lab.settings.damaged: print('Settings: settings.json could not be read; using the defaults (the file is kept as settings.json.bad).', flush=True)
+    open_page(lab, address, args.no_browser)
     threading.Thread(target=lab.similar.build, daemon=True).start()  # warm the image-search index
     try: server.serve_forever()
     except KeyboardInterrupt: pass

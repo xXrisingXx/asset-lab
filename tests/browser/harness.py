@@ -551,6 +551,8 @@ class Browser:
             self.ws = DevToolsSocket(pages[0]['webSocketDebuggerUrl'], timeout)
             for domain in ('Page', 'Runtime', 'Log', 'Network', 'Inspector'): self.call(domain + '.enable')
             self.call('Page.addScriptToEvaluateOnNewDocument', source=HELPER_JS)
+            # The first-start tour would cover the page; tests that want it call LabTour.start() or clear this mark.
+            self.call('Page.addScriptToEvaluateOnNewDocument', source="try{if(location.port&&!sessionStorage.getItem('tour-test'))localStorage.setItem('lab-tour-done','1')}catch(e){}")
             self.call('Runtime.evaluate', expression=HELPER_JS)
             self.call('Emulation.setFocusEmulationEnabled', enabled=True)
             self.set_viewport(width, height)
@@ -1055,6 +1057,9 @@ class EditorTestCase(unittest.TestCase):
 
     def setUp(self):
         super().setUp()
+        # Theme AI keeps its chat across reloads; each test starts with none (a test that wants one writes it itself).
+        try: self.browser.eval("localStorage.removeItem('lab-theme-chat'); localStorage.removeItem('lab-theme-open')")
+        except Exception: pass
         if self.fresh_page: self.browser.open_lab(self.server)
         self.browser.pump()
         self._error_mark = self.browser.seq

@@ -35,6 +35,7 @@ function preview(font,style,text){
 // Fetch ahead, one at a time, starting next to the current look; whatever the player is looking at goes first.
 const P={gen:0,user:0};
 async function prefetch(font,text,styles){
+  if(window.LabSettings&&LabSettings.get('font_prefetch')===false)return;   // Settings › Text & fonts › Preload look previews
   const gen=++P.gen;
   for(const style of styles){
     while(P.user&&gen===P.gen)await sleep(25);
@@ -81,7 +82,9 @@ async function open(font,style,text){
   await load();
   F.font=font||F.font;if(!F.data.game.some(g=>g.id===F.font)&&F.data.game.length)F.font=F.data.game[0].id;
   const saved=F.data.game.find(g=>g.id===F.font);
-  setStyle(style||(saved&&saved.style)||{});if(text)F.text=text;
+  setStyle(style||(saved&&saved.style)||{});
+  // The example text: what was asked for, else what the player typed here, else Settings › Text & fonts › Example text.
+  if(text)F.text=text;else if(!F.typed&&window.LabSettings&&LabSettings.get('font_sample'))F.text=LabSettings.get('font_sample');
   render();dlg.showModal();show();ahead();
 }
 window.openFonts=run(open);
@@ -289,7 +292,7 @@ function render(){
 
   // Preview and actions
   const sample=el('input','fonts-text');sample.value=F.text;sample.placeholder='Example text';sample.maxLength=40;sample.setAttribute('aria-label','Example text');
-  sample.oninput=()=>{F.text=sample.value;P.gen++;show();clearTimeout(U.typing);U.typing=setTimeout(ahead,400);};   // looks for the new text once typing pauses
+  sample.oninput=()=>{F.text=sample.value;F.typed=true;P.gen++;show();clearTimeout(U.typing);U.typing=setTimeout(ahead,400);};   // looks for the new text once typing pauses
   const shot=el('div','fonts-shot');const img=el('img','fonts-preview');img.id='fontsPreview';img.alt='Preview';const arrow=el('canvas','fonts-arrow');shot.append(img,arrow);
   const meta=el('p','hint fonts-meta');meta.id='fontsMeta';
   Object.assign(U,{shot,img,meta});V.shown='';dragDirection(shot,arrow);

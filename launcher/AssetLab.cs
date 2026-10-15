@@ -75,9 +75,9 @@ internal static class Program {
             bool first;
             using (Mutex mutex = new Mutex(true, "Local\\AssetLab.Controller." + Port, out first)) {
                 if (!first) {
-                    // Already open: bring that window forward and let it open the browser.
+                    // Already open: bring that window forward and let it open the browser (unless Settings say not to).
                     IntPtr h = FindWindow(null, Name + " - " + Port);
-                    if (h != IntPtr.Zero) { ShowWindow(h, 9); SetForegroundWindow(h); PostMessage(h, 0x8001, NoBrowser ? IntPtr.Zero : new IntPtr(1), IntPtr.Zero); }
+                    if (h != IntPtr.Zero) { ShowWindow(h, 9); SetForegroundWindow(h); PostMessage(h, 0x8001, LabSettings.OpenBrowserOnStart ? new IntPtr(1) : IntPtr.Zero, IntPtr.Zero); }
                     return 0;
                 }
                 Application.EnableVisualStyles(); Application.SetCompatibleTextRenderingDefault(false);
@@ -591,12 +591,33 @@ internal sealed class Loader : Form {
         Action<string> snap = name => {
             using (var bmp = new Bitmap(Width, Height)) { DrawToBitmap(bmp, new Rectangle(0, 0, Width, Height)); bmp.Save(Path.Combine(Program.Preview, name + ".png")); }
         };
+        var choosing = ChooseLanguage(); snap("0-language"); foreach (var b in languageButtons) { Controls.Remove(b); b.Dispose(); } languageButtons.Clear();
         Report("Downloading the local AI", "flux-2-klein-4b-Q4_0.gguf · 1.02 GB of 2.29 GB · 38.4 MB/s", 0.44); snap("1-downloading");
         string yes; var all = Setup.List(Setup.Manifest()["runtime"]).ToList();
         Ask(AiQuestion(all, out yes), AiDetails(all), yes, L.T("Not now")); snap("2-question");
         primary.Visible = secondary.Visible = false; Running(); ai.Text = L.T("Get the local AI"); ai.Visible = true; snap("3-running"); ai.Visible = false;
         Fail("Asset Lab stopped while starting. The details are below."); log.Text = "Traceback (most recent call last):\r\n  ..."; snap("4-error");
         allowClose = true; Close();
+    }
+    // ----- first start: pick a language (the one Windows uses is the bright button) ---------------------------------
+    readonly List<FlatButton> languageButtons = new List<FlatButton>();
+    Task ChooseLanguage() {
+        var done = new TaskCompletionSource<bool>();
+        status.Text = "Language · Idioma · Langue · Sprache"; status.ForeColor = Text1; detail.Text = L.T("You can change it any time in Asset Lab's Settings.");
+        bar.Visible = primary.Visible = secondary.Visible = false;
+        int gap = S(8), w = (W - S(56) - gap * (L.Codes.Length - 1)) / L.Codes.Length;
+        for (int i = 0; i < L.Codes.Length; i++) {
+            string code = L.Codes[i];
+            var b = new FlatButton(code == L.Code) { Text = L.Names[i] };
+            b.SetBounds(S(28) + i * (w + gap), S(250), w, S(44));
+            b.Click += delegate {
+                L.Code = code; L.MarkAsked(); lang.Text = code.ToUpperInvariant();
+                foreach (var x in languageButtons) { Controls.Remove(x); x.Dispose(); }
+                languageButtons.Clear(); done.TrySetResult(true);
+            };
+            languageButtons.Add(b); Controls.Add(b); b.BringToFront();
+        }
+        return done.Task;
     }
     // ----- steps ---------------------------------------------------------------------------------------------
     void Report(string s, string d, double f) {
@@ -623,11 +644,13 @@ internal sealed class Loader : Form {
 
     async void Run() {
         try {
-            Report(L.T("Checking for updates…"), "", -1);
+            if (!L.Asked && Program.Smoke == null) await ChooseLanguage();
+            bool updates = LabSettings.CheckUpdates;   // Settings > General > Check for updates when Asset Lab starts
+            Report(L.T(updates ? "Checking for updates…" : "Starting…"), "", -1);
             manifest = await Task.Run(() => Setup.Manifest());
             await Task.Run(() => Setup.EnsureApp(Report));
             manifest = await Task.Run(() => Setup.Manifest());
-            var release = await Task.Run(() => Setup.Latest(manifest));
+            var release = updates ? await Task.Run(() => Setup.Latest(manifest)) : null;
             bool auto = Environment.GetEnvironmentVariable("ASSET_LAB_AUTO_UPDATE") == "1";   // tests only
             if (release != null && (Program.Smoke == null || auto)) {
                 string notes = (release.Notes ?? "").Split('\n').Select(l => l.Trim()).FirstOrDefault(l => l.Length > 0) ?? "";
@@ -655,7 +678,7 @@ internal sealed class Loader : Form {
                     await Task.Run(() => Setup.DownloadRuntime(manifest, Report, cancel.Token));
                 } else { Directory.CreateDirectory(Program.Home); File.WriteAllText(declined, DateTime.Now.ToString("s")); }
             }
-            await StartServer(!Program.NoBrowser);
+            await StartServer(LabSettings.OpenBrowserOnStart);
         } catch (OperationCanceledException) {
         } catch (Exception e) {
             Fail(e.Message);
@@ -712,7 +735,10 @@ internal sealed class Loader : Form {
         }
         Running();
         if (Program.Smoke != null) { await SmokeTest(); return; }
-        if (openBrowser) Program.OpenBrowser();
+        // Settings > General > Open the lab in your browser when it starts: when it is off, this window stays in view with
+        // its Open Asset Lab button.
+        if (!openBrowser) return;
+        Program.OpenBrowser();
         // Out of the way, but still in the taskbar (never the tray): click it to get Open / Stop back.
         await Task.Delay(1200);
         if (running && !IsDisposed) WindowState = FormWindowState.Minimized;
@@ -758,7 +784,7 @@ internal sealed class Loader : Form {
             if (code == 75) { running = false; await StartServer(false); return; }   // the lab asked for a restart with new code
             running = false; status.Text = L.T("Asset Lab stopped"); detail.Text = code == 0 ? "" : L.T("It exited with code") + " " + code + ". " + L.T("The details are below.");
             log.Visible = code != 0; primary.Text = L.T("Start again"); primary.Visible = true; secondary.Visible = false; ai.Visible = false;
-            primary.Click -= OpenClick; EventHandler again = null; again = async delegate { primary.Click -= again; log.Visible = false; await StartServer(true); }; primary.Click += again;
+            primary.Click -= OpenClick; EventHandler again = null; again = async delegate { primary.Click -= again; log.Visible = false; await StartServer(LabSettings.OpenBrowserOnStart); }; primary.Click += again;
             if (WindowState == FormWindowState.Minimized) WindowState = FormWindowState.Normal;
         }));
     }
@@ -790,6 +816,23 @@ internal sealed class Loader : Form {
     }
 }
 
+// The player's settings: <data home>\settings.json, written by the lab's Settings window (src/settings.py) and by the
+// language menu here. Only changed values are in it; a missing or damaged file, or a value of the wrong type, means the
+// default.
+internal static class LabSettings {
+    internal static string FilePath { get { return Path.Combine(Setup.DataHome, "settings.json"); } }
+    internal static Dictionary<string, object> Read() {
+        try { var d = File.Exists(FilePath) ? Program.Json.Deserialize<Dictionary<string, object>>(File.ReadAllText(FilePath)) : null; return d ?? new Dictionary<string, object>(); }
+        catch (Exception) { return new Dictionary<string, object>(); }
+    }
+    internal static bool Flag(string key, bool fallback) { object v; return Read().TryGetValue(key, out v) && v is bool ? (bool)v : fallback; }
+    internal static string Text(string key) { object v; return Read().TryGetValue(key, out v) ? v as string : null; }
+    // General > Open the lab in your browser when it starts (--no-browser always wins).
+    internal static bool OpenBrowserOnStart { get { return !Program.NoBrowser && Flag("open_browser", true); } }
+    // General > Check for updates when Asset Lab starts (tests that force an update check anyway set ASSET_LAB_AUTO_UPDATE).
+    internal static bool CheckUpdates { get { return Flag("check_updates", true) || Environment.GetEnvironmentVariable("ASSET_LAB_AUTO_UPDATE") == "1"; } }
+}
+
 // The launcher's words in the player's language. The choice lives in <data home>\settings.json ("language"), shared with
 // the lab; without one, Windows' display language picks it. English text is the key, so a missing line stays English.
 internal static class L {
@@ -809,7 +852,7 @@ internal static class L {
         { "Downloading Asset Lab", new[] { "Descargando Asset Lab", "Baixando o Asset Lab", "Téléchargement d'Asset Lab", "Asset Lab wird heruntergeladen" } },
         { "Installing Asset Lab", new[] { "Instalando Asset Lab", "Instalando o Asset Lab", "Installation d'Asset Lab", "Asset Lab wird installiert" } },
         { "Your workspace and edits are kept.", new[] { "Tu espacio de trabajo y tus ediciones se conservan.", "Seu espaço de trabalho e suas edições são mantidos.", "Votre espace de travail et vos modifications sont conservés.", "Dein Arbeitsbereich und deine Änderungen bleiben erhalten." } },
-        { L.T("Updating the launcher"), new[] { "Actualizando el lanzador", "Atualizando o inicializador", "Mise à jour du lanceur", "Starter wird aktualisiert" } },
+        { "Updating the launcher", new[] { "Actualizando el lanzador", "Atualizando o inicializador", "Mise à jour du lanceur", "Starter wird aktualisiert" } },
         { "is available", new[] { "está disponible", "está disponível", "est disponible", "ist verfügbar" } },
         { "You have", new[] { "Tienes la", "Você tem a", "Vous avez la", "Du hast" } },
         { "Your workspace and edits are kept, and a backup of your settings is made first.", new[] { "Tu espacio de trabajo y tus ediciones se conservan, y antes se hace una copia de tus ajustes.", "Seu espaço de trabalho e suas edições são mantidos, e antes é feito um backup das suas configurações.", "Votre espace de travail et vos modifications sont conservés, et vos réglages sont sauvegardés avant.", "Arbeitsbereich und Änderungen bleiben erhalten; deine Einstellungen werden vorher gesichert." } },
@@ -846,28 +889,29 @@ internal static class L {
         { "Start again", new[] { "Iniciar de nuevo", "Iniciar de novo", "Relancer", "Erneut starten" } },
         { "Stopping after pending work…", new[] { "Deteniendo tras terminar el trabajo pendiente…", "Parando após o trabalho pendente…", "Arrêt après le travail en cours…", "Wird nach laufender Arbeit beendet…" } },
         { "Language", new[] { "Idioma", "Idioma", "Langue", "Sprache" } },
+        { "You can change it any time in Asset Lab's Settings.", new[] { "Puedes cambiarlo cuando quieras en los Ajustes de Asset Lab.", "Você pode mudar quando quiser nas Configurações do Asset Lab.", "Vous pouvez le changer à tout moment dans les Réglages d'Asset Lab.", "Du kannst sie jederzeit in den Einstellungen von Asset Lab ändern." } },
     };
-    static string file { get { return Path.Combine(Setup.DataHome, "settings.json"); } }
-    static Dictionary<string, object> Read() {
-        try { var d = File.Exists(file) ? Program.Json.Deserialize<Dictionary<string, object>>(File.ReadAllText(file)) : null; return d ?? new Dictionary<string, object>(); }
-        catch (Exception) { return new Dictionary<string, object>(); }
-    }
     static int index = -1;
     internal static string Code {
         get {
             if (index < 0) {
-                object v; string saved = Read().TryGetValue("language", out v) ? Convert.ToString(v) : null;
-                index = Array.IndexOf(Codes, saved ?? System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName);
+                // "" (Automatic in the lab's Settings) or no choice: Windows' display language.
+                string saved = LabSettings.Text("language");
+                index = Array.IndexOf(Codes, String.IsNullOrEmpty(saved) ? System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName : saved);
                 if (index < 0) index = 0;
             }
             return Codes[index];
         }
         set {
             index = Math.Max(0, Array.IndexOf(Codes, value));
-            try { var d = Read(); d["language"] = Codes[index]; Directory.CreateDirectory(Setup.DataHome); File.WriteAllText(file, Program.Json.Serialize(d)); }
+            try { var d = LabSettings.Read(); d["language"] = Codes[index]; Directory.CreateDirectory(Setup.DataHome); File.WriteAllText(LabSettings.FilePath, Program.Json.Serialize(d)); }
             catch (Exception) { }   // the choice still holds for this session
         }
     }
+    // The first start asks once; "Automatic" in the lab's Settings stores no value, so a small marker remembers the asking.
+    static string AskedFile { get { return Path.Combine(Program.Home, "language-asked"); } }
+    internal static bool Asked { get { return LabSettings.Text("language") != null || File.Exists(AskedFile); } }
+    internal static void MarkAsked() { try { Directory.CreateDirectory(Program.Home); File.WriteAllText(AskedFile, DateTime.Now.ToString("s")); } catch (Exception) { } }
     internal static string T(string english) {
         string[] t; var i = Array.IndexOf(Codes, Code) - 1;
         return i >= 0 && T9.TryGetValue(english, out t) ? t[i] : english;

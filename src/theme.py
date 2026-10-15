@@ -21,6 +21,7 @@ import design
 import exe_palette
 import fonts
 import runtime
+import settings as labsettings
 
 OLLAMA = 'http://127.0.0.1:11434'
 PREFERRED = ('qwen3:latest', 'lab-qwen3-4b:latest', 'gamedecomp-qwen:latest', 'qwen2.5-coder:7b', 'llama3.1:latest', 'llama3.2:latest')
@@ -491,6 +492,19 @@ MOTION_NOTE = 'Sprites are still pictures, so I can change how they look but not
 # How the art route words each control: the bar behind the OG tag is drawn by the game, so only the tag goes.
 ART_LABELS = {'top_banner': 'the OG tag (the “Mitos.is” bar stays)', 'left_banner_1': 'the Worm.is and Strike.is promos',
               'left_banner_2': 'the Worm.is and Strike.is promos'}
+
+
+# The languages of the lab's page (web/i18n), as the planner model is asked to write its reply.
+REPLY_LANGUAGES = {'es': 'Spanish (neutral Latin American Spanish, informal "tú")', 'pt': 'Brazilian Portuguese (informal "você")',
+                   'fr': 'French (informal "tu")', 'de': 'German (informal "du")'}
+
+
+def reply_language(language):
+    """What the system prompt adds so the model's "reply" is in the player's language; nothing for English."""
+    name = REPLY_LANGUAGES.get(str(language or '').lower()[:2])
+    if not name: return ''
+    return (f'\n\nThe player reads {name}: write the "reply" sentence in {name}. Everything else in the JSON (keys, family names, '
+            'preset names, color modes, hex colors) stays exactly as specified above, in English.')
 
 
 def listing(items):
@@ -970,7 +984,7 @@ class Themes:
         fid = next((f for f, pattern in TEXT_TARGETS if f in game and re.search(pattern, low)), None)
         if not fid: return None
         quoted = re.search(r'["“]([^"”]{1,24})["”]', message)
-        sample = quoted.group(1) if quoted else ('Cellmate' if fid == 'nicktext' else 'Settings' if fid.startswith('geosans') else '12345')
+        sample = quoted.group(1) if quoted else (self.sample() if fid == 'nicktext' else 'Settings' if fid.startswith('geosans') else '12345')
         raw = font_style(message, faces)
         card = self.font_card(fid, raw, sample)
         reply = (f"{card['label']}: {describe_text(card['style'], card['face'], card['look'], raw.get('look', ''))}. "
@@ -987,14 +1001,19 @@ class Themes:
         return dict(id=fid, label=game[fid]['label'], style=style, image=image, text=sample, look=look,
                     face=(fonts.find_font(faces, style['font']) or {}).get('family', '') if style['font'] else '')
 
+    def sample(self):
+        """The player names' example text (Settings > Text & fonts > Example text)."""
+        return labsettings.value(self.lab, 'font_sample') or 'Cellmate'
+
     def text_offer(self, result, text, only=None):
         """A whole-game mood ("halloween theme", "make everything gold") also offers the player names in the matching look,
-        as a card to try: it is never applied by itself. Requests about some parts ("make the buttons red") get none."""
+        as a card to try: it is never applied by itself. Requests about some parts ("make the buttons red") get none, and
+        nobody does when Settings > Theme AI & drawing > Offer matching text styles is off."""
         low = str(text).lower()
         look = None if result.get('font') or re.search(FONT_WORDS, low) else next((name for pattern, name in MOOD_TEXT if re.search(rf'\b(?:{pattern})\b', low)), None)
         whole = re.search(WHOLE_GAME, low) or any(op.get('targets') == ['everything'] and not op.get('match') for op in (result.get('plan') or {}).get('operations') or [])
-        if look and whole and not only:   # checked assets: the request is about those, not the whole game
-            try: result['font'] = dict(self.font_card('nicktext', fonts.PRESETS[look], 'Cellmate'), offer=True)
+        if look and whole and not only and labsettings.value(self.lab, 'offer_text_styles'):   # checked assets: the request is about those
+            try: result['font'] = dict(self.font_card('nicktext', fonts.PRESETS[look], self.sample()), offer=True)
             except (OSError, ValueError, KeyError, AttributeError): pass
         return result
 
@@ -1216,8 +1235,10 @@ class Themes:
                     game=dict(colors=[dict(name=name, field=field, was=was, what=what) for name, (field, was, what) in UI_COLORS.items()],
                               hide=[dict(id=group, label=label) for group, (label, _) in HIDE.items()]))
 
-    def chat(self, message, model='', history=None, only=None):
-        """only: catalog keys of checked assets; the plan is then previewed and applied to those alone.
+    def chat(self, message, model='', history=None, only=None, language=''):
+        """only: catalog keys of checked assets; the plan is then previewed and applied to those alone. language: the
+        lab's language ('es', 'pt', 'fr', 'de'; '' or 'en' for English), the one the planner model writes its reply in
+        (fixed replies stay English here: the page translates them).
 
         One request can mix both tools: the parts that need drawing ("put a santa hat on the title") go to the
         image model, the rest ("theme it christmas") to the shader. A whole-game mood also offers a title redraw."""
@@ -1233,7 +1254,7 @@ class Themes:
         if font:                                    # "theme it halloween and make the names spooky": the font card plus the theme
             others = [p for p in pieces if not about_text(p, only)] + [o for _, more in split for o in more]
             if not others: return font
-            result = self.chat('. '.join(others), model, history, only)
+            result = self.chat('. '.join(others), model, history, only, language)
             plan = result.get('plan') or {}
             if not (plan.get('operations') or plan.get('ui_colors') or plan.get('hide') or result.get('design')): return font
             result['font'] = font['font']
@@ -1253,16 +1274,17 @@ class Themes:
             if not rest.strip():
                 # about drawing chosen art ("make the potion spooky"): no player-name offer
                 return dict(plan=dict(reply='', operations=[], ui_colors={}, hide=[]), source='design', note=part.pop('note'), preview=None, design=part)
-            result = self.plan_request(rest, model, history, scope)
+            result = self.plan_request(rest, model, history, scope, language)
             result['design'] = part
             return self.text_offer(result, rest, only)
-        result = self.plan_request(message, model, history, scope)
+        result = self.plan_request(message, model, history, scope, language)
         if designer and re.search(design.OBJECTS, message.lower()):
             # New objects need drawing, and drawing needs a target the request did not name.
             result['note'] = (result['note'] + ' ' if result['note'] else '') + ('To draw new things, say what to draw them on (the title, the icons, '
                                                                                  '"the speed potion") or check those assets in the library first.')
-        if designer and design.wants_design(message, unknown_words(message, self.named)) and designer.title_rows():
-            # "Make the game spooky": the palette is shaded now; redrawing the title is offered, not started.
+        if designer and labsettings.value(self.lab, 'offer_redraws') and design.wants_design(message, unknown_words(message, self.named)) and designer.title_rows():
+            # "Make the game spooky": the palette is shaded now; redrawing the title is offered, not started (unless the
+            # player turned these offers off in Settings).
             result['design'] = dict(self.design_offer(designer, f'{message}. Redesign the game title to match.', designer.title_rows()), optional=True)
         return self.text_offer(result, message, only)   # a whole-game mood also offers the player names in a matching look
 
@@ -1308,18 +1330,25 @@ class Themes:
         """Expand a short design request ("spooky") into a concrete visual description for the image model, or None."""
         available = models()
         if not available: return None
-        model = available[0]['name']
+        model = self.preferred([m['name'] for m in available])
         system = ('You are the art director of a 2D mobile game. Rewrite the request as one short paragraph (at most 60 words) that says exactly '
                   'what to draw: materials, colors, lighting, and small details or decorations. Keep the subject, and any text in it, exactly as '
                   'it is. Do not describe a background, scenery, or a shadow, floor or stand under it (the art is cut out). '
                   'No preamble, no lists, no quotes.')
-        payload = dict(model=model, stream=False, keep_alive=0,   # unload at once: the image model needs the graphics card next
+        # Unloaded at once (the image model needs the graphics card next) unless the player keeps it (Settings: Free the graphics card).
+        payload = dict(model=model, stream=False, keep_alive=0 if labsettings.value(self.lab, 'free_gpu') else '10m',
                        messages=[dict(role='system', content=system), dict(role='user', content=f'Subject: {subject}\nRequest: {prompt}')],
                        options=dict(temperature=0.7, num_predict=180, num_ctx=2048, **MODEL_OPTIONS.get(model, {})))
-        if available[0]['thinking']: payload['think'] = False
+        if next(m for m in available if m['name'] == model)['thinking']: payload['think'] = False
         answer = ollama('/api/chat', payload, timeout=120)
         text = re.sub(r'<think>.*?</think>', '', answer.get('message', {}).get('content', ''), flags=re.S).strip().strip('"')
         return text if 20 <= len(text) <= 900 else None
+
+    def preferred(self, names):
+        """The planner model to use when the request names none: Settings > Theme AI & drawing > Planner model when it is
+        installed, else the best one installed (names come best first)."""
+        wanted = labsettings.value(self.lab, 'planner_model')
+        return wanted if wanted in names else names[0]
 
     @staticmethod
     def design_offer(designer, prompt, rows):
@@ -1327,8 +1356,9 @@ class Themes:
         return dict(prompt=prompt, available=ready['available'], note='' if ready['available'] else 'The image model is not installed (' + ', '.join(ready['missing']) + ').',
                     targets=[dict(key=r['key'], name=r.get('label') or r['name'], size=[r['width'], r['height']]) for r in rows])
 
-    def plan_request(self, message, model='', history=None, scope=None):
-        """Turn a request into a shading plan: exactly from tag words, else with the local model, else from keywords."""
+    def plan_request(self, message, model='', history=None, scope=None, language=''):
+        """Turn a request into a shading plan: exactly from tag words, else with the local model, else from keywords.
+        language: the lab's language, which the model writes its reply in."""
         low = message.lower()
         size, motion = re.search(SIZE_WORDS, low), re.search(MOTION_WORDS, low)
         if size or motion:
@@ -1350,8 +1380,8 @@ class Themes:
             exact = rule_plan(message, self.named)
             if changes_anything(exact): plan, source = dict(exact, reply='Planned exactly from your tag words.'), 'tags'
         if plan is None and available:
-            model = model if model in names else names[0]
-            turns = [dict(role='system', content=self.system_prompt())]
+            model = model if model in names else self.preferred(names)
+            turns = [dict(role='system', content=self.system_prompt() + reply_language(language))]
             for turn in (history or [])[-8:]:
                 if isinstance(turn, dict) and turn.get('role') in ('user', 'assistant') and isinstance(turn.get('content'), str):
                     turns.append(dict(role=turn['role'], content=turn['content'][:4000]))

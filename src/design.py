@@ -14,6 +14,7 @@ import uuid
 import numpy as np
 from PIL import Image
 import runtime
+import settings as labsettings
 
 KEYS = {'green': (0, 255, 0), 'magenta': (255, 0, 255), 'blue': (0, 64, 255)}
 TITLE = r'\b(?:title|logo|wordmark|game name|mitosis (?:text|name|title|logo)|main menu (?:name|text|title)|name)\b'
@@ -280,9 +281,11 @@ class Designer:
         return rows[:limit]
 
     # ----- generating ---------------------------------------------------------------------------
-    def start(self, prompt, keys=None, count=2, base=None, direction=None):
-        """base: (job id, variant index) to refine a variant instead of the current art."""
+    def start(self, prompt, keys=None, count=None, base=None, direction=None):
+        """base: (job id, variant index) to refine a variant instead of the current art. count: variants to draw
+        (Settings > Theme AI & drawing > Drawings per request when not given)."""
         prompt = str(prompt or '').strip()[:800]
+        if count is None: count = labsettings.value(self.lab, 'drawings')
         if not prompt: raise ValueError('Describe the design you want.')
         lacking = self.status()['missing']
         if lacking: raise ValueError('The image model is not installed: ' + ', '.join(lacking))
@@ -345,10 +348,12 @@ class Designer:
                 job['message'] = 'Writing the art direction…'
                 try: job['direction'] = (self.director(job['prompt'], self.subject(job)) or '').strip()[:700]
                 except Exception: job['direction'] = ''
-            runtime.OLLAMA.unload()  # the planner and the image model do not both fit on an 8 GB card
+            # The planner and the image model do not both fit on an 8 GB card (Settings: Free the graphics card before drawing).
+            if labsettings.value(self.lab, 'free_gpu'): runtime.OLLAMA.unload()
             job['message'] = 'Loading the image model…'
+            steps = labsettings.STEPS[labsettings.value(self.lab, 'drawing_quality')]   # Settings: Drawing quality
             args = [str(runtime.path('sd')), '--diffusion-model', str(runtime.path('diffusion')), '--vae', str(runtime.path('vae')), '--llm', str(runtime.path('llm')),
-                    '-r', str(folder / 'reference.png'), '-p', self.instruction(job), '--cfg-scale', '1.0', '--steps', '4', '--sampling-method', 'euler',
+                    '-r', str(folder / 'reference.png'), '-p', self.instruction(job), '--cfg-scale', '1.0', '--steps', str(steps), '--sampling-method', 'euler',
                     '-W', str(size[0]), '-H', str(size[1]), '-s', str(int(time.time()) % 100000), '-b', str(job['total']), '-o', str(folder / 'raw-%d.png')]
             proc = subprocess.Popen(args, cwd=str(runtime.path('sd').parent), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, creationflags=runtime.QUIET,
                                     text=True, encoding='utf-8', errors='replace')

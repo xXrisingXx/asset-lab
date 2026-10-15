@@ -1,0 +1,12 @@
+/* First-start tour: a dimmed page, a ring around the part being explained, and a card with Back / Next */
+.tour-shade{position:fixed;inset:0;z-index:900;background:transparent}
+.tour-ring{position:fixed;z-index:901;border:2px solid var(--cyan);border-radius:10px;box-shadow:0 0 0 9999px rgba(6,10,16,.62),0 0 18px rgba(112,229,212,.45);pointer-events:none;transition:all .25s ease}
+.tour-box{position:fixed;z-index:902;width:min(360px,calc(100vw - 24px));background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:16px 18px 14px;box-shadow:0 18px 50px rgba(0,0,0,.55);color:var(--text)}
+.tour-box.center{left:50%!important;top:50%!important;transform:translate(-50%,-50%);width:min(440px,calc(100vw - 24px))}
+.tour-box h3{margin:4px 0 8px;font-size:16px}
+.tour-box p{margin:0 0 14px;line-height:1.5;color:var(--muted);font-size:13px}
+.tour-count{font-size:11px;letter-spacing:.08em;color:var(--cyan)}
+.tour-actions{display:flex;gap:8px;justify-content:flex-end}.tour-actions .quiet{margin-right:auto}
+.tour-help{padding:6px 11px;font-weight:600}
+.tour-shade+.tour-ring[hidden]{display:block;width:0;height:0;left:50%;top:50%;border:0}
+@media(prefers-reduced-motion:reduce){.tour-ring{transition:none}}

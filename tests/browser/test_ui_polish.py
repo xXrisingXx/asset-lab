@@ -15,6 +15,18 @@ class UiPolish(EditorTestCase):
         b.wait_for("!document.body.classList.contains('inspector-min')")
         self.assertGreater(b.eval("document.querySelector('.inspector').getBoundingClientRect().width"), 200)
 
+    def test_library_minimizes_too(self):
+        b = self.browser
+        b.click_selector('#libraryToggle')
+        b.wait_for("document.body.classList.contains('library-min')")
+        self.assertLess(b.eval("document.querySelector('.library').getBoundingClientRect().width"), 60)
+        if not b.eval("document.body.classList.contains('inspector-min')"): b.click_selector('#inspectorToggle')
+        self.assertGreater(b.eval("document.querySelector('.studio').getBoundingClientRect().width"), 1400)
+        b.screenshot('ui-both-min.png')
+        b.click_selector('#libraryToggle'); b.click_selector('#inspectorToggle')
+        b.wait_for("!document.body.classList.contains('library-min') && !document.body.classList.contains('inspector-min')")
+        self.assertGreater(b.eval("document.querySelector('.library').getBoundingClientRect().width"), 200)
+
     def test_double_click_checks_and_checked_come_first(self):
         b = self.browser
         b.eval("LabSelection.clear()")

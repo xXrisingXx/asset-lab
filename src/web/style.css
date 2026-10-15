@@ -3,15 +3,20 @@
 
 .origin-filter{width:100%;margin-top:8px;font-size:11px;padding:7px}.asset-card small.asset-source{font-size:8px;color:#7fc2bc;padding-top:0;padding-bottom:7px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.asset-card small:not(.asset-source){padding-bottom:3px}
 
-/* Edit & Inspect can be minimized to a slim strip; the canvas gets its room */
-.inspector-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.inspector-head .section-label{margin:0}
-#inspectorToggle{padding:2px 8px;font-size:14px;line-height:1}
+/* The library and Edit & Inspect each fold to a slim strip; the canvas gets their room */
+:root{--lib:286px;--ins:292px}
+@media(max-width:1200px){:root{--lib:236px;--ins:254px}}
+body.library-min{--lib:40px}body.inspector-min{--ins:40px}
+.inspector-head,.library-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.inspector-head .section-label,.library-head .section-label{margin:0}
+#inspectorToggle,#libraryToggle{padding:2px 8px;font-size:14px;line-height:1}
 @media(min-width:921px){
-body.inspector-min main{grid-template-columns:286px minmax(400px,1fr) 40px}
-body.inspector-min.ed-focus-mode main{grid-template-columns:minmax(400px,1fr) 40px}
-body.inspector-min .inspector{padding:12px 4px;overflow:hidden}
-body.inspector-min .inspector>:not(.inspector-head),body.inspector-min .inspector-head .section-label{display:none}
-body.inspector-min .inspector-head{justify-content:center}}
+body:not(.ed-focus-mode) main{grid-template-columns:var(--lib) minmax(340px,1fr) var(--ins)}
+body.ed-focus-mode main{grid-template-columns:minmax(400px,1fr) var(--ins)}
+body.inspector-min .inspector,body.library-min .library{padding:12px 4px;overflow:hidden}
+body.inspector-min .inspector>:not(.inspector-head),body.inspector-min .inspector-head .section-label,
+body.library-min .library>:not(.library-head),body.library-min .library-head .section-label{display:none}
+body.inspector-min .inspector-head,body.library-min .library-head{justify-content:center}}
+@media(max-width:920px){#inspectorToggle,#libraryToggle{display:none}}
 /* Clicking and dragging around the app should not paint everything blue; text you may want to copy stays selectable */
 body{user-select:none;-webkit-user-select:none}
 input,textarea,pre,[contenteditable],.theme-bubble,.dialog-text,#dialogText,#dialogDetails,.review-files pre{user-select:text;-webkit-user-select:text}

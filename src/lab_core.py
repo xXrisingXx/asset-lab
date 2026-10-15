@@ -27,6 +27,7 @@ EXE = 'Mitosis.exe'
 from asset_notes import AssetNotes
 import fonts as fontlab
 import audio as soundlab   # game sounds and music (see the "sounds" section of Lab)
+import settings as labsettings   # the player's settings (settings.json beside the workspace)
 
 ROOT = Path(__file__).resolve().parent
 # The release number (the launcher passes it; a source checkout reads the VERSION file beside src).
@@ -175,7 +176,7 @@ def data_home():
 
 
 class Lab:
-    def __init__(self, game=None, workspace=None, ledger_dir=None, process_check=None, cache=None):
+    def __init__(self, game=None, workspace=None, ledger_dir=None, process_check=None, cache=None, settings_file=None):
         self.game = Path(game).resolve() if game else find_game()
         if not (self.game / 'Mitosis.exe').is_file() or not (self.game / 'assets').is_dir():
             raise ValueError('Select the Mitos.is installation containing Mitosis.exe and assets.')
@@ -183,6 +184,8 @@ class Lab:
         if self.root.is_relative_to(self.game) or self.game.is_relative_to(self.root):
             raise ValueError('Keep the editing workspace separate from the game installation.')
         self.root.mkdir(parents=True, exist_ok=True)
+        # The server passes <data home>/settings.json (the file the launcher reads); a lab made elsewhere keeps its own.
+        self.settings = labsettings.Settings(settings_file or self.root.parent / 'settings.json')
         self.lock = threading.RLock()
         self.cache = Path(cache).resolve() if cache else None
         if cache is None:
@@ -375,7 +378,7 @@ class Lab:
         if edit: edit['installed'] = (journal or {}).get('state') == 'installed' and any(a['key'] == key and a['version'] == edit['version'] for a in journal.get('audio') or [])
         return dict(key=key, name=row['name'], label=row.get('label', ''), file=row['source'] + (' → ' + row['entry'] if row['entry'] else ''), original=original, edit=edit,
                     chosen=self.audio_source(edit['source']) if edit and edit.get('source') else None, helper=self.audio_tools_status(),
-                    limits=dict(seconds=soundlab.MAX_SECONDS, bytes=soundlab.MAX_BYTES))
+                    limits=dict(seconds=min(soundlab.MAX_SECONDS, self.settings.get('sound_max_minutes') * 60), bytes=soundlab.MAX_BYTES))
 
     def audio_source(self, sid):
         """A chosen sound's details (name, length, rate, waveform), or None once it has been cleaned up."""
@@ -393,6 +396,8 @@ class Lab:
 
     def _audio_keep(self, samples, rate, meta):
         samples, rate = soundlab.normalize(samples, rate)
+        limit = int(self.settings.get('sound_max_minutes') * 60 * rate)   # Settings > Sound > Longest sound
+        if len(samples) > limit: meta, samples = dict(meta, cut=meta.get('cut') or round(len(samples) / rate, 1)), samples[:limit].copy()
         sid, folder = uuid.uuid4().hex, self.root / 'audio-sources'
         meta = dict(meta, id=sid, at=time.time(), **soundlab.describe(samples, rate), peak_db=soundlab.peak_db(samples), peaks=soundlab.peaks(samples, 1200))
         atomic_json(folder / (sid + '.json'), meta)   # before the sound itself: a cleanup never sees a sound without its details
@@ -419,12 +424,21 @@ class Lab:
         with cache['lock']: cache['power'] = {**dict(list(cache['power'].items())[-1:]), (sid, channels): power}
         return power
 
+    def sound_settings(self, settings):
+        """An edit's settings, with the player's defaults (Settings > Sound) for what it leaves out. The quality always
+        comes from Settings: the sound editor has no control for it."""
+        s = dict(settings) if isinstance(settings, dict) else {}
+        for key, name in (('match', 'sound_match'), ('fade_in', 'sound_fade_in'), ('fade_out', 'sound_fade_out')):
+            if s.get(key) is None or s.get(key) == '': s[key] = self.settings.get(name)
+        s['quality'] = labsettings.QUALITY[self.settings.get('sound_quality')]
+        return s
+
     def audio_render(self, key, sid, settings):
         """The replacement as the game will play it: (float32 samples, rate, report with warnings). It takes the game
         sound's channel count, and its loudness when settings['match'] is on."""
         original = self.audio_original(key)
         samples, rate = self._audio_samples(sid)
-        clean = soundlab.clean_settings(settings, len(samples) / rate)
+        clean = soundlab.clean_settings(self.sound_settings(settings), len(samples) / rate)
         channels = original['channels'] if original['channels'] in (1, 2) else None
         power = self._audio_power(sid, samples, rate, channels) if clean['match'] and original.get('loudness') is not None else None
         out, report = soundlab.process(samples, rate, clean, dict(loudness=original.get('loudness'), block=original.get('block')), power, channels)
@@ -491,7 +505,7 @@ class Lab:
 
     def audio_chips(self):
         """Staged sounds as entries of the editor's mod list, beside the image edits."""
-        return [dict(key=a['key'], name='♫ ' + (self.row(a['key']).get('label') or a['name']), source=a['source'], revision=a['version']) for a in self.staged_audio()]
+        return [dict(key=a['key'], name='♫ ' + (self.row(a['key']).get('label') or a['name']), source=a['source'], revision=a['version'], kind='sound') for a in self.staged_audio()]
 
     def audio_mod(self, journal=None):
         """Every saved sound for the review, in the mod or left out, and whether that version is installed."""
@@ -519,9 +533,9 @@ class Lab:
     def audio_link(self, url, key=''):
         """Start getting a sound from a link: a background job the editor follows (see audio.fetch)."""
         url = soundlab.check_url(url, resolve=False)[0]
-        folder = self.root / 'audio-downloads'
+        folder, pages = self.root / 'audio-downloads', self.settings.get('page_links')   # Settings > Sound > Allow page links
         def work(update, cancel):
-            samples, rate, meta = soundlab.fetch(url, folder, update, cancel, self.audio_tools)
+            samples, rate, meta = soundlab.fetch(url, folder, update, cancel, self.audio_tools, pages=pages)
             update(None, 'Getting it ready…')
             return self._audio_keep(samples, rate, dict(meta, name=meta.get('title') or 'Sound from a link'))
         return self._sound()['jobs'].start('link', work, key=str(key)[:64], url=url[:500])
@@ -627,6 +641,7 @@ class Lab:
                         stats=self.catalog.stats, groups=GROUPS, sources=sorted({r['source'] for r in self.catalog.rows.values()}),
                         warnings=self.catalog.warnings, active=self.active(), staged=self.staged() + self.audio_chips(), saved_count=sum(bool(self.current(k)) for k in self.state['edits']),
                         stuck=self.drift(), palette=self.palette(), hidden=self.hidden(), pending=self.pending(),
+                        fonts=[dict(id=f['id'], label=f['label']) for f in self.staged_fonts()], settings=self.settings.values(),
                         game_colors=self.game_colors(), research=(ROOT / 'data' / 'exe-references.json').is_file())
 
     # ----- game colors and menu controls set in the executable ----------------------------------
@@ -725,6 +740,8 @@ class Lab:
                 im = self.catalog.image(key) if original else self.image(key)
                 im.thumbnail(size, Image.Resampling.LANCZOS)
                 self._thumbs[cachekey] = png(im)
+                # Browsing every page of a big library must not grow memory for ever: the oldest thumbnails go first.
+                while len(self._thumbs) > 4000: self._thumbs.pop(next(iter(self._thumbs)))
             return self._thumbs[cachekey]
 
     def detail(self, key):
@@ -1073,6 +1090,9 @@ class Lab:
             manifest = dict(id=build_id, game=str(self.game), at=time.time(), files=files, edits=self.staged(), palette=colors, hide=hide,
                             fonts=[dict(id=f['id'], version=f['version']) for f in fonts], audio=[dict(key=a['key'], version=a['version']) for a in sounds], state='ready')
             atomic_json(folder / 'build.json', manifest)
+            # Settings > Storage > Mod builds to keep: older builds go (this one and the installed one always stay).
+            try: labsettings.prune_builds(self)
+            except OSError: pass
             return manifest
 
     def _build(self, build_id):

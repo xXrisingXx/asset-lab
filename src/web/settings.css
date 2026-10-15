@@ -1,0 +1,111 @@
+/* ----- Settings: the gear in the top bar and the window it opens (settings.js) ----- */
+.settings-open{display:flex;align-items:center;justify-content:center;padding:8px 9px;color:var(--muted)}.settings-open:hover{color:var(--text)}.settings-open svg{display:block}
+dialog.settings{max-width:1000px;width:94vw;height:min(88vh,800px);padding:0;display:flex;flex-direction:column;overflow:hidden}
+dialog.settings:not([open]){display:none}
+.settings p{margin:0;white-space:normal}
+.settings-head{display:flex;align-items:center;gap:12px;padding:13px 16px 13px 20px;border-bottom:1px solid var(--line);background:#141b25}
+.settings-head h2{margin:0 auto 0 0;font-size:17px}.settings-head .quiet{padding:5px 10px}
+.settings-search{position:relative;width:min(310px,38vw)}.settings-search input{width:100%;margin:0;padding:8px 10px 8px 31px}
+.settings-search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.settings-status{font-size:11px;color:var(--cyan);min-width:58px;text-align:right;opacity:0;transition:opacity .2s}.settings-status.on{opacity:1}.settings-status.error{color:#ff9f8a}
+.settings-body{flex:1;min-height:0;display:grid;grid-template-columns:205px minmax(0,1fr)}
+.settings-nav{border-right:1px solid var(--line);padding:10px 8px;display:flex;flex-direction:column;gap:2px;overflow:auto;background:#141b25;scrollbar-width:thin}
+.settings-nav button{display:flex;align-items:center;gap:8px;width:100%;text-align:left;border:0;border-radius:6px;background:transparent;color:var(--muted);padding:8px 10px;font-size:12.5px;white-space:normal}
+.settings-nav button:hover{background:#1f2a37;color:var(--text)}
+.settings-nav button[aria-selected=true]{background:color-mix(in srgb,var(--cyan) 13%,#18212c);color:var(--text);box-shadow:inset 3px 0 0 var(--cyan)}
+.settings-nav button:focus-visible{outline-offset:-2px}
+.settings-hits{margin-left:auto;font-size:10px;color:var(--text);background:#2a3949;border-radius:8px;padding:0 6px}
+.settings-nav button.settings-nohits{opacity:.42}
+.settings-panel{overflow:auto;padding:2px 26px 22px;scrollbar-width:thin}.settings-panel:focus{outline:none}
+.settings-section{padding-top:16px}.settings-section+.settings-section{margin-top:8px;border-top:1px solid var(--line)}
+.settings-section>h3{margin:0;font-size:15px}
+.settings .settings-intro{margin:3px 0 4px;font-size:12px;color:var(--muted);line-height:1.5}
+.settings-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:4px 20px;padding:12px 0;border-bottom:1px solid #243041}
+.settings-row:last-child{border-bottom:0}
+.settings-title{display:flex;align-items:baseline;flex-wrap:wrap;gap:2px 8px}
+.settings-label{font-size:13px;font-weight:600;color:var(--text)}label.settings-label{cursor:pointer}
+.settings .settings-desc{margin-top:3px;font-size:11.5px;line-height:1.5;color:var(--muted)}
+.settings .settings-info{margin-top:4px;font-size:11.5px;line-height:1.5;color:#b8c6d4}
+.settings-tag{font-size:9.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--yellow);border:1px solid #535d42;border-radius:9px;padding:1px 7px;cursor:help}
+.settings-saved{font-size:10.5px;color:var(--cyan);opacity:0;transition:opacity .25s}.settings-saved.on{opacity:1}
+.settings .settings-error{grid-column:1/-1;font-size:11.5px;color:#ff9f8a}
+.settings-control{display:flex;align-items:center;gap:8px;justify-content:flex-end}
+.settings-control select{min-width:180px;max-width:300px;padding:7px 9px}
+.settings-control input[type=number]{width:86px;padding:7px 8px}
+.settings-control input[type=text]{width:230px;background:#101720;border:1px solid var(--line);color:var(--text);border-radius:6px;padding:8px 9px}
+.settings-control button{padding:7px 14px;font-size:12px}
+.settings-unit{font-size:11px;color:var(--muted)}
+/* on/off: a real checkbox, so Space, labels and screen readers work as usual */
+.settings-switch{appearance:none;-webkit-appearance:none;flex:none;width:40px;height:22px;margin:0;border-radius:11px;background:#33404f;border:1px solid #4b5b6d;position:relative;cursor:pointer;transition:background .15s,border-color .15s}
+.settings-switch::after{content:'';position:absolute;left:2px;top:2px;width:16px;height:16px;border-radius:50%;background:#cfd8e3;transition:transform .15s}
+.settings-switch:checked{background:var(--cyan);border-color:var(--cyan)}.settings-switch:checked::after{transform:translateX(18px);background:#102b2a}
+.settings-switch:disabled{opacity:.4;cursor:default}
+/* accent colors: radio buttons drawn as swatches */
+.settings-swatches{display:flex;gap:7px;border:0;margin:0;padding:0}
+.settings-swatch{position:relative;width:26px;height:26px;cursor:pointer;display:block}
+.settings-swatch input{position:absolute;inset:0;width:100%;height:100%;opacity:0;margin:0;cursor:pointer}
+.settings-swatch span{display:block;width:100%;height:100%;border-radius:50%;border:2px solid transparent;box-shadow:inset 0 0 0 1px #0006}
+.settings-swatch input:checked+span{border-color:var(--text);box-shadow:inset 0 0 0 3px var(--panel)}
+.settings-swatch input:focus-visible+span{outline:2px solid var(--text);outline-offset:2px}
+.settings-row button.danger{border-color:#7a4a40;color:#ffb3a3}.settings-row button.danger:hover{background:#3a2724}
+.settings-path{font-family:Consolas,monospace;font-size:11px;color:#b9c7d6;overflow-wrap:anywhere;user-select:text}
+/* storage, privacy and about */
+.settings-usage{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0 4px}
+.settings-usage>div{background:#1b2430;border:1px solid var(--line);border-radius:8px;padding:9px 11px;min-width:0}
+.settings-usage small{display:block;font-size:10.5px;color:var(--muted)}.settings-usage b{display:block;font-size:17px;font-weight:650;margin:2px 0}
+.settings-usage span{display:block;font-size:10.5px;color:var(--muted);overflow-wrap:anywhere}
+.settings-privacy{list-style:none;margin:10px 0 8px;padding:0;display:grid;gap:7px}
+.settings-privacy li{font-size:12px;line-height:1.5;color:var(--muted);padding:8px 11px;border:1px solid var(--line);border-radius:8px;background:#1b2430}
+.settings-privacy b{display:block;color:var(--text);font-weight:600}
+.settings-host{display:inline-block;margin:4px 5px 0 0;font:10.5px Consolas,monospace;color:#b9c7d6;background:#121a24;border:1px solid #2e3b4b;border-radius:5px;padding:0 6px}
+.settings .settings-note{font-size:12px;line-height:1.55;color:var(--text);padding:9px 11px;border-left:3px solid var(--cyan);background:#17202b;border-radius:0 6px 6px 0}
+.settings-facts{display:grid;grid-template-columns:150px minmax(0,1fr);gap:9px 16px;margin:12px 0 4px;font-size:12px;align-items:baseline}
+.settings-facts dt{color:var(--muted)}.settings-facts dd{margin:0;min-width:0;overflow-wrap:anywhere}.settings-facts dd button{margin-left:8px;padding:3px 9px;font-size:11px}
+.settings-folders{display:grid;gap:6px;margin:10px 0 0}
+.settings-about>.section-label,.settings-privacy-box>.section-label{margin:20px 0 0}
+.settings-folder{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;padding:7px 10px;border:1px solid var(--line);border-radius:7px;background:#1b2430}
+.settings-folder b{display:block;font-size:12px;font-weight:600}.settings-folder button{padding:4px 11px;font-size:11px}
+.settings-empty{padding:36px 8px;text-align:center;color:var(--muted);line-height:1.6}
+.settings-warn{margin-top:12px;font-size:12px;line-height:1.5;color:var(--orange);padding:8px 11px;background:#352b24;border:1px solid #6e4b2f;border-radius:6px}
+.settings-foot{display:flex;align-items:center;gap:9px;padding:10px 16px 10px 20px;border-top:1px solid var(--line);background:#141b25}
+.settings .settings-foot-note{margin-right:auto;font-size:11px;color:var(--muted);line-height:1.4}.settings .settings-foot-note.error{color:#ff9f8a}
+.settings-foot button{padding:7px 13px;font-size:12px}
+/* the licence notices */
+dialog.settings-notices{max-width:780px;width:92vw;max-height:86vh;padding:0;display:flex;flex-direction:column;overflow:hidden}
+dialog.settings-notices:not([open]){display:none}
+.settings-notices p{margin:6px 0;white-space:normal;line-height:1.55;font-size:12px}
+.settings-notices-body{overflow:auto;padding:0 22px 18px;scrollbar-width:thin}
+.settings-notices h3{margin:16px 0 4px;font-size:14px}.settings-notices h4{margin:12px 0 4px;font-size:12px;color:var(--muted)}
+.settings-notices table{border-collapse:collapse;width:100%;font-size:11.5px;margin:8px 0}
+.settings-notices th,.settings-notices td{border-bottom:1px solid var(--line);padding:5px 8px;text-align:left;vertical-align:top}
+.settings-notices th{color:var(--muted);font-weight:600}
+.settings-notices code{font:11px Consolas,monospace;color:#b9c7d6}
+@media(max-width:760px){.settings-body{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}.settings-nav{flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line)}
+  .settings-nav button{white-space:nowrap;width:auto}.settings-row{grid-template-columns:1fr}.settings-control{justify-content:flex-start}.settings-usage{grid-template-columns:1fr}.settings-search{width:44vw}}
+
+/* ----- Appearance settings: data attributes on <html> set by settings.js ----- */
+/* Interface size zooms the lab's own panels and windows. The canvas, the editor's bars, menus and Layers panel keep their
+   size: their pointer math works in unzoomed page pixels. */
+html[data-ui-size="90"]{--ui-zoom:.9}html[data-ui-size="110"]{--ui-zoom:1.1}html[data-ui-size="125"]{--ui-zoom:1.25}
+html[data-ui-size] .topbar>*,html[data-ui-size] .library>*,html[data-ui-size] .inspector>:not(.ed-dock),html[data-ui-size] .document-bar>*,
+html[data-ui-size] .mod-tray>*,html[data-ui-size] .theme-drawer>*,html[data-ui-size] dialog:not([data-ed-dialog])>*{zoom:var(--ui-zoom)}
+html[data-ui-size] .theme-dock{margin:0 calc(-14px / var(--ui-zoom))}
+/* Accent color: the default teal needs no attribute. */
+html[data-accent=blue]{--cyan:#6cb6ff}html[data-accent=violet]{--cyan:#b79cff}html[data-accent=pink]{--cyan:#ff8fcd}html[data-accent=orange]{--cyan:#ffb565}html[data-accent=lime]{--cyan:#b7e66a}
+html[data-accent]{--accent-soft:color-mix(in srgb,var(--cyan) 20%,#151d27);--accent-line:color-mix(in srgb,var(--cyan) 45%,#26323f)}
+html[data-accent] button.primary:hover{background:color-mix(in srgb,var(--cyan) 72%,#fff)}
+html[data-accent] .segmented button.active,html[data-accent] .theme-open.active{background:var(--accent-soft)}
+html[data-accent] #toast:not(.error){background:var(--accent-soft)}
+html[data-accent] .theme-open,html[data-accent] .ed-focus-button[aria-pressed=true]{border-color:var(--accent-line)}
+html[data-accent] .ed-focus-button[aria-pressed=true]{background:var(--accent-soft)}
+html[data-accent] .theme-bubble.user{background:var(--accent-soft);border-color:var(--accent-line)}
+html[data-accent] .theme-game-row.changed{background:var(--accent-soft);border-color:var(--accent-line)}
+html[data-accent] .asset-card small.asset-source,html[data-accent] .theme-lines small{color:color-mix(in srgb,var(--cyan) 70%,#9aa8b6)}
+html[data-accent] .fonts-list option:checked{background:var(--accent-soft) linear-gradient(var(--accent-soft),var(--accent-soft))}
+/* Reduce motion: no animations or fades anywhere in the lab. */
+html[data-reduce-motion] *,html[data-reduce-motion] *::before,html[data-reduce-motion] *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+/* Compact library cards: three to a row, picture and name only (the rest is in each card's tooltip). */
+html[data-compact-cards] .asset-list{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+html[data-compact-cards] .asset-card{min-height:0}html[data-compact-cards] .asset-card .thumb{height:58px}html[data-compact-cards] .asset-card img{max-height:52px}
+html[data-compact-cards] .asset-card .asset-label{font-size:10px;padding:5px 6px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html[data-compact-cards] .asset-card small{display:none}html[data-compact-cards] .asset-card .fav{top:38px}
