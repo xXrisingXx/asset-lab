@@ -28,7 +28,7 @@ async function select(key,force=false){if(S.dirty&&!force&&!await confirmAction(
  const detail=await api('/api/asset?'+new URLSearchParams({key}));let original,edited,layered=null;
  // A saved edit may carry its layers (revisions/<key>/<version>.layers.json); the flat PNG stays the source of truth.
  if(detail.editable)[original,edited,layered]=await Promise.all([image(imageURL(key,true)),image(imageURL(key)),detail.revision==='original'?null:api('/api/document?'+new URLSearchParams({key,revision:detail.revision})).then(r=>r.document).catch(()=>null)]);if(seq!==S.load)return;
- S.asset=detail;S.original=original;S.dirty=false;S.ops=[];S.restoring=0;S.atlas=null;S.atlasInfo=null;$('audio').pause();$('compare').checked=false;$('emptyState').hidden=true;$('nonvisual').hidden=detail.editable;$('view').hidden=!detail.editable;
+ S.asset=detail;S.original=original;S.editedImage=edited;autoBackdrop(edited);S.dirty=false;S.ops=[];S.restoring=0;S.atlas=null;S.atlasInfo=null;$('audio').pause();$('compare').checked=false;$('emptyState').hidden=true;$('nonvisual').hidden=detail.editable;$('view').hidden=!detail.editable;
  $('assetName').textContent=detail.name;$('assetPath').textContent=(detail.source.startsWith('cache/')?'Downloaded cache · ':'')+(detail.source_label||detail.source)+(detail.entry?' → '+detail.entry:'')+(detail.parent?' → sprite':'');$('dirtyBadge').textContent=detail.revision==='original'?'Original':'Saved edit';
  if(detail.editable){ed.open({width:detail.width,height:detail.height,name:detail.name,image:edited,layerName:(detail.label||detail.name).replace(/\.[a-z0-9]+$/i,'')});if(layered)ed.loading(restoreLayers(layered,edited,seq));if(S.mode==='atlas')S.mode='texture';$('viewModes').querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.view===S.mode));fit();}
  else{ed.close();if(detail.kind==='audio'){$('audio').hidden=false;$('audio').src='/api/raw?key='+key;$('textPreview').hidden=true;}else{$('audio').pause();$('audio').hidden=true;$('textPreview').hidden=false;const t=await api('/api/text?key='+key);if(seq===S.load)$('textPreview').textContent=t.text+(t.truncated?'\n[Preview truncated]':'');}}
@@ -51,7 +51,16 @@ function draw(){if(frame)return;frame=requestAnimationFrame(()=>{frame=0;render(
 function viewTransform(){const vw=$('viewport').clientWidth,vh=$('viewport').clientHeight,[w,h]=dimensions(),r=$('view').getBoundingClientRect(),d=Math.min(devicePixelRatio,2),snap=v=>S.zoom<=1?Math.round(v*d)/d:v;return{x:snap((vw-w*S.zoom)/2+S.px),y:snap((vh-h*S.zoom)/2+S.py),scale:S.zoom,left:r.left,top:r.top,width:vw,height:vh};}
 let backdrop=null,checkers=null,checkerColors=['#25313f','#2b3948'];
 // Settings › Appearance › Canvas background: what shows through transparent pixels ([color] plain, [a, b] a checker).
-function canvasBackground(colors){if(!Array.isArray(colors)||!colors.length)return;checkerColors=colors;checkers=null;draw();}
+// 'auto' picks per asset (autoBackdrop): faint or dark art like the menu pattern (black at 0-6% opacity) is invisible on
+// the dark checker, so it gets a white one; white icons keep the dark one.
+let autoBack=false;
+function canvasBackground(colors){autoBack=colors==='auto';if(autoBack){autoBackdrop();return;}if(!Array.isArray(colors)||!colors.length)return;checkerColors=colors;checkers=null;draw();}
+function autoBackdrop(image=S.editedImage){if(!autoBack)return;let light=false;
+  if(image?.naturalWidth){try{const c=document.createElement('canvas');c.width=c.height=64;const g=c.getContext('2d',{willReadFrequently:true});g.drawImage(image,0,0,64,64);
+    const d=g.getImageData(0,0,64,64).data;let alpha=0,lum=0,seen=0;
+    for(let i=0;i<d.length;i+=4){const a=d[i+3]/255;if(!a)continue;seen++;alpha+=a;lum+=a*(0.2126*d[i]+0.7152*d[i+1]+0.0722*d[i+2])/255;}
+    if(seen){const meanAlpha=alpha/seen,meanLum=lum/alpha;light=meanLum<0.35||(meanAlpha<0.25&&meanLum<0.6);}}catch(e){}}
+  const want=light?['#ffffff','#eef1f4']:['#25313f','#2b3948'];if(want[0]!==checkerColors[0]){checkerColors=want;checkers=null;draw();}}
 function render(){ed.flush();const canvas=$('view'),vw=$('viewport').clientWidth,vh=$('viewport').clientHeight,dpr=Math.min(devicePixelRatio,2);if(canvas.width!==Math.round(vw*dpr)||canvas.height!==Math.round(vh*dpr)){canvas.width=Math.round(vw*dpr);canvas.height=Math.round(vh*dpr);}ctx.setTransform(dpr,0,0,dpr,0,0);
  if(!backdrop){const c=document.createElement('canvas');c.width=c.height=24;const g=c.getContext('2d');g.fillStyle='#121a25';g.fillRect(0,0,24,24);g.fillStyle='#22313e';g.fillRect(18,18,1,1);backdrop=ctx.createPattern(c,'repeat');}
  if(!checkers){const k=document.createElement('canvas');k.width=k.height=32;const q=k.getContext('2d');q.fillStyle=checkerColors[0];q.fillRect(0,0,32,32);q.fillStyle=checkerColors[1]||checkerColors[0];q.fillRect(16,0,16,16);q.fillRect(0,16,16,16);checkers=ctx.createPattern(k,'repeat');}
@@ -108,9 +117,13 @@ $('installButton').onclick=run(async()=>{if(S.dirty&&!await confirmAction('Insta
 $('restoreButton').onclick=run(()=>work('Restoring original files and verifying their hashes…',async()=>{try{await api('/api/restore',{});message('Original game files restored and verified.');}finally{await status();}}));
 // The library and Edit & Inspect fold to slim strips (remembered); the canvas re-fits to the room it gets.
 const FOLDS={inspector:{button:'inspectorToggle',open:'⇥',closed:'⇤',show:'Show Edit & Inspect',hide:'Minimize this panel'},library:{button:'libraryToggle',open:'⇤',closed:'⇥',show:'Show the library',hide:'Minimize the library'}};
-function fold(name,on){const f=FOLDS[name],b=$(f.button);document.body.classList.toggle(name+'-min',on);b.textContent=on?f.closed:f.open;b.title=b.ariaLabel=on?f.show:f.hide;b.setAttribute('aria-pressed',on);
-  try{localStorage.setItem('lab-'+name+'-min',on?'1':'');}catch(e){}requestAnimationFrame(()=>{if(S.asset?.editable)fit();});}
+function fold(name,on,remember=true){const f=FOLDS[name],b=$(f.button);document.body.classList.toggle(name+'-min',on);b.textContent=on?f.closed:f.open;b.title=b.ariaLabel=on?f.show:f.hide;b.setAttribute('aria-pressed',on);
+  if(remember)try{localStorage.setItem('lab-'+name+'-min',on?'1':'');}catch(e){}requestAnimationFrame(()=>{if(S.asset?.editable)fit();});}
 for(const name of Object.keys(FOLDS)){$(FOLDS[name].button).onclick=()=>fold(name,!document.body.classList.contains(name+'-min'));try{if(localStorage.getItem('lab-'+name+'-min'))fold(name,true);}catch(e){}}
+// Focus Editor (F) also folds Edit & Inspect to its strip (⇤ opens it again); leaving focus puts it back as you had it.
+{let focused=document.body.classList.contains('ed-focus-mode');const sync=()=>{const on=document.body.classList.contains('ed-focus-mode');if(on===focused)return;focused=on;
+  let kept=false;try{kept=!!localStorage.getItem('lab-inspector-min');}catch(e){}fold('inspector',on||kept,false);};
+ if(focused)fold('inspector',true,false);new MutationObserver(sync).observe(document.body,{attributes:true,attributeFilter:['class']});}
 $('launchButton').onclick=run(async()=>{const r=await api('/api/launch-game',{});message(r.running?'Mitosis is already open.':'Opening Mitosis…');});$('stopButton').onclick=run(async()=>{if(S.dirty&&!await confirmAction('Stop Asset Lab?','Your current draft has not been saved. Saved edits remain in the workspace.','Stop anyway'))return;await api('/api/shutdown',{});message('Asset Lab stopped. Reopen it with the Asset Lab shortcut.');});
 // A custom context menu avoids the browser menu while orbit-style panning remains available.
 document.addEventListener('contextmenu',run(async e=>{if(e.target.closest('input,textarea,pre'))return;e.preventDefault();if(dragMoved){dragMoved=false;return;}const card=e.target.closest('.asset-card');if(card&&card.dataset.key!==S.asset?.key)await select(card.dataset.key);if(!S.asset?.editable)return;const m=$('contextMenu');m.hidden=false;m.style.left=Math.min(e.clientX,innerWidth-205)+'px';m.style.top=Math.min(e.clientY,innerHeight-260)+'px';}));document.addEventListener('click',e=>{if(!e.target.closest('#contextMenu'))$('contextMenu').hidden=true;});

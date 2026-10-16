@@ -3,10 +3,19 @@
 // Uses app.js globals: $, api, message, status, library, select, run, confirmAction, S.
 (()=>{
 const T={open:false,info:null,history:[],busy:false,job:null,plan:null,prompt:'',passing:false,game:null};
-// Chat history: the conversation, what was applied and any drawing still being made come back after a reload.
-const STORE='lab-theme-chat',J={entries:[]};
-function keepChat(){try{let e=J.entries.slice(-40);for(;;){try{localStorage.setItem(STORE,JSON.stringify({entries:e,history:T.history}));return;}
-  catch(x){if(e.length<=2){localStorage.removeItem(STORE);return;}e=e.slice(Math.ceil(e.length/4));}}}catch(x){}}
+// Chats: each build keeps its Theme AI conversations (builds.py). The open one is saved as it goes, so the conversation,
+// what was applied and any drawing still being made come back after a reload, and older chats can be opened again.
+const STORE='lab-theme-chat',J={entries:[],id:'',saveTimer:0,list:[]};   // STORE: where chats lived before (moved over once)
+const newId=()=>[...crypto.getRandomValues(new Uint8Array(8))].map(b=>b.toString(16).padStart(2,'0')).join('');
+function chatTitle(){const first=J.entries.find(e=>e.t==='user');return first?first.text.replace(/\s+/g,' ').trim().slice(0,60):'New chat';}
+function chatBody(){let entries=J.entries.slice(-60);while(entries.length>2&&JSON.stringify(entries).length>5e6)entries=entries.slice(Math.ceil(entries.length/4));
+  return {id:J.id,title:chatTitle(),entries,history:T.history};}
+async function saveChat(){clearTimeout(J.saveTimer);J.saveTimer=0;if(!J.entries.length)return false;
+  try{const r=await api('/api/chat-save',chatBody());if(!J.list.some(c=>c.id===r.id))J.list.unshift({id:r.id,title:r.title,updated:r.updated});else J.list.find(c=>c.id===r.id).title=r.title;showChats();return true;}catch(e){return false;}}
+function keepChat(){clearTimeout(J.saveTimer);J.saveTimer=setTimeout(saveChat,300);}
+// Leaving the page: the last word is sent even while the page closes.
+addEventListener('pagehide',()=>{if(!J.saveTimer||!J.entries.length||!S.token)return;clearTimeout(J.saveTimer);
+  try{fetch('/api/chat-save',{method:'POST',keepalive:true,headers:{'Content-Type':'application/json','X-Lab-Token':S.token},body:JSON.stringify(chatBody())});}catch(e){}});
 function record(entry){J.entries.push(entry);keepChat();return entry;}
 const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
 const button=el('button','theme-open','✦ Theme AI');button.id='themeButton';button.title='Change the whole look from a prompt';
@@ -351,17 +360,42 @@ function toggle(open){T.open=open;drawer.hidden=!open;showScope();document.body.
   try{localStorage.setItem('lab-theme-open',open?'1':'');}catch(e){}
   if(open){run(refresh)();checkGame();input.focus();if(!log.childElementCount)bubble('bot',WELCOME);}}
 button.onclick=()=>toggle(!T.open);close.onclick=()=>toggle(false);model.addEventListener('change',()=>{T.picked=true;});
-// The saved conversation, drawn again; a request cut off by a reload says so.
-function restoreChat(){let saved=null;try{saved=JSON.parse(localStorage.getItem(STORE)||'null');}catch(e){}
-  if(!saved?.entries?.length)return;J.entries=saved.entries;T.history=saved.history||[];bubble('bot',WELCOME);
+// A saved conversation, drawn again; a request cut off by a reload says so.
+function restoreChat(saved){
+  log.replaceChildren();J.entries=saved?.entries||[];T.history=saved?.history||[];bubble('bot',WELCOME);if(!J.entries.length)return;
   J.entries.forEach((entry,i)=>{
     if(entry.t==='user'){bubble('user',entry.text);if(J.entries[i+1]?.t!=='bot')bubble('bot','This request was interrupted by a reload. Send it again if you still want it.').classList.add('error');return;}
     const b=bubble('bot',entry.error||entry.text);if(entry.error){b.classList.add('error');return;}
     if(entry.result)try{renderResult(b,entry,true);}catch(e){b.append(el('p','theme-note','This part of the chat could not be shown again.'));}});
   scroll();}
-const fresh=el('button','quiet','New chat');fresh.id='themeNewChat';fresh.title='Start a new conversation (your saved art is not touched)';close.before(fresh);
-fresh.onclick=()=>{if(T.busy)return;J.entries=[];T.history=[];keepChat();log.replaceChildren();bubble('bot',WELCOME);input.focus();};
-restoreChat();try{if(localStorage.getItem('lab-theme-open'))toggle(true);}catch(e){}
+// The chat bar: this build's saved chats, a new one (the others stay saved) and delete. Chat titles are your own words,
+// so they are not translated.
+const chatBar=el('div','theme-chats');const chatPick=el('select');chatPick.id='themeChats';chatPick.setAttribute('aria-label','Saved chats of this build');
+const fresh=el('button','quiet','New chat');fresh.id='themeNewChat';fresh.type='button';fresh.title='Start a new conversation. This one stays saved in the list.';
+const drop=el('button','quiet','🗑');drop.id='themeDeleteChat';drop.type='button';drop.title='Delete this chat (the art it made is not touched)';
+chatBar.append(chatPick,fresh,drop);head.after(chatBar);
+function showChats(){chatPick.replaceChildren();const shown=J.list.some(c=>c.id===J.id)?J.list:[{id:J.id,title:'New chat'},...J.list];
+  for(const c of shown){const o=el('option','',c.title||'New chat');o.value=c.id;if(c.title&&c.title!=='New chat')o.translate=false;chatPick.append(o);}chatPick.value=J.id;drop.disabled=!J.list.some(c=>c.id===J.id);}
+function startChat(){J.id=newId();restoreChat(null);showChats();}
+async function openChat(id){await saveChat();try{const doc=await api('/api/chat?'+new URLSearchParams({id}));J.id=id;restoreChat(doc);}catch(e){startChat();}showChats();}
+fresh.onclick=run(async()=>{if(T.busy)return;await saveChat();startChat();input.focus();});
+chatPick.onchange=run(async()=>{if(T.busy){chatPick.value=J.id;return;}await openChat(chatPick.value);});
+drop.onclick=run(async()=>{if(T.busy)return;if(!await confirmAction('Delete this chat?','The conversation is removed from this build. Art it applied stays, and Undo still works.','Delete chat'))return;
+  clearTimeout(J.saveTimer);J.entries=[];const r=await api('/api/chat-delete',{id:J.id});J.list=r.chats;if(J.list.length)await openChat(J.list[0].id);else startChat();});
+async function loadChats(){
+  let r={active:'',chats:[]};try{r=await api('/api/chats');}catch(e){}J.list=r.chats;
+  // A chat from before chats were saved per build becomes this build's first chat.
+  let old=null;try{old=JSON.parse(localStorage.getItem(STORE)||'null');}catch(e){}
+  if(old?.entries?.length){
+    for(let i=0;i<100&&!S.token;i++)await new Promise(r=>setTimeout(r,100));   // saving needs the session from the first status
+    J.id=newId();restoreChat(old);if(await saveChat())try{localStorage.removeItem(STORE);}catch(e){}}
+  else if(r.active&&J.list.some(c=>c.id===r.active))await openChat(r.active);
+  else if(J.list.length)await openChat(J.list[0].id);
+  else startChat();
+  showChats();}
+J.id=newId();showChats();
+window.LabThemeChat={reset(){clearTimeout(J.saveTimer);J.saveTimer=0;J.list=[];startChat();}};   // tests: forget the open chat
+run(loadChats)();try{if(localStorage.getItem('lab-theme-open'))toggle(true);}catch(e){}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&T.open&&!$('dialog').open&&document.activeElement!==input)toggle(false);});
 
 // Recovery: an install that Steam or the game's cache has overwritten can no longer be restored normally.

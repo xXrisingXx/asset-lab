@@ -60,6 +60,19 @@ class ReviewAndPreview(EditorTestCase):
         self.assertIn('screen=menu', b.eval("document.querySelector('#previewDialog img').src"))
         b.eval("document.querySelector('#previewDialog [data-screen=match]').click()")
         b.wait_for("(()=>{const i=document.querySelector('#previewDialog img');return i.src.includes('screen=match') && i.complete && i.naturalWidth > 0;})()")
+        self.assertTrue(b.eval("!document.querySelector('#previewDialog .game-preview-options').hidden"))
+        b.eval("document.querySelector('#previewDialog [data-mode=dark]').click(); document.querySelector('#previewDialog [data-controls=phone]').click()")
+        b.wait_for("(()=>{const i=document.querySelector('#previewDialog img');return /mode=dark/.test(i.src) && /controls=phone/.test(i.src) && i.complete && i.naturalWidth > 0;})()")
         b.screenshot('game-preview.png')
+        b.eval("document.querySelector('#previewDialog [data-screen=menu]').click()")
+        self.assertTrue(b.eval("document.querySelector('#previewDialog .game-preview-options').hidden"))   # only a match has these
         b.key('Escape')
+
+    def test_d_automatic_canvas_background(self):
+        b = self.browser
+        # Faint black triangles (like the menu pattern) get a white checker; a white icon keeps the dark one.
+        pick = """(async (rgba) => {const c=document.createElement('canvas');c.width=c.height=16;const g=c.getContext('2d');g.fillStyle=rgba;g.fillRect(0,0,16,16);
+                   const im=new Image();im.src=c.toDataURL();await im.decode();canvasBackground('auto');autoBackdrop(im);return checkerColors[0];})"""
+        self.assertEqual(b.eval(f"{pick}('rgba(0,0,0,0.05)')"), '#ffffff')
+        self.assertEqual(b.eval(f"{pick}('rgba(255,255,255,1)')"), '#25313f')
         self.assertFalse(b.eval("document.getElementById('previewDialog').open"))

@@ -272,7 +272,7 @@ function apply(key){   // what a setting changes on the page, right away
   if(key==='page_size'&&hasS&&S.token&&typeof library==='function'){S.offset=0;library().catch(()=>{});}
   if(key==='show_copies'){const box=byId('showAll');if(box&&box.checked!==!!v&&hasS&&S.token&&typeof filter==='function'){box.checked=!!v;S.parent='';filter().catch(()=>{});}}
 }
-function backdrop(){if(typeof canvasBackground==='function')canvasBackground(BACKDROP[L.values.canvas_bg]||BACKDROP.dark);}
+function backdrop(){if(typeof canvasBackground==='function')canvasBackground(L.values.canvas_bg==='auto'?'auto':BACKDROP[L.values.canvas_bg]||BACKDROP.dark);}
 function linkHint(){const link=byId('aeLink');if(link)link.placeholder=L.values.page_links?'or paste a link: YouTube, SoundCloud, Bandcamp, or a .mp3 / .ogg / .wav file':'or paste a direct link to a .mp3, .ogg or .wav file (page links are off in Settings)';}
 // The editor engine (window.Ed): only what it offers is used.
 function editor(){

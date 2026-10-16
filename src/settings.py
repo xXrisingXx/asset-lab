@@ -63,7 +63,7 @@ SCHEMA = [
        choices=_pick(('teal', 'Teal'), ('blue', 'Sky blue'), ('violet', 'Violet'), ('pink', 'Pink'), ('orange', 'Orange'), ('lime', 'Lime')), keywords='colour theme highlight'),
     _s('reduce_motion', 'appearance', 'Reduce motion', 'Stops the lab’s spinners, sliding progress bars and fades. The selection outline in the editor still moves.', 'bool', False, keywords='animation transition motion sickness'),
     _s('canvas_bg', 'appearance', 'Canvas background', 'What shows through transparent pixels in the editor. Game teal is the color behind Mitosis’s menus.',
-       'choice', 'dark', choices=_pick(('dark', 'Dark checker'), ('light', 'Light checker'), ('teal', 'Game teal'), ('gray', 'Plain gray')), keywords='checkerboard transparent backdrop'),
+       'choice', 'auto', choices=_pick(('auto', 'Automatic: white behind faint or dark art'), ('dark', 'Dark checker'), ('light', 'Light checker'), ('teal', 'Game teal'), ('gray', 'Plain gray')), keywords='checkerboard transparent backdrop white automatic'),
     _s('compact_cards', 'appearance', 'Compact library cards', 'Smaller cards, three to a row, so more assets fit on screen.', 'bool', False, keywords='library grid thumbnails small'),
     # ----- editor
     _s('history_states', 'editor', 'Undo steps', 'How many steps Undo can take back. The oldest go first.', 'choice', 50,

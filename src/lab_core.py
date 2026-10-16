@@ -564,9 +564,12 @@ class Lab:
         """Forget chosen sounds no saved edit uses (apart from the newest few), saved versions nothing points to, and
         leftovers of stopped downloads."""
         with self.lock:
-            sounds = self.state.get('audio') or {}
-            used = {e.get('source') for e in sounds.values()}
-            versions = {e.get('version') for e in sounds.values()} | {a.get('version') for a in (self.active() or {}).get('audio') or []}
+            # Sounds in your other saved builds (builds.py) are kept as well.
+            entries = list((self.state.get('audio') or {}).values())
+            for saved in (self.root / 'saved-builds').glob('*/state.json'):
+                entries += list(((read_json(saved, {}) or {}).get('audio') or {}).values())
+            used = {e.get('source') for e in entries}
+            versions = {e.get('version') for e in entries} | {a.get('version') for a in (self.active() or {}).get('audio') or []}
             folder = self.root / 'audio-sources'
             if folder.is_dir():
                 metas = sorted(folder.glob('*.json'), key=lambda p: p.stat().st_mtime, reverse=True)
@@ -764,7 +767,7 @@ class Lab:
                           children=[self.row(k) for k in self.catalog.children.get(key, [])],
                           copy_list=[dict(key=k, source=self.row(k).get('source_label') or self.row(k)['source'], entry=self.row(k)['entry'], live=self.row(k).get('live', ''))
                                      for k in self.catalog.copies.get(row.get('dup', ''), []) if k != key][:24],
-                          source_sha256=self.state['baseline'][row['source']]['sha256'])
+                          source_sha256=self.state['baseline'][row['source']]['sha256'], changed=bool(row['editable'] and self.changed(key)))
             if row['editable']:
                 im = self.image(key)
                 points = [(im.width//2, max(0, im.height//6)), (im.width//2, im.height//2), (im.width//2, min(im.height-1, im.height*5//6))]
@@ -797,11 +800,14 @@ class Lab:
             self.snapshot(row['source'])
             current = self.image(key)
             if im.tobytes() == current.tobytes():
-                # Same picture: only the layers changed. They join the current revision (the original gets a revision).
+                # Same picture: only the layers changed. They join the current revision (the original gets a revision),
+                # unless another saved build shares that revision: then it gets its own, so that build keeps its layers.
                 if self.current(key):
-                    if layers: atomic_json(self.root / 'revisions' / key / (self.current(key)['id'] + '.layers.json'), layers)
-                    return self.detail(key)
-                if not layers: return self.detail(key)
+                    if not layers: return self.detail(key)
+                    if not self.shared_revision(key, self.current(key)['id']):
+                        atomic_json(self.root / 'revisions' / key / (self.current(key)['id'] + '.layers.json'), layers)
+                        return self.detail(key)
+                elif not layers: return self.detail(key)
             version = uuid.uuid4().hex
             data = png(im)
             atomic_bytes(self.root / 'revisions' / key / (version + '.png'), data)
@@ -811,6 +817,17 @@ class Lab:
             if key not in self.state['staged']: self.state['staged'].append(key)
             self.persist()
             return self.detail(key)
+
+    def shared_revision(self, key, version):
+        """Whether another saved build (builds.py) uses this revision of the asset too. Builds share revision files, so a
+        revision they share is never changed in place."""
+        folder = self.root / 'saved-builds'
+        active = (read_json(folder / 'index.json', {}) or {}).get('active')
+        for saved in folder.glob('*/state.json'):
+            if saved.parent.name == active: continue   # the open build's own copy is out of date; it lives in self.state
+            history = ((read_json(saved, {}) or {}).get('edits') or {}).get(key) or {}
+            if any(v.get('id') == version for v in history.get('versions') or []): return True
+        return False
 
     # ----- layered documents: the editor's layers, kept beside a revision as revisions/<key>/<version>.layers.json.
     # The flattened PNG stays what installs, exports and themes use; the layers only reopen the editor as it was.
@@ -894,6 +911,47 @@ class Lab:
             if not detail: return None  # Batch callers persist once at the end.
             self.persist()
             return self.detail(key)
+
+    def revert(self, keys):
+        """Put assets back to the game's original art: each one, its identical copies elsewhere, and its spot on a sheet a
+        theme changed (the rest of that sheet keeps the theme). History is kept, so Redo in the editor brings an edit back."""
+        with self.lock:
+            targets = set()
+            for key in keys:
+                row = self.row(key)
+                if not row['editable']: continue
+                targets.add(key)
+                targets.update(k for k in self.catalog.copies.get(row.get('dup', ''), []) if k in self.catalog.rows and self.row(k)['editable'])
+            reverted, sheets = 0, {}
+            for key in sorted(targets):
+                if self.current(key):
+                    h = self.history(key)
+                    h['cursor'] = -1
+                    self.state['edits'][key] = h
+                    if key in self.state['staged']: self.state['staged'].remove(key)
+                    reverted += 1
+                parent = self.row(key).get('parent')
+                if parent and parent not in targets and self.current(parent): sheets.setdefault(parent, []).append(key)
+            for parent, children in sheets.items():
+                now, original = self.image(parent), self.catalog.image(parent)
+                out = now.copy()
+                for k in children:
+                    x, y, w, h = self.row(k)['rect']
+                    out.paste(original.crop((x, y, x + w, y + h)), (x, y))
+                if out.tobytes() != now.tobytes():
+                    # The sheet keeps its recipe (a themed sheet still shows its theme on the other sprites).
+                    recipe = dict((self.current(parent) or {}).get('recipe') or {}, reverted=sorted({self.row(k)['name'] for k in children})[:40])
+                    self.commit(parent, out, recipe, persist=False)
+                    reverted += 1
+            self.persist()
+            self._thumbs.clear()
+            return dict(reverted=reverted, assets=len(targets))
+
+    def changed(self, key):
+        """Whether an asset shows anything but the game's original art: its own edit, a copy's, or a changed sheet."""
+        row = self.row(key)
+        keys = [key, *self.catalog.copies.get(row.get('dup', ''), [])]
+        return any(self.current(k) or (self.catalog.rows.get(k, {}).get('parent') and self.current(self.catalog.rows[k]['parent'])) for k in keys if k in self.catalog.rows)
 
     def stage(self, key, enabled):
         with self.lock:

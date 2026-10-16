@@ -1,0 +1,27 @@
+/* Builds: the picker in the top bar and the builds window */
+.build-pick{display:inline-flex;align-items:center;gap:7px;max-width:260px;min-width:0;padding:6px 11px;margin-right:auto}
+.build-pick-label{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.build-pick b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.build-pick-caret{font-size:10px;color:var(--muted)}
+.build-pick.installed b::after{content:'';display:inline-block;width:7px;height:7px;margin-left:7px;border-radius:50%;background:var(--cyan);vertical-align:1px}
+dialog.builds{max-width:640px;width:94vw;max-height:88vh;padding:20px 22px;display:flex;flex-direction:column;gap:12px}
+dialog.builds:not([open]){display:none}
+.builds-head{display:flex;align-items:center;gap:10px}.builds-head h2{margin:0;margin-right:auto}
+.builds .hint{margin:0}
+.builds-list{display:flex;flex-direction:column;gap:8px;overflow:auto;min-height:0;scrollbar-width:thin}
+.build-row{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:#1b2430}
+.build-row.active{border-color:var(--cyan)}
+.build-text{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
+.build-text b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.build-text small{color:var(--muted)}
+.build-tag{margin-left:8px;font-size:9px;font-weight:700;border-radius:4px;padding:1px 6px;vertical-align:1px}
+.build-tag.open{color:#102b2a;background:var(--cyan)}
+.build-tag.game{color:var(--cyan);border:1px solid var(--cyan)}
+.build-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.build-actions button{padding:5px 10px;font-size:12px}
+.builds-foot{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+@media (max-width:640px){.build-row{flex-direction:column;align-items:stretch}.build-actions{justify-content:flex-start}}
+/* Theme AI: saved chats of this build */
+.theme-chats{display:flex;align-items:center;gap:6px;padding:0 0 6px}
+.theme-chats select{flex:1;min-width:0;padding:5px 6px;font-size:11px}
+.theme-chats .quiet{padding:4px 9px}

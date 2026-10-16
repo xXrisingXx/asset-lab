@@ -15,6 +15,13 @@ class PreviewTests(Base):
             self.assertEqual(image.size, (640, 400))
         self.assertEqual(preview.render(self.lab, 'menu', 99999).width, preview.W)
         with self.assertRaises(ValueError): preview.render(self.lab, 'shop')
+        with self.assertRaises(ValueError): preview.render(self.lab, 'match', mode='sepia')
+
+    def test_dark_mode_darkens_the_arena(self):
+        light = preview.render(self.lab, 'match', 640, 'light', 'pc').convert('L')
+        dark = preview.render(self.lab, 'match', 640, 'dark', 'phone').convert('L')
+        from PIL import ImageStat
+        self.assertLess(ImageStat.Stat(dark).mean[0], ImageStat.Stat(light).mean[0] - 60)
 
     def test_saved_menu_background_shows(self):
         row = next(r for r in self.lab.catalog.rows.values() if r['name'] == 'bg2.png' and r['editable'])

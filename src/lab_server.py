@@ -18,6 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from lab_core import Lab, VERSION, ROOT, adjust, png, data_home
 from theme import Themes, clean_plan, UI_COLORS, HIDE
 from design import Designer
+from builds import Builds
 import runtime
 import preview
 import audio as soundlab
@@ -58,6 +59,12 @@ def server_for(lab, port):
     themes.designer = designer
     designer.director = themes.art_direction
     designer.concepts = themes.art_concepts   # and a different idea for each variant   # the planner model writes the art direction for each redraw
+    builds = Builds(lab)                      # versions of the mod to switch between, each with its Theme AI chats
+
+    def quiet():
+        """Builds change only while nothing is being applied or drawn into the current one."""
+        if any(job['state'] == 'running' for job in themes.jobs.values()) or designer.status().get('job'):
+            raise ValueError('Wait for the theme or drawing to finish first.')
 
     class Handler(BaseHTTPRequestHandler):
         timeout = 30  # a browser's idle pre-opened connection must not keep the server from stopping
@@ -123,6 +130,9 @@ def server_for(lab, port):
                     if q.get('small'): image.thumbnail((640, 320), Image.Resampling.LANCZOS)
                     return self.send(png(image), 'image/png')
                 if path == '/api/theme-job': return self.send(themes.job(q.get('job', '')))
+                if path == '/api/builds': return self.send(builds.listing())
+                if path == '/api/chats': return self.send(builds.chats())
+                if path == '/api/chat': return self.send(builds.chat(q.get('id', '')))
                 if path == '/api/asset': return self.send(lab.detail(key))
                 if path == '/api/fonts': return self.send(lab.font_catalog())
                 if path == '/api/asset-notes':
@@ -132,7 +142,7 @@ def server_for(lab, port):
                 if path == '/api/asset-notes-all':
                     return self.send(lab.export_asset_notes(), 'application/zip', filename='mitosis-all-visual-locations.zip')
                 if path == '/api/preview':   # the menu or a match, rebuilt from the game's sprites with your edits
-                    with lab.lock: image = preview.render(lab, q.get('screen', 'menu'), int(q.get('w', 1280)))
+                    with lab.lock: image = preview.render(lab, q.get('screen', 'menu'), int(q.get('w', 1280)), q.get('mode', 'light'), q.get('controls', 'pc'))
                     return self.send(png(image), 'image/png')
                 if path == '/api/thumb': return self.send(lab.thumbnail(key, q.get('original') == '1', (320, 240) if q.get('big') else (144, 112)), 'image/png')
                 if path == '/api/mod':
@@ -197,9 +207,35 @@ def server_for(lab, port):
                     keys = [k for k in data.get('keys') or [] if isinstance(k, str)][:5000]
                     return self.send(lab.stage_many(keys, bool(data['enabled'])))
                 if path == '/api/build': return self.send(lab.build())
-                if path == '/api/install': return self.send(lab.install(data['build']))
-                if path == '/api/restore': return self.send(lab.restore())
-                if path == '/api/abandon-install': return self.send(lab.abandon())
+                if path == '/api/install':
+                    result = lab.install(data['build'])
+                    builds.installed(True)
+                    return self.send(result)
+                if path == '/api/restore':
+                    result = lab.restore()
+                    builds.installed(False)
+                    return self.send(result)
+                if path == '/api/abandon-install':
+                    result = lab.abandon()
+                    builds.installed(False)
+                    return self.send(result)
+                if path == '/api/revert':   # back to the game's original art, history kept
+                    keys = [k for k in data.get('keys') or [] if isinstance(k, str)][:5000]
+                    quiet()
+                    result = lab.revert(keys)
+                    themes.reindex()
+                    return self.send(result)
+                if path in ('/api/build-switch', '/api/build-new', '/api/build-rename', '/api/build-delete'):
+                    bid = str(data.get('id') or '')
+                    if path != '/api/build-rename': quiet()
+                    if path == '/api/build-switch': result = builds.switch(bid)
+                    elif path == '/api/build-new': result = builds.create(str(data.get('name') or ''), str(data.get('copy') or ''))
+                    elif path == '/api/build-rename': result = builds.rename(bid, data.get('name'))
+                    else: result = builds.delete(bid)
+                    themes.reindex()   # its art is what Theme AI samples now
+                    return self.send(result)
+                if path == '/api/chat-save': return self.send(builds.save_chat(str(data.get('id') or ''), data.get('entries'), data.get('history'), str(data.get('title') or '')))
+                if path == '/api/chat-delete': return self.send(builds.delete_chat(str(data.get('id') or '')))
                 if path in ('/api/pool-remove', '/api/pool-restore'):
                     with lab.lock:
                         lab.row(key)

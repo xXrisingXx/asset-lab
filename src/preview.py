@@ -7,7 +7,7 @@ close preview, not the game itself: menu text uses a stand-in font and a few ani
 import math
 import random
 from pathlib import Path
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageChops, ImageDraw, ImageFont
 
 W, H = 2560, 1600
 BG = (13, 40, 41)                       # the menu's base color, compiled into Mitosis.exe (#0D2829)
@@ -24,6 +24,10 @@ MENU_TEXT = [('Player', 80, 100, 30, TEAL), ('Ranks', 1477, 104, 32, TEAL), ('Ac
              ('Quit game', 2205, 104, 32, TEAL), ('Split Party', 1280, 678, 46, PINK), ('Invite a friend', 1320, 1112, 40, TEAL)]
 SCREENS = ('menu', 'match')
 ARENA, ARENA_TILE = (236, 238, 240), 0.5   # the arena: worldbg.png's light triangles
+ARENA_DARK = (46, 52, 60, 255)              # dark mode: the same pattern, darkened (close, not measured)
+MODES = ('light', 'dark')
+CONTROLS = {'pc': ('button-explain-split', 'button-explain-eject'), 'phone': ('button-split', 'button-eject')}
+CONTROL_SPOTS = ((2320, 1360, 200), (2090, 1400, 160))   # split, eject: (x, y, size) at 2560 x 1600
 FOOD = ('food1', 'food2', 'food3', 'food', 'foodc1', 'foodr1')   # the pellet shapes and blobs
 FOOD_SIZE = 34
 FOOD_COLORS = ('#f6c94c', '#e74c8b', '#3fb6c0', '#8b6cf0', '#7fd35a', '#f08a3c')
@@ -80,12 +84,17 @@ def menu(lab):
     return canvas
 
 
-def match(lab):
-    """A match moment: the virus among cells and food on the arena's light triangle pattern (worldbg.png; cell skins are
-    left plain). Food is the game's white pellet art, each one painted its own color as the game does."""
+def match(lab, mode='light', controls='pc'):
+    """A match moment: the virus among cells and food on the arena's triangle pattern (worldbg.png; cell skins are left
+    plain), with the split and eject buttons. Food is the game's white pellet art, each one painted its own color as the
+    game does. mode: the game's light or dark mode (dark: the arena darkened, light_virus.png). controls: 'pc' shows the
+    guided buttons (button-explain-*), 'phone' the touch ones (button-split / button-eject)."""
     canvas = Image.new('RGBA', (W, H), (*ARENA, 255))
     bg = sprite(lab, 'worldbg.png')
     if bg: tiled(canvas, bg, ARENA_TILE)
+    if mode == 'dark':
+        dark = Image.new('RGBA', canvas.size, ARENA_DARK)
+        canvas = Image.merge('RGBA', [*ImageChops.multiply(canvas.convert('RGB'), dark.convert('RGB')).split(), canvas.getchannel('A')])
     draw = ImageDraw.Draw(canvas)
     rnd = random.Random(7)
     pellets = [(name, im) for name in FOOD for im in [sprite(lab, name)] if im]
@@ -101,14 +110,23 @@ def match(lab):
         canvas.alpha_composite(looks[name, color], (x - FOOD_SIZE // 2, y - FOOD_SIZE // 2))
     for (x, y, r, color) in ((640, 900, 150, '#3fb6c0'), (1900, 520, 210, '#e5507a'), (1500, 1250, 90, '#f3b33d')):   # cells
         draw.ellipse((x - r, y - r, x + r, y + r), fill=color, outline='#ffffff', width=6)
-    virus = sprite(lab, 'virus.png')
-    for (x, y, size) in ((1180, 640, 360), (2250, 1240, 300)):
+    virus = sprite(lab, 'light_virus.png' if mode == 'dark' else 'virus.png') or sprite(lab, 'virus.png')
+    for (x, y, size) in ((1180, 640, 360), (1950, 1180, 300)):
         if virus: place(canvas, virus, x - size / 2, y - size / 2, size, size)
+    # Split and eject, bottom right (where the game keeps its action buttons; a close placement, not measured in a match).
+    # The art is white; the game shades it to read on the arena (dark on light, white on dark: a stand-in, not measured).
+    for name, (x, y, size) in zip(CONTROLS[controls], CONTROL_SPOTS):
+        im = sprite(lab, name)
+        if not im: continue
+        im = tinted(im, '#3a4450') if mode == 'light' else im
+        im.putalpha(im.getchannel('A').point(lambda a: a * 3 // 4))
+        place(canvas, im, x, y, size, size)
     return canvas
 
 
-def render(lab, screen='menu', width=1280):
+def render(lab, screen='menu', width=1280, mode='light', controls='pc'):
     if screen not in SCREENS: raise ValueError('Unknown preview screen.')
-    image = (menu if screen == 'menu' else match)(lab)
+    if mode not in MODES or controls not in CONTROLS: raise ValueError('Unknown preview option.')
+    image = menu(lab) if screen == 'menu' else match(lab, mode, controls)
     width = max(320, min(W, int(width)))
     return image.resize((width, round(H * width / W)), Image.Resampling.LANCZOS)
