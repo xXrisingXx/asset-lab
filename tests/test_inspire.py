@@ -69,3 +69,21 @@ class Pictures(Base):
         self.assertEqual(design.own_words(prompt), 'BMW theme.')
         self.assertEqual(design.wording(design.own_words(prompt)), '')
         self.assertEqual(design.own_words('rename the title to MITOSIS 2'), 'rename the title to MITOSIS 2')
+
+    def test_a_named_theme_with_one_part_described_draws_the_whole_game(self):
+        self.themes.designer = self.designer
+        key = next(k for k, r in self.lab.catalog.rows.items() if r['editable'])
+        found = dict(title='BMW', summary='German maker of luxury cars.')
+        part = lambda: {'design': {'prompt': 'make the food little tires', 'targets': [{'key': key, 'name': 'x'}]}, 'note': ''}
+        with patch.object(inspire, 'pictures', return_value=''):
+            result = part()
+            self.themes.inspired(result, found, None, 'auto', 'create me a bmw theme and make the food little tires')
+            own = result['design']['prompts'][key]
+            self.assertTrue(own.startswith('make the food little tires. BMW theme.'), own)
+            self.assertIn(key, [t['key'] for t in result['design']['targets']])
+            self.assertTrue(result['design']['prompt'].startswith('BMW theme.'))
+            # No theme asked for: only that part, with the inspiration added to its words.
+            alone = part()
+            self.themes.inspired(alone, found, None, 'auto', 'make the food little bmw tires like bmw')
+            self.assertNotIn('prompts', alone['design'])
+            self.assertTrue(alone['design']['prompt'].startswith('make the food little tires Inspiration (BMW)'))

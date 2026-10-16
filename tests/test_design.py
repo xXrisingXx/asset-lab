@@ -86,7 +86,7 @@ class CutOutTests(Base):
         self.assertTrue(wants_design('turn the coin into a diamond', []))
         self.assertTrue(wants_design('make the title say MITOSIS 2', []))
         self.assertFalse(wants_design('make the buttons look like glass', []))           # glass is a shader look
-        self.assertEqual(design.subject_part('turn the coin into a diamond').strip(), 'turn the coin')
+        self.assertEqual(design.subject_part('turn the coin into a diamond').strip(), 'the coin')
         self.assertEqual(design.wording('make the title say MITOSIS 2'), 'MITOSIS 2')
         self.assertEqual(design.wording('change the title text to "Cell Wars" with a glow'), 'Cell Wars')
         self.assertEqual(design.wording('make the title gold'), '')

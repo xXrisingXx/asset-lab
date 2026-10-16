@@ -20,7 +20,9 @@ import settings as labsettings
 KEYS = {'green': (0, 255, 0), 'magenta': (255, 0, 255), 'blue': (0, 64, 255)}
 TITLE = r'\b(?:title|logo|wordmark|game name|mitosis (?:text|name|title|logo)|main menu (?:name|text|title)|name)\b'
 # Objects, materials and styles that need drawing; plain colors, gradients and glows stay with the theme shader.
-VERBS = r'\b(?:add|put|draw|stick|wear(?:ing)?|redesign|re-?draw|restyle|reimagine|turn (?:it|the \w+(?: \w+)?) into|make (?:it|the \w+(?: \w+)?) look like)\b'
+VERBS = (r'\b(?:add|put|draw|stick|wear(?:ing)?|redesign|re-?draw|restyle|reimagine|turn (?:it|the \w+(?: \w+)?) into|make (?:it|the \w+(?: \w+)?) look like|'
+         # "make the food little tires", "make the coins into tiny donuts": new things, when the shader has no word for them
+         r'make (?:it|them|the \w+(?: \w+)?) (?:(?:into|become|be) )?(?:(?:a|an|little|tiny|small|mini|big|giant|huge) )+\w+)\b')
 DRAWN = (r'\b(?:hats?|horns?|crown|halo|blood(?:y)?|drips?|dripping|bats?|cobwebs?|webs?|skulls?|pumpkins?|ghosts?|eyes|teeth|fangs|cracked|cracks|'
          r'spooky|creepy|scary|horror|halloween|zombie|funny|silly|goofy|cute|evil|christmas|xmas|santa|snow(?:y|ed)?|icicles?|frozen|'
          r'slime|slimy|graffiti|steampunk|cyberpunk|3d|stone|wooden|bone|rusty|melting|burning|on fire)\b')
@@ -50,8 +52,8 @@ SPAWNER_RED = '#e0262f'   # the game paints the spawner red in maps (so players 
 KEEP_AS_IS = {'icon-iphone', 'icon-android', 'icon-facebook', 'icon-gamecenter'}
 SCENE_SUBJECT = 'a seamless repeating background picture for the game menu'   # theme.py words its art direction for scenery by this
 # Told to the art director when a reference board (inspire.pictures) goes with the drawing, so the ideas use the real thing.
-PICTURES_NOTE = ('\nPictures of it go to the image model too: build every idea around its real emblem or logo and its signature colors '
-                 'and shapes (as fan art), not invented symbols.')
+PICTURES_NOTE = ('\nPictures of it go to the image model too: what the request asks for comes first ("little tires" are tires), '
+                 'styled with its real emblem or logo, signature colors and shapes (as fan art), not invented symbols.')
 FOOD_MAX = 40   # every food sprite the game uses fits in one set (about 19 today)
 
 
@@ -112,11 +114,54 @@ def own_words(prompt):
     return re.split(r'\s*\bInspiration \(', prompt, maxsplit=1)[0] or prompt
 
 
+# How people say "this part becomes that": (the part, the new thing). The part is what gets redrawn; the new thing is
+# only described, so "make the potion a beer bottle" redraws the potion, not the beer sprite.
+_THE = r'(?:the|my|our|all|every|each|this|that|these|those|it|them)\b'
+_SIZES = r'(?:a|an|some|little|tiny|small|mini|big|giant|huge|cute|two|three|four|five|few|lots of|many|several)'
+BECOMES = (
+    # "put sunglasses on the virus", "add some stars to the title", "draw tiny sharks as the food"
+    rf'\b(?:put|add|draw|stick|place|paint|give)\s+(?P<new>.+?)\s+(?:on|onto|to|as|for|in|over|around)\s+(?P<subject>{_THE}.*)$',
+    # "replace the food with tiny crowns", "swap the food for tires"
+    r'\b(?:replace|swap|switch|exchange|trade)\s+(?P<subject>.+?)\s+(?:with|for|by)\s+(?P<new>.+)$',
+    # "turn the coin into a donut", "change the arena background to grass", "redraw the crown as a tiara"
+    r'\b(?:turn|change|convert|transform|morph|make|redraw|re-draw|redesign|remake|reimagine|restyle|draw|render)\s+(?P<subject>.+?)\s+'
+    # ("as a tiara", not "the same shade as its neighbour")
+    rf'(?:into|in to|to look like|look like|looks like|as(?=\s+{_SIZES}\b)|to)\s+(?P<new>.+)$',
+    # "make the potion a beer bottle", "make the friends icon two little cats", "make the food little tires"
+    rf'\bmake\s+(?P<subject>it|them|the\s+\w+(?:\s+\w+){{0,2}}?)\s+(?:(?:be|become)\s+)?(?P<new>(?:{_SIZES}\s+)+.+)$',
+    # "the food should be little burgers", "i want the food to be stars", "the virus should be a creeper"
+    r'^(?:(?:i want|i\'d like|id like|i would like|let)\s+)?(?P<subject>.+?)\s+(?:should|could|would|will|must|can|to)\s+(?:be|become|look like|turn into)\s+(?P<new>.+)$',
+    # "can the food be tires"
+    rf'\b(?:can|could|should|will|would)\s+(?P<subject>{_THE}.*?)\s+(?:be|become|look like)\s+(?P<new>.+)$',
+    # "food = tiny tires", "the virus but as a donut"
+    r'^(?P<subject>.+?)\s*(?:=|->|→|\bbut (?:as|like)\b)\s*(?P<new>.+)$',
+    # "tires for the food please"
+    rf'^(?P<new>.+?)\s+(?:for|as|on)\s+(?P<subject>{_THE}.+?)(?:\s+please)?$',
+)
+
+
+def becomes(prompt):
+    """(the part, the new thing) when a request says one part becomes something else, else None."""
+    low = ' '.join(str(prompt).lower().split()).strip(' .!?')
+    for pattern in BECOMES:
+        found = re.search(pattern, low)
+        if found and found.group('subject').strip(' ,') and found.group('new').strip(' ,'):
+            return found.group('subject').strip(' ,'), found.group('new').strip(' ,')
+    return None
+
+
 def subject_part(prompt):
-    """The thing to redraw: what comes before "into" / "look like" / "with" in "turn the coin into a diamond"."""
-    if re.search(r'\b(?:turn|make|replace|change)\b.*\b(?:into|look like|looks like|with)\b', prompt.lower()):
-        return re.split(r'\b(?:into|look like|looks like|with)\b', prompt, maxsplit=1, flags=re.I)[0]
-    return prompt
+    """The thing to redraw: "the coin" in "turn the coin into a diamond" (see BECOMES), else the whole request."""
+    found = becomes(prompt)
+    return found[0] if found else prompt
+
+
+# Words in front of "icon" or "button" that do not pick one ("the main buttons", "the little icons").
+VAGUE_PARTS = set('main menu game small little big tiny round square other same new old whole top bottom side'.split())
+
+
+# Store and sign-in badges are someone else's logo: only redrawn when the request names them ("the app store badge").
+BRANDS = r'\b(?:app ?store|apple|iphone|ios|google play|play store|android|facebook|game ?center|badges?)\b'
 
 
 def key_for(prompt):
@@ -389,7 +434,12 @@ class Designer:
         # "Full spooky reskin" is the whole game (offered as the title, the virus and the food), not the full-screen button.
         if re.search(r'\b(?:full|whole|entire|complete|total)\s+(?:\w+\s+)?(?:reskin|redesign|makeover|overhaul|look)\b|^\s*reskin\b', subject.lower()): return []
         names = {n for found in self.themes.named(subject)[0].values() for n in found}
+        if not re.search(BRANDS, subject.lower()): names -= KEEP_AS_IS
         if not names:
+            # "The leaderboard icon": one part this lab has no name for. Guessing would redraw other icons, so it is left
+            # to the player to check it in the library (or right-click it) instead. "The icons" and "every button" are fine.
+            named_one = re.search(r'\b(?:the|my|that|this)\s+(?P<which>[a-z][\w-]*)\s+(?:icon|button|badge|panel|sign|symbol|logo)\b', subject.lower())
+            if named_one and named_one.group('which') not in VAGUE_PARTS: return []
             rows = self.family_rows(subject)
             # "Turn the food into crowns": every pellet the game shows, so none keeps the old look.
             return self.food_rows() if rows and any(is_food(r) for r in rows) and all(r['name'].startswith('food') for r in rows) else rows
@@ -482,8 +532,9 @@ class Designer:
         else: keep = 'Keep its outline, size and position, centered.'
         small = '' if job['title'] or max(job['frames'][0]) > 160 else ' It is shown small in the game, so use bold, simple shapes and strong contrast that read at a glance.'
         if job.get('inspiration'):   # the reference board (inspire.pictures): emblems and photos of what the theme is about
-            small += (' Take the look from the second reference picture: its emblem, colors, shapes and style, as fan art'
-                      + (' (the round O of MITOSIS can become its emblem).' if job['title'] else '.'))
+            small += (' Style it after the second reference picture: its emblem, colors and finish, as fan art'
+                      + (' (the round O of MITOSIS can become its emblem).' if job['title'] else
+                         '. Draw what is asked above (the object itself, e.g. a tire), not a copy of the reference picture.'))
         color = {'green': 'pure green (#00FF00)', 'magenta': 'pure magenta (#FF00FF)', 'blue': 'pure blue (#0040FF)'}[job['key']]
         return (f'{job.get("direction") or job["prompt"]}. Edit {what}. {keep}{small} Crisp, high quality game UI art. '
                 f'The background must stay a perfectly flat solid {color} with nothing else on it: no scenery, no shadow or floor under the art, no frame, no extra text.')

@@ -79,7 +79,13 @@ STOP = set('''make give want need theme style look looks like more less with wit
     side keep leave alone only every each whole game mitosis main menu screen color colour colors colours gradient outline inside glow flare neon rainbow
     strong subtle soft dark darker light lighter bright brighter proper nice clean white black grey gray thing things part parts effect effects please
     also then over under around back front when where what which very really just still again same different normal default original
-    turn change changed replace swap switch show hide remove delete bigger smaller larger flash blink mode'''.split())
+    turn change changed replace swap switch show hide remove delete bigger smaller larger flash blink mode
+    create creates design designs build builds apply little tiny mini
+    top bottom left right center centre middle shadow shadows circle circles square squares round rounded next close stop battle night day'''.split())
+# Names players use for sprites that no file is called: the spawner is "the red virus" (the game paints it red in maps);
+# virus.png is shown in light mode and light_virus.png in dark mode.
+ALIASES = {'red virus': ['spawner.png'], 'spawner virus': ['spawner.png'], 'dark mode virus': ['light_virus.png'],
+           'light mode virus': ['virus.png'], 'normal virus': ['virus.png']}
 # Words every name for a control has ("Play button", "New Players mode icon"): too common to pick out one sprite.
 GENERIC = {'button', 'buttons', 'icon', 'icons', 'badge', 'badges', 'mode', 'menu', 'main', 'list', 'screen', 'players', 'player'}
 GRADIENT_TYPES = ('linear', 'radial', 'conic', 'luminance')
@@ -306,6 +312,10 @@ def hide_in(text):
 SERVER_ART = r'\b(?:potions?|vials?|super ?glue|power-?ups?|pows?|equipment|equips?|items?|gear|weapons?|armou?r|gems?)\b'
 SERVER_NOTE = ('Potions, power-ups and equipment come from the game\'s server: Mitosis downloads a fresh copy whenever its '
                'file was changed, so they can\'t be restyled. Everything else in the menus and the game can.')
+# A request for a whole look named after something ("a bmw theme", "bmw style"), not a change to one part.
+# The whole game, not one part ("make my game look like gta", "everything should be lego").
+WHOLE = r'(?:(?:i want |make )?(?:it|everything|all|all of it|(?:the |my |this )?(?:whole |entire )?(?:game|look|ui|menu|menus|theme|style)))'
+THEMED = r'\b(?:theme[ds]?|style|aesthetic|vibes?|reskin|edition|version|makeover)\b'
 CLAUSES = r'[.;\n]+|,?\s+(?:and then|then|also|plus)\s+|,?\s+and\s+(?=(?:make|give|put|add|draw|turn|theme|redesign|redraw|paint|stick|change|set)\b)'
 # Text: requests about the game's fonts become a font style with a preview ("player names black with a white glow").
 FONT_WORDS = r'\b(?:fonts?|typefaces?|lettering|player names?|nick ?names?|usernames?|names|name text|menu text)\b'
@@ -1184,6 +1194,11 @@ class Themes:
         family_words = re.compile('|'.join(f'(?:{pattern})' for pattern in WORDS.values()))
         # Names you gave ("speed potion") are matched as whole phrases before single words.
         scan = text
+        for alias, names in ALIASES.items():
+            phrase = rf'\b{alias}(?:es)?\b'
+            if re.search(phrase, scan):
+                found[alias] = names
+                scan, text = re.sub(phrase, ' ', scan), re.sub(phrase, 'virus', text)   # "red" names the sprite, it is not a color here
         for label in sorted(self.labelled, key=len, reverse=True):
             phrase = rf'(?<![a-z0-9]){re.escape(label)}s?(?![a-z0-9])'   # also works for names ending in ")"
             if re.search(phrase, scan):
@@ -1194,7 +1209,11 @@ class Themes:
         for word in dict.fromkeys(re.findall(r'[a-z]{4,}', scan)):
             stem = next((s for s in (word, word[:-1] if word.endswith('s') else '', word[:-2] if word.endswith('es') else '') if s in self.tokens), '')
             if not stem or stem in STOP or word in STOP or word in TOOL_WORDS or stem in COLORS or stem in GRADIENTS or family_words.fullmatch(word): continue
-            rows = self.tokens[stem]
+            # "coins" is also "coin": both spellings of a name, so the plural does not pick a different sprite.
+            rows = list({r['key']: (k, r) for s in dict.fromkeys((stem, word, word[:-1] if word.endswith('s') else '')) for k, r in self.tokens.get(s, [])}.values())
+            # Store and sign-in badges ("play" is also Google Play) only when the request names them.
+            if not re.search(design.BRANDS, text): rows = [(k, r) for k, r in rows if r['name'] not in design.KEEP_AS_IS] or ([] if any(r['name'] in design.KEEP_AS_IS for _, r in rows) else rows)
+            if not rows: continue
             # A word that is part of a name you gave means those sprites: "the star icon" is the Star button, not every star effect.
             given = [(k, r) for k, r in rows if re.search(rf'\b{stem}', re.sub(r'\([^)]*\)', ' ', r.get('label', '').lower()))]
             if given: rows = given
@@ -1349,9 +1368,15 @@ class Themes:
         self.inspiration = None
         if labsettings.value(self.lab, 'web_inspiration') and inspire.candidates(str(message or '')[:2000]):
             self.inspiration = inspire.lookup(str(message or ''))
+        self.lost = []
         try: result = self._chat(message, model, history, only, language, draw)
         finally: found, self.inspiration = self.inspiration, None
-        if found: self.inspired(result, found, only, draw)
+        if found: self.inspired(result, found, only, draw, str(message or ''))
+        if self.lost and not (result.get('design') or {}).get('targets'):
+            # "Make the leaderboard icon a trophy": no sprite here goes by that name, so nothing was guessed.
+            parts = ', '.join(f'“{p}”' for p in dict.fromkeys(self.lost))
+            result['note'] = ((result.get('note') or '') + f' I could not tell which art {parts} is, so nothing was redrawn for it. '
+                              'Check it in the library and ask again, or right-click it › Redraw with Image AI.').strip()
         if re.search(SERVER_ART, str(message or '').lower()) and result.get('source') != 'command':
             plan = result.get('plan') or {}
             if plan.get('operations'): plan['operations'] = [op for op in plan['operations'] if not set(op.get('targets') or []) <= {'potions', 'equipment'}]
@@ -1368,7 +1393,7 @@ class Themes:
         # A game without those (another Mitosis version, a test game) draws a few of its buttons and icons instead.
         return designer.whole_game_rows() or designer.family_rows('buttons icons logo cells')
 
-    def inspired(self, result, found, only, draw='auto'):
+    def inspired(self, result, found, only, draw='auto', message=''):
         """A request that names someone or something: say what was looked up, carry it into the drawings, and offer to redraw
         the main art (the title, the virus, the play button and the coin, or the checked assets), since colors alone can't
         make "a Post Malone theme"."""
@@ -1378,7 +1403,20 @@ class Themes:
         result['note'] = ((result.get('note') or '') + f' Inspired by {title} (looked up on Wikipedia{", with its pictures" if board else ""}).').strip()
         context = f' Inspiration ({title}): {summary[:450]}'
         designer = getattr(self, 'designer', None)
-        if result.get('design'): result['design']['prompt'] = (result['design'].get('prompt') or '') + context
+        part = result.get('design')
+        if part and part.get('optional') and designer and draw != 'off' and not only and labsettings.value(self.lab, 'offer_redraws'):
+            # "Make it look like the matrix": the mood's title offer grows into the whole game, still offered (not started).
+            rows = self.showcase_rows(designer)
+            if rows: result['design'] = part = dict(self.design_offer(designer, f'{title} theme.{context}', rows), optional=True)
+        elif part and designer and not only and part.get('targets') and re.search(THEMED, message.lower()) and labsettings.value(self.lab, 'offer_redraws'):
+            # "Create me a bmw theme and make the food little tires": the whole game in the theme, and the parts the
+            # request describes on their own (the food) drawn from those words, still in the theme.
+            rows = self.showcase_rows(designer)
+            have = {r['key'] for r in rows}
+            rows += [self.lab.row(t['key']) for t in part['targets'] if t['key'] not in have and t['key'] in self.lab.catalog.rows]
+            own = f"{part.get('prompt') or ''}. {title} theme.{context}"
+            result['design'] = dict(self.design_offer(designer, f'{title} theme.{context}', rows), prompts={t['key']: own for t in part['targets']})
+        elif part: part['prompt'] = (part.get('prompt') or '') + context
         elif designer and draw != 'off' and labsettings.value(self.lab, 'offer_redraws'):
             # The whole game in that style (the queue puts the title, background, viruses, play button, coin and food first),
             # or just the checked assets.
@@ -1421,10 +1459,14 @@ class Themes:
             result['font'] = font['font']
             return result
         designer = getattr(self, 'designer', None) if draw != 'off' else None   # Image AI off: colors and effects only
-        drawn, rest = [], message
+        drawn, rest, lost = [], message, []   # lost: parts asked to change that no sprite here is known by
+        self.lost = lost
         if designer:
             for piece in pieces:
-                if (draw == 'on' or design.wants_design(piece, unknown_words(piece, self.named)) or scene_request(piece, self.named)) and designer.targets(piece, only): drawn.append(piece)
+                change = design.becomes(piece)
+                wants = draw == 'on' or design.wants_design(piece, unknown_words(piece, self.named)) or scene_request(piece, self.named) or bool(change and unknown_words(change[1]))
+                if wants and designer.targets(piece, only): drawn.append(piece)
+                elif wants and change and not only and not re.search(THEMED, piece.lower()) and not re.fullmatch(WHOLE, change[0]): lost.append(change[0])
             rest = '. '.join(p for p in pieces if p not in drawn)
         if draw == 'on' and designer and not drawn:
             # Image AI on, nothing named ("make the game look cool"): the main art is drawn in the new style, and the rest
@@ -1438,10 +1480,12 @@ class Themes:
             rows, seen = [], set()
             for piece in drawn:
                 found = designer.targets(piece, only)
-                if scene_request(piece, self.named) and not only:
+                if (scene_request(piece, self.named) or re.search(BACKGROUND_WORDS, piece.lower())) and not only:
                     # A background picture is for backgrounds: "night sky" must not also redraw a "soccer-field-night" item.
                     arena = re.search(r'\b(?:arena|world|in-?game|match)\b', piece.lower())
-                    found = [r for r in found if (r['name'].lower().startswith('worldbg') if arena else design.is_menu_background(r))] or found
+                    if arena:   # the arena is worldbg.png, whatever floor textures the words also match
+                        found = [r for r in self.lab.catalog.rows.values() if r['name'].lower().startswith('worldbg') and r['editable'] and r.get('primary', True)][:4] or found
+                    else: found = [r for r in found if design.is_menu_background(r)] or found
                 for r in found:
                     if r['key'] not in seen: seen.add(r['key']); rows.append(r)
             part = self.design_offer(designer, '. '.join(drawn), rows)
@@ -1466,7 +1510,7 @@ class Themes:
             # (with its time, in the chat); Image AI On would start it straight away.
             rows = self.showcase_rows(designer)
             if rows: result['design'] = dict(self.design_offer(designer, message, rows), optional=True)
-        elif designer and labsettings.value(self.lab, 'offer_redraws') and design.wants_design(message, unknown_words(message, self.named)) and designer.title_rows():
+        elif designer and labsettings.value(self.lab, 'offer_redraws') and not lost and design.wants_design(message, unknown_words(message, self.named)) and designer.title_rows():
             # "Make the game spooky": the palette is shaded now; redrawing the title is offered, not started (unless the
             # player turned these offers off in Settings).
             rows, prompt = designer.title_rows(), f'{message}. Redesign the game title to match.'

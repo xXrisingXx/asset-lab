@@ -723,6 +723,19 @@ class ThemeAiTests(SettingsCase):
         self.assertEqual(self.bodies('/api/design-start')[-1]['inspiration'], 'a' * 20 + '.png')
         self.close_drawer()
 
+    def test_a_piece_with_its_own_words_is_drawn_from_them(self):
+        b = self.browser
+        self.reset_all()
+        self.reload()
+        self.change('drawings', 2)
+        self.close_settings()
+        key = self.server.asset_key('icon-b')
+        self.ask_for_a_drawing(prompts={key: 'make it a little tire. BMW theme.'})
+        b.eval("[...document.querySelectorAll('#themeLog .theme-actions button')].find(x=>x.textContent==='Draw it').click(); true")
+        b.wait_for("(window.__calls||{})['/api/design-start'] >= 1")
+        self.assertEqual(self.bodies('/api/design-start')[-1]['prompt'], 'make it a little tire. BMW theme.')
+        self.close_drawer()
+
     def test_auto_apply_starts_a_drawing_by_itself(self):
         b = self.browser
         self.reset_all()

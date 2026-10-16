@@ -1,3 +1,4 @@
+import re
 import unittest
 import numpy as np
 from PIL import Image
@@ -72,3 +73,43 @@ class Food(unittest.TestCase):
 
 
 if __name__ == '__main__': unittest.main()
+
+
+class MakingIntoNewThings(unittest.TestCase):
+    def test_making_a_part_into_new_things_is_drawn(self):
+        import theme
+        for text in ('make the food little tires', 'make the coins into tiny donuts', 'make the virus a giant pizza'):
+            self.assertTrue(design.wants_design(text, theme.unknown_words(text)), text)
+        for text in ('make the buttons a little darker', 'make the panels gold', 'make it a bit brighter'):
+            self.assertFalse(design.wants_design(text, theme.unknown_words(text)), text)
+
+    def test_request_words_are_not_sprite_names(self):
+        import theme
+        for word in ('create', 'design', 'build', 'little'): self.assertIn(word, theme.STOP)   # not the create-guild icon
+
+
+class PartBecomes(unittest.TestCase):
+    """The many ways people say "this part becomes that": the part is what gets redrawn, the new thing is only described."""
+    CASES = {'make the food little tires': ('the food', 'little tires'), 'the food should be little burgers': ('the food', 'little burgers'),
+             'i want the food to be stars': ('the food', 'stars'), 'can the food be tires': ('the food', 'tires'),
+             'food = tiny tires': ('food', 'tiny tires'), 'tires for the food please': ('the food', 'tires'),
+             'swap the food for tires': ('the food', 'tires'), 'the virus but as a donut': ('the virus', 'a donut'),
+             'make the potion a beer bottle': ('the potion', 'a beer bottle'), 'change the coin into a bitcoin': ('the coin', 'a bitcoin'),
+             'put sunglasses on the virus': ('the virus', 'sunglasses'), 'add some stars to the title': ('the title', 'some stars'),
+             'draw tiny sharks as the food': ('the food', 'tiny sharks'), 'redraw the crown as a tiara': ('the crown', 'a tiara'),
+             'make the friends icon two little cats': ('the friends icon', 'two little cats'),
+             'change the arena background to grass': ('the arena background', 'grass'),
+             'replace the food with tiny crowns': ('the food', 'tiny crowns')}
+
+    def test_the_part_and_the_new_thing(self):
+        for text, want in self.CASES.items(): self.assertEqual(design.becomes(text), want, text)
+
+    def test_not_a_change_of_part(self):
+        for text in ('make the buttons red', 'make the friends button icon the same shade as its neighbour', 'gold coin', 'make everything blue'):
+            self.assertIn(design.becomes(text) and design.becomes(text)[1], (None, 'red', 'blue'), text)
+
+    def test_nicknames_and_badges(self):
+        import theme
+        self.assertEqual(theme.ALIASES['red virus'], ['spawner.png'])
+        self.assertTrue(re.search(design.BRANDS, 'the app store badge')); self.assertFalse(re.search(design.BRANDS, 'the store icon'))
+        for word in ('round', 'circle', 'shadow', 'left', 'next', 'close'): self.assertIn(word, theme.STOP)

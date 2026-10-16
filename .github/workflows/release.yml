@@ -47,8 +47,18 @@ jobs:
           python -B -X utf8 -m unittest discover -v -s tests/browser *> ci-browser.log
           $code = $LASTEXITCODE; Get-Content ci-browser.log
           # Failing tests as annotations: readable on the run page without signing in to download the logs.
-          Select-String -Path ci-browser.log -Pattern '^(FAIL|ERROR): ' | Select-Object -First 20 | ForEach-Object { "::error title=Browser test::$($_.Line)" }
-          Select-String -Path ci-browser.log -Pattern '^(\w+Error|AssertionError): ' | Select-Object -First 20 | ForEach-Object { "::error title=Why::$($_.Line.Substring(0, [Math]::Min(400, $_.Line.Length)))" }
+          # Each failure's whole report (traceback and browser errors) as one annotation, lines joined with %0A.
+          $lines = @(Get-Content ci-browser.log); $shown = 0
+          for ($i = 0; $i -lt $lines.Count -and $shown -lt 12; $i++) {
+            if ($lines[$i] -notmatch '^(FAIL|ERROR): ') { continue }
+            $block = @()
+            for ($j = $i; $j -lt $lines.Count -and $j -lt $i + 60; $j++) {
+              if ($j -gt $i -and $lines[$j] -match '^(={20,}|Ran \d+ tests?)') { break }
+              if ($lines[$j] -notmatch '^-{20,}$' -and $lines[$j].Trim()) { $block += $lines[$j] }
+            }
+            $text = $block -join '%0A'; if ($text.Length -gt 3500) { $text = $text.Substring(0, 3500) }
+            "::error title=Browser test::$text"; $shown++
+          }
           exit $code
 
       - name: Keep browser diagnostics

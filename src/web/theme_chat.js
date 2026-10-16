@@ -250,7 +250,7 @@ function showDesign(box,d,keys,base,offer,entry,restoring){
   // window sets each piece on its own, leaves pieces out and puts them in the order to draw them.
   const big=groups.length>6,star=g=>isTitle(g[0])||g[0].set==='background'||/virus/i.test(g[0].name);
   const Q=newQueue({prompt:d.prompt,base,entry,box,optional:d.optional,each:+d.seconds_per_drawing||45,inspiration:d.inspiration||entry?.batch?.inspiration||'',
-    items:groups.map(g=>({keys:g.map(t=>t.key),rep:showKey(g),pieces:distinctPieces(g),label:groups.length>1?label(g):'',count:big?(star(g)?2:1):drawings(),on:true,state:'queued',job:'',applied:false}))});
+    items:groups.map(g=>({keys:g.map(t=>t.key),prompt:g.map(t=>d.prompts?.[t.key]).find(Boolean)||'',rep:showKey(g),pieces:distinctPieces(g),label:groups.length>1?label(g):'',count:big?(star(g)?2:1):drawings(),on:true,state:'queued',job:'',applied:false}))});
   if(big)count.value='1';
   Q.go=el('button','primary','');Q.estimate=el('small','hint');
   bar.append(Q.go,count);
@@ -326,9 +326,8 @@ async function runQueue(Q){
       item.state='drawing';refreshQueue(Q);keepQueue(Q);
       const part=el('div','design-part');if(item.label)part.append(el('p','design-part-title',item.label));Q.box.append(part);Q.cards.set(item,part);
       const t0=Date.now();
-      const job=await drawDesign(part,Q.prompt,item.keys,item.count,Q.base,Q.direction,Q.entry,item.label,Q.inspiration).catch(e=>{part.append(el('p','theme-note error',e.message));return null;});
+      const job=await drawDesign(part,item.prompt||Q.prompt,item.keys,item.count,Q.base,Q.direction,Q.entry,item.label,Q.inspiration).catch(e=>{part.append(el('p','theme-note error',e.message));return null;});
       Q.spent+=(Date.now()-t0)/1000;Q.variantsDone+=item.count;
-      if(job?.direction&&!Q.direction)Q.direction=job.direction;   // the first drawing's art direction is reused, so the set matches
       item.state=job?.state==='complete'?'done':'failed';item.job=job?.id||'';
       keepQueue(Q);refreshQueue(Q);}
   }finally{Q.running=false;}

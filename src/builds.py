@@ -252,6 +252,8 @@ class Builds:
             folder = self.chat_folder()
             before = read_json(folder / (cid + '.json'), None) or {}
             if before.get('named') and not named: doc.update(title=before.get('title') or doc['title'], named=True)   # a name you gave stays
+            # Newest first in the list: two saves in the same clock tick (Windows counts in ~16 ms steps) still keep their order.
+            doc['updated'] = self._last_saved = max(doc['updated'], getattr(self, '_last_saved', 0) + 0.001)
             if not (folder / (cid + '.json')).is_file() and len(list(folder.glob('*.json'))) >= MAX_CHATS:
                 oldest = min(folder.glob('*.json'), key=lambda f: f.stat().st_mtime)   # the oldest chat makes room
                 oldest.unlink(missing_ok=True)
