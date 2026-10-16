@@ -23,3 +23,5 @@ src/data/visual-findings.json
 launcher/AssetLabLauncher.cs
 launcher/Build-Launcher.ps1
 launcher/Create-Shortcuts.ps1
+
+local-only/

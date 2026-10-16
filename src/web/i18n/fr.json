@@ -1347,7 +1347,8 @@
   "Opening Mitosis…": "Ouverture de Mitosis…",
   "Mitosis is already open.": "Mitosis est déjà ouvert.",
   "Mitosis updated. Opening Mitosis…": "Mitosis mis à jour. Ouverture de Mitosis…",
-  "Mod installed. Opening Mitosis…": "Mod installé. Ouverture de Mitosis…"
+  "Mod installed. Opening Mitosis…": "Mod installé. Ouverture de Mitosis…",
+  "Potions, power-ups and equipment come from the game's server: Mitosis downloads a fresh copy whenever its file was changed, so they can't be restyled. Everything else in the menus and the game can.": "Les potions, les bonus et l’équipement viennent du serveur du jeu : Mitosis télécharge une copie neuve dès que leur fichier change, donc on ne peut pas les modifier. Tout le reste des menus et du jeu peut l’être."
  },
  "patterns": {
   "{n} visuals": "{n} visuels",

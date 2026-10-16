@@ -34,7 +34,7 @@ const ideas=el('details','theme-ideas');ideas.append(el('summary','', 'Ideas'));
 for(const idea of ['Theme it rainbow with proper glows','Synthwave with a chrome logo and neon outlines','Fire gradient buttons with a strong orange glow','Holographic glass panels','Glossy gold everything','Retro 8-bit pixel look','Deep ocean blues, keep the logo','Hide the main menu pattern','Make the MITOSIS title spooky with dripping blood and bats','Put a party hat on the MITOSIS title','Christmas theme and put a santa hat on the title']){
   const b=el('button','', idea);b.type='button';b.onclick=()=>{input.value=idea;ideas.open=false;input.focus();};ideaList.append(b);}
 const tags=el('details','theme-ideas');tags.append(el('summary','', 'Words'));const tagList=el('div','theme-idea-list theme-tags');tags.append(tagList);
-for(const [label,words] of [['Parts','buttons · panels · icons · logo · cells · food · equipment · potions · effects · fonts · menu background · arena — or a sprite or your own name for it: “the white virus”, “the speed potion”'],
+for(const [label,words] of [['Parts','buttons · panels · icons · logo · cells · food · effects · fonts · menu background · arena — or a sprite or your own name for it: “the white virus”, “the speed potion”'],
   ['Edge','outline · border · rim · ring (thin / thick)'],['Inside','inside · fill · body — recolor, gradient, darker, brighter'],
   ['Light','glow (subtle / strong / inner) · flare · sparkle · glossy'],
   ['Gradients','rainbow · sunset · synthwave · fire · lava · ocean · ice · aurora · galaxy · toxic · candy · gold · chrome · pastel · holographic · “from purple to cyan” · vertical · radial · striped'],

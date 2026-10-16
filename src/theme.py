@@ -276,6 +276,10 @@ def hide_in(text):
 
 
 # One request can hold several asks: "theme it halloween and make the names spooky".
+# Potions, power-ups and equipment: the item sheet the game downloads from its server and restores whenever it changed.
+SERVER_ART = r'\b(?:potions?|vials?|super ?glue|power-?ups?|pows?|equipment|equips?|items?|gear|weapons?|armou?r|gems?)\b'
+SERVER_NOTE = ('Potions, power-ups and equipment come from the game\'s server: Mitosis downloads a fresh copy whenever its '
+               'file was changed, so they can\'t be restyled. Everything else in the menus and the game can.')
 CLAUSES = r'[.;\n]+|,?\s+(?:and then|then|also|plus)\s+|,?\s+and\s+(?=(?:make|give|put|add|draw|turn|theme|redesign|redraw|paint|stick|change|set)\b)'
 # Text: requests about the game's fonts become a font style with a preview ("player names black with a white glow").
 FONT_WORDS = r'\b(?:fonts?|typefaces?|lettering|player names?|nick ?names?|usernames?|names|name text|menu text)\b'
@@ -1236,6 +1240,18 @@ class Themes:
                               hide=[dict(id=group, label=label) for group, (label, _) in HIDE.items()]))
 
     def chat(self, message, model='', history=None, only=None, language=''):
+        """The reply to a request, with a word about server-only art when the request names some (see ServerArt)."""
+        result = self._chat(message, model, history, only, language)
+        if re.search(SERVER_ART, str(message or '').lower()) and result.get('source') != 'command':
+            plan = result.get('plan') or {}
+            if plan.get('operations'): plan['operations'] = [op for op in plan['operations'] if not set(op.get('targets') or []) <= {'potions', 'equipment'}]
+            drawing = result.get('design') and not result['design'].get('optional')   # an offered title redraw is not a plan
+            if not (plan.get('operations') or plan.get('ui_colors') or plan.get('hide') or drawing or result.get('font')):
+                plan['reply'] = SERVER_NOTE
+            else: result['note'] = ((result.get('note') or '') + ' ' + SERVER_NOTE).strip()
+        return result
+
+    def _chat(self, message, model='', history=None, only=None, language=''):
         """only: catalog keys of checked assets; the plan is then previewed and applied to those alone. language: the
         lab's language ('es', 'pt', 'fr', 'de'; '' or 'en' for English), the one the planner model writes its reply in
         (fixed replies stay English here: the page translates them).
@@ -1254,7 +1270,7 @@ class Themes:
         if font:                                    # "theme it halloween and make the names spooky": the font card plus the theme
             others = [p for p in pieces if not about_text(p, only)] + [o for _, more in split for o in more]
             if not others: return font
-            result = self.chat('. '.join(others), model, history, only, language)
+            result = self._chat('. '.join(others), model, history, only, language)
             plan = result.get('plan') or {}
             if not (plan.get('operations') or plan.get('ui_colors') or plan.get('hide') or result.get('design')): return font
             result['font'] = font['font']

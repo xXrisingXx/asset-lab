@@ -80,6 +80,13 @@ class Pool(Marks):
     def __init__(self, catalog, file):
         super().__init__(catalog, file, 'removed', 'Assets hidden from Asset Lab. Delete an entry to bring it back.', cascade=True)
 
+    def apply(self):
+        # Art the game downloads from its own server (the item sheet: potions, power-ups, equipment) is replaced by a fresh
+        # copy whenever it was changed, so it is always out of the pool and can't be put back.
+        super().apply()
+        for row in self.catalog.rows.values():
+            if row.get('server_only'): row['removed'] = True
+
     def remove(self, key, sheet=False):
         result = self.add([key], sheet)
         return dict(result, removed=result['marked'])

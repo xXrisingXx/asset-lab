@@ -7,7 +7,6 @@
  const download=document.createElement('a');download.id='downloadAssetNotes';download.className='button full';download.textContent='Download this asset’s notes';download.hidden=true;panel.append(download);
  const all=document.createElement('a');all.href='/api/asset-notes-all';all.className='button full';all.textContent='Export notes for every image';all.download='mitosis-all-visual-locations.zip';panel.append(all);
  document.getElementById('assetInfo').closest('details').after(panel);
- const potions=document.createElement('button');potions.id='findPotions';potions.className='full';potions.textContent='Browse potions & alchemy';potions.onclick=run(()=>searchFor('', 'Potions & alchemy'));document.querySelector('.library-options').before(potions);
  const sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href='asset_notes.css';document.head.append(sheet);
  let request=0;
  const p=(text,cls='')=>{const e=document.createElement('p');e.textContent=text;e.className=cls;return e;};

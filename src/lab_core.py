@@ -207,7 +207,12 @@ class Lab:
         if self.active() and self.active().get('workspace') != str(self.root):
             raise ValueError('A test is installed from another workspace. Open that workspace to restore it first.')
         self.catalog = Catalog(self.game, self.source_path, self.cache)
+        try: real = self.game == find_game()   # the Steam install, whose item sheet the game's server keeps restoring
+        except (ValueError, OSError): real = False
         for row in self.catalog.rows.values():
+            # The item sheet (potions, power-ups, equipment) comes from the game's server, which puts a fresh copy back
+            # at start-up whenever it was changed: edits there never show, so it stays out of the library, themes and mods.
+            row['server_only'] = real and (row.get('entry', '').rsplit('/', 1)[-1] == 'items.png' or row['name'] == 'items.png')
             source = row['source']
             if source not in self.state['baseline']:
                 f = self.game_file(source)
@@ -691,7 +696,7 @@ class Lab:
             # Tidy hides leftover atlas rectangles and shows one card per identical copy.
             rows = [r for r in self.catalog.rows.values()
                     if (not group or r['group'] == group) and (not kind or (r['editable'] if kind == 'visual' else r['kind'] == kind))
-                    and bool(r.get('removed')) == bool(removed) and (not favorite or r.get('favorite'))
+                    and bool(r.get('removed')) == bool(removed) and not r.get('server_only') and (not favorite or r.get('favorite'))
                     and (not tidy or saved or removed or (not r.get('legacy') and (parent or r.get('primary', True))))
                     and (not parent or r.get('parent') == parent)
                     and (not origin or r['source'].startswith('cache/' if origin == 'cache' else 'assets/'))
@@ -910,7 +915,8 @@ class Lab:
             return self.staged()
 
     def staged(self):
-        return [dict(key=k, name=self.row(k)['name'], source=self.row(k)['source'], revision=self.revision(k)) for k in self.state['staged'] if self.current(k)]
+        return [dict(key=k, name=self.row(k)['name'], source=self.row(k)['source'], revision=self.revision(k)) for k in self.state['staged']
+                if self.current(k) and not self.row(k).get('server_only')]   # server art never reaches the game (see __init__)
 
     def _compose(self, keys):
         groups = {}
