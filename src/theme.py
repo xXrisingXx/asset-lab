@@ -312,6 +312,10 @@ def hide_in(text):
 SERVER_ART = r'\b(?:potions?|vials?|super ?glue|power-?ups?|pows?|equipment|equips?|items?|gear|weapons?|armou?r|gems?)\b'
 SERVER_NOTE = ('Potions, power-ups and equipment come from the game\'s server: Mitosis downloads a fresh copy whenever its '
                'file was changed, so they can\'t be restyled. Everything else in the menus and the game can.')
+# The red virus lives in the same downloaded item file (see lab_core.LOCKED): the game puts its own copy back.
+RED_VIRUS = r'\b(?:red virus(?:es)?|spawners?)\b'
+RED_VIRUS_NOTE = ('The red virus (the spawner) comes from the game\'s server too: Mitosis downloads a fresh copy before a '
+                  'match, so a new look for it won\'t show in the game.')
 # A request for a whole look named after something ("a bmw theme", "bmw style"), not a change to one part.
 # The whole game, not one part ("make my game look like gta", "everything should be lego").
 WHOLE = r'(?:(?:i want |make )?(?:it|everything|all|all of it|(?:the |my |this )?(?:whole |entire )?(?:game|look|ui|menu|menus|theme|style)))'
@@ -1413,6 +1417,8 @@ class Themes:
             parts = ', '.join(f'“{p}”' for p in dict.fromkeys(self._turn.lost))
             result['note'] = ((result.get('note') or '') + f' I could not tell which art {parts} is, so nothing was redrawn for it. '
                               'Check it in the library and ask again, or right-click it › Redraw with Image AI.').strip()
+        if re.search(RED_VIRUS, str(message or '').lower()) and result.get('source') != 'command':
+            result['note'] = ((result.get('note') or '') + ' ' + RED_VIRUS_NOTE).strip()
         if re.search(SERVER_ART, str(message or '').lower()) and result.get('source') != 'command':
             plan = result.get('plan') or {}
             if plan.get('operations'): plan['operations'] = [op for op in plan['operations'] if not set(op.get('targets') or []) <= {'potions', 'equipment'}]

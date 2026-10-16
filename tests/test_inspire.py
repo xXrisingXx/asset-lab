@@ -87,3 +87,12 @@ class Pictures(Base):
             self.themes.inspired(alone, found, None, 'auto', 'make the food little bmw tires like bmw')
             self.assertNotIn('prompts', alone['design'])
             self.assertTrue(alone['design']['prompt'].startswith('make the food little tires Inspiration (BMW)'))
+
+
+class RedVirusNote(Base):
+    def test_asking_for_the_red_virus_says_it_will_not_show_in_game(self):
+        with patch.object(theme, 'models', return_value=[]), patch.object(inspire, 'lookup', return_value=None):
+            note = self.themes.chat('make the red virus a fireball').get('note') or ''
+        self.assertIn('red virus (the spawner)', note)
+        with patch.object(theme, 'models', return_value=[]), patch.object(inspire, 'lookup', return_value=None):
+            self.assertNotIn('spawner', self.themes.chat('make the virus a fireball').get('note') or '')

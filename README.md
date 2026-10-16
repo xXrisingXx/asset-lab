@@ -14,12 +14,27 @@ Asset Lab is a Windows desktop editor for the artwork and sounds in **Mitos.is: 
 | --- | --- |
 | **Asset library** | Search sprites, textures, backgrounds, fonts and sounds. Use categories, favorites, custom names and image similarity search to find what you need. |
 | **Layered editor** | Paint, erase, select, fill, add text and shapes, transform artwork, adjust colors, apply filters and layer effects, and export PNGs. |
-| **Theme AI** | Describe colors, gradients, outlines, glow and other effects. Preview the plan before applying it to one asset, a checked selection or a broader theme. |
-| **AI image generation** | Ask for a new logo or redesigned artwork, compare generated variants, adjust the result and apply the one you like. Requires the optional local AI download. |
-| **Fonts and sounds** | Style game text and replace or edit sounds, with trimming, fades and volume controls. |
+| **Theme AI** | Describe a look in your own words: colors, gradients, outlines, glow, a mood or a whole theme. Preview the plan before applying it to one asset, a checked selection or the whole game. |
+| **Themes from real pictures** | Name something (“a BMW theme”, “a Post Malone theme”) and Theme AI looks up pictures of it, so the art uses its real emblem, colors and style instead of guessing from words. |
+| **AI image generation** | Redraw any art: “turn the coin into a diamond”, “make the food little tires”, “give the virus a santa hat”, or right-click a picture › **Redraw with Image AI**. Compare variants, adjust the fit and apply the one you like. Requires the optional local AI download. |
+| **Whole-game redraw** | One request can redraw everything players see: the title, menu backgrounds, the viruses, buttons, coins, icons and the three foods. A queue shows every piece large, lets you leave pieces out, pick how many variants each gets and the order, and shows the finish time. |
+| **Accelerate** | One click uses the whole graphics card and every processor core for faster drawings (the PC is slower while it draws). |
+| **Fonts and sounds** | Style game text and replace or edit sounds, with trimming, fades, looping and volume controls. |
+| **Game preview** | See the menu and a match with your mod, in light and dark mode, with the game's controls. |
 | **Flexible workspace** | Collapse either sidebar or widen the canvas. Preview artwork as a texture, tile, cell or button. |
-| **Builds and saved work** | Keep different mod builds, return to saved edits and continue Theme AI conversations. |
+| **Builds and saved work** | Keep different mod builds and switch between them. Each build keeps its own Theme AI chats, which you can search, rename and reopen. |
 | **Review and restore** | Compare original and edited artwork, exclude individual changes, update an installed mod and restore the original files. |
+| **Suggestions** | Send ideas and bug reports straight to the creator from **Settings › About**. |
+
+## What's new
+
+- **Themes from real pictures.** Named themes look up pictures of the thing named, and every drawing takes its look from them (the BMW roundel becomes the O of MITOSIS).
+- **About 5× faster drawings.** The same picture in about 25 seconds instead of 1½ minutes or more on an 8 GB laptop graphics card, plus the new **Accelerate** button.
+- **Understands how you ask.** “The food should be little burgers”, “swap the food for tires”, “make the potion a beer bottle” and many other phrasings redraw the right part. A part it does not know is not guessed: Theme AI says so.
+- **The three foods are drawn as three different foods**, each worth a different mass, with their small copies.
+- **A real chat list** with search and renaming, and **suggestions** to the creator from Settings › About.
+- **Steadier:** closing never hangs, long sessions no longer run out of network connections, and quick dialog clicks are no longer mixed up.
+- **The red virus is tagged “Can't be changed”** (see below).
 
 ## See it in action
 
@@ -59,7 +74,7 @@ Close the chat panel to inspect the new logo on the larger canvas. Saving a desi
 3. Choose whether to install the optional local AI. You can skip it and use the manual editor and keyword-based theme effects.
 4. If setup asks for Microsoft's WebView2 runtime, follow the installation prompt so the desktop window can open.
 
-You need a **64-bit Windows PC** and an installed copy of **Mitos.is: The Game**. The optional AI download is about **6.3 GB**. For local AI, **16 GB of RAM** is recommended; **32 GB is recommended for image generation**, which uses both system memory and graphics memory. A compatible graphics card with **6 GB or more of video memory** helps. Setup checks your hardware and available space. Drawing can take several minutes, especially while the models load; speed varies by PC.
+You need a **64-bit Windows PC** and an installed copy of **Mitos.is: The Game**. The optional AI download is about **6.3 GB**. For local AI, **16 GB of RAM** is recommended; **32 GB is recommended for image generation**, which uses both system memory and graphics memory. A compatible graphics card with **6 GB or more of video memory** helps. Setup checks your hardware and available space. On an 8 GB laptop graphics card (RTX 4060) a drawing takes about 20–30 seconds, or 15–20 seconds with **Accelerate**; the first one takes longer while the models load, and speed varies by PC.
 
 ## Make your first mod
 
@@ -112,9 +127,29 @@ Asset Lab checks for updates when it starts and asks before installing one. Your
 
 Open **Settings → About** to find your workspace and other saved-file locations. Before closing, finish any active drawing or sound task and respond to any unsaved-edit prompt.
 
+## What can't be changed
+
+Mitos.is downloads some art from its own server and replaces a changed copy before a match: **potions, power-ups, equipment and the red virus (the spawner)**. Edits to them do not show in the game, so Asset Lab tags them **Can't be changed** and Theme AI tells you when a request names them. Asset Lab does not try to get around this.
+
+## Privacy
+
+Asset Lab runs on your PC and has no accounts, ads or tracking. Your art, edits and requests stay on your PC. It only goes online for:
+
+- **Setup and updates:** Python, the optional local AI and app updates (python.org, PyPI, Hugging Face, GitHub).
+- **Theme inspiration:** when a Theme AI request names someone or something, only that name is looked up on Wikipedia and a few of its pictures are downloaded. You can turn this off in Settings.
+- **Suggestions:** only what you type, and your Asset Lab version, when you press **Send**.
+- **Links you paste** into the sound editor.
+
+**Settings › Storage & privacy** lists every address the app uses.
+
+## Support and feedback
+
+- **Ideas and bugs:** Settings › About › **Suggestions** sends them straight to the creator.
+- **Bug reports with details:** [open an issue](https://github.com/xXrisingXx/asset-lab/issues) and say what you did, what you expected and your Asset Lab version (Settings › About).
+
 ## Useful to know
 
-- Local AI runs on your PC. Internet access is needed for setup downloads, updates and any web links you ask the app to use.
+- Local AI runs on your PC. Internet access is needed for setup downloads, updates and the features listed under Privacy.
 - Some icons are colored or stretched by the game. Use the previews and **Keep it white** or **Keep the original shape** where offered.
 - Asset Lab edits visual and audio assets. It does not change game logic, online systems or menu hitboxes; hiding an image does not necessarily disable its button.
 - Use sound and image files you have permission to use, and keep a separate copy of work you do not want to lose.

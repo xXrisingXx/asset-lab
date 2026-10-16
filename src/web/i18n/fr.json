@@ -2384,7 +2384,8 @@
   "Check it in the library and ask again, or right-click it › Redraw with Image AI.": "Coche-le dans la bibliothèque et redemande, ou clic droit › Redessiner avec l’IA d’image.",
   "Can’t be changed": "Non modifiable",
   "Can’t be changed in game.": "Non modifiable en jeu.",
-  "The red virus comes from the game’s server: Mitosis downloads a fresh copy before a match, so edits to it never show in game.": "Le virus rouge vient du serveur du jeu : Mitosis télécharge une copie neuve avant chaque partie, donc les modifications ne s’affichent jamais en jeu."
+  "The red virus comes from the game’s server: Mitosis downloads a fresh copy before a match, so edits to it never show in game.": "Le virus rouge vient du serveur du jeu : Mitosis télécharge une copie neuve avant chaque partie, donc les modifications ne s’affichent jamais en jeu.",
+  "The red virus (the spawner) comes from the game's server too: Mitosis downloads a fresh copy before a match, so a new look for it won't show in the game.": "Le virus rouge (le spawner) vient aussi du serveur du jeu : Mitosis télécharge une copie neuve avant chaque partie, donc un nouveau style ne s’affichera pas en jeu."
  },
  "patterns": {
   "{n} visuals": "{n} visuels",

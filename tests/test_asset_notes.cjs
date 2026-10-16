@@ -1,6 +1,6 @@
 'use strict';
 // Read-only browser coverage: notes, export, filtering, and draft isolation.
-const {chromium}=require('C:/Users/Typic/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const {chromium}=require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
