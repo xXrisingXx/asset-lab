@@ -21,7 +21,7 @@ const ACCENT={teal:'#70e5d4',blue:'#6cb6ff',violet:'#b79cff',pink:'#ff8fcd',oran
 const BACKDROP={dark:['#25313f','#2b3948'],light:['#ffffff','#d6dbe1'],teal:['#0d2829'],gray:['#808080']};
 // Words that find the panels that are not settings.
 const EXTRAS={storage:{usage:'disk space usage size workspace builds local ai runtime models link helper',privacy:'privacy internet connect connection network online offline github python pypi hugging face huggingface tracking telemetry statistics accounts'},
-  about:{about:'about version update updates release releases licence license licenses notices third party credits folders paths files location data where'}};
+  about:{about:'about version update updates release releases licence license licenses notices third party credits creator created Novu folders paths files location data where'}};
 
 const L={values:null,changed:[],schema:[],categories:[],about:null,privacy:[],note:'',file:'',damaged:false,old:false,category:'general',query:'',usage:null,usageAt:0,models:null,started:false};
 let readyDone;const ready=new Promise(r=>{readyDone=r;});
@@ -194,6 +194,13 @@ function privacyBlock(){
 }
 function aboutBlock(){
   const a=L.about||{},box=el('div','settings-about'),dl=el('dl','settings-facts');
+  const credit=el('div','creator-credit');credit.setAttribute('aria-label','Created by Novu');
+  const signature=el('span','creator-signature');signature.setAttribute('aria-hidden','true');
+  for(const letter of 'Novu')signature.append(el('span','creator-letter',letter));
+  const crown=el('img','creator-crown');crown.src='/novu-crown.svg';crown.alt='';
+  signature.firstChild.append(crown);
+  const byline=el('span','creator-byline','Created by');byline.setAttribute('aria-hidden','true');
+  credit.append(byline,signature);box.append(credit);
   const fact=(k,...parts)=>{dl.append(el('dt','',k));const dd=el('dd');dd.append(...parts);dl.append(dd);return dd;};
   fact('Version','Asset Lab '+(a.version||'(unknown)'));
   if(a.repo){const link=el('a','',`github.com/${a.repo}`);link.href=a.releases;link.target='_blank';link.rel='noopener noreferrer';
@@ -244,8 +251,8 @@ function problem(r,text){if(!r)return say(text,true);let p=r.querySelector('.set
   if(!p){p=el('p','settings-error');p.setAttribute('role','alert');r.append(p);}p.textContent=text;}
 async function save(key,value){
   const r=rowOf(key),before=L.values[key];problem(r,'');
-  L.values={...L.values,[key]:value};apply(key);
-  try{const res=await api('/api/settings',{values:{[key]:value}});merge(res);sync(key);flash(rowOf(key));
+  L.values={...L.values,[key]:value};if(key!=='page_size')apply(key);
+  try{const res=await api('/api/settings',{values:{[key]:value}});merge(res);if(key==='page_size')apply(key);sync(key);flash(rowOf(key));
     if(res.pruned&&res.pruned.removed)say(`${res.pruned.removed} old build${res.pruned.removed===1?'':'s'} deleted (${size(res.pruned.freed)} freed).`);
     if(key==='keep_builds')refreshUsage();}
   catch(e){L.values={...L.values,[key]:before};apply(key);sync(key);problem(rowOf(key),e.message);status.textContent='Not saved';status.classList.add('on','error');}

@@ -1,1 +1,33 @@
-/* Styles for editor/layers.js (Layers). Empty for now. */
+/* Styles for editor/layers.js (the Layers panel). The core panel's classes (editor.css) stay the base. */
+.ed-lp .ed-layers-row{gap:5px}
+.ed-lp .ed-field.ed-compact{gap:4px}
+.ed-lp-pmenu{flex:none;padding:3px;display:flex;border:1px solid transparent;background:transparent;color:var(--muted);border-radius:4px}
+.ed-lp-pmenu:hover:not(:disabled){background:#2b3a4c;color:var(--text)}
+.ed-lp .ed-locks .ed-lock:disabled{opacity:.45}
+.ed-lp .ed-layer{position:relative}
+.ed-lp .ed-layer.selected{background:#1c2e3d}
+.ed-lp .ed-layer.active{background:#24394a;box-shadow:inset 2px 0 0 var(--cyan)}
+.ed-lp .ed-layer.clipped .ed-pics{margin-left:2px}
+.ed-lp .ed-layer.base .ed-layer-name{text-decoration:underline;text-underline-offset:2px}
+.ed-lp .ed-thumb{display:block}
+.ed-lp .ed-mask-thumb.viewing{outline:2px solid #e0413a;outline-offset:1px}
+.ed-lp .ed-mask-thumb.disabled{opacity:1}
+.ed-lp .ed-mask-thumb.target.viewing{outline-color:var(--cyan)}
+.ed-lp-masktag{display:flex;align-items:center;padding:2px;border:1px solid #3a4a5c;border-radius:3px;color:var(--muted)}
+.ed-lp-masktag.target{outline:2px solid var(--cyan);outline-offset:1px}
+.ed-lp-masktag.disabled{color:#e0413a}
+.ed-lp-fx{font-style:italic;font-weight:700;font-size:11px;color:var(--text)}
+.ed-lock-badge.all{color:var(--text)}
+/* thumbnail sizes (panel menu / right-click a thumbnail) */
+.ed-lp.thumbs-small .ed-thumb{width:22px;height:22px}
+.ed-lp.thumbs-small .ed-layer{min-height:32px}
+.ed-lp.thumbs-large .ed-thumb{width:52px;height:52px}
+.ed-lp.thumbs-large .ed-layer{min-height:62px}
+.ed-lp.thumbs-none .ed-layer{min-height:30px}
+/* Alt over the line between two rows: where the clipping mask goes */
+.ed-lp-clipline{position:absolute;left:0;right:0;height:2px;background:#e0b341;pointer-events:none;z-index:1}
+/* dropping rows on New or the bin */
+.ed-lp .ed-layer-action.drop{background:#304547;color:var(--cyan);outline:1px solid var(--cyan)}
+.ed-lp .ed-layer-action:disabled{opacity:.4}
+.ed-lp-glyph{font-style:italic;font-weight:700;font-size:13px;line-height:16px;min-width:16px;text-align:center}
+.ed-lp-hint{margin:10px 4px}

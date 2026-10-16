@@ -1068,24 +1068,50 @@ def download(url, dest, size, sha256, progress=None, cancel=None, opener=None):
                 time.sleep(0.1)
 
 
+def _publish_helper(source, target):
+    # Defender and OneDrive can briefly hold freshly extracted DLLs/directories.
+    # Keep the verified download and the old installation intact on failure.
+    for attempt in range(20):
+        try:
+            os.replace(source, target)
+            return
+        except PermissionError as exc:
+            if attempt == 19:
+                raise AudioError('Windows is still holding the sound helper files open. '
+                                 'Close other Asset Lab windows and try Get again. '
+                                 'The checked download has been kept; it will not download again.', 'helper_locked') from exc
+            time.sleep(0.3)
+
+
 def unpack(file, tools, into):
     """Put a checked download in place: an .exe is copied, a .zip or wheel extracted (to a new folder, then renamed)."""
     file, tools = Path(file), Path(tools)
     target = tools / into
+    if not target.resolve().is_relative_to(tools.resolve()) or target.resolve() == tools.resolve():
+        raise AudioError('Unsafe helper destination.')
+    tools.mkdir(parents=True, exist_ok=True)
     if file.suffix.lower() == '.exe':
-        staged = target.with_name(target.name + '.new')
+        staged = target.with_name(target.name + '.' + uuid.uuid4().hex + '.new')
         shutil.copyfile(file, staged)
-        os.replace(staged, target)
+        try: _publish_helper(staged, target)
+        finally: staged.unlink(missing_ok=True)
         return target
-    staging = tools / (into + '.new')
-    shutil.rmtree(staging, ignore_errors=True)
+    staging = tools / (into + '.' + uuid.uuid4().hex + '.new')
     with zipfile.ZipFile(file) as z:
         root = staging.resolve()
         for member in z.namelist():
             if not (staging / member).resolve().is_relative_to(root): raise AudioError('Unsafe path in ' + file.name)
         z.extractall(staging)
-    if target.exists(): shutil.rmtree(target)
-    os.replace(staging, target)
+    backup = tools / (into + '.' + uuid.uuid4().hex + '.old')
+    try:
+        if target.exists(): _publish_helper(target, backup)
+        try: _publish_helper(staging, target)
+        except Exception:
+            if backup.exists(): _publish_helper(backup, target)
+            raise
+    finally:
+        shutil.rmtree(staging, ignore_errors=True)
+    shutil.rmtree(backup, ignore_errors=True)
     return target
 
 

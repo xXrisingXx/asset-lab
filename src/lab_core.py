@@ -254,7 +254,10 @@ class Lab:
         atomic_json(record, {'note': 'UI map entries Asset Lab already added once (renames and restores are kept). Delete this file to add them all again.',
                              'applied': sorted(seen | {f"{kind}:{entry['id']}" for _, kind, entry in fresh})})
 
-    def persist(self): atomic_json(self.state_path, self.state)
+    def persist(self):
+        if getattr(self, '_build_recovery_required', False):
+            raise ValueError('Build recovery could not finish. Restart Asset Lab after checking free disk space and file access.')
+        atomic_json(self.state_path, self.state)
 
     # ----- fonts: the game's text re-rendered in any installed typeface ---------------------------------------------
     def typefaces(self):
@@ -700,11 +703,19 @@ class Lab:
             rows = [r for r in self.catalog.rows.values()
                     if (not group or r['group'] == group) and (not kind or (r['editable'] if kind == 'visual' else r['kind'] == kind))
                     and bool(r.get('removed')) == bool(removed) and not r.get('server_only') and (not favorite or r.get('favorite'))
-                    and (not tidy or saved or removed or (not r.get('legacy') and (parent or r.get('primary', True))))
+                    and (not tidy or favorite or saved or removed or (not r.get('legacy') and (parent or r.get('primary', True))))
                     and (not parent or r.get('parent') == parent)
                     and (not origin or r['source'].startswith('cache/' if origin == 'cache' else 'assets/'))
                     and (not saved or self.current(r['key']) or r['key'] in sounds)
                     and all(w in (r['name']+' '+r['source']+' '+r.get('source_label','')+' '+r['entry']+' '+r['group']+' '+r.get('label', '')).casefold() for w in words)]
+            if favorite and tidy:
+                # Favorites mark identical copies together, but show one card, not every cached archive.
+                # Choose among the filtered rows so a cache-only search still has a representative.
+                unique = {}
+                for row in rows:
+                    identity = row.get('dup') or row['key']
+                    if identity not in unique or row.get('primary', False): unique[identity] = row
+                rows = list(unique.values())
             if target is not None:
                 scores = self.similar.rank(target, [r['key'] for r in rows])
                 rows = sorted((r for r in rows if r['key'] in scores), key=lambda r: scores[r['key']])[:240]

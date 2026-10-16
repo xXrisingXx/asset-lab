@@ -54,12 +54,12 @@ def page_language(page, language):
 
 
 def server_for(lab, port):
+    builds = Builds(lab)  # recover interrupted switches before indexing art or reading theme history
     themes = Themes(lab)
     designer = Designer(lab, themes)
     themes.designer = designer
     designer.director = themes.art_direction
     designer.concepts = themes.art_concepts   # and a different idea for each variant   # the planner model writes the art direction for each redraw
-    builds = Builds(lab)                      # versions of the mod to switch between, each with its Theme AI chats
 
     def quiet():
         """Builds change only while nothing is being applied or drawn into the current one."""
@@ -114,7 +114,7 @@ def server_for(lab, port):
                     starred = q.get('group') == 'favorites'  # the Favorites entry in the category list
                     limit = max(1, min(120, int(q.get('limit') or lab.settings.get('page_size'))))   # Settings > Library > Assets per page
                     found = lab.search(q.get('q', ''), '' if starred else q.get('group', ''), q.get('kind', ''), q.get('parent', ''), int(q.get('offset', 0)), saved=q.get('saved') == '1',
-                                       origin=q.get('origin', ''), tidy=q.get('all') != '1' and not starred, removed=q.get('removed') == '1', favorite=starred, like=q.get('similar', ''), limit=limit)
+                                       origin=q.get('origin', ''), tidy=q.get('all') != '1', removed=q.get('removed') == '1', favorite=starred, like=q.get('similar', ''), limit=limit)
                     return self.send(dict(found, limit=limit))   # the page turns by this many
                 if path == '/api/settings': return self.send(labsettings.payload(lab, VERSION))
                 if path == '/api/language': return self.send(dict(language=ui_language(lab), languages=list(LANGUAGES)))
@@ -175,6 +175,8 @@ def server_for(lab, port):
                 if self.headers.get('X-Lab-Token') != lab.session: raise ValueError('Invalid session token; reload the editor.')
                 origin = self.headers.get('Origin')
                 if origin and origin != 'http://' + self.headers['Host']: raise ValueError('Cross-origin writes are blocked.')
+                if getattr(lab, '_build_recovery_required', False) and path != '/api/shutdown':
+                    raise ValueError('Build recovery is pending. Restart Asset Lab after checking disk space and file access.')
                 length = int(self.headers.get('Content-Length', 0))
                 if not 0 <= length <= (AUDIO_REQUEST if path == '/api/audio-source' else 96 * 1024 * 1024): raise ValueError('Request too large')
                 raw = self.rfile.read(length)
@@ -302,6 +304,13 @@ def server_for(lab, port):
                         except OSError: os.startfile('steam://rungameid/389570')
                     return self.send({'opened': True})
                 if path == '/api/shutdown':
+                    # These jobs run outside request threads; server_close alone cannot wait for them.
+                    quiet()
+                    sounds = getattr(lab, '_sounds', None)
+                    if sounds:
+                        with sounds['jobs'].lock:
+                            if any(job['state'] == 'running' for job, _ in sounds['jobs'].items.values()):
+                                raise ValueError('Finish or cancel the sound download or helper update before closing Asset Lab.')
                     self.send({'stopping': True})
                     threading.Thread(target=self.server.shutdown, daemon=True).start()
                     return

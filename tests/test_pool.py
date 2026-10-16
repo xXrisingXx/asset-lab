@@ -58,6 +58,19 @@ class PoolTests(Base):
 class FavoriteAndSelectionTests(Base):
     def key(self, name): return next(r['key'] for r in self.rows(name) if r.get('primary', True))
 
+    def test_favorite_copies_do_not_replace_other_favorites_or_art(self):
+        first, second = self.key('bg2.png'), self.key('icon-a')
+        before = {k: self.lab.thumbnail(k) for k in (first, second)}
+        self.lab.favorites.add([first])
+        self.lab.favorites.add([second])
+        cards = self.lab.search(favorite=True, tidy=True)['items']
+        self.assertEqual({r['key'] for r in cards}, {first, second})
+        self.assertEqual(len(cards), 2)
+        self.assertEqual(self.lab.search(favorite=True, tidy=False)['total'], 3)
+        self.assertEqual(before, {k: self.lab.thumbnail(k) for k in before})
+        self.lab.favorites.discard([second])
+        self.assertEqual([r['key'] for r in self.lab.search(favorite=True, tidy=True)['items']], [first])
+
     def test_favorites_are_a_category_that_survives_a_restart(self):
         keys = [self.key('icon-a'), self.key('bg2.png')]
         self.assertEqual(self.lab.favorites.add(keys)['records'], 3)          # icon-a has a copy in assets.zip

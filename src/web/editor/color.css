@@ -1,1 +1,73 @@
-/* Styles for editor/color.js (Color and workspace extras). Empty for now. */
+/* Styles for editor/color.js: the Color Picker dialog, the Color panel (chips and swatches) and the History panel. */
+
+/* ----- Color Picker ----- */
+.ed-picker{position:fixed;inset:64px 22px auto auto;margin:0;width:auto;max-width:calc(100vw - 8px);max-height:calc(100vh - 8px);overflow:auto;padding:12px 16px 12px}
+.ed-picker::backdrop{background:transparent}
+.ed-picker.sampling{cursor:crosshair}
+.ed-pk-head{cursor:move;margin:0 0 10px;user-select:none}
+.ed-pk-head h2{font-size:14px;margin:0}
+.ed-pk-main{display:flex;gap:10px;align-items:flex-start}
+.ed-pk-square{position:relative;flex:none;border:1px solid #000;outline:1px solid var(--line);cursor:crosshair;touch-action:none}
+.ed-pk-square canvas{display:block;width:100%;height:100%}
+.ed-pk-mark{position:absolute;width:11px;height:11px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #0009;transform:translate(-50%,-50%);pointer-events:none}
+.ed-pk-mark.dark{border-color:#000;box-shadow:0 0 0 1px #fff9}
+.ed-pk-strip{position:relative;flex:none;width:20px;border:1px solid #000;outline:1px solid var(--line);cursor:ns-resize;touch-action:none}
+.ed-pk-strip canvas{display:block;width:100%;height:100%}
+.ed-pk-arrows{position:absolute;left:-5px;right:-5px;height:5px;margin-top:-3px;border:1px solid #fff;box-shadow:0 0 0 1px #000;pointer-events:none}
+.ed-pk-side{display:flex;flex-direction:column;gap:10px;flex:none}
+.ed-pk-top{display:flex;gap:12px;align-items:flex-start}
+.ed-pk-compare{display:flex;flex-direction:column;align-items:center;gap:0}
+.ed-pk-cap{font-size:10px;color:var(--muted);line-height:1.5}
+.ed-pk-new,.ed-pk-cur{width:62px;height:30px;border:1px solid #000;flex:none}
+.ed-pk-new{border-bottom:0}
+.ed-pk-cur{border-radius:0;padding:0;border-top:0}
+.ed-pk-cur:hover{border-color:#000;outline:1px solid var(--cyan)}
+.ed-pk-actions{display:flex;flex-direction:column;gap:5px;flex:1}
+.ed-pk-actions button{padding:5px 10px;font-size:12px}
+.ed-pk-fields{display:grid;grid-template-columns:auto auto;gap:0 14px}
+.ed-pk-col{display:flex;flex-direction:column;gap:3px}
+.ed-pk-row{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text)}
+.ed-pk-label{width:11px;text-align:right}
+.ed-pk-row input[type=number]{width:54px;padding:3px 5px;font-size:12px}
+.ed-pk-row input[type=text]{width:74px;padding:3px 5px;font-size:12px;font-family:Consolas,monospace}
+.ed-pk-unit{width:12px;color:var(--muted);font-size:11px}
+.ed-pk-hexrow{margin-top:8px}
+.ed-picker .ed-pk-hint{margin:8px 0 0;font-size:11px;line-height:1.4;color:var(--muted)}
+
+/* ----- Color panel ----- */
+.ed-colorpanel{display:flex;flex-direction:column;gap:6px}
+.ed-cp-top{display:flex;align-items:center;gap:6px}
+.ed-cp-chip{width:26px;height:26px;padding:0;border:1px solid #8a9bb0;border-radius:4px;flex:none}
+.ed-cp-chip:hover{border-color:var(--cyan)}
+.ed-cp-hexbox{display:flex;align-items:center;gap:3px;margin-left:auto;font-size:12px;color:var(--muted)}
+.ed-cp-hexbox input{width:76px;padding:3px 6px;font-size:12px;font-family:Consolas,monospace}
+.ed-sw-list{height:172px;min-height:80px;resize:vertical;overflow:auto;border:1px solid var(--line);border-radius:5px;background:#10161f;padding:3px 4px;scrollbar-width:thin}
+.ed-sw-head{display:flex;align-items:center;gap:5px;width:100%;border:0;border-radius:3px;background:transparent;padding:3px 2px;font-size:11px;color:var(--muted)}
+.ed-sw-head:hover{background:#1c2633;color:var(--text)}
+.ed-sw-arrow{width:9px}
+.ed-sw-count{margin-left:auto;font-size:10px;opacity:.7}
+.ed-sw-grid{display:flex;flex-wrap:wrap;gap:2px;padding:2px 2px 6px}
+.ed-swatch{width:16px;height:16px;padding:0;border:1px solid #0008;border-radius:2px;flex:none}
+.ed-swatch:hover{border-color:#fff;background-image:none}
+.ed-swatch.selected{outline:2px solid var(--cyan);outline-offset:1px}
+.ed-sw-empty{font-size:11px;color:var(--muted);line-height:1.4;padding:0 2px}
+
+/* ----- shared panel footer ----- */
+.ed-panel-foot{display:flex;align-items:center;gap:3px;margin-top:6px}
+.ed-foot-hint{flex:1;min-width:0;font-size:10.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ed-foot-btn{display:flex;padding:4px 6px;background:transparent;flex:none}
+
+/* ----- History panel ----- */
+.ed-hist-row{display:flex;align-items:stretch;flex:none;border-bottom:1px solid #1d2733}
+.ed-hsrc,.ed-hsrc-gap{width:22px;flex:none;border:0;border-right:1px solid #1d2733;border-radius:0;background:transparent;padding:0;display:flex;align-items:center;justify-content:center}
+.ed-hsrc:hover{background:#1c2633}
+.ed-hsrc.on{color:var(--cyan)}
+.ed-hist-row .ed-history-item{flex:1;min-width:0;border-bottom:0}
+.ed-history-snap{flex:1;min-width:0;display:flex;align-items:center;gap:8px;border:0;border-radius:0;background:transparent;text-align:left;padding:4px 8px;font-size:12px}
+.ed-history-snap.current{background:#24394a;color:var(--cyan)}
+.ed-hist-thumb{width:28px;height:28px;flex:none;border:1px solid var(--line)}
+.ed-hist-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ed-history-snap .ed-rename{flex:1;min-width:0}
+.ed-hist-sep{height:3px;flex:none;background:#2a3644}
+.ed-hist-snaps,.ed-hist-states{display:flex;flex-direction:column;flex:none}
+.ed-cp-chip,.ed-swatch,.ed-history-snap,.ed-hsrc{transition:none}

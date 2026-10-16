@@ -1,1 +1,23 @@
-/* Styles for editor/select.js (Selection tools). Empty for now. */
+/* Styles for editor/select.js: selection mode buttons and the marquee Style field in the options bar. */
+.ed-field.ed-sel-hidden{display:none}
+.ed-selmode{display:flex;gap:1px;padding:2px;border:1px solid var(--line);border-radius:6px;background:#101720}
+.ed-selmode-btn{width:24px;height:22px;padding:0;display:flex;align-items:center;justify-content:center;border:0;border-radius:4px;background:transparent;color:#8fa1b3}
+.ed-selmode-btn:hover{background:#243142;color:var(--text)}
+.ed-selmode-btn.on{background:#304547;color:var(--cyan)}
+.ed-selmode-btn:focus-visible{outline:2px solid var(--cyan);outline-offset:-1px}
+.ed-selstyle{display:flex;align-items:center;gap:5px}
+.ed-selstyle select{padding:3px 5px;font-size:11px}
+.ed-selstyle-wh{display:flex;align-items:center;gap:4px}
+.ed-selstyle-wh[hidden]{display:none}
+.ed-selstyle-wh input{width:46px;padding:3px 4px;font-size:12px}
+.ed-selstyle-k{font-size:11px;color:var(--muted)}
+.ed-selstyle-swap{padding:1px 5px;font-size:12px;line-height:1.2;border:0;background:transparent;color:var(--muted)}
+.ed-selstyle-swap:hover{color:var(--cyan);background:#243142}
+/* A narrow options bar (1366 px windows): like Photoshop, only the tool's icon heads the bar, and the wand's Sample Size
+   select explains itself (its label stays for screen readers). */
+@container (max-width:900px){
+  .ed-options:has(.ed-selmode){gap:8px}
+  .ed-options:has(.ed-selmode) .ed-opt-tool > span:last-child{display:none}
+  .ed-options:has(.ed-selmode) .ed-field[data-key=sampleSize] .ed-field-label{display:none}
+  .ed-options:has(.ed-selmode) .ed-field[data-key=tolerance] input{width:44px}
+}

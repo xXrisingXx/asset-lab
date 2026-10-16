@@ -13,6 +13,9 @@ docs/
 tools/*
 !tools/build_release.ps1
 !tools/make_logo.py
+!tools/test_desktop.ps1
+!tools/test_single_instance.ps1
+!tools/test_update_recovery.py
 tests/evidence/
 tests/test_launcher.ps1
 src/data/exe-references.json

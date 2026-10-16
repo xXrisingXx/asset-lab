@@ -1,1 +1,122 @@
-/* Styles for editor/adjust.js (Adjustments). Empty for now. */
+/* Styles for editor/adjust.js: the adjustment dialogs (Image > Adjustments), their controls, and the Properties panel. */
+
+/* the whole adjustment is one dialog field: let it lay out its own rows */
+.ed-field.ed-adjustment{display:block;white-space:normal;color:var(--text)}
+.adj-ui{display:flex;flex-direction:column;gap:9px;min-width:0;font-size:11px}
+.adj-ui .ed-field{min-width:0}
+.adj-ui .ed-field.ed-range,.adj-ui .ed-field.ed-select{width:100%}
+.adj-ui .ed-field.ed-range input[type=range]{flex:1;width:auto;min-width:40px}
+.adj-ui .ed-field.ed-select select{flex:1;min-width:0}
+.adj-ui .ed-field.ed-checkbox{align-self:flex-start}
+.adj-row{display:flex;align-items:center;gap:8px;min-width:0}
+.adj-row>.ed-field{flex:1}
+.adj-spread{justify-content:space-between;align-items:flex-end}
+.adj-label{font-size:11px;color:var(--muted);margin-bottom:-4px}
+.adj-section{font-size:11px;font-weight:600;color:var(--text);border-top:1px solid var(--line);padding-top:7px;margin-top:2px}
+.adj-btn{padding:4px 11px;font-size:11px;flex:none}
+.adj-none{color:var(--muted);margin:2px 0}
+
+/* histograms with the triangle sliders under them (Levels, Threshold) */
+.adj-histbox{display:flex;flex-direction:column;padding:0 6px}
+.adj-hist{display:block;width:100%;height:84px;border:1px solid #2c394a;border-radius:3px;image-rendering:pixelated}
+.adj-track{position:relative;height:13px;flex:none}
+.adj-out{height:22px;margin:0 6px}
+.adj-out::before{content:"";position:absolute;left:0;right:0;top:0;height:8px;border-radius:2px;background:linear-gradient(90deg,#000,#fff);border:1px solid #3a4a5c}
+.adj-out .adj-knob{top:10px}
+.adj-knob{position:absolute;top:1px;width:14px;height:12px;margin-left:-7px;cursor:ew-resize;touch-action:none;outline:none}
+.adj-knob::before,.adj-knob::after{content:"";position:absolute;clip-path:polygon(50% 0,100% 100%,0 100%)}
+.adj-knob::before{inset:0;background:#9fb2c4}
+.adj-knob::after{left:2px;right:2px;top:3px;bottom:1px;background:#e8eef6}
+.adj-knob-black::after{background:#05080c}
+.adj-knob-gray::after{background:#7d8590}
+.adj-knob:hover::before,.adj-knob:focus-visible::before{background:var(--cyan)}
+.adj-nums{display:flex;justify-content:space-between;gap:6px}
+.adj-nums .ed-field input[type=number]{width:56px}
+
+/* eyedroppers */
+.adj-drops{display:flex;gap:4px;justify-content:flex-end;flex:none}
+.adj-drop{width:28px;height:26px;padding:0;display:flex;align-items:center;justify-content:center;background:#1b2531}
+.adj-drop svg{filter:drop-shadow(0 0 1px #c9d4df)}
+.adj-drop-black{color:#05080c}
+.adj-drop-gray{color:#8a8f96}
+.adj-drop-white{color:#fff}
+.adj-drop-pick{color:var(--text)}
+.adj-drop[aria-pressed=true]{border-color:var(--cyan);background:#243b3d;box-shadow:0 0 0 1px var(--cyan)}
+body.adj-sampling #view{cursor:crosshair}
+/* while an eyedropper is on, the dialog is non-modal (so the picture can be clicked); keep it where it was */
+.ed-dialog.adj-nonmodal{position:fixed;inset:0;z-index:60}
+
+/* Curves */
+.adj-graphwrap{display:flex;justify-content:center;min-width:0}
+.adj-graph{display:block;border:1px solid #2c394a;border-radius:3px;cursor:crosshair;touch-action:none}
+.adj-graph:focus-visible{outline:2px solid var(--cyan);outline-offset:1px}
+.adj-io{display:flex;flex-direction:column;gap:5px}
+.adj-ui .adj-io .ed-field-label{min-width:44px}
+.adj-io .ed-field input[type=number]{width:56px}
+
+/* sliders that show their colors (Hue/Saturation, Black & White, Channel Mixer...) */
+.adj-tracked input[type=range]{-webkit-appearance:none;appearance:none;height:8px;border-radius:4px;background:var(--track,#2b3a4c);border:1px solid #0b0f14;margin:0;cursor:pointer}
+.adj-tracked input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:10px;height:15px;border-radius:3px;background:#e8eef6;border:1px solid #0b0f14;box-shadow:0 1px 3px #0009}
+.adj-tracked input[type=range]::-moz-range-thumb{width:10px;height:15px;border-radius:3px;background:#e8eef6;border:1px solid #0b0f14}
+.adj-tracked input[type=range][dir=rtl]{direction:rtl}
+
+/* Hue/Saturation */
+.adj-range-text{font-size:11px;color:var(--muted);text-align:center;font-variant-numeric:tabular-nums;min-height:14px;margin-bottom:-4px}
+.adj-range-text:empty{display:none}
+.adj-hsbars{display:block;width:100%;height:44px;cursor:default}
+
+/* Color Balance: a word at each end of the slider */
+.adj-two{display:grid;grid-template-columns:54px minmax(40px,1fr) 46px 56px;align-items:center;gap:6px}
+.adj-two-l{text-align:right;color:var(--text)}
+.adj-two-r{color:var(--text)}
+.adj-two input[type=number]{width:56px;padding:3px 5px;font-size:12px}
+
+/* Channel Mixer */
+.adj-total{font-size:11px;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+.adj-total.warn{color:var(--orange)}
+
+/* Gradient Map */
+.adj-gradbar{display:block;width:100%;height:22px;border:1px solid #3a4a5c;border-radius:3px;image-rendering:pixelated}
+.adj-ends{justify-content:space-between}
+.adj-ends>.ed-field{flex:none}
+.adj-checks{flex-direction:row;gap:16px}
+
+/* in a dialog: labels line up */
+.ed-dialog .adj-ui .ed-field-label{min-width:84px}
+.adj-dialog .ed-dialog-fields{overflow-x:hidden}
+
+/* ----- the Properties panel -------------------------------------------------------------------------------------- */
+.adj-props{display:flex;flex-direction:column;gap:8px}
+.adj-props-head{display:flex;align-items:center;gap:8px;padding-bottom:7px;border-bottom:1px solid var(--line);min-width:0}
+.adj-props-icon{display:flex;color:var(--cyan);flex:none}
+.adj-props-title{display:flex;flex-direction:column;min-width:0;line-height:1.25}
+.adj-props-title b{font-size:12px}
+.adj-props-title span{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.adj-props-body{min-width:0}
+.adj-props .adj-ui .ed-field-label{min-width:66px}
+.adj-props .adj-ui .ed-field input[type=number]{width:48px;padding:3px 4px}
+.adj-props .adj-two{grid-template-columns:50px minmax(30px,1fr) 40px 48px;gap:4px}
+.adj-props .adj-two input[type=number]{width:48px;padding:3px 4px}
+.adj-props .hint{margin:4px 0}
+.adj-props .adj-ui .ed-segmented{width:100%}
+.adj-props .adj-ui .ed-segmented .ed-field-label{display:none}
+.adj-props .adj-ui .segmented{flex:1;min-width:0}
+.adj-props .adj-ui .ed-seg{flex:1;min-width:0}
+.adj-props .adj-ui .ed-seg span{flex:1;text-align:center;padding:3px 2px;overflow:hidden;text-overflow:ellipsis}
+.adj-props-mask{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:11px;padding-top:7px;border-top:1px solid var(--line)}
+.adj-props-mask:empty{display:none}
+.adj-props-mask .adj-label{margin:0;color:var(--text)}
+.adj-mask-state{flex:1;color:var(--orange)}
+.adj-props-foot{display:flex;justify-content:flex-end;gap:3px}
+.adj-props-foot:empty{display:none}
+.adj-iconbtn{padding:4px 7px;display:flex;background:transparent}
+.adj-iconbtn[aria-pressed=true]{color:var(--cyan);background:#243b3d;border-color:#3f6a69}
+.adj-info{display:flex;flex-direction:column;gap:3px;font-size:11px;color:var(--muted)}
+.adj-info>div{display:flex;gap:5px;min-width:0}
+.adj-info b{color:var(--text);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.adj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(32px,1fr));gap:3px;margin-top:8px}
+.adj-add{height:30px;padding:0;display:flex;align-items:center;justify-content:center;background:#1b2531;color:#b9c7d6}
+.adj-add:hover{color:var(--cyan)}
+.adj-props-body>.adj-label{margin:10px 0 0}
+.adj-badge{padding:2px;border:0;background:transparent;color:var(--muted);display:flex;border-radius:3px}
+.adj-badge:hover{color:var(--cyan);background:#2b3a4c}

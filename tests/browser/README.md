@@ -88,7 +88,7 @@ safe, it only touches the fake game) · `assets(q='', **params)` · `asset_key(n
 **`EditorTestCase`**: `self.server`, `self.browser` · `assertNoBrowserErrors(allow=(), everything=False)` (errors during this
 test; `everything=True` includes the page load) · `assertPixelsClose(...)` · `original(name)` (pixels of a fake game file).
 Class settings: `viewport = (1600, 1000)`, `game_maker`, `open_on_start = True`, `fresh_page = False` (reload before each test),
-`check_errors = True`, `allowed_errors = ()`.
+`check_errors = True`, `allowed_errors = ()`, `feature_modules = True` (False serves the editor's feature modules, `src/web/editor/<module>.js`, as empty scripts: `test_core*.py` test the engine and shell alone that way; `test_editor_modules.py` checks everything together, also in German and French).
 
 ## Hooks for the new editor core
 

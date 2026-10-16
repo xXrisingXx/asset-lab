@@ -224,11 +224,40 @@ class ApiTests(Temp):
         super().setUp()
         self.game = make_game(self.root)
         self.lab = Lab(self.game, self.root / 'workspace', self.root / 'ledgers', process_check=lambda: [], settings_file=self.file)
+        self.lab.audio_tools = self.root / 'isolated-helper'
         self.http = Http(self.lab)
 
     def tearDown(self):
         self.http.close()
         super().tearDown()
+
+    def test_shutdown_refuses_an_active_audio_job_and_keeps_the_server_alive(self):
+        done = threading.Event()
+        jobs = self.lab._sound()['jobs']
+        job = jobs.start('tools', lambda progress, cancel: (done.wait(10), {'ok': True})[1])
+        try:
+            status, result = self.http.post('/api/shutdown', {})
+            self.assertEqual(status, 400)
+            self.assertIn('Finish or cancel', result['error'])
+            self.assertEqual(self.http.get('/api/health')[0], 200)
+        finally:
+            done.set()
+            wait(lambda: jobs.get(job['id'])['state'] != 'running')
+
+    def test_shutdown_refuses_an_active_drawing(self):
+        with patch.object(design.Designer, 'status', return_value={'job': {'state': 'running'}}):
+            status, result = self.http.post('/api/shutdown', {})
+            self.assertEqual(status, 400)
+            self.assertIn('finish first', result['error'])
+            self.assertEqual(self.http.get('/api/health')[0], 200)
+
+    def test_pending_build_recovery_blocks_writes_but_still_allows_clean_exit(self):
+        self.lab._build_recovery_required = True
+        self.assertEqual(self.http.post('/api/settings', {'values': {'page_size': 60}})[0], 400)
+        status, result = self.http.post('/api/shutdown', {})
+        self.assertEqual((status, result), (200, {'stopping': True}))
+        self.http.thread.join(5)
+        self.assertFalse(self.http.thread.is_alive())
 
     def test_the_settings_window_gets_everything_in_one_answer(self):
         status, d = self.http.get('/api/settings')

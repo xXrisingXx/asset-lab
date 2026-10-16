@@ -1,1 +1,96 @@
-/* Styles for editor/fill.js (Fills, shapes and text). Empty for now. */
+/* Styles for editor/fill.js, fill-shapes.js and fill-type.js: gradient and pattern controls, popovers, the Gradient
+   Editor, the shapes' Fill / Stroke chips, the type options and the hidden text field the Type tool types into. */
+
+/* popovers under a control (tool options, dialogs) */
+.fill-pop{position:fixed;z-index:45;background:#222d3a;border:1px solid #51687b;border-radius:7px;padding:8px;box-shadow:0 12px 40px #000a;max-width:min(360px,calc(100vw - 16px));max-height:min(70vh,520px);overflow:auto;scrollbar-width:thin}
+.fill-pop-hint{margin:8px 2px 0;font-size:11px;color:var(--muted);line-height:1.4;white-space:normal}
+.fill-pop .ed-field{margin:4px 0}
+.fill-pop .ed-field-label{min-width:84px;color:var(--text)}
+.fill-pop-title{font-size:11px;font-weight:650;color:var(--text);margin:0 0 6px}
+
+/* preset and pattern swatches */
+.fill-swatches{display:grid;grid-template-columns:repeat(7,40px);gap:4px}
+.fill-pattern-grid{grid-template-columns:repeat(8,32px)}
+.fill-swatch{width:40px;height:26px;padding:0;border:1px solid #44566a;border-radius:3px;background:#101720;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.fill-pattern-grid .fill-swatch{width:32px;height:32px}
+.fill-swatch canvas{display:block}
+.fill-swatch:hover,.fill-swatch:focus-visible{border-color:var(--cyan);outline:none}
+.fill-swatch[aria-selected=true]{box-shadow:0 0 0 2px var(--cyan)}
+
+/* the gradient control: swatch + presets arrow */
+.fill-grad-field{display:inline-flex;align-items:stretch}
+.fill-grad-swatch{padding:2px;border:1px solid #51687b;border-radius:4px 0 0 4px;background:#101720;display:flex;align-items:center}
+.fill-grad-swatch canvas{display:block;width:66px;height:18px;border-radius:2px}
+.fill-grad-more{padding:0 6px;border:1px solid #51687b;border-left:0;border-radius:0 4px 4px 0;background:#1b2531;position:relative;width:18px}
+.fill-grad-more::after{content:'';position:absolute;left:5px;top:50%;margin-top:-2px;border:4px solid transparent;border-top-color:var(--muted);border-bottom:0}
+.fill-grad-swatch:hover,.fill-grad-more:hover{border-color:var(--cyan)}
+.fill-pat-swatch{padding:2px;border:1px solid #51687b;border-radius:4px;background:#101720;display:flex}
+.fill-pat-swatch canvas{display:block;border-radius:2px}
+.fill-pat-field[hidden]{display:none}
+
+/* gradient styles (Linear, Radial, Angle, Reflected, Diamond) */
+.fill-kinds{display:inline-flex;gap:1px;background:#111822;border:1px solid var(--line);border-radius:6px;padding:2px}
+.fill-kind{width:26px;height:22px;padding:0;border:0;border-radius:4px;background:transparent;color:var(--muted);display:flex;align-items:center;justify-content:center}
+.fill-kind:hover{background:#243142;color:var(--text)}
+.fill-kind.on{background:#304547;color:var(--cyan)}
+
+/* the Gradient Editor (inside the Gradient Editor dialog) */
+.ed-field.ed-fill-gradient-editor{display:block}
+.fill-ge{display:flex;flex-direction:column;gap:10px;user-select:none}
+.fill-ge .fill-swatches{grid-template-columns:repeat(auto-fill,40px);max-height:92px;overflow:auto;padding:2px;scrollbar-width:thin}
+.fill-ge-row{display:flex;align-items:center;gap:8px}
+.fill-ge-label{font-size:11px;color:var(--text);min-width:40px}
+.fill-ge-row input[type=text]{flex:1;min-width:0;background:#101720;border:1px solid var(--line);color:var(--text);border-radius:6px;padding:4px 7px}
+.fill-ge-new{padding:4px 12px;font-size:11px}
+.fill-ge-bar{position:relative;padding:0 8px}
+.fill-ge-ramp{display:block;width:100%;height:28px;border:1px solid #5b6e82;border-radius:2px}
+.fill-ge-track{position:relative;height:18px;cursor:copy}
+.fill-ge-stop{position:absolute;width:14px;height:17px;margin-left:-7px;padding:0;border:0;background:transparent;cursor:ew-resize;touch-action:none}
+.fill-ge-stop i{position:absolute;left:1px;width:12px;height:10px;border:1px solid #c9d4df;border-radius:1px;pointer-events:none}
+.fill-ge-stop::before{content:'';position:absolute;left:2px;border:5px solid transparent;pointer-events:none}
+.fill-ge-bottom .fill-ge-stop i{bottom:0}.fill-ge-bottom .fill-ge-stop::before{top:-3px;border-bottom-color:#c9d4df;border-top:0}
+.fill-ge-top .fill-ge-stop i{top:0}.fill-ge-top .fill-ge-stop::before{bottom:-3px;border-top-color:#c9d4df;border-bottom:0}
+.fill-ge-stop.on i{border-color:var(--cyan);box-shadow:0 0 0 1px var(--cyan)}
+.fill-ge-bottom .fill-ge-stop.on::before{border-bottom-color:var(--cyan)}.fill-ge-top .fill-ge-stop.on::before{border-top-color:var(--cyan)}
+.fill-ge-stop:focus-visible{outline:none}.fill-ge-stop:focus-visible i{box-shadow:0 0 0 2px var(--cyan)}
+.fill-ge-stop.leaving{opacity:.35}
+.fill-ge-mid{position:absolute;top:5px;width:9px;height:9px;margin-left:-4.5px;padding:0;border:1px solid #c9d4df;background:#2a3644;transform:rotate(45deg);cursor:ew-resize;touch-action:none;border-radius:1px}
+.fill-ge-mid.on,.fill-ge-mid:hover{background:var(--cyan);border-color:var(--cyan)}
+.fill-ge-fields{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-height:30px}
+.fill-ge-num{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text)}
+.fill-ge-num input[type=number]{width:58px;padding:3px 5px;font-size:12px}
+.fill-ge-num input[type=color]{width:34px;height:24px}
+.fill-ge-delete{padding:4px 10px;font-size:11px;margin-left:auto}
+.fill-ge-note{font-size:10px;color:var(--muted)}
+.fill-ge-hint{font-size:11px;color:var(--muted);margin:0;line-height:1.4}
+
+/* Edit > Fill contents */
+.fill-contents{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
+.fill-contents select{flex:1;min-width:0}
+.fill-contents input[type=color]{width:34px;height:26px}
+
+/* shapes: the Fill / Stroke chips and their picker */
+.fill-paint-chip{width:24px;height:22px;padding:0;border:1px solid #51687b;border-radius:4px;position:relative;overflow:hidden;background:#101720}
+.fill-paint-chip.none::after{content:'';position:absolute;left:-3px;right:-3px;top:50%;height:2px;background:#e25d5d;transform:rotate(-38deg)}
+.fill-paint-chip.stroke-chip{box-shadow:inset 0 0 0 4px #101720}
+.fill-paint-chip:hover{border-color:var(--cyan)}
+.fill-paint-pop{display:flex;flex-direction:column;gap:8px;min-width:230px}
+.fill-paint-types{display:flex;gap:4px}
+.fill-paint-types button{padding:4px 9px;font-size:11px}
+.fill-paint-types button.on{background:#304547;color:var(--cyan);border-color:#4a6f6b}
+.fill-more{padding:3px 9px;font-size:11px}
+
+/* the T badge of type layers */
+.fill-badge{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;padding:0 3px;border:1px solid #4a5d70;border-radius:3px;font-size:10px;font-weight:700;color:#cfe0ee;background:#1e2a37;cursor:default}
+
+/* the Type tool: the hidden text field the keyboard types into, the alignment buttons */
+.fill-type-input{position:fixed;left:0;top:0;width:2px;height:20px;padding:0;margin:0;border:0;opacity:0;resize:none;overflow:hidden;white-space:pre;font-size:16px;z-index:-1;pointer-events:none;background:transparent;color:transparent;caret-color:transparent}
+.fill-align{display:inline-flex;gap:1px;background:#111822;border:1px solid var(--line);border-radius:6px;padding:2px}
+.fill-align button{width:26px;height:22px;padding:0;border:0;border-radius:4px;background:transparent;color:var(--muted);display:flex;align-items:center;justify-content:center}
+.fill-align button.on{background:#304547;color:var(--cyan)}
+
+/* options bar helpers: hidden option slots, the More button, the compact mode select */
+.ed-field.ed-fill-hidden{display:none}
+.fill-more-box{display:flex;flex-direction:column;gap:6px;min-width:190px}
+.fill-more-box .ed-field{margin:0}
+.fill-mode-select{max-width:104px}

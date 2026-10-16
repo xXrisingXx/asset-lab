@@ -156,6 +156,7 @@ FINGERPRINT = """(() => { const h = c => { if (!c) return null; const d = new Ui
 
 class EditorCoreVerify(EditorTestCase):
     viewport = (1600, 1000)
+    feature_modules = False   # the core alone, as it works without any module (the modules have their own tests)
     report = {}   # name -> text, written to output/verify-report.txt at the end
 
     @classmethod

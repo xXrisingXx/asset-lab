@@ -4,13 +4,42 @@ A local visual editor and theme maker for **Mitos.is: The Game** (Steam). Repain
 a prompt, or redraw art with a local image model, then install your mod and restore the originals with one click.
 Everything runs on your own PC.
 
+**Created by Novu.** A desktop workspace for finding, painting, styling and reviewing your game art.
+
+![Asset Lab's layered editor displaying the Novu crimson skin](media/readme/editor.png)
+
+## A look inside
+
+### Theme AI
+
+Describe the look, inspect the plan and preview, then apply it to your workspace. Scope a request to checked assets,
+or style a whole family of buttons, panels or icons.
+
+![Theme AI applying rainbow outlines and a subtle glow to button artwork](media/readme/theme-ai.png)
+
+### Review before installing
+
+Compare original and edited art side by side. Remove a change from the mod without deleting your work, then install
+when you are happy with the result.
+
+![Review dialog with before-and-after artwork and per-item Remove controls](media/readme/review.png)
+
+These are unretouched interface captures from a separate demonstration workspace, using copies of game artwork and
+the custom Novu skin. The Windows desktop version uses the same editor inside its own window with native window controls.
+
+![Created by Novu with glowing red letters and a crown over the N](media/readme/novu-credit.png)
+
+The About credit animates each letter and the crown, and respects both Windows and Asset Lab reduced-motion settings.
+The [Novu crimson skin PNG](media/skins/novu-crimson.png) is also included: a flat circular design with transparent corners.
+
 ## Get started
 
 1. Download **AssetLab.exe** from the latest [release](../../releases/latest) and run it.
 2. The first start sets itself up in `%LOCALAPPDATA%\AssetLab` (about 30 MB: a portable Python with numpy and Pillow).
 3. It offers the optional local AI (about 6.3 GB): the smart Theme AI planner and image redesigns. You can skip it and
    download it later. It needs 16 GB of RAM; a graphics card with 6 GB or more makes an image take about 35 seconds.
-4. Asset Lab opens in your browser. Keep the small Asset Lab window open while you work; closing it stops the lab.
+4. Setup gives way to the Asset Lab desktop window. Closing that window stops the local backend; no browser tab or
+   separate bootstrapper needs to stay open. On PCs without WebView2, setup offers to install Microsoft's runtime.
 
 Asset Lab finds your Mitos.is installation through Steam. It never needs administrator rights.
 
@@ -20,7 +49,8 @@ Asset Lab finds your Mitos.is installation through Steam. It never needs adminis
   own names for assets, image search ("find similar"), and a removed-assets pool for things you never want to see.
   The menus' parts come named (Play button, Ranks button icon, Discord button...; ask Theme AI "what can I change?"),
   and art the game never shows is already out of the pool.
-- **Editor:** paint, erase, import a replacement, adjust colors, and preview as a texture, tile, cell or button.
+- **Editor:** layers, selections, brushes, fill, text and shapes, transforms, filters, layer styles, color adjustments,
+  undo/history and PNG export. Collapse the sidebars or widen the canvas, and preview as a texture, tile, cell or button.
 - **Theme AI:** describe a look ("rainbow neon outlines with a subtle glow", "holographic glass panels", "dark ocean
   theme, keep the logo", "make everything spooky") and review a plan with before/after samples before anything is
   saved. Moods like spooky, christmas, winter, royal or cyberpunk have matching palettes. Name one part to change just
@@ -44,10 +74,16 @@ Asset Lab checks for a newer release when it starts and asks before updating. Yo
 (`%USERPROFILE%\AssetLab`), separate from the app, and is never replaced by an update; the settings files are backed up
 to `%LOCALAPPDATA%\AssetLab\backups` before each update.
 
+Both update downloads are checked before activation. An interrupted update keeps the launcher executable in place;
+the next start recovers the previous app or finishes the new version, depending on whether the launcher replacement
+completed. The previous app version is retained. Closing the editor dismisses the window after any unsaved-edit
+confirmation, then finishes backend shutdown; an active theme, drawing, or sound job keeps the app open with an explanation.
+
 ## Good to know
 
 - Close Mitos.is before installing or restoring; Asset Lab offers to close it for you.
-- Mitos.is checks its own `Mitosis.exe` and closes if the file was changed, so Asset Lab only edits art files.
+- Executable edits are disabled in this build: changed executables exited during local testing. This does not establish
+  the game's internal protection mechanism. Asset Lab's supported workflow edits visual and audio assets.
 - Steam may replace modded files when the game updates. Use **Restore original** before an update, or **Clear stale
   install** if Steam already replaced them.
 - Share mods only from people you trust; never run downloaded executables you have not checked.
@@ -61,6 +97,33 @@ python -m pip install numpy==2.5.4 pillow==12.3.0
 $env:PYTHONPATH = 'src;tests'; python -B -X utf8 -m unittest discover -s tests
 ./tools/build_release.ps1          # dist\AssetLab.exe and dist\asset-lab-app.zip
 ```
+
+The build downloads the pinned, checksum-verified WebView2 SDK from NuGet and embeds its managed assemblies and x64
+loader in the EXE. The installed WebView2 Evergreen Runtime supplies the desktop renderer. `--no-browser` remains
+available for backend-only development. Run `python -B -X utf8 -m unittest discover -s tests/browser -v` for the Edge
+interaction suite before releasing.
+
+Desktop packaging check (uses a fake game and separate workspace):
+
+```powershell
+./tools/test_desktop.ps1 -Python python
+# To test the EXE outside the checkout using a copy of an installed portable runtime:
+./tools/test_desktop.ps1 -Python python -PortablePython "$env:LOCALAPPDATA\AssetLab\python"
+# Empty installation, with a fresh download of the pinned Python dependencies:
+./tools/test_desktop.ps1 -Python python -CleanInstall -Screen 0
+# Repeat display/layout/shutdown checks on the other monitor:
+./tools/test_desktop.ps1 -Python python -Screen 1
+# Real process-kill, corrupt-package, file-lock and saved-data recovery tests, all isolated:
+python tools/test_update_recovery.py --python-home "$env:LOCALAPPDATA\AssetLab\python"
+```
+
+`-CleanInstall` tests an empty app installation on the current PC; it still uses that PC's installed Windows and
+WebView2 runtime. A clean Windows VM is needed to validate missing-runtime setup. Desktop tests write close timings,
+layout checks and screenshots under `local-only`, and update tests use only a loopback release server and a fake game.
+
+The custom title bar keeps Windows moving, resizing, minimize/maximize, and Snap hit targets. Drag the title bar to
+an edge or use Win+Arrow to arrange the editor alongside another window. Windows 11 can offer Snap Layouts over Maximize
+when enabled in Windows settings.
 
 Every push to `main` builds a release through GitHub Actions (`.github/workflows/release.yml`), numbered
 `<VERSION>.<run number>`.

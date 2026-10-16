@@ -38,6 +38,24 @@ jobs:
           python -B -X utf8 -m unittest discover -v -s tests *> ci-test.log
           $code = $LASTEXITCODE; Get-Content ci-test.log; exit $code
 
+      - name: Browser tests
+        shell: pwsh
+        env:
+          PYTHONPATH: src;tests
+          ASSET_LAB_REQUIRE_BROWSER: '1'
+        run: |
+          python -B -X utf8 -m unittest discover -v -s tests/browser *> ci-browser.log
+          $code = $LASTEXITCODE; Get-Content ci-browser.log; exit $code
+
+      - name: Keep browser diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-diagnostics
+          path: |
+            ci-browser.log
+            tests/browser/output/
+
       - name: Build
         shell: pwsh
         run: |

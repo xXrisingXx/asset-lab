@@ -37,7 +37,7 @@ internal static class Program {
     internal static string Workspace, Game = "";
     internal static int Port = 8753;
     internal static bool NoBrowser, Offline;
-    internal static string Smoke, Preview;
+    internal static string Smoke, Preview, DesktopSmoke;
     internal static string Url { get { return "http://127.0.0.1:" + Port; } }
     [DllImport("user32.dll")] static extern bool SetForegroundWindow(IntPtr h);
     [DllImport("user32.dll")] static extern bool ShowWindow(IntPtr h, int command);
@@ -48,18 +48,20 @@ internal static class Program {
     [STAThread] static int Main(string[] args) {
         try {
             SetProcessDPIAware();   // crisp text and shapes on scaled displays; sizes are scaled by hand
-            bool stop = false, restart = false;
+            bool stop = false, restart = false; int waitForExit = 0;
             for (int i = 0; i < args.Length; i++) {
                 switch (args[i]) {
                     case "--port": Port = int.Parse(args[++i]); break;
                     case "--workspace": Workspace = Path.GetFullPath(args[++i]); break;
                     case "--game": Game = Path.GetFullPath(args[++i]); break;
                     case "--home": Home = Path.GetFullPath(args[++i]); break;
+                    case "--wait-for-exit": waitForExit = int.Parse(args[++i]); break;
                     case "--no-browser": NoBrowser = true; break;
                     case "--offline": Offline = true; break;
                     case "--stop": stop = true; break;
                     case "--restart": restart = true; break;
                     case "--smoke-test": Smoke = Path.GetFullPath(args[++i]); NoBrowser = true; break;
+                    case "--desktop-smoke": DesktopSmoke = Smoke = Path.GetFullPath(args[++i]); break;
                     case "--preview": Preview = Path.GetFullPath(args[++i]); break;   // render the screens to PNGs and exit
                     case "--window": case "--background": break;  // older shortcuts
                     default: throw new ArgumentException("Unknown option: " + args[i]);
@@ -73,14 +75,16 @@ internal static class Program {
             if (stop) { StopServer(); return 0; }
             if (restart) StopServer();
             bool first;
-            using (Mutex mutex = new Mutex(true, "Local\\AssetLab.Controller." + Port, out first)) {
+            if (waitForExit != 0) try { using (var previous = Process.GetProcessById(waitForExit)) if (!previous.WaitForExit(30000)) throw new TimeoutException("The previous Asset Lab is still closing."); } catch (ArgumentException) { }
+            using (Mutex mutex = new Mutex(true, Smoke != null ? "Local\\AssetLab.Test." + Port : "Local\\AssetLab.Desktop", out first)) {
                 if (!first) {
-                    // Already open: bring that window forward and let it open the browser (unless Settings say not to).
-                    IntPtr h = FindWindow(null, Name + " - " + Port);
-                    if (h != IntPtr.Zero) { ShowWindow(h, 9); SetForegroundWindow(h); PostMessage(h, 0x8001, LabSettings.OpenBrowserOnStart ? new IntPtr(1) : IntPtr.Zero, IntPtr.Zero); }
+                    // Already open: bring the desktop window forward.
+                    IntPtr h = FindWindow(null, Smoke != null ? Name + " - " + Port : Name);
+                    if (h != IntPtr.Zero) { PostMessage(h, 0x8001, !NoBrowser && LabSettings.OpenBrowserOnStart ? new IntPtr(1) : IntPtr.Zero, IntPtr.Zero); }
                     return 0;
                 }
                 Application.EnableVisualStyles(); Application.SetCompatibleTextRenderingDefault(false);
+                DesktopDependencies.Register();
                 using (Loader window = new Loader()) Application.Run(window);
                 mutex.ReleaseMutex();
             }
@@ -107,9 +111,20 @@ internal static class Program {
         HttpWebRequest r = (HttpWebRequest)WebRequest.Create(Url + endpoint);
         r.Proxy = null; r.Timeout = 4000; r.ReadWriteTimeout = 4000;
         if (token != null) { r.Method = "POST"; r.Headers["X-Lab-Token"] = token; r.ContentLength = 0; }
-        using (WebResponse response = r.GetResponse())
-        using (StreamReader stream = new StreamReader(response.GetResponseStream()))
-            return Json.Deserialize<Dictionary<string, object>>(stream.ReadToEnd());
+        try {
+            using (WebResponse response = r.GetResponse())
+            using (StreamReader stream = new StreamReader(response.GetResponseStream()))
+                return Json.Deserialize<Dictionary<string, object>>(stream.ReadToEnd());
+        } catch (WebException e) {
+            if (e.Response != null) {
+                using (var response = e.Response)
+                using (var reader = new StreamReader(response.GetResponseStream())) {
+                    var error = Json.Deserialize<Dictionary<string, object>>(reader.ReadToEnd());
+                    if (error.ContainsKey("error")) throw new InvalidOperationException(Convert.ToString(error["error"]), e);
+                }
+            }
+            throw;
+        }
     }
     internal static Dictionary<string, object> Health() {
         try {
@@ -122,7 +137,15 @@ internal static class Program {
             throw;
         }
     }
-    internal static void StopServer() {
+    internal static void StopServer(Process owned = null) {
+        // Waiting for our process avoids slow TCP retries against a socket that has already closed.
+        if (owned != null) {
+            if (owned.HasExited) return;
+            var status = Request("/api/status", null);
+            Request("/api/shutdown", Convert.ToString(status["token"]));
+            if (!owned.WaitForExit(30000)) throw new TimeoutException("Asset Lab is still finishing pending work. Please try closing again shortly.");
+            return;
+        }
         var h = Health(); if (h == null) return;
         var s = Request("/api/status", null); Request("/api/shutdown", Convert.ToString(s["token"]));
         for (int i = 0; i < 120; i++) { Thread.Sleep(250); if (Health() == null) return; }
@@ -135,6 +158,43 @@ internal static class Program {
 // ----- setup: versions, downloads, Python, updates --------------------------------------------------------------
 internal static class Setup {
     internal delegate void Progress(string status, string detail, double fraction);
+    static bool updating;
+
+    static bool SafeVersion(string value) {
+        return !String.IsNullOrEmpty(value) && value != "." && value != ".." && value.All(c => Char.IsLetterOrDigit(c) || c == '.' || c == '-' || c == '_');
+    }
+    // Flush the new file before atomically publishing it. A killed updater leaves either complete version.
+    static void AtomicText(string path, string value) {
+        Directory.CreateDirectory(Path.GetDirectoryName(path));
+        string temporary = path + ".new";
+        using (var f = new FileStream(temporary, FileMode.Create, FileAccess.Write, FileShare.None)) {
+            byte[] bytes = Encoding.UTF8.GetBytes(value); f.Write(bytes, 0, bytes.Length); f.Flush(true);
+        }
+        RetryFile(() => { if (File.Exists(path)) File.Replace(temporary, path, null); else File.Move(temporary, path); });
+    }
+    // Deliberate process-kill checkpoints are enabled only for isolated smoke tests with a loopback release feed.
+    static void UpdateCheckpoint(string point) {
+        Uri feed;
+        if (!updating || Program.Smoke == null || Environment.GetEnvironmentVariable("ASSET_LAB_TEST_UPDATE_POINT") != point ||
+            !Uri.TryCreate(Environment.GetEnvironmentVariable("ASSET_LAB_RELEASES"), UriKind.Absolute, out feed) || !feed.IsLoopback) return;
+        AtomicText(Path.Combine(Program.Home, "update-checkpoint.json"), Program.Json.Serialize(new { point = point, pid = Process.GetCurrentProcess().Id }));
+        Thread.Sleep(Timeout.Infinite); // The fault harness kills this process, then starts a fresh one.
+    }
+    internal static void RecoverUpdate() {
+        string journal = Path.Combine(Program.Home, "pending-update.json");
+        if (!File.Exists(journal)) return;
+        var pending = Program.Json.Deserialize<Dictionary<string, object>>(File.ReadAllText(journal));
+        string next = Convert.ToString(pending["version"]), previous = Convert.ToString(pending["previous"]);
+        if (!SafeVersion(next) || (previous.Length > 0 && !SafeVersion(previous))) throw new InvalidDataException("Invalid update recovery version.");
+        string expected = Convert.ToString(pending["exeSha"]);
+        bool completed = (expected.Length == 0 || Sha256(Assembly.GetExecutingAssembly().Location) == expected)
+            && File.Exists(Path.Combine(Program.Home, "app", next, "src", "lab_server.py"));
+        string chosen = completed ? next : previous;
+        string pointer = Path.Combine(Program.Home, "app", "current.txt");
+        if (chosen.Length > 0) AtomicText(pointer, chosen); else if (File.Exists(pointer)) File.Delete(pointer);
+        AtomicText(Path.Combine(Program.Home, "last-update-recovery.json"), Program.Json.Serialize(new { version = chosen, completed = completed }));
+        File.Delete(journal);
+    }
 
     internal static string AppDir {
         get {
@@ -167,7 +227,7 @@ internal static class Setup {
         string file = Path.Combine(Program.Home, "app", "current.txt");
         if (!File.Exists(file)) return null;
         string v = File.ReadAllText(file).Trim();
-        return File.Exists(Path.Combine(Program.Home, "app", v, "src", "lab_server.py")) ? v : null;
+        return SafeVersion(v) && File.Exists(Path.Combine(Program.Home, "app", v, "src", "lab_server.py")) ? v : null;
     }
     internal static int Compare(string a, string b) {
         int[] x = Parts(a), y = Parts(b);
@@ -216,6 +276,7 @@ internal static class Setup {
                             while ((n = input.Read(buffer, 0, buffer.Length)) > 0) {
                                 cancel.ThrowIfCancellationRequested();
                                 output.Write(buffer, 0, n); done += n;
+                                output.Flush(); UpdateCheckpoint("download");
                                 if (clock.ElapsedMilliseconds > 250) {
                                     double speed = (done - mark) / Math.Max(0.001, clock.Elapsed.TotalSeconds);
                                     report(label, String.Format("{0} of {1} · {2}/s", Size(done), Size(total), Size((long)speed)), total > 0 ? (double)done / total : 0);
@@ -251,12 +312,27 @@ internal static class Setup {
                 if (entry.FullName.EndsWith("/")) { Directory.CreateDirectory(target); continue; }
                 Directory.CreateDirectory(Path.GetDirectoryName(target));
                 entry.ExtractToFile(target, true);
+                UpdateCheckpoint("extract");
             }
         }
     }
     static void Replace(string staging, string target) {
-        if (Directory.Exists(target)) Directory.Delete(target, true);
-        Directory.Move(staging, target);
+        string home = Path.GetFullPath(Program.Home).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+        if (!Path.GetFullPath(staging).StartsWith(home, StringComparison.OrdinalIgnoreCase) || !Path.GetFullPath(target).StartsWith(home, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException("The setup folder must stay inside Asset Lab's installation folder.");
+        string backup = target + ".previous-" + Guid.NewGuid().ToString("N");
+        if (Directory.Exists(target)) RetryFile(() => Directory.Move(target, backup));
+        try { RetryFile(() => Directory.Move(staging, target)); }
+        catch { if (Directory.Exists(backup)) RetryFile(() => Directory.Move(backup, target)); throw; }
+        if (Directory.Exists(backup)) try { Directory.Delete(backup, true); } catch (IOException) { } catch (UnauthorizedAccessException) { }
+    }
+    static void RetryFile(Action action) {
+        for (int i = 0; ; i++) {
+            try { action(); return; }
+            catch (IOException) { if (i == 19) throw; }
+            catch (UnauthorizedAccessException) { if (i == 19) throw; }
+            Thread.Sleep(300);
+        }
     }
 
     /// The lab code this exe carries, unless a same-or-newer version is already installed.
@@ -271,6 +347,7 @@ internal static class Setup {
         InstallApp(zip, embedded);
     }
     static void InstallApp(string zip, string version) {
+        if (!SafeVersion(version)) throw new InvalidDataException("Invalid release version.");
         string root = Path.Combine(Program.Home, "app"), staging = Path.Combine(root, version + ".new");
         if (Directory.Exists(staging)) Directory.Delete(staging, true);
         Extract(zip, staging);
@@ -278,7 +355,9 @@ internal static class Setup {
         File.WriteAllText(Path.Combine(staging, "VERSION"), version);
         Replace(staging, Path.Combine(root, version));
         string previous = InstalledVersion();
-        File.WriteAllText(Path.Combine(root, "current.txt"), version);
+        UpdateCheckpoint("before-pointer");
+        AtomicText(Path.Combine(root, "current.txt"), version);
+        UpdateCheckpoint("after-pointer");
         // Keep the version just replaced for a manual rollback; older ones go.
         foreach (string dir in Directory.GetDirectories(root)) {
             string name = Path.GetFileName(dir);
@@ -389,20 +468,31 @@ internal static class Setup {
     /// Back up the player's settings, install the new code, and swap this exe if the release has a newer one.
     /// Returns true when the exe itself was replaced, so the caller restarts it.
     internal static bool ApplyUpdate(Release release, Progress report, CancellationToken cancel) {
+        if (!SafeVersion(release.Version)) throw new InvalidDataException("Invalid release version.");
+        updating = true;
+        try {
         BackupData(Version);
         string zip = Path.Combine(Program.Home, "downloads", "asset-lab-" + release.Version + ".zip");
         Download(release.AppUrl, zip, release.AppSha, release.AppSize, L.T("Downloading Asset Lab") + " " + release.Version, report, cancel);
+        string self = Assembly.GetExecutingAssembly().Location;
+        bool replaceExe = release.ExeUrl != null && Sha256(self) != release.ExeSha;
+        string fresh = self + ".new";
+        // Validate BOTH packages before changing the active installation.
+        if (replaceExe) Download(release.ExeUrl, fresh, release.ExeSha, release.ExeSize, L.T("Updating the launcher"), report, cancel);
+        cancel.ThrowIfCancellationRequested();
+        AtomicText(Path.Combine(Program.Home, "pending-update.json"), Program.Json.Serialize(new {
+            version = release.Version, previous = InstalledVersion() ?? "", exeSha = replaceExe ? release.ExeSha : "" }));
         report(L.T("Installing Asset Lab") + " " + release.Version, L.T("Your workspace and edits are kept."), 1);
         InstallApp(zip, release.Version);
-        string self = Assembly.GetExecutingAssembly().Location;
-        if (release.ExeUrl == null || Sha256(self) == release.ExeSha) return false;
-        string fresh = self + ".new";
-        Download(release.ExeUrl, fresh, release.ExeSha, release.ExeSize, L.T("Updating the launcher"), report, cancel);
-        string old = self + ".old";
-        if (File.Exists(old)) File.Delete(old);
-        File.Move(self, old);   // a running exe can be renamed, not overwritten
-        File.Move(fresh, self);
-        return true;
+        if (replaceExe) {
+            // ReplaceFile preserves a runnable EXE at the original path even if the updater is killed.
+            RetryFile(() => File.Replace(fresh, self, self + ".old"));
+            UpdateCheckpoint("after-exe");
+        }
+        File.Delete(Path.Combine(Program.Home, "pending-update.json"));
+        return replaceExe;
+        } catch { RecoverUpdate(); throw; }
+        finally { updating = false; }
     }
     /// Small settings files only (the image revisions are never touched by updates): workspace state, theme history,
     /// favorites, names and removed assets, into %LOCALAPPDATA%\AssetLab\backups. The newest ten are kept.
@@ -451,7 +541,7 @@ internal static class Specs {
     internal static string Gb(long b) { return (b / (double)(1L << 30)).ToString(b >= 10L << 30 ? "0" : "0.#") + " GB"; }
 }
 // ----- the window: logo intro, setup steps, then a small running panel ------------------------------------------
-internal sealed class Loader : Form {
+internal sealed partial class Loader : Form {
     internal static int ExitCode;
     static readonly Color Bg = Color.FromArgb(16, 21, 30), Panel2 = Color.FromArgb(30, 40, 53), Line = Color.FromArgb(48, 61, 78),
         Text1 = Color.FromArgb(232, 238, 246), Muted = Color.FromArgb(146, 164, 184), Cyan = Color.FromArgb(34, 211, 238), Pink = Color.FromArgb(244, 114, 182),
@@ -472,17 +562,18 @@ internal sealed class Loader : Form {
     double intro;        // 0..1 logo pop and spin, 1..2 window grows
     bool introDone, closing, allowClose, running;
     Process child; ProcessGroup children;
+    DesktopHost desktop;
     TaskCompletionSource<bool> choice;
     Dictionary<string, object> manifest;
 
     public Loader() {
-        Text = Program.Name + " - " + Program.Port;
+        Text = Program.Smoke != null ? Program.Name + " - " + Program.Port : Program.Name;
         using (var probe = CreateGraphics()) k = probe.DpiX / 96f;
         W = S(560); H = S(356); LogoBig = S(132); LogoSmall = S(46);
         using (var s = Program.Resource("logo.png")) logo = s == null ? null : Image.FromStream(s);
         Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
         FormBorderStyle = FormBorderStyle.None; StartPosition = FormStartPosition.Manual; BackColor = Bg; ForeColor = Text1;
-        Font = new Font("Segoe UI", 10f); DoubleBuffered = true; ShowInTaskbar = true;
+        Font = new Font("Segoe UI", 10f); DoubleBuffered = true; ResizeRedraw = true; ShowInTaskbar = true;
         var screen = Screen.PrimaryScreen.WorkingArea;
         full = new Rectangle(screen.X + (screen.Width - W) / 2, screen.Y + (screen.Height - H) / 2, W, H);
         Bounds = Centered(LogoBig + S(24), LogoBig + S(24));
@@ -556,6 +647,7 @@ internal sealed class Loader : Form {
         p.AddArc(r.Right - d, r.Bottom - d, d, d, 0, 90); p.AddArc(r.X, r.Bottom - d, d, d, 90, 90); p.CloseFigure(); return p;
     }
     protected override void OnPaint(PaintEventArgs e) {
+        if (desktop != null) { PaintChrome(e.Graphics); return; }
         var g = e.Graphics; g.SmoothingMode = SmoothingMode.AntiAlias; g.InterpolationMode = InterpolationMode.HighQualityBicubic;
         if (logo == null) return;
         if (intro < 1) {
@@ -647,6 +739,7 @@ internal sealed class Loader : Form {
             if (!L.Asked && Program.Smoke == null) await ChooseLanguage();
             bool updates = LabSettings.CheckUpdates;   // Settings > General > Check for updates when Asset Lab starts
             Report(L.T(updates ? "Checking for updates…" : "Starting…"), "", -1);
+            await Task.Run(() => Setup.RecoverUpdate());
             manifest = await Task.Run(() => Setup.Manifest());
             await Task.Run(() => Setup.EnsureApp(Report));
             manifest = await Task.Run(() => Setup.Manifest());
@@ -659,7 +752,7 @@ internal sealed class Loader : Form {
                     bool newExe = await Task.Run(() => Setup.ApplyUpdate(release, Report, cancel.Token));
                     if (newExe) {
                         // The new launcher takes over with the same options; this one steps aside.
-                        Process.Start(Application.ExecutablePath, String.Join(" ", Environment.GetCommandLineArgs().Skip(1).Select(Program.Quote)));
+                        Process.Start(Application.ExecutablePath, String.Join(" ", Environment.GetCommandLineArgs().Skip(1).Select(Program.Quote)) + " --wait-for-exit " + Process.GetCurrentProcess().Id);
                         allowClose = true; Close(); return;
                     }
                     manifest = await Task.Run(() => Setup.Manifest());
@@ -678,7 +771,13 @@ internal sealed class Loader : Form {
                     await Task.Run(() => Setup.DownloadRuntime(manifest, Report, cancel.Token));
                 } else { Directory.CreateDirectory(Program.Home); File.WriteAllText(declined, DateTime.Now.ToString("s")); }
             }
-            await StartServer(LabSettings.OpenBrowserOnStart);
+            if (!Program.NoBrowser && !DesktopHost.RuntimeReady()) {
+                if (Program.Offline || Program.Smoke != null) throw new InvalidOperationException("The desktop window needs Microsoft Edge WebView2 Runtime. Install it, then reopen Asset Lab.");
+                if (!await Ask("Prepare the desktop window", "Asset Lab needs Microsoft's WebView2 Runtime. Download its small setup program from Microsoft and install the runtime?", "Install WebView2", "Exit")) { allowClose = true; Close(); return; }
+                Report("Installing the desktop runtime…", "Downloading from Microsoft and checking its signature. This may take a few minutes.", -1);
+                await Task.Run(() => DesktopHost.InstallRuntime());
+            }
+            await StartServer(Program.DesktopSmoke != null || LabSettings.OpenBrowserOnStart);
         } catch (OperationCanceledException) {
         } catch (Exception e) {
             Fail(e.Message);
@@ -701,6 +800,12 @@ internal sealed class Loader : Form {
     }
     void Fail(string message) {
         if (IsDisposed) return;
+        if (Program.Smoke != null) {
+            ExitCode = 1;
+            File.WriteAllText(Program.Smoke, Program.Json.Serialize(new { passed = false, error = message }));
+            allowClose = true; Close(); return;
+        }
+        if (desktop != null) { MessageBox.Show(this, message, Program.Name, MessageBoxButtons.OK, MessageBoxIcon.Error); return; }
         status.Text = L.T("Something went wrong"); status.ForeColor = Bad; detail.Text = message; bar.Visible = false; bar.Busy = false;
         log.Visible = true; primary.Text = L.T("Try again"); primary.Visible = true; secondary.Visible = false; ai.Visible = false;
         EventHandler retry = null; retry = delegate { primary.Click -= retry; primary.Visible = false; log.Visible = false; Run(); };
@@ -734,14 +839,10 @@ internal sealed class Loader : Form {
             if (h == null) throw new InvalidOperationException(L.T("Starting is taking longer than expected. The details are below."));
         }
         Running();
-        if (Program.Smoke != null) { await SmokeTest(); return; }
-        // Settings > General > Open the lab in your browser when it starts: when it is off, this window stays in view with
-        // its Open Asset Lab button.
+        if (Program.Smoke != null && Program.DesktopSmoke == null) { await SmokeTest(); return; }
+        if (desktop != null) { desktop.ReloadEditor(); return; }
         if (!openBrowser) return;
-        Program.OpenBrowser();
-        // Out of the way, but still in the taskbar (never the tray): click it to get Open / Stop back.
-        await Task.Delay(1200);
-        if (running && !IsDisposed) WindowState = FormWindowState.Minimized;
+        await OpenDesktop();
     }
     void Running() {
         running = true; bar.Busy = false; bar.Value = 1; bar.Visible = false;
@@ -774,7 +875,54 @@ internal sealed class Loader : Form {
         }
         menu.Show(lang, new Point(0, lang.Height));
     }
-    void OpenClick(object s, EventArgs e) { try { Program.OpenBrowser(); } catch (Exception x) { Write(x.Message); } }
+    bool openingDesktop;
+    async Task OpenDesktop() {
+        if (closing || IsDisposed || openingDesktop) return;
+        if (desktop != null) { WindowState = FormWindowState.Normal; Activate(); return; }
+        openingDesktop = true;
+        Report("Opening your workspace…", "", -1);
+        DesktopHost next = new DesktopHost { Visible = false };
+        Controls.Add(next);
+        try { await next.Open(); }
+        catch { Controls.Remove(next); next.Dispose(); throw; }
+        finally { openingDesktop = false; }
+        if (closing || IsDisposed) { next.Dispose(); return; }
+        desktop = next;
+        frame.Stop();
+        foreach (Control control in Controls) control.Visible = false;
+        TransparencyKey = Color.Empty; BackColor = Bg; Region = null;
+        FormBorderStyle = FormBorderStyle.Sizable;
+        Padding = new Padding(S(5));
+        MinimumSize = new Size(S(500), S(400));
+        int screenIndex;
+        var screen = Program.DesktopSmoke != null && int.TryParse(Environment.GetEnvironmentVariable("ASSET_LAB_TEST_SCREEN"), out screenIndex)
+            && screenIndex >= 0 && screenIndex < Screen.AllScreens.Length ? Screen.AllScreens[screenIndex] : Screen.FromControl(this);
+        var area = screen.WorkingArea;
+        MaximizedBounds = area;
+        Bounds = new Rectangle(area.X + 30, area.Y + 30, Math.Min(1600, area.Width - 60), Math.Min(1000, area.Height - 60));
+        desktop.Visible = true; desktop.BringToFront();
+        WindowState = FormWindowState.Maximized;
+        desktop.UpdateCaptionRegion();
+        if (Program.DesktopSmoke != null) {
+            TestChrome();
+            await desktop.Smoke(Program.DesktopSmoke);
+            using (var capture = new Bitmap(ClientSize.Width, ClientSize.Height)) {
+                using (var graphics = Graphics.FromImage(capture)) {
+                    PaintChrome(graphics);
+                    using (var content = Image.FromFile(Program.DesktopSmoke + ".png")) graphics.DrawImage(content, desktop.Bounds);
+                    graphics.SetClip(new Rectangle(ClientSize.Width - Padding.Right - S(144), Padding.Top, S(144), desktop.HeaderHeight));
+                    PaintChrome(graphics);
+                }
+                capture.Save(Program.DesktopSmoke + ".window.png");
+            }
+            WindowState = FormWindowState.Normal;
+            Bounds = new Rectangle(area.X, area.Y, area.Width / 2, area.Height);
+            await Task.Delay(500);
+            await desktop.Smoke(Program.DesktopSmoke + ".half");
+            Close(); // Exercise the same confirmation, hide, and shutdown path as the close button.
+        }
+    }
+    async void OpenClick(object s, EventArgs e) { try { await OpenDesktop(); } catch (Exception x) { Fail(x.Message); } }
     async void StopClick(object s, EventArgs e) { if (await Stop()) { allowClose = true; Close(); } }
     void OnServerExit(object sender, EventArgs e) {
         if (IsDisposed) return;
@@ -782,6 +930,8 @@ internal sealed class Loader : Form {
         BeginInvoke((Action)(async () => {
             if (closing || sender != child) return;
             if (code == 75) { running = false; await StartServer(false); return; }   // the lab asked for a restart with new code
+            if (code == 0) { allowClose = true; Close(); return; }
+            if (desktop != null) { MessageBox.Show(this, "The Asset Lab backend stopped. Please reopen Asset Lab.\n" + log.Text, Program.Name, MessageBoxButtons.OK, MessageBoxIcon.Error); allowClose = true; Close(); return; }
             running = false; status.Text = L.T("Asset Lab stopped"); detail.Text = code == 0 ? "" : L.T("It exited with code") + " " + code + ". " + L.T("The details are below.");
             log.Visible = code != 0; primary.Text = L.T("Start again"); primary.Visible = true; secondary.Visible = false; ai.Visible = false;
             primary.Click -= OpenClick; EventHandler again = null; again = async delegate { primary.Click -= again; log.Visible = false; await StartServer(LabSettings.OpenBrowserOnStart); }; primary.Click += again;
@@ -791,27 +941,48 @@ internal sealed class Loader : Form {
     async Task<bool> Stop() {
         status.Text = L.T("Stopping after pending work…"); primary.Visible = secondary.Visible = ai.Visible = false;
         try {
-            await Task.Run(() => Program.StopServer());
-            if (child != null && !child.HasExited) await Task.Run(() => child.WaitForExit(30000));
+            await Task.Run(() => Program.StopServer(child));
             running = false; return true;
-        } catch (Exception e) { Fail(e.Message); return false; }
+        } catch (Exception e) { Show(); Activate(); Fail(e.Message); return false; }
     }
     async void OnClosing(object sender, FormClosingEventArgs e) {
         if (allowClose) return;
         e.Cancel = true; if (closing) return; closing = true;
+        var clock = Stopwatch.StartNew();
+        if (desktop != null && !await desktop.CanClose()) { closing = false; return; }
+        long confirmed = clock.ElapsedMilliseconds;
+        string monitor = Screen.FromControl(this).DeviceName;
+        Hide(); // Keep the process alive for pending saves, but dismiss the window immediately.
+        long hidden = clock.ElapsedMilliseconds;
         cancel.Cancel();
         if (running || (child != null && !child.HasExited)) { if (!await Stop()) { closing = false; return; } }
+        var timing = new { confirmedMs = confirmed, hiddenMs = hidden, hideAfterConfirmationMs = hidden - confirmed,
+            backendStoppedMs = clock.ElapsedMilliseconds, monitor = monitor, stopped = child == null || child.HasExited };
+        try {
+            Directory.CreateDirectory(Program.Home);
+            File.WriteAllText(Path.Combine(Program.Home, "close-timing.json"), Program.Json.Serialize(timing));
+            if (Program.DesktopSmoke != null) File.WriteAllText(Program.DesktopSmoke + ".shutdown.json", Program.Json.Serialize(timing));
+        } catch (IOException) { } catch (UnauthorizedAccessException) { }
         allowClose = true; Close();
     }
     async Task SmokeTest() {
+        closing = true; // Let this test finish recording shutdown before the exit event closes the form.
         var h = await Task.Run(() => Program.Health());
         bool ok = h != null; await Stop();
         var after = await Task.Run(() => Program.Health());
-        File.WriteAllText(Program.Smoke, Program.Json.Serialize(new { passed = ok && after == null, version = Setup.Version, app = Setup.AppDir, python = Setup.PythonExe(), title = Text }));
+        File.WriteAllText(Program.Smoke, Program.Json.Serialize(new { passed = ok && after == null, launcherPid = Process.GetCurrentProcess().Id, version = Setup.Version, app = Setup.AppDir, python = Setup.PythonExe(), title = Text }));
         allowClose = true; Close();
     }
     protected override void WndProc(ref Message message) {
-        if (message.Msg == 0x8001) { bool open = message.WParam != IntPtr.Zero; if (running && open) OpenClick(null, null); return; }
+        if (desktop != null && ChromeMessage(ref message)) return;
+        if (message.Msg == 0x8001) {
+            if (!closing) {
+                Show(); if (WindowState == FormWindowState.Minimized) WindowState = FormWindowState.Normal;
+                Activate();
+                if (running && message.WParam != IntPtr.Zero) OpenClick(null, null);
+            }
+            return;
+        }
         base.WndProc(ref message);
     }
 }
@@ -827,7 +998,7 @@ internal static class LabSettings {
     }
     internal static bool Flag(string key, bool fallback) { object v; return Read().TryGetValue(key, out v) && v is bool ? (bool)v : fallback; }
     internal static string Text(string key) { object v; return Read().TryGetValue(key, out v) ? v as string : null; }
-    // General > Open the lab in your browser when it starts (--no-browser always wins).
+    // Historical settings key retained for compatibility; now opens the desktop editor.
     internal static bool OpenBrowserOnStart { get { return !Program.NoBrowser && Flag("open_browser", true); } }
     // General > Check for updates when Asset Lab starts (tests that force an update check anyway set ASSET_LAB_AUTO_UPDATE).
     internal static bool CheckUpdates { get { return Flag("check_updates", true) || Environment.GetEnvironmentVariable("ASSET_LAB_AUTO_UPDATE") == "1"; } }

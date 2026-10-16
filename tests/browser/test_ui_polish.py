@@ -44,4 +44,8 @@ class UiPolish(EditorTestCase):
         b = self.browser
         self.assertEqual(b.eval("getComputedStyle(document.body).userSelect"), 'none')
         self.assertEqual(b.eval("getComputedStyle(document.getElementById('search')).userSelect"), 'text')
-        self.assertFalse(b.eval("[...document.querySelectorAll('#edMenubar [data-menu]')].some(m => m.textContent.trim() === 'Filter')"))
+        # No empty menus: every menu in the menubar (Filter only once a module adds filters) has commands in it.
+        tops = b.eval("[...document.querySelectorAll('#edMenubar [data-menu]')].map(m => m.dataset.menu)")
+        paths = [m['path'] for m in b.eval('Ed.menu.list()')]
+        for top in tops: self.assertTrue(any(p.startswith(top + '/') for p in paths), f'the {top} menu has commands')
+        self.assertEqual('Filter' in tops, any(p.startswith('Filter/') for p in paths))

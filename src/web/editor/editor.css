@@ -84,7 +84,7 @@
 /* panel dock with Layers and History */
 .ed-dock{margin:14px 0 4px;border:1px solid var(--line);border-radius:8px;background:#141b25;display:flex;flex-direction:column;overflow:hidden}
 .ed-tabs{display:flex;border-bottom:1px solid var(--line);background:#111821;overflow-x:auto;scrollbar-width:none}
-.ed-tab{border:0;border-radius:0;background:transparent;padding:7px 12px;font-size:11px;color:var(--muted);border-bottom:2px solid transparent;flex:none}
+.ed-tab{border:0;border-radius:0;background:transparent;padding:7px 9px;font-size:11px;color:var(--muted);border-bottom:2px solid transparent;flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
 .ed-tab:hover{background:#1c2633}
 .ed-tab[aria-selected=true]{color:var(--text);border-bottom-color:var(--cyan);background:#18212d}
 .ed-panel{padding:8px}
@@ -153,13 +153,13 @@
 .mod-tray.collapsed .section-label{white-space:nowrap}
 .mod-tray.collapsed .mod-heading button:not(.tray-toggle){padding:4px 10px}
 
-/* Focus mode: the canvas gets the library's and the mod tray's room */
-body.ed-focus-mode .library,body.ed-focus-mode .mod-tray{display:none}
-body.ed-focus-mode main{grid-template-columns:minmax(400px,1fr) 292px}
+/* Focus mode: the canvas gets the library's, the mod tray's and the title bar's room, and Edit & Inspect folds to its
+   strip (app.js). Column widths come from --lib / --ins (style.css), so a folded panel is as narrow here as anywhere. */
+body.ed-focus-mode .library,body.ed-focus-mode .mod-tray,body.ed-focus-mode .document-bar{display:none}
+body.ed-focus-mode main{grid-template-columns:minmax(400px,1fr) var(--ins)}
 /* a sound open in the studio (audio.js) has no use for image tools */
 .studio:has(.viewport.ae-open) :is(.ed-optionsbar,.ed-tools){display:none}
 
-@media(max-width:1440px){main{grid-template-columns:252px minmax(400px,1fr) 280px}body.ed-focus-mode main{grid-template-columns:minmax(400px,1fr) 280px}}
-@media(max-width:1200px){main{grid-template-columns:236px minmax(340px,1fr) 254px}body.ed-focus-mode main{grid-template-columns:minmax(340px,1fr) 254px}.document-bar{padding:8px 12px}.view-controls .segmented button{padding:4px 5px}}
+@media(max-width:1200px){body.ed-focus-mode main{grid-template-columns:minmax(340px,1fr) var(--ins)}.document-bar{padding:8px 12px}.view-controls .segmented button{padding:4px 5px}}
 @media(max-width:920px){body.ed-focus-mode main{grid-template-columns:minmax(0,1fr)}.ed-dock{margin:0}.inspector>.ed-dock{grid-column:1/-1}}
-@media(min-width:1500px){body.theme-on main{grid-template-columns:240px minmax(400px,1fr) 270px}body.theme-on.ed-focus-mode main{grid-template-columns:minmax(400px,1fr) 270px}}
+@media(min-width:1500px){body.theme-on:not(.library-min){--lib:240px}body.theme-on:not(.inspector-min){--ins:270px}}

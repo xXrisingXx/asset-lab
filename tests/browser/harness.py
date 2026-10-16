@@ -48,6 +48,8 @@ EDGE_PATHS = (os.environ.get('ASSET_LAB_EDGE'), r'C:\Program Files (x86)\Microso
 ALT, CTRL, META, SHIFT = 1, 2, 4, 8                    # DevTools modifier bits; combine with |
 CHUNK = 6 << 20                                        # bytes of pixels per DevTools message
 QUIET = 0x08000000 if os.name == 'nt' else 0           # CREATE_NO_WINDOW
+# The editor's feature modules (src/web/editor/<name>.js); EditorTestCase.feature_modules = False serves them empty.
+FEATURE_MODULES = ('select', 'paint', 'fill', 'transform', 'adjust', 'filters', 'styles', 'layers', 'color')
 
 
 class JSError(RuntimeError):
@@ -167,6 +169,8 @@ def output_path(name):
 def find_edge():
     for p in EDGE_PATHS:
         if p and Path(p).is_file(): return p
+    if os.environ.get('ASSET_LAB_REQUIRE_BROWSER') == '1':
+        raise RuntimeError('Release tests require Microsoft Edge; set ASSET_LAB_EDGE to msedge.exe')
     raise unittest.SkipTest('Microsoft Edge was not found; set ASSET_LAB_EDGE to the path of msedge.exe')
 
 
@@ -537,6 +541,7 @@ class Browser:
         self._id, self._urls, self._buttons, self._held, self._down, self._pos = 0, {}, 0, 0, set(), (0.0, 0.0)
         edge = find_edge()
         self.profile = Path(tempfile.mkdtemp(prefix='assetlab-edge-'))
+        self.startup_log = tempfile.TemporaryFile()
         args = [edge, '--headless=new', '--remote-debugging-port=0', f'--user-data-dir={self.profile}', '--no-first-run',
                 '--no-default-browser-check', '--disable-extensions', '--hide-scrollbars', '--force-device-scale-factor=1',
                 f'--window-size={width},{height}', '--disable-background-networking', '--disable-background-timer-throttling',
@@ -544,8 +549,8 @@ class Browser:
                 '--disable-default-apps', '--disable-sync', '--mute-audio', '--disable-features=Translate,msEdgeTranslate,AutofillServerCommunication']
         if not gpu: args += ['--use-angle=swiftshader', '--enable-unsafe-swiftshader']  # the same pixels on every PC
         try:
-            self.process = adopt(subprocess.Popen(args + ['about:blank'], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
-                                                  stderr=subprocess.DEVNULL, creationflags=QUIET))
+            self.process = adopt(subprocess.Popen(args + ['--enable-logging=stderr', 'about:blank'], stdin=subprocess.DEVNULL,
+                                                  stdout=self.startup_log, stderr=self.startup_log, creationflags=QUIET))
             self.port = self._devtools_port(timeout)
             pages = [t for t in http_json(f'http://127.0.0.1:{self.port}/json/list') if t.get('type') == 'page']
             self.ws = DevToolsSocket(pages[0]['webSocketDebuggerUrl'], timeout)
@@ -564,13 +569,23 @@ class Browser:
         """Edge picks a free port itself (--remote-debugging-port=0) and writes it into DevToolsActivePort."""
         marker, deadline = self.profile / 'DevToolsActivePort', time.monotonic() + timeout
         while time.monotonic() < deadline:
-            if self.process.poll() is not None: raise RuntimeError(f'Edge exited at start (code {self.process.returncode})')
+            # Edge's update/launcher process can exit successfully before its child
+            # browser writes DevToolsActivePort. Only a nonzero exit is a failure.
+            if self.process.poll() not in (None, 0):
+                raise RuntimeError(f'Edge exited at start (code {self.process.returncode}). {self.startup_diagnostics()}')
             with contextlib.suppress(OSError, ValueError, IndexError):
                 port = int(marker.read_text().split()[0])
                 http_json(f'http://127.0.0.1:{port}/json/version', timeout=2)
                 return port
             time.sleep(0.05)
-        raise RuntimeError('Edge did not open its DevTools port in time')
+        raise RuntimeError('Edge did not open its DevTools port in time. ' + self.startup_diagnostics())
+
+    def startup_diagnostics(self):
+        self.startup_log.seek(0)
+        text = self.startup_log.read().decode('utf-8', 'replace')[-8000:]
+        path = output_path('edge-startup.log')
+        path.write_text(text or 'Edge produced no startup diagnostics.', encoding='utf-8')
+        return f'Log: {path}\n{text}'
 
     # ----- protocol ------------------------------------------------------------------------------------------------
     def call(self, method, _timeout=60, **params):
@@ -633,6 +648,16 @@ class Browser:
             accept = p.get('type') == 'beforeunload' or self.accept_dialogs
             self.dialogs.append(dict(type=p.get('type'), message=p.get('message', ''), accepted=accept))
             self._send('Page.handleJavaScriptDialog', accept=accept)
+
+        elif method == 'Fetch.requestPaused':
+            body = base64.b64encode(b"'use strict';// stubbed by the test harness: the editor core is tested alone\n").decode()
+            self._send('Fetch.fulfillRequest', requestId=p['requestId'], responseCode=200, body=body,
+                       responseHeaders=[{'name': 'Content-Type', 'value': 'text/javascript; charset=utf-8'}, {'name': 'Cache-Control', 'value': 'no-store'}])
+
+    def stub_editor_modules(self, names=FEATURE_MODULES):
+        """Serve editor/<name>.js of the feature modules as empty scripts from now on (reloads included), so a test of the
+        editor core sees the engine and shell alone, as they were written to work without any module."""
+        self.call('Fetch.enable', patterns=[{'urlPattern': f'*/editor/{n}.js', 'requestStage': 'Request'} for n in names])
 
     def clear_errors(self):
         self.pump()
@@ -1012,6 +1037,7 @@ class Browser:
     def close(self):
         if self.ws: self.ws.close()
         kill_tree(self.process)
+        if getattr(self, 'startup_log', None): self.startup_log.close()
         if self.keep: print(f'[browser tests] kept the Edge profile in {self.profile}', file=sys.stderr)
         else: remove_tree(self.profile)
         self.ws = None
@@ -1031,6 +1057,7 @@ class EditorTestCase(unittest.TestCase):
     fresh_page = False         # True: reload the lab before every test (slower, fully isolated)
     check_errors = True        # tearDown fails a test that caused browser errors it did not check itself
     allowed_errors = ()        # substrings of errors every check in this class ignores
+    feature_modules = True     # False: the editor's feature modules are served empty (tests of the core alone)
     server = browser = None
 
     @classmethod
@@ -1039,6 +1066,7 @@ class EditorTestCase(unittest.TestCase):
         try:
             cls.server = LabServer(cls.game_maker)
             cls.browser = Browser(*cls.viewport)
+            if not cls.feature_modules: cls.browser.stub_editor_modules()
             if cls.open_on_start: cls.browser.open_lab(cls.server)
         except BaseException:
             cls._shutdown()
@@ -1060,6 +1088,11 @@ class EditorTestCase(unittest.TestCase):
         # Theme AI keeps its chat across reloads; each test starts with none (a test that wants one writes it itself).
         try: self.browser.eval("localStorage.removeItem('lab-theme-chat'); localStorage.removeItem('lab-theme-open')")
         except Exception: pass
+        # Chats are saved per build on the server (builds.py): those of earlier tests go too.
+        try:
+            self.browser.eval("window.LabThemeChat && LabThemeChat.reset(); true")   # the open page must not save it again
+            for chat in self.server.get('/api/chats')['chats']: self.server.post('/api/chat-delete', {'id': chat['id']})
+        except Exception: pass
         if self.fresh_page: self.browser.open_lab(self.server)
         self.browser.pump()
         self._error_mark = self.browser.seq
@@ -1071,12 +1104,15 @@ class EditorTestCase(unittest.TestCase):
         super().tearDown()
 
     def run(self, result=None):
-        if result is None or not KEEP: return super().run(result)
+        if result is None: return super().run(result)
         before = len(result.failures) + len(result.errors)
         out = super().run(result)
         if len(result.failures) + len(result.errors) > before and self.browser:
             with contextlib.suppress(Exception):
                 print(f'[browser tests] failure screenshot: {self.browser.screenshot(f"failure-{self.id()}.png")}', file=sys.stderr)
+            with contextlib.suppress(Exception):
+                state = self.browser.eval("JSON.stringify({visibility:document.visibilityState,audio:window.LabAudio?LabAudio.state():null,focus:document.activeElement?.outerHTML?.slice(0,500)})")
+                print(f'[browser tests] failure state: {state}', file=sys.stderr)
         return out
 
     def assertNoBrowserErrors(self, allow=(), everything=False):

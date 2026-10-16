@@ -50,6 +50,11 @@ times.append('Start',start,'End',end,length,now);
 const transport=el('div','ae-transport'),playBtn=btn('▶ Play','ae-play');playBtn.id='aePlay';
 const ab=el('div','segmented ae-ab'),abGame=btn('Game’s sound','','Listen to the game’s own sound'),abNew=btn('Yours','active','Listen to your new sound');
 abGame.dataset.mode='orig';abNew.dataset.mode='new';ab.append(abGame,abNew);ab.setAttribute('aria-label','Compare: the game’s sound or yours');
+// Loop: both players (the game's sound and yours) start over at the end until stopped. Remembered between visits.
+const loopBtn=btn('⟲ Loop','ae-loop','Play the sound again and again until you stop it');loopBtn.id='aeLoop';
+function setLoop(on){A.loop=!!on;orig.loop=play.loop=A.loop;loopBtn.classList.toggle('active',A.loop);loopBtn.setAttribute('aria-pressed',String(A.loop));
+  try{localStorage.setItem('lab-audio-loop',A.loop?'1':'');}catch(e){}}
+loopBtn.onclick=()=>setLoop(!A.loop);badge.before(loopBtn);   // beside the game's sound, so it is there before you pick your own
 const working=el('span','ae-note');working.id='aeWorking';transport.append(playBtn,ab,working);
 const controls=el('div','ae-controls');
 function slider(label,id,min,max,step){const l=el('label'),head=el('span','',label),out=el('output'),r=el('input');r.type='range';r.id=id;r.min=min;r.max=max;r.step=step;head.append(out);l.append(head,r);controls.append(l);return [r,out,head.firstChild];}
@@ -218,7 +223,15 @@ async function swap(){   // settings changed while your sound plays: keep playin
   if(A.playing!=='new')return;const moment=A.playStart+play.currentTime,p=await preview();if(!p||A.playing!=='new')return;
   const from=moment-A.set.start,len=A.set.end-A.set.start;play.src=p.url;play.currentTime=from>=0&&from<len-0.05?from:0;A.playStart=A.set.start;await play.play().catch(()=>{});}
 orig.onended=play.onended=()=>{A.playing=null;render();};
+try{setLoop(!!localStorage.getItem('lab-audio-loop'));}catch(e){setLoop(false);}
 gamePlay.onclick=()=>{if(A.playing==='orig'){stop();return;}playSide('orig').catch(e=>problem(e.message));};
+// Right-click on a sound: play or stop it, and loop. (The other entries, such as Name…, come from their own modules.)
+{const menu=$('contextMenu'),entry=(action,text)=>{const b=el('button','',text);b.dataset.action=action;b.type='button';menu.prepend(b);return b;};
+ const loopItem=entry('audio-loop','Loop'),playItem=entry('audio-play','Play the game’s sound');
+ new MutationObserver(()=>{if(menu.hidden)return;const sound=S.asset?.kind==='audio';playItem.hidden=loopItem.hidden=!sound;
+   playItem.textContent=A.playing?'Stop':'Play the game’s sound';loopItem.textContent=A.loop?'✓ Loop':'Loop';}).observe(menu,{attributes:true,attributeFilter:['hidden']});
+ menu.addEventListener('click',e=>{const a=e.target.dataset.action;if(a==='audio-loop')setLoop(!A.loop);
+   if(a==='audio-play'){if(A.playing)stop();else playSide('orig').catch(err=>problem(err.message));}});}
 playBtn.onclick=()=>{if(A.playing){stop();return;}playSide(A.mode).catch(e=>problem(e.message));};
 ab.onclick=e=>{const b=e.target.closest('[data-mode]');if(!b||b.disabled)return;const mode=b.dataset.mode;
   if(A.playing&&A.playing!==mode){const t=A.playing==='orig'?orig.currentTime:play.currentTime;playSide(mode,t).catch(err=>problem(err.message));return;}
@@ -315,5 +328,5 @@ function sync(){if(A.seen)return;const a=$('audio'),host=$('nonvisual');if(!a||!
 const watch=new MutationObserver(sync);for(const id of ['audio','nonvisual']){const n=$(id);if(n)watch.observe(n,{attributes:true,attributeFilter:['src','hidden']});}
 // For tests and debugging: the editor's state, read-only.
 window.LabAudio={state:()=>({key:A.key,source:A.src&&A.src.id,set:A.set&&{...A.set},saved:!!A.src&&keyOf()===A.saved,playing:A.playing,mode:A.mode,preview:!!(A.prev&&A.prev.key===keyOf()),
-  report:A.report,job:A.job&&A.job.id,time:A.playing==='new'?play.currentTime:A.playing==='orig'?orig.currentTime:0,visible:!root.hidden,edit:A.info&&A.info.edit})};
+  report:A.report,job:A.job&&A.job.id,loop:!!A.loop,time:A.playing==='new'?play.currentTime:A.playing==='orig'?orig.currentTime:0,visible:!root.hidden,edit:A.info&&A.info.edit})};
 })();

@@ -1,1 +1,22 @@
-/* Styles for editor/styles.js (Layer styles). Empty for now. */
+/* Layer styles (editor/styles.js): the Layer Style dialog and the fx badge. */
+.ed-fx-dialog{width:min(640px,96vw);max-width:640px}
+/* the effect list grows to its longest name (German, French) up to 212px; longer names wrap */
+.ed-fx-body{display:grid;grid-template-columns:minmax(164px,max-content) minmax(0,1fr);gap:16px;min-height:318px}
+.ed-fx-list{max-width:212px;display:flex;flex-direction:column;gap:1px;align-self:start;padding:4px;border:1px solid var(--line);border-radius:6px;background:#10161f}
+.ed-fx-item{display:flex;align-items:center;gap:7px;padding:0 6px;border-radius:4px;min-height:30px}
+.ed-fx-item[data-fx=blending]{padding-left:9px;margin-bottom:3px;border-bottom:1px solid var(--line);border-radius:4px 4px 0 0}
+.ed-fx-item:hover{background:#18222e}
+.ed-fx-item.selected{background:#24394a}
+.ed-fx-item input{margin:0;flex:none}
+.ed-fx-name{flex:1;min-width:0;border:0;background:transparent;text-align:left;padding:6px 2px;font-size:12px;line-height:1.25;color:var(--text);white-space:normal;overflow-wrap:anywhere}
+.ed-fx-name:hover{background:transparent}
+.ed-fx-item.selected .ed-fx-name{color:var(--cyan)}
+.ed-fx-pane{min-width:0;display:flex;flex-direction:column;gap:12px}
+.ed-fx-head{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:26px}
+.ed-fx-head h3{margin:0;font-size:13px}
+.ed-fx-reset{padding:3px 9px;font-size:11px}
+.ed-fx-fields{display:flex;flex-direction:column;gap:10px}
+.ed-fx-dialog .ed-field-label{min-width:86px}
+.ed-fx-grad2{display:flex;align-items:center;gap:6px}
+.ed-fx-grad2-arrow{color:var(--muted)}
+.ed-fx-badge{font-style:italic;font-weight:700;font-size:10px;color:#9fb3c6;letter-spacing:.02em}

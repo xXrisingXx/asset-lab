@@ -13,11 +13,13 @@ stays until you press Update Mitosis or Restore.
     saved-builds/<id>/chats/<cid>.json its Theme AI chats: {id, title, updated, entries, history}
 """
 import json
+import base64
+import copy
 import re
 import shutil
 import time
 import uuid
-from lab_core import atomic_json, read_json
+from lab_core import atomic_bytes, atomic_json, read_json
 
 KEYS = {'edits': dict, 'staged': list, 'palette': dict, 'hide': list, 'fonts': dict, 'audio': dict}
 FILES = ('themes.json',)          # workspace files that belong to the active build
@@ -41,7 +43,9 @@ class Builds:
         self.lab = lab
         self.folder = lab.root / 'saved-builds'
         self.index_file = self.folder / 'index.json'
+        self.switch_file = self.folder / 'pending-switch.json'
         with lab.lock:
+            self.recover_switch()
             index = read_json(self.index_file, None)
             if not isinstance(index, dict) or not index.get('builds'):
                 # The work you already have becomes your first build.
@@ -49,6 +53,28 @@ class Builds:
                 index = dict(active=first['id'], installed=first['id'] if lab.active() else '', builds=[first])
                 self.write(index)
             self.index = index
+
+    def recover_switch(self):
+        """Roll back an uncommitted switch, including after process termination.
+
+        The journal is removed only after all workspace files and the index agree.
+        Restoring it is idempotent: another interruption can safely retry it.
+        """
+        if not self.switch_file.exists(): return
+        saved = read_json(self.switch_file)
+        self.lab._build_recovery_required = True
+        for name in FILES:
+            data = saved['files'][name]
+            path = self.lab.root / name
+            if data is None: path.unlink(missing_ok=True)
+            else: atomic_bytes(path, base64.b64decode(data, validate=True))
+        atomic_json(self.lab.state_path, saved['state'])
+        atomic_json(self.index_file, saved['index'])
+        self.lab.state = saved['state']
+        self.index = saved['index']
+        self.lab._thumbs.clear()
+        self.switch_file.unlink()
+        self.lab._build_recovery_required = False
 
     # ----- the list -----------------------------------------------------------------------------------------
     @staticmethod
@@ -95,7 +121,7 @@ class Builds:
         atomic_json(self.folder / bid / 'state.json', part)
         for name in FILES:
             src = self.lab.root / name
-            if src.is_file(): shutil.copyfile(src, self.folder / bid / name)
+            if src.is_file(): atomic_bytes(self.folder / bid / name, src.read_bytes())
             else: (self.folder / bid / name).unlink(missing_ok=True)
         self.active()['updated'] = time.time()
 
@@ -105,20 +131,32 @@ class Builds:
             self.lab.state[k] = value if isinstance(value, kind) else kind()
         for name in FILES:
             saved = self.folder / bid / name
-            if saved.is_file(): shutil.copyfile(saved, self.lab.root / name)
+            if saved.is_file(): atomic_bytes(self.lab.root / name, saved.read_bytes())
             else: (self.lab.root / name).unlink(missing_ok=True)
         self.lab.persist()
         self.lab._thumbs.clear()
 
     def switch(self, bid):
         with self.lab.lock:
+            self.recover_switch()
             target = self.entry(bid)
             if bid == self.index['active']: return self.listing()
             self.store_active()
-            self.load(bid, read_json(self.folder / bid / 'state.json', {}) or {})
-            self.index['active'] = bid
-            target['updated'] = time.time()
-            self.write()
+            part = read_json(self.folder / bid / 'state.json')
+            if not isinstance(part, dict): raise ValueError('That build has no saved state. The current build was kept.')
+            journal = dict(state=copy.deepcopy(self.lab.state), index=copy.deepcopy(self.index), files={
+                name: base64.b64encode((self.lab.root / name).read_bytes()).decode('ascii')
+                if (self.lab.root / name).is_file() else None for name in FILES})
+            atomic_json(self.switch_file, journal)
+            try:
+                self.load(bid, part)
+                self.index['active'] = bid
+                target['updated'] = time.time()
+                self.write()
+                self.switch_file.unlink()  # commit point
+            except Exception:
+                self.recover_switch()
+                raise
             return self.listing()
 
     def create(self, name='', copy_of=''):

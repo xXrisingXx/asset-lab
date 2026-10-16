@@ -50,6 +50,17 @@ dialog.settings:not([open]){display:none}
 .settings-row button.danger{border-color:#7a4a40;color:#ffb3a3}.settings-row button.danger:hover{background:#3a2724}
 .settings-path{font-family:Consolas,monospace;font-size:11px;color:#b9c7d6;overflow-wrap:anywhere;user-select:text}
 /* storage, privacy and about */
+@font-face{font-family:NovuBlackletter;src:url('/fonts/UnifrakturCook-Bold.ttf') format('truetype');font-weight:700;font-style:normal;font-display:swap}
+.creator-credit{display:flex;align-items:center;justify-content:center;gap:24px;min-height:150px;padding:24px 20px 14px;margin:4px 0 24px;border:1px solid #54303b;border-radius:14px;background:radial-gradient(ellipse at 65% 55%,#40132188,transparent 65%),#10151d;overflow:hidden}
+.creator-byline{color:var(--muted);font-size:12px;letter-spacing:.16em;text-transform:uppercase}
+.creator-signature{display:inline-flex;padding-top:18px;color:#ff405a;font:700 58px/1 NovuBlackletter,Georgia,serif;text-shadow:0 0 7px #ff244c88,0 0 22px #f0163855}
+.creator-letter{display:inline-block;position:relative;animation:novu-letter 4.8s ease-in-out infinite}
+.creator-letter:nth-child(2){animation-delay:-3.6s}.creator-letter:nth-child(3){animation-delay:-2.4s}.creator-letter:nth-child(4){animation-delay:-1.2s}
+.creator-crown{position:absolute;width:43px;height:31px;left:-7px;top:-25px;transform:rotate(-16deg);filter:drop-shadow(0 0 5px #ff264c99);animation:novu-crown 5.6s ease-in-out infinite}
+@keyframes novu-letter{0%,100%{transform:translateY(0);color:#ff405a;text-shadow:0 0 7px #ff244c88,0 0 22px #f0163855}50%{transform:translateY(-3px);color:#ff8795;text-shadow:0 0 10px #ff244cbb,0 0 26px #f0163877}}
+@keyframes novu-crown{0%,100%{transform:translateY(0) rotate(-16deg)}50%{transform:translateY(-2px) rotate(-10deg)}}
+@media(prefers-reduced-motion:reduce){.creator-letter,.creator-crown{animation:none}}
+@media(max-width:460px){.creator-credit{gap:16px;padding-inline:12px}.creator-signature{font-size:50px}.creator-byline{font-size:10px}}
 .settings-usage{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0 4px}
 .settings-usage>div{background:#1b2430;border:1px solid var(--line);border-radius:8px;padding:9px 11px;min-width:0}
 .settings-usage small{display:block;font-size:10.5px;color:var(--muted)}.settings-usage b{display:block;font-size:17px;font-weight:650;margin:2px 0}

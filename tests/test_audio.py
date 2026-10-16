@@ -681,6 +681,38 @@ class Links(unittest.TestCase):
 
 
 class HelperInstall(unittest.TestCase):
+    def test_unpack_retries_windows_access_denied(self):
+        self.tools.mkdir()
+        wheel = self.root / 'helper.whl'
+        wheel.write_bytes(self.files['/av-19.0.1-cp312-abi3-win_amd64.whl'])
+        replace = audio.os.replace
+        calls = []
+        def locked(source, target):
+            calls.append((source, target))
+            if len(calls) < 4: raise PermissionError(5, 'Access is denied')
+            return replace(source, target)
+        with patch.object(audio.os, 'replace', side_effect=locked), patch.object(audio.time, 'sleep'):
+            audio.unpack(wheel, self.tools, 'pylib')
+        self.assertEqual(len(calls), 4)
+        self.assertTrue((self.tools / 'pylib' / 'av' / '__init__.py').is_file())
+
+    def test_unpack_persistent_lock_preserves_old_install_and_download(self):
+        target = self.tools / 'pylib'
+        target.mkdir(parents=True)
+        (target / 'old.txt').write_text('keep')
+        wheel = self.root / 'helper.whl'
+        wheel.write_bytes(self.files['/av-19.0.1-cp312-abi3-win_amd64.whl'])
+        replace = audio.os.replace
+        def locked(source, dest):
+            if str(source).endswith('.new'): raise PermissionError(5, 'Access is denied')
+            return replace(source, dest)
+        with patch.object(audio.os, 'replace', side_effect=locked), patch.object(audio.time, 'sleep'):
+            with self.assertRaises(AudioError) as error: audio.unpack(wheel, self.tools, 'pylib')
+        self.assertEqual(error.exception.code, 'helper_locked')
+        self.assertEqual((target / 'old.txt').read_text(), 'keep')
+        self.assertTrue(wheel.is_file())
+        self.assertFalse(list(self.tools.glob('*.new')))
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name)

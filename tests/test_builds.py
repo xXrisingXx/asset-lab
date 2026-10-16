@@ -2,6 +2,8 @@ from PIL import Image
 from builds import Builds
 from lab_core import Lab, png
 from test_theme import Base
+from unittest.mock import patch
+import json
 
 
 class BuildTests(Base):
@@ -79,6 +81,77 @@ class BuildTests(Base):
         listing = self.builds.delete(first)
         self.assertEqual([b['name'] for b in listing['builds']], ['Other'])
         with self.assertRaises(ValueError): self.builds.switch(first)
+
+    def switch_fixture(self):
+        key = self.key('icon-a')
+        first = self.builds.index['active']
+        self.paint(key, (255, 0, 0, 255))
+        (self.lab.root / 'themes.json').write_text('{"batches": ["red"]}')
+        self.builds.create('Blue')
+        second = self.builds.index['active']
+        self.paint(key, (0, 0, 255, 255))
+        (self.lab.root / 'themes.json').write_text('{"batches": ["blue"]}')
+        self.builds.switch(first)
+        return key, first, second
+
+    def assert_red_recovered(self, key, first):
+        again = Lab(self.game, self.root / 'workspace', self.root / 'ledgers', process_check=lambda: [])
+        builds = Builds(again)
+        self.assertEqual(builds.index['active'], first)
+        self.assertEqual(again.image(key).getpixel((0, 0)), (255, 0, 0, 255))
+        self.assertEqual(json.loads((again.root / 'themes.json').read_text()), {'batches': ['red']})
+        self.assertFalse(builds.switch_file.exists())
+        return again, builds
+
+    def test_failed_index_write_rolls_back_without_restart(self):
+        key, first, second = self.switch_fixture()
+        with patch.object(self.builds, 'write', side_effect=OSError('disk failure')):
+            with self.assertRaises(OSError): self.builds.switch(second)
+        self.assertEqual(self.builds.index['active'], first)
+        self.assertEqual(self.lab.image(key).getpixel((0, 0)), (255, 0, 0, 255))
+        self.assert_red_recovered(key, first)
+        self.builds.switch(second)
+        self.assertEqual(self.lab.image(key).getpixel((0, 0)), (0, 0, 255, 255))
+
+    def test_process_exit_during_each_switch_stage_recovers_on_startup(self):
+        key, first, second = self.switch_fixture()
+        class PowerLoss(BaseException): pass
+        for stage in ('state', 'index', 'commit'):
+            with self.subTest(stage=stage):
+                if stage == 'state':
+                    original = self.lab.persist
+                    def stop(): original(); raise PowerLoss()
+                    hook = patch.object(self.lab, 'persist', side_effect=stop)
+                elif stage == 'index':
+                    hook = patch.object(self.builds, 'write', side_effect=PowerLoss())
+                else:
+                    from pathlib import Path
+                    unlink = Path.unlink
+                    def stop_unlink(path, *args, **kwargs):
+                        if path == self.builds.switch_file: raise PowerLoss()
+                        return unlink(path, *args, **kwargs)
+                    hook = patch.object(Path, 'unlink', stop_unlink)
+                with hook:
+                    with self.assertRaises(PowerLoss): self.builds.switch(second)
+                self.lab, self.builds = self.assert_red_recovered(key, first)
+
+    def test_failed_recovery_blocks_writes_until_restart(self):
+        key, first, second = self.switch_fixture()
+        from builds import atomic_json as write_json
+        def fail_index(path, value):
+            if path == self.builds.index_file: raise OSError('disk failure')
+            return write_json(path, value)
+        with patch('builds.atomic_json', side_effect=fail_index):
+            with self.assertRaises(OSError): self.builds.switch(second)
+        self.assertTrue(self.builds.switch_file.exists())
+        with self.assertRaisesRegex(ValueError, 'recovery'): self.lab.persist()
+        self.assert_red_recovered(key, first)
+
+    def test_missing_target_state_does_not_clear_current_work(self):
+        key, first, second = self.switch_fixture()
+        (self.builds.folder / second / 'state.json').unlink()
+        with self.assertRaises(ValueError): self.builds.switch(second)
+        self.assert_red_recovered(key, first)
 
     def test_theme_undo_list_follows_its_build(self):
         (self.lab.root / 'themes.json').write_text('{"batches": [{"id": "x"}]}')

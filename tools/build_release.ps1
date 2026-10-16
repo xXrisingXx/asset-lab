@@ -9,6 +9,24 @@ $root = Split-Path -Parent $PSScriptRoot
 if (-not $Version) { $Version = (Get-Content (Join-Path $root 'VERSION') -Raw).Trim() }
 $dist = Join-Path $root 'dist'
 $stage = Join-Path $dist 'stage'
+# All recursively removed build folders must remain inside this checkout's dist.
+foreach ($candidate in @($stage, (Join-Path $dist 'res'))) {
+    if (-not ([IO.Path]::GetFullPath($candidate)).StartsWith([IO.Path]::GetFullPath($dist) + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) { throw 'Unsafe build output path' }
+}
+$sdkVersion = '1.0.4258.31'
+$sdkHash = '56f7f4b8bf9aee4b8efefbbdd4f67d5f74ebd1b100ed0806da71bf76af481aa9'
+$sdkCache = Join-Path $root 'local-only\webview2'
+$sdkZip = Join-Path $sdkCache 'sdk.zip'
+$sdkRoot = Join-Path $sdkCache 'sdk'
+New-Item -ItemType Directory -Force $sdkCache | Out-Null
+if (-not (Test-Path $sdkZip)) {
+    Invoke-WebRequest "https://api.nuget.org/v3-flatcontainer/microsoft.web.webview2/$sdkVersion/microsoft.web.webview2.$sdkVersion.nupkg" -OutFile $sdkZip
+}
+if ((Get-FileHash $sdkZip -Algorithm SHA256).Hash.ToLowerInvariant() -ne $sdkHash) { throw 'WebView2 SDK checksum mismatch' }
+Expand-Archive -LiteralPath $sdkZip -DestinationPath $sdkRoot -Force
+$wvCore = Join-Path $sdkRoot 'lib\net462\Microsoft.Web.WebView2.Core.dll'
+$wvForms = Join-Path $sdkRoot 'lib\net462\Microsoft.Web.WebView2.WinForms.dll'
+$wvLoader = Join-Path $sdkRoot 'runtimes\win-x64\native\WebView2Loader.dll'
 if (Test-Path $stage) { Remove-Item -Recurse -Force $stage }
 New-Item -ItemType Directory -Force $stage | Out-Null
 
@@ -23,6 +41,7 @@ Get-ChildItem (Join-Path $root 'src') -Recurse -File | Where-Object {
     Copy-Item $_.FullName $dest
 }
 foreach ($f in 'bootstrap.json', 'LICENSE', 'README.md', 'THIRD-PARTY-NOTICES.md') { if (Test-Path (Join-Path $root $f)) { Copy-Item (Join-Path $root $f) $stage } }
+Copy-Item -LiteralPath (Join-Path $root 'launcher\WebView2-LICENSE.txt') -Destination $stage
 Set-Content -Path (Join-Path $stage 'VERSION') -Value $Version -NoNewline -Encoding ASCII
 # Updates come from this repository's releases (CI passes owner/name).
 if ($Repository) {
@@ -53,12 +72,14 @@ $source = [IO.File]::ReadAllText((Join-Path $root 'launcher\AssetLab.cs'), [Text
 $source = $source -replace 'AssemblyVersion\("[^"]*"\)', "AssemblyVersion(""$assemblyVersion"")"
 $built = Join-Path $res 'AssetLab.cs'
 [IO.File]::WriteAllText($built, $source, (New-Object Text.UTF8Encoding $true))
-& $csc /nologo /codepage:65001 /target:winexe /optimize+ /platform:anycpu "/win32icon:$(Join-Path $root 'launcher\application.ico')" `
+& $csc /nologo /codepage:65001 /target:winexe /optimize+ /platform:x64 "/win32icon:$(Join-Path $root 'launcher\application.ico')" `
     /reference:System.Windows.Forms.dll /reference:System.Drawing.dll /reference:System.Web.Extensions.dll /reference:System.Core.dll `
     "/reference:$framework\System.IO.Compression.dll" "/reference:$framework\System.IO.Compression.FileSystem.dll" `
     "/resource:$(Join-Path $res 'app.zip'),app.zip" "/resource:$(Join-Path $res 'bootstrap.json'),bootstrap.json" `
     "/resource:$(Join-Path $res 'VERSION'),VERSION" "/resource:$(Join-Path $res 'logo.png'),logo.png" `
-    "/out:$exe" $built
+    "/reference:$wvCore" "/reference:$wvForms" `
+    "/resource:$wvCore,Microsoft.Web.WebView2.Core.dll" "/resource:$wvForms,Microsoft.Web.WebView2.WinForms.dll" "/resource:$wvLoader,WebView2Loader.dll" `
+    "/out:$exe" $built (Join-Path $root 'launcher\DesktopHost.cs') (Join-Path $root 'launcher\WindowChrome.cs')
 if ($LASTEXITCODE -ne 0) { throw 'The launcher did not compile; see the errors above.' }
 Remove-Item -Recurse -Force $stage, $res
 

@@ -73,6 +73,7 @@ ADD_LAYER = """const im={expr};const c=document.createElement('canvas');c.width=
 
 class EditorCore(EditorTestCase):
     viewport = (1600, 1000)
+    feature_modules = False   # the core alone, as it works without any module (the modules have their own tests)
 
     # ----- helpers -------------------------------------------------------------------------------------------------------
     def state(self): return self.browser.eval('Ed.test.state')

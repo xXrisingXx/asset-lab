@@ -839,6 +839,290 @@
   {
    "id": "sprite|theme4.png|minus-five",
    "why": "never on a screen and never named by the game"
+  },
+  {
+   "id": "audio||arrow_fire.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||arrow_fire2.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||arrow_reload.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||attack.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||attack2.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||beep.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||combo.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||combo2.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||combo3.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||defend.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||eat2.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||eject2.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||fire1.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||fire2.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||fire3.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||fire4.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||fire5.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||fire6.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||fire7.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||fire_click.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||granade_beep2.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||granade_beep3.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||granade_beep4.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||granade_click.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||granade_explode1.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||granade_explode2.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||granade_explode3.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||granade_fire.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||granade_reload.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||h3c1.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||h3c2.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||headshot.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||hit1.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||hit2.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||killingspree1.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||killingspree2.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||killingspree3.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||killingspree4.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||killingspree5.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||king.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||laser1.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||laser2.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||laser3.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||laser4.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||laser_loop.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||laser_reload.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||levelup.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||lose.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||reload1.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||reload10.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||reload11.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||reload12.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||reload13.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||reload14.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||reload15.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||reload16.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||reload2.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||reload3.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||reload4.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||reload5.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||reload6.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||reload7.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||reload8.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||reload9.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||shield_open.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||shoot.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||slide.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||snd01.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||stick.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||swipe.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
+  },
+  {
+   "id": "audio||win.ogg",
+   "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
   }
  ]
 }

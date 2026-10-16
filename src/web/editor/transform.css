@@ -1,1 +1,34 @@
-/* Styles for editor/transform.js (Moving and transforming). Empty for now. */
+/* Styles for editor/transform.js (Move tool, Free Transform). */
+/* Free Transform is a mode of the Move tool, as in Photoshop: it has no button of its own in the tool strip. */
+#edTools .ed-tool[data-group="transform"]{display:none}
+
+/* Move tool: align buttons */
+.ed-tf-align{display:flex;gap:2px;flex:none}
+.ed-tf-alignbtn{display:grid;place-items:center;width:26px;height:24px;padding:0;border-radius:5px}
+.ed-tf-alignbtn svg{width:16px;height:16px}
+
+/* Free Transform: reference point grid, proportions link, compact numbers */
+.ed-tf-ref{display:grid;grid-template-columns:repeat(3,7px);grid-template-rows:repeat(3,7px);gap:2px;padding:3px;border:1px solid var(--line);border-radius:4px;flex:none}
+.ed-tf-refcell{width:7px;height:7px;min-width:0;min-height:0;padding:0;border:1px solid var(--muted);border-radius:1px;background:transparent}
+.ed-tf-refcell.on{background:var(--cyan);border-color:var(--cyan)}
+.ed-tf-refcell:focus-visible{outline:2px solid var(--cyan);outline-offset:1px}
+.ed-tf-link{display:grid;place-items:center;width:24px;height:24px;padding:0;border-radius:5px;flex:none;color:var(--muted)}
+.ed-tf-link.on{color:var(--cyan);border-color:var(--cyan)}
+.ed-tf-act{display:grid;place-items:center;width:26px;height:24px;padding:0;border-radius:5px;flex:none}
+.ed-tf-commit{color:var(--cyan)}
+.ed-options:has(.ed-tf-ref){gap:10px}
+.ed-options:has(.ed-tf-ref) .ed-field:is([data-key="x"],[data-key="y"],[data-key="w"],[data-key="h"],[data-key="angle"]) input[type=number]{width:50px;-moz-appearance:textfield;appearance:textfield}
+.ed-options:has(.ed-tf-ref) .ed-field input[type=number]::-webkit-inner-spin-button,
+.ed-options:has(.ed-tf-ref) .ed-field input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+/* narrow bar (1366 px windows): the tool name, the px units and the long labels give way to the numbers */
+@container (max-width:900px){
+  .ed-options:has(.ed-tf-ref){gap:7px}
+  .ed-options:has(.ed-tf-ref) .ed-opt-tool>span{display:none}
+  .ed-options:has(.ed-tf-ref) .ed-field:is([data-key="x"],[data-key="y"]) .ed-unit{display:none}
+  .ed-options:has(.ed-tf-ref) .ed-field:is([data-key="x"],[data-key="y"],[data-key="w"],[data-key="h"],[data-key="angle"]) input[type=number]{width:44px}
+  .ed-options:has(.ed-tf-ref) .ed-field:is([data-key="angle"],[data-key="interp"])>label{font-size:0}
+  .ed-options:has(.ed-tf-ref) .ed-field[data-key="angle"]>label::before{content:"\2220";font-size:14px}
+}
+
+/* a picture dragged over the canvas */
+.viewport.ed-tf-drop{outline:2px dashed var(--cyan);outline-offset:-4px}

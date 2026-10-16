@@ -115,7 +115,9 @@
      and intersect exact; an empty result deselects) · rect(x, y, w, h, mode, {label}) · all() · none() · invert()
      reselect() · bounds() -> {x,y,w,h}|null · hasSelection() · getMask() · outline() -> {h: Int32Array [y,x0,x1,...],
      v: Int32Array [x,y0,y1,...]} (the 50% boundary as merged runs; the shell draws the marching ants from it) · version.
-     Every change is a history state; the shell binds Ctrl+A, Ctrl+D, Shift+Ctrl+D, Shift+Ctrl+I, Delete/Backspace.
+     Every change is a history state ({history:false} on set() inside an open transaction makes the change part of that
+     transaction's state instead, e.g. moving selected pixels together with their selection); the shell binds Ctrl+A,
+     Ctrl+D, Shift+Ctrl+D, Shift+Ctrl+I, Delete/Backspace.
    PIXEL OPERATIONS THAT RESPECT THE SELECTION
      Ed.applyToTarget(label, draw(ctx, info), {rect, op}) -> Promise<bool>. draw (may be async) changes a copy of the
        target (layer pixels or mask) through ctx; info = {layer, target, canvas, selection, rect, doc}. The result goes
@@ -133,7 +135,8 @@
        open: begin() commits an open one. record(label, fn(tx), opts) = begin + fn + commit (cancel when fn throws; fn may
        return a promise).
      undo() · redo() · jump(index) · list() -> [{index, label, current, undone}] · index · label(i) · canUndo() ·
-     canRedo() · bytes · open (the open tx). limits = {states: 50, bytes: 512 MB}: the oldest states drop first. A new
+     canRedo() · truncate() (drops the states after the current one, as a new change after going back does; returns how
+     many) · bytes · open (the open tx). limits = {states: 50, bytes: 512 MB}: the oldest states drop first. A new
      state after going back drops the later ones. Each state marks the draft dirty (S.dirty, badge, Save button) and adds
      its op (default {tool: label}) to S.ops, the saved recipe; keep ops tiny (the recipe is capped at 64 KB).
 
@@ -156,7 +159,8 @@
      [{group, label, tools, current}] · Ed.callTool(name, ...args) calls the active tool safely.
      Option descriptor = {key, label, type:'range'|'number'|'select'|'checkbox'|'color'|'segmented'|'button'|'text', min,
      max, step, unit, options:[{value, label, title}] ('-' = separator in a select), default, id (element id), title,
-     action() (buttons)}. Values persist per tool in localStorage. Ed.toolOptions(id) -> the live values (read-only) ·
+     action() (buttons), translate (false: a select of names, like fonts, that the page translation must leave alone)}.
+     Values persist per tool in localStorage. Ed.toolOptions(id) -> the live values (read-only) ·
      Ed.setToolOptions(id, values) (clamped, saved, 'options' event). A 'size' option gets [ and ], 'hardness' Shift+[ ],
      'opacity' the digit keys (5 = 50%, 0 = 100%, two quick digits = exact; without one, digits set the layer opacity).
      Shortcuts the shell owns: tool keys, [ ], digits, X (swap colors), D (default colors), Space, Escape (onCancel, clear
@@ -192,7 +196,10 @@
      10, History 20). render runs when the tab is shown and again (once per frame) after document, layer, history and
      selection changes; keep your DOM in `container` and update it. Ed.panels.show(id) / refresh(id?) / list() / get(id).
      Ed.registerLayerBadge(fn(layer, row) -> Element|string|null) adds badges to Layers rows ('fx', link icons...).
-   VIEW  Ed.view.toClient(x, y) -> {x, y} page CSS px (integer image coordinates are pixel corners) · toImage(clientX,
+     Ed.registerOverlay(id, {order, draw(ctx, view) -> true when it drew}) draws on the view overlay whatever the tool
+     (guides, grid, mask view...), above the pixel grid, under the marching ants and the tool's own overlay; view is the
+     same object tools' drawOverlay gets. Call Ed.view.redrawOverlay() when its picture changes. Re-registering replaces.
+   VIEW Ed.view.toClient(x, y) -> {x, y} page CSS px (integer image coordinates are pixel corners) · toImage(clientX,
      clientY) -> {x, y} · scale · transform {x, y, scale, left, top, width, height} · setZoom(z, clientX?, clientY?) (keeps
      the point under the cursor) · zoomIn / zoomOut (Photoshop's steps: Ed.view.zooms) · fit() · actual() · panBy(dx, dy)
      · getState() / setState({zoom, px, py}) · redraw() · redrawOverlay() · pixelGrid (get/set; drawn from 800%) ·
@@ -306,6 +313,8 @@ Ed.registerEffect=(type,def)=>{effects.set(type,{type,label:def.label||type,stag
 Ed.effects={get:t=>effects.get(t),list:()=>[...effects.values()].sort((a,b)=>a.order-b.order)};
 const fields=new Map();Ed.registerField=(type,render)=>{fields.set(type,render);};Ed.fields={get:t=>fields.get(t)};
 const badges=[];Ed.registerLayerBadge=fn=>{badges.push(fn);Ed.emit('layers');};Ed.layerBadges=()=>badges.slice();
+const overlays=new Map();Ed.registerOverlay=(id,def)=>{overlays.set(id,{id,order:100,...(typeof def==='function'?{draw:def}:def)});Ed.emit('overlay');};
+Ed.overlays=()=>[...overlays.values()].sort((a,b)=>a.order-b.order);
 
 // ----- document and layers ----------------------------------------------------------------------------------------------
 Object.defineProperty(Ed,'doc',{get:()=>doc,enumerable:true});
@@ -522,13 +531,13 @@ function analyze(mask){ // bounds of alpha > 0 and the 50% outline as merged run
 let selVersion=0;
 function useSelection(mask){selection=mask;selInfo=mask?analyze(mask):null;if(selInfo&&!selInfo.bounds){selection=null;selInfo=null;}selVersion++;Ed.emit('selection');}
 function whiteCanvas(){const c=canvas(doc.width,doc.height),g=g2(c);g.fillStyle='#fff';g.fillRect(0,0,doc.width,doc.height);return c;}
-function changeSelection(label,next,op){if(!doc)return false;Ed.history.record(label,()=>{selection=next;},{op:op||{tool:'select',action:label.toLowerCase()}});return true;}
+function changeSelection(label,next,op,hist){if(!doc)return false;if(hist===false&&tx){selection=next;return true;}Ed.history.record(label,()=>{selection=next;},{op:op||{tool:'select',action:label.toLowerCase()}});return true;}
 Ed.select={
   set(mask,mode='replace',o={}){if(!doc)return false;const m=canvas(doc.width,doc.height),g=g2(m);
     if(mode!=='replace'&&selection){g.drawImage(selection,0,0);g.globalCompositeOperation=mode==='add'?'source-over':mode==='subtract'?'destination-out':'destination-in';}
     else if(mode==='subtract'||mode==='intersect')return changeSelection(o.label||'Deselect',null);
     g.drawImage(mask,0,0);g.globalCompositeOperation='source-in';g.fillStyle='#fff';g.fillRect(0,0,doc.width,doc.height);
-    return changeSelection(o.label||{replace:'Selection',add:'Add to Selection',subtract:'Subtract from Selection',intersect:'Intersect Selection'}[mode]||'Selection',m);},
+    return changeSelection(o.label||{replace:'Selection',add:'Add to Selection',subtract:'Subtract from Selection',intersect:'Intersect Selection'}[mode]||'Selection',m,undefined,o.history);},
   rect(x,y,w,h,mode='replace',o={}){if(!doc)return false;const m=canvas(doc.width,doc.height),g=g2(m);g.fillStyle='#fff';g.fillRect(x,y,w,h);return Ed.select.set(m,mode,{label:o.label||'Rectangular Marquee'});},
   all(){return changeSelection('Select All',whiteCanvas());},
   none(){if(!selection)return false;return changeSelection('Deselect',null);},
@@ -604,6 +613,7 @@ const history=Ed.history={
   jump(i){closeTx();i=clamp(i|0,0,states.length-1);if(i===hi)return false;Ed.preview.clear(false);let R=null;const touched={steps:[]};
     while(hi>i){const s=states[hi--];R=union(R,apply(s,true).R);touched.steps.push(...s.steps);}while(hi<i){const s=states[++hi];R=union(R,apply(s,false).R);touched.steps.push(...s.steps);}
     finish(touched,R,'history',{tool:'history',state:states[hi].label});return true;},
+  truncate(){closeTx();const gone=states.splice(hi+1);for(const x of gone)bytes-=x.bytes;if(gone.length)Ed.emit('history');return gone.length;},
   get bytes(){return bytes;}};
 history.reset();
 

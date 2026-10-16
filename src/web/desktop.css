@@ -1,0 +1,11 @@
+/* Loaded only by the desktop host. Keep the existing header; reserve its right edge for native window controls. */
+.topbar { padding-right:168px !important; app-region:drag; -webkit-app-region:drag; }
+.topbar .top-status, .topbar #stopButton { display:none; }
+.topbar button, .topbar a, .topbar input, .topbar select, .topbar [role=button] {
+  app-region:no-drag; -webkit-app-region:no-drag;
+}
+@media(max-width:1100px) {
+  .topbar { height:auto; min-height:76px; flex-wrap:wrap; padding-top:8px; padding-bottom:8px; gap:6px; }
+  .topbar .brand { margin-right:auto; }
+  .topbar .brand-logo { width:32px; height:32px; }
+}

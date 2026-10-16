@@ -46,8 +46,8 @@ SCHEMA = [
     # ----- general
     _s('language', 'general', 'Language', 'The language of the lab (the page reloads to switch) and of the Asset Lab start window (from its next start). Automatic follows Windows.',
        'choice', '', choices=_pick(*LANGUAGES), keywords='language translation idioma langue sprache english español português français deutsch'),
-    _s('open_browser', 'general', 'Open the lab in your browser when it starts', 'Off: the Asset Lab window stays open with an Open Asset Lab button instead.',
-       'bool', True, restart='app', keywords='launch start page tab'),
+    _s('open_browser', 'general', 'Open the desktop editor automatically', 'Off: setup waits for you to click Open Asset Lab. The editor opens in its own desktop window.',
+       'bool', True, restart='app', keywords='launch start desktop window'),
     _s('check_updates', 'general', 'Check for updates when Asset Lab starts', 'Looks for a newer Asset Lab on GitHub and asks before installing it. Your work is never touched.',
        'bool', True, restart='app', keywords='update version release github'),
     _s('confirm_install', 'general', 'Ask before installing or restoring', 'Asks first every time the lab is about to change the game’s files or put the originals back.',
