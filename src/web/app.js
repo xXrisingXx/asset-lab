@@ -8,7 +8,14 @@ function message(text,error=false){$('toast').textContent=text;$('toast').classL
 async function api(path,data){const options=data===undefined?{}:{method:'POST',headers:{'Content-Type':'application/json','X-Lab-Token':S.token},body:JSON.stringify(data)};const response=await fetch(path,options);const result=await response.json();if(!response.ok)throw Error(result.error||'Request failed');return result;}
 async function work(label,fn){if(S.busy)return;S.busy=true;$('busy').hidden=false;$('busyText').textContent=label;try{return await fn();}catch(e){message(e.message,true);throw e;}finally{S.busy=false;$('busy').hidden=true;}}
 function run(fn){return async(...args)=>{try{await fn(...args);}catch(e){message(e.message,true);}};}
-async function confirmAction(title,text,accept='Continue',details=''){const d=$('dialog');$('dialogTitle').textContent=title;$('dialogText').textContent=text;$('dialogAccept').textContent=accept;$('dialogDetails').textContent=details;$('dialogDetails').hidden=!details;d.showModal();return new Promise(resolve=>d.addEventListener('close',()=>resolve(d.returnValue==='ok'),{once:true}));}
+let asking=null;   // the confirmAction question waiting for its answer
+async function confirmAction(title,text,accept='Continue',details=''){const d=$('dialog');
+  if(!d.dataset.answers){d.dataset.answers='1';d.addEventListener('close',()=>{if(d.open||!asking)return;const r=asking;asking=null;r(d.returnValue==='ok');});}
+  /* Asked again right after an answer (a quick second click): the earlier question is answered by now, but its close
+     event is still on its way. It is settled here, and that event, arriving while this dialog is open, is skipped. */
+  if(asking){const r=asking;asking=null;r(d.returnValue==='ok');}
+  $('dialogTitle').textContent=title;$('dialogText').textContent=text;$('dialogAccept').textContent=accept;$('dialogDetails').textContent=details;$('dialogDetails').hidden=!details;
+  d.returnValue='';d.showModal();return new Promise(resolve=>{asking=resolve;});}
 function image(url){return new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>reject(Error('Image could not be loaded. Reload the asset.'));im.src=url;});}
 function imageURL(key,original=false){return '/api/image?'+new URLSearchParams({key,original:original?'1':'0',v:Date.now()});}
 function snapshot(){ed.flush();return S.draft.toDataURL('image/png');}
