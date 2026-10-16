@@ -291,14 +291,16 @@ function designCard(box,job,keys,entry,info){
   }
   let timer;function refresh(){clearTimeout(timer);timer=setTimeout(()=>frames.forEach((im,t)=>im.src=url(t)),150);}
   const sliders=el('div','design-sliders');
-  for(const [k,label,min,max,step] of [['scale','Size',0.5,1.8,0.02],['dx','Left / right',-1,1,0.02],['dy','Up / down',-1,1,0.02],['tolerance','Background cut-out',0.6,1.6,0.05]]){
+  // A new background fills its frame: only zoom and position apply (nothing is cut out or kept from the old shape).
+  const knobs=job.scene?[['scale','Zoom',1,2.5,0.02],['dx','Left / right',-1,1,0.02],['dy','Up / down',-1,1,0.02]]:[['scale','Size',0.5,1.8,0.02],['dx','Left / right',-1,1,0.02],['dy','Up / down',-1,1,0.02],['tolerance','Background cut-out',0.6,1.6,0.05]];
+  for(const [k,label,min,max,step] of knobs){
     const row=el('label');const r=el('input');r.type='range';r.min=min;r.max=max;r.step=step;r.value=S2.settings[k];r.oninput=()=>{S2.settings[k]=+r.value;refresh();};row.append(el('span','',label),r);sliders.append(row);}
   const shapeRow=el('label','design-shape');const shape=el('input');shape.type='checkbox';shape.checked=!!S2.settings.shape;
   shape.onchange=()=>{S2.settings.shape=shape.checked?1:0;refresh();};shapeRow.title='Trim the drawing to the original outline, so the game places and stretches it the same way';
-  shapeRow.append(shape,document.createTextNode(' Keep the original shape'));sliders.append(shapeRow);
+  shapeRow.append(shape,document.createTextNode(' Keep the original shape'));if(!job.scene)sliders.append(shapeRow);
   const fillRow=el('label','design-shape');const fill=el('input');fill.type='checkbox';fill.checked=!!S2.settings.fill;
   fill.onchange=()=>{S2.settings.fill=fill.checked?1:0;refresh();};fillRow.title='Size the drawing by its main shape so it fills the frame like the original; sparse extras at the edges may be trimmed';
-  fillRow.append(fill,document.createTextNode(' Fill the frame'));sliders.append(fillRow);
+  fillRow.append(fill,document.createTextNode(' Fill the frame'));if(!job.scene)sliders.append(fillRow);
   if(job.tint||job.tinted){const whiteRow=el('label','design-shape');const white=el('input');white.type='checkbox';white.checked=!!S2.settings.white;
     white.onchange=()=>{S2.settings.white=white.checked?1:0;refresh();};whiteRow.title='Turn the drawing into white and gray: the game then colors it like the original, and the detail shows as shades of that color';
     whiteRow.append(white,document.createTextNode(' Keep it white (the game colors it)'));sliders.append(whiteRow);}

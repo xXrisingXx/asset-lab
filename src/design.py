@@ -32,6 +32,14 @@ OBJECTS = (r'\b(?:hats?|horns?|crowns?|halos?|wings?|bats?|cobwebs?|skulls?|pump
 
 # Verbs that always mean drawing, whatever follows ("turn the coin into a diamond", even though diamonds exist as sprites).
 REDRAW = r'\b(?:redesign|re-?draw|reimagine|turn (?:it|them|the \w+(?: \w+)?) into|replace (?:it|them|the \w+(?: \w+)?) with)\b'
+# New art rather than a restyle: "something entirely different", "a whole new background", "generate a city skyline".
+NEW_ART = (r'\b(?:(?:entirely|completely|totally|really) (?:different|new)|something (?:new|different|else)|brand[- ]new|whole new|'
+           r'(?:new|different) (?:\w+ )?(?:image|picture|art|artwork|design|background|backdrop|version|scene|texture|wallpaper)s?|'
+           r'(?:entire|whole|full) (?:look|design|reskin|redesign)|reskin|generate|create (?:a|an|me|new)|draw (?:me|a|an)|'
+           r'skylines?|city ?scapes?|cities|landscapes?|mountains?|jungle|desert|underwater|beach|castle|dungeon|graveyard|cemetery|'
+           r'starfield|nebula|outer space|tv static|static noise)\b')
+# Backgrounds are replaced by a whole new picture that tiles, not restyled around a cut-out.
+SCENE_GROUPS = ('Backgrounds',)
 # New wording for the title: "make the title say MITOSIS 2", "change the title text to Cell Wars".
 WORDING = r'\b(?:say|says|read|reads|spell|spells)\s+(.+)$|\b(?:text|wording|word|name)\s+(?:to|into)\s+(.+)$'
 
@@ -41,8 +49,27 @@ def wants_design(text, unknown=()):
     redraw verb ("turn it into"), new wording for the title, or a drawing verb ("add") with words the shader does not
     understand. "Add a rainbow outline" stays a theme."""
     text = text.lower()
-    return bool(re.search(DRAWN, text) or re.search(REDRAW, text) or (re.search(TITLE, text) and re.search(WORDING, text))
+    return bool(re.search(DRAWN, text) or re.search(REDRAW, text) or re.search(NEW_ART, text) or (re.search(TITLE, text) and re.search(WORDING, text))
                 or (re.search(VERBS, text) and unknown))
+
+
+def seamless(img):
+    """A picture that tiles: its center blended over a half-turned copy whose borders already meet across the edges."""
+    a = np.asarray(img.convert('RGB'), np.float32)
+    h, w = a.shape[:2]
+    b = np.roll(np.roll(a, h // 2, axis=0), w // 2, axis=1)
+    my, mx = np.sin(np.pi * (np.arange(h) + 0.5) / h), np.sin(np.pi * (np.arange(w) + 0.5) / w)
+    m = np.sqrt(np.outer(my, mx))[..., None]   # 1 in the middle, 0 at every edge
+    return Image.fromarray(np.clip(a * m + b * (1 - m), 0, 255).astype(np.uint8)).convert('RGBA')
+
+
+def cover(art, frame, scale=1.0, dx=0.0, dy=0.0):
+    """Fill a frame with a picture (cropping what does not fit); scale zooms in, dx/dy (-1..1) move the crop."""
+    W, H = frame
+    s = max(W / art.width, H / art.height) * max(1.0, float(scale))
+    big = art.resize((max(W, round(art.width * s)), max(H, round(art.height * s))), Image.Resampling.LANCZOS)
+    x = round((big.width - W) * (0.5 + 0.5 * max(-1, min(1, dx)))); y = round((big.height - H) * (0.5 + 0.5 * max(-1, min(1, dy))))
+    return big.crop((x, y, x + W, y + H))
 
 
 def wording(prompt):
@@ -306,7 +333,8 @@ class Designer:
                        key=parent['key'] if base else key_for(prompt), base=base, at=time.time(), title=rows[0]['name'] == 'logo',
                        # Button and panel skins are stretched by the game, so their outline should stay; white icons are tinted by it.
                        stretched=rows[0]['group'] == 'Buttons & panels' and rows[0]['name'] != 'logo', tinted=tinted(self.lab.catalog.image(rows[0]['key'])),
-                       tint=tints().get(rows[0]['name'], ''))   # the color the game multiplies this icon by, when measured
+                       tint=tints().get(rows[0]['name'], ''),   # the color the game multiplies this icon by, when measured
+                       scene=parent.get('scene', False) if base else rows[0]['group'] in SCENE_GROUPS)   # a background: a whole new picture that tiles
             if direction: job['direction'] = str(direction)[:700]   # shared by a set drawn together, so they match
             if job['title'] and wording(prompt): job['text'] = wording(prompt)
             self.jobs[job['id']] = job
@@ -321,6 +349,10 @@ class Designer:
         return f'a game sprite: {name}'
 
     def instruction(self, job):
+        if job.get('scene'):
+            return (f'{job.get("direction") or job["prompt"]}. A brand new full-frame background picture for a 2D top-down game menu, '
+                    'filling the whole image edge to edge with even detail everywhere so it can repeat as a seamless tile. '
+                    'No text, no logos, no frame, no border, no single big object in the middle. Rich, crisp, high quality game art.')
         what = self.subject(job)
         if job.get('text'): keep = f'Change the word MITOSIS so it reads exactly "{job["text"]}", in the same lettering style, on one line, centered.'
         elif job['title']: keep = 'Keep the exact word MITOSIS, spelled the same, in the same layout and size, centered.'
@@ -338,11 +370,17 @@ class Designer:
                 # Refining: the chosen variant, exactly as drawn (same canvas and background), is the new starting point.
                 ref = Image.open(self.folder / job['base'][0] / f'raw-{int(job["base"][1])}.png').convert('RGB')
                 size = ref.size
+            elif job.get('scene'):
+                # A new background is drawn from the words alone, at about the model's 0.6 megapixels, in the art's shape.
+                source = self.lab.image(job['targets'][0])
+                aspect = max(0.5, min(2.0, source.width / max(1, source.height)))
+                size = (768, round(768 / aspect / 16) * 16) if aspect >= 1 else (round(768 * aspect / 16) * 16, 768)
+                ref = None
             else:
                 source = self.lab.image(job['targets'][0])
                 size = canvas_size(source.width, source.height)
                 ref = reference(source, job['key'], size)
-            ref.save(folder / 'reference.png')
+            if ref is not None: ref.save(folder / 'reference.png')
             if not job['base'] and not job.get('direction') and getattr(self, 'director', None):
                 # A short request ("spooky") becomes a concrete art direction the image model can follow.
                 job['message'] = 'Writing the art direction…'
@@ -353,7 +391,7 @@ class Designer:
             job['message'] = 'Loading the image model…'
             steps = labsettings.STEPS[labsettings.value(self.lab, 'drawing_quality')]   # Settings: Drawing quality
             args = [str(runtime.path('sd')), '--diffusion-model', str(runtime.path('diffusion')), '--vae', str(runtime.path('vae')), '--llm', str(runtime.path('llm')),
-                    '-r', str(folder / 'reference.png'), '-p', self.instruction(job), '--cfg-scale', '1.0', '--steps', str(steps), '--sampling-method', 'euler',
+                    *(['-r', str(folder / 'reference.png')] if (folder / 'reference.png').is_file() else []), '-p', self.instruction(job), '--cfg-scale', '1.0', '--steps', str(steps), '--sampling-method', 'euler',
                     '-W', str(size[0]), '-H', str(size[1]), '-s', str(int(time.time()) % 100000), '-b', str(job['total']), '-o', str(folder / 'raw-%d.png')]
             proc = subprocess.Popen(args, cwd=str(runtime.path('sd').parent), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, creationflags=runtime.QUIET,
                                     text=True, encoding='utf-8', errors='replace')
@@ -370,6 +408,11 @@ class Designer:
             raws = sorted(folder.glob('raw-*.png'), key=lambda p: int(re.search(r'(\d+)', p.stem).group(1)))
             if proc.returncode != 0 or not raws: raise RuntimeError('The image model failed: ' + ' / '.join(l for l in log[-6:] if l.strip())[:400])
             for index, raw in enumerate(raws):
+                if job.get('scene'):   # nothing to cut out: the whole picture is the art, made to tile
+                    seamless(Image.open(raw)).save(folder / f'variant-{index}.png')
+                    job['variants'].append(dict(index=index, settings=dict(scale=1.0, dx=0.0, dy=0.0, tolerance=1.0, shape=0.0, fill=0.0), warning=''))
+                    job['progress'] = index + 1
+                    continue
                 art = unkey(Image.open(raw), job['key'])
                 # The model's "flat" background sometimes drifts: try a stronger cut-out before warning about it.
                 for stronger in (1.25, 1.5):
@@ -406,6 +449,9 @@ class Designer:
         folder = self.folder / job['id']
         if raw: return Image.open(folder / f'raw-{int(index)}.png').convert('RGBA')
         s = {'scale': 1.0, 'dx': 0.0, 'dy': 0.0, 'tolerance': 1.0, 'shape': 1.0 if job.get('stretched') else 0.0, 'fill': 1.0 if job['title'] else 0.0, 'white': 0.0, **(settings or {})}
+        if job.get('scene'):   # a background fills its frame; Size zooms in and the arrows move the view
+            out = cover(Image.open(folder / f'variant-{int(index)}.png').convert('RGBA'), tuple(job['frames'][int(target)]), float(s['scale']), float(s['dx']), float(s['dy']))
+            return whiten(out) if float(s['white']) >= 0.5 else out
         art = unkey(Image.open(folder / f'raw-{int(index)}.png'), job['key'], float(s['tolerance'])) if float(s['tolerance']) != 1.0 else \
             Image.open(folder / f'variant-{int(index)}.png').convert('RGBA')
         out = self._place(job, art, s, int(target))

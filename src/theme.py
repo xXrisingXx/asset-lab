@@ -1301,7 +1301,13 @@ class Themes:
         if designer and labsettings.value(self.lab, 'offer_redraws') and design.wants_design(message, unknown_words(message, self.named)) and designer.title_rows():
             # "Make the game spooky": the palette is shaded now; redrawing the title is offered, not started (unless the
             # player turned these offers off in Settings).
-            result['design'] = dict(self.design_offer(designer, f'{message}. Redesign the game title to match.', designer.title_rows()), optional=True)
+            rows, prompt = designer.title_rows(), f'{message}. Redesign the game title to match.'
+            if re.search(WHOLE_GAME + r'|\breskin', message.lower()):
+                # A whole-game look ("full spooky reskin") offers the virus too: the game's most recognisable sprite, and
+                # one that shows in matches. Each part is drawn on its own from the same request.
+                virus = [r for r in self.lab.catalog.rows.values() if r['name'] == 'virus.png' and r['editable'] and r.get('primary', True) and not r.get('removed')][:1]
+                if virus: rows, prompt = rows + virus, message
+            result['design'] = dict(self.design_offer(designer, prompt, rows), optional=True)
         return self.text_offer(result, message, only)   # a whole-game mood also offers the player names in a matching look
 
     HELP = ('I change how Mitosis looks. Ask for colors, moods or effects ("christmas theme", "rainbow outlines with a subtle glow", '
