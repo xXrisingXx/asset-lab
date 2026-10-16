@@ -239,72 +239,142 @@ function showDesign(box,d,keys,base,offer,entry,restoring){
     offer?`The rest needs drawing: I'll redraw ${what} with the local image model.`:`I'll redraw ${what} with the local image model. Pick a variant, adjust it, then apply.`;
   if(!d.available)return;
   const variants=(selected)=>{const s=el('select');s.className='design-count';for(const n of [1,2,3,4]){const o=el('option','',`${n} variant${n>1?'s':''}`);o.value=n;s.append(o);}s.value=String(selected);return s;};
-  const bar=el('div','theme-actions');const count=variants(drawings());count.title='Variants for everything in this set (each piece can be changed below)';
-  // A big set: one variant each, except the pieces worth choosing between (the title and the viruses get two); each piece
-  // can be set on its own, or left out, in the list below.
+  const bar=el('div','theme-actions');const count=variants(drawings());count.title='Variants for every piece still in the queue (each piece can be set on its own in the queue)';
+  // A big set: one variant each, except the pieces worth choosing between (the title and the viruses get two). The queue
+  // window sets each piece on its own, leaves pieces out and puts them in the order to draw them.
   const big=groups.length>6,star=g=>isTitle(g[0])||/virus/i.test(g[0].name);
-  const picks=groups.map(g=>({g,on:true,count:big?(star(g)?2:1):drawings(),row:null,card:null}));
+  const Q=newQueue({prompt:d.prompt,base,entry,box,optional:d.optional,each:+d.seconds_per_drawing||45,
+    items:groups.map(g=>({keys:g.map(t=>t.key),label:groups.length>1?label(g):'',count:big?(star(g)?2:1):drawings(),on:true,state:'queued',job:'',applied:false}))});
   if(big)count.value='1';
-  const go=el('button','primary','');
-  // How long it will take, from this PC's own drawing time (learned by the lab; 45 s each until it knows).
-  const each=+d.seconds_per_drawing||45,estimate=el('small','hint');
-  const guess=()=>{const chosen=picks.filter(p=>p.on),n=chosen.reduce((a,p)=>a+p.count,0),s=n*each;
-    go.textContent=groups.length>1?`${d.optional?'Redraw':'Draw'} ${chosen.length} of ${groups.length}`:d.optional?'Redraw it':'Draw it';go.disabled=!chosen.length;
-    estimate.textContent=groups.length>1?`${n} drawing${n===1?'':'s'}: about ${duration(s)} (done around ${clockIn(s)}).`:'May take several minutes; speed depends on your PC.';};
-  bar.append(go,count,estimate);box.append(bar);
-  if(groups.length>1){
-    // Every piece, with its art now: tick it off, choose its variants, and once drawn click it to see the drawing.
-    const list=el('details','design-picks');list.append(el('summary','',`Choose what to draw and how many variants (${groups.length})`));const rows=el('div','design-pick-rows');list.append(rows);
-    for(const p of picks){const row=el('div','design-pick');p.row=row;const tick=el('input');tick.type='checkbox';tick.checked=true;tick.title='Draw this one';
-      const thumb=new Image();thumb.loading='lazy';thumb.alt='';thumb.src=`/api/thumb?key=${encodeURIComponent(p.g[0].key)}`;
-      const name=el('button','link design-pick-name',label(p.g));name.type='button';name.title='Show this drawing (once it is drawn)';
-      const many=variants(p.count);many.onchange=()=>{p.count=+many.value;guess();};
-      tick.onchange=()=>{p.on=tick.checked;row.classList.toggle('off',!p.on);many.disabled=!p.on;guess();};
-      const show=()=>{if(p.card){p.card.scrollIntoView({block:'center',behavior:'smooth'});p.card.classList.add('flash');setTimeout(()=>p.card.classList.remove('flash'),1200);}else message(p.on?'Not drawn yet.':'Left out of this set.');};
-      name.onclick=show;thumb.onclick=show;
-      row.append(tick,thumb,name,many);p.tick=tick;p.many=many;p.thumb=thumb;rows.append(row);}
-    box.append(list);}
-  count.onchange=()=>{for(const p of picks){p.count=+count.value;if(p.many)p.many.value=count.value;}guess();};
-  guess();
-  go.onclick=run(async()=>{go.disabled=true;count.disabled=true;for(const p of picks){if(p.tick)p.tick.disabled=true;if(p.many)p.many.disabled=true;}
-    const chosen=picks.filter(p=>p.on);
-    const plan={prompt:d.prompt,count:+count.value,next:0,direction:null,groups:chosen.map(p=>({keys:p.g.map(t=>t.key),label:groups.length>1?label(p.g):'',count:p.count}))};
-    if(entry){entry.batch=plan;keepChat();}
-    await drawBatch(box,plan,base,entry,each,(i,part)=>{const p=chosen[i];if(p){p.card=part;p.row?.classList.add('drawn');}});
-    for(const p of chosen)if(p.thumb)p.thumb.src=`/api/thumb?key=${encodeURIComponent(p.g[0].key)}&t=${Date.now()}`;});   // applied art shows here
+  Q.go=el('button','primary','');Q.estimate=el('small','hint');
+  bar.append(Q.go,count);
+  if(groups.length>1){const open=el('button','', 'Queue…');open.type='button';open.title='See every piece larger, leave pieces out, choose their variants and the order to draw them';open.onclick=()=>openQueue(Q);bar.append(open);}
+  bar.append(Q.estimate);box.append(bar);
+  count.onchange=()=>{for(const q of Q.items)if(q.state==='queued')q.count=+count.value;refreshQueue(Q);};
+  refreshQueue(Q);
+  Q.go.onclick=run(async()=>{Q.go.disabled=true;count.disabled=true;await runQueue(Q);});
   if(restoring&&entry?.jobs?.length){bar.hidden=true;(async()=>{for(const info of entry.jobs)await resumeDesign(box,info,entry);
-    const rest=entry.batch&&entry.batch.groups.length-entry.batch.next;
-    if(rest>0){const more=el('button','primary',`Continue drawing the rest (${rest} left)`);more.type='button';
-      more.onclick=run(async()=>{more.remove();await drawBatch(box,entry.batch,base,entry,each);});box.append(more);}})();return;}
-  if(!restoring&&autoBox.checked&&!d.optional)go.click();
+    // A queue cut off by a reload: what is left can be drawn, in the order it had.
+    if(!entry.batch?.items)return;Object.assign(Q,{items:entry.batch.items,direction:entry.batch.direction||null});
+    const rest=Q.items.filter(q=>q.on&&q.state!=='done'&&q.state!=='failed').length;
+    if(rest>0){for(const q of Q.items)if(q.state==='drawing')q.state='queued';
+      const more=el('button','primary',`Continue drawing the rest (${rest} left)`);more.type='button';const look=el('button','', 'Queue…');look.type='button';look.onclick=()=>openQueue(Q);
+      more.onclick=run(async()=>{more.remove();look.remove();await runQueue(Q);});box.append(more,look);}})();return;}
+  if(!restoring&&autoBox.checked&&!d.optional)Q.go.click();
 }
 const duration=s=>{s=Math.max(1,Math.round(s));const h=Math.floor(s/3600),m=Math.round((s%3600)/60);return h?`${h} h ${m} min`:m?`${m} min`:`${s} s`;};
 const clockIn=s=>new Date(Date.now()+s*1000).toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});
-// A set of drawings, one after another in one style, with the time left; it can be stopped between drawings and continued
-// after a reload (plan.next), and every finished drawing can be applied at once.
-async function drawBatch(box,plan,base,entry,each,onPart){
-  const many=plan.groups.length>1,line=el('p','design-batch');const stop=el('button','quiet','Stop after this drawing');stop.type='button';
-  const head=el('div','design-batch-head');head.append(line);if(many)head.append(stop);if(many)box.append(head);
-  let stopped=false;stop.onclick=()=>{stopped=true;stop.disabled=true;stop.textContent='Stopping after this drawing…';};
-  const started=Date.now(),first=plan.next,finished=[];
-  for(;plan.next<plan.groups.length&&!stopped;plan.next++){
-    const g=plan.groups[plan.next],n=x=>x.count||plan.count;
-    // Time left: the variants still to draw times this PC's pace (measured on this set once one is done).
-    const doneVariants=plan.groups.slice(first,plan.next).reduce((a,x)=>a+n(x),0),leftVariants=plan.groups.slice(plan.next).reduce((a,x)=>a+n(x),0);
-    const per=doneVariants?(Date.now()-started)/1000/doneVariants:each,left=per*leftVariants;
-    line.textContent=`Drawing ${plan.next+1} of ${plan.groups.length} · about ${duration(left)} left · done around ${clockIn(left)}`;
-    const part=el('div','design-part');if(g.label)part.append(el('p','design-part-title',g.label));box.append(part);onPart&&onPart(plan.next,part);
-    const job=await drawDesign(part,plan.prompt,g.keys,n(g),base,plan.direction,entry,g.label);
-    if(job?.direction&&!plan.direction)plan.direction=job.direction;   // the first drawing's art direction is reused, so the set matches
-    if(job?.state==='complete')finished.push(job);
-    if(entry){entry.batch=plan;keepChat();}}
+// ----- the drawing queue: a set drawn one piece after another, in one style ---------------------------------------------
+// Items: {keys, label, count (variants), on (in the queue), state: queued | drawing | done | failed, job, applied}. The
+// next piece is always the first one still queued, so the order (and what is left out) can change while it draws. The
+// items are kept with the chat entry, so a reload can continue them.
+function newQueue(o){return Object.assign({items:[],direction:null,running:false,stopped:false,spent:0,variantsDone:0,cards:new Map(),dialog:null},o);}
+function keepQueue(Q){if(Q.entry){Q.entry.batch={items:Q.items,direction:Q.direction};keepChat();}}
+const pending=Q=>Q.items.filter(q=>q.on&&q.state==='queued');
+const pace=Q=>Q.variantsDone?Q.spent/Q.variantsDone:Q.each;   // seconds a variant: this PC's learned time, then this set's real pace
+function refreshQueue(Q){
+  const left=pending(Q),n=left.reduce((a,q)=>a+q.count,0),s=n*pace(Q),many=Q.items.length>1;
+  if(Q.go&&!Q.go.disabled){const on=Q.items.filter(q=>q.on).length;Q.go.textContent=many?`${Q.optional?'Redraw':'Draw'} ${on} of ${Q.items.length}`:Q.optional?'Redraw it':'Draw it';Q.go.disabled=!on;}
+  const text=!many?'May take several minutes; speed depends on your PC.':n?`${n} drawing${n===1?'':'s'}: about ${duration(s)} (done around ${clockIn(s)}).`:'Nothing left to draw.';
+  if(Q.estimate)Q.estimate.textContent=text;
+  if(Q.line&&Q.running){const now=Q.items.find(q=>q.state==='drawing');Q.line.textContent=`${now?`Drawing ${now.label||'it'}`:'Drawing'} · ${left.length} left · about ${duration(s)} left · done around ${clockIn(s)}`;}
+  if(Q.ready){const done=Q.items.filter(q=>q.state==='done'&&!q.applied).length;Q.ready.hidden=!done;Q.ready.textContent=`Apply finished drawings (${done})`;}
+  if(Q.dialog?.open)renderQueue(Q);
+}
+async function designerFree(){for(;;){try{const s=await api('/api/theme-status');if(!s.design?.job)return;}catch(e){return;}await new Promise(r=>setTimeout(r,2000));}}
+async function runQueue(Q){
+  const many=Q.items.length>1;
+  if(many&&!Q.head){Q.head=el('div','design-batch-head');Q.line=el('p','design-batch');
+    const look=el('button','', 'Queue…');look.type='button';look.title='Change the order, leave pieces out, see them larger';look.onclick=()=>openQueue(Q);
+    Q.stop=el('button','quiet','Stop after this drawing');Q.stop.type='button';Q.stop.onclick=()=>{Q.stopped=true;Q.stop.disabled=true;Q.stop.textContent='Stopping after this drawing…';};
+    // Roll out what is ready while the rest is still drawing: the first variant of each, with its default settings.
+    Q.ready=el('button','primary','');Q.ready.type='button';Q.ready.hidden=true;Q.ready.title='Use the first variant of each finished drawing now, while the rest keep drawing';
+    Q.ready.onclick=run(async()=>applyFinished(Q));
+    Q.head.append(Q.line,look,Q.ready,Q.stop);Q.box.append(Q.head);}
+  Q.running=true;Q.stopped=false;if(Q.stop){Q.stop.disabled=false;Q.stop.textContent='Stop after this drawing';Q.stop.hidden=false;}
+  try{
+    while(!Q.stopped){
+      const item=pending(Q)[0];if(!item)break;
+      await designerFree();   // one drawing at a time (one may still be finishing from before a reload)
+      if(Q.stopped||!item.on||item.state!=='queued')continue;
+      item.state='drawing';refreshQueue(Q);keepQueue(Q);
+      const part=el('div','design-part');if(item.label)part.append(el('p','design-part-title',item.label));Q.box.append(part);Q.cards.set(item,part);
+      const t0=Date.now();
+      const job=await drawDesign(part,Q.prompt,item.keys,item.count,Q.base,Q.direction,Q.entry,item.label).catch(e=>{part.append(el('p','theme-note error',e.message));return null;});
+      Q.spent+=(Date.now()-t0)/1000;Q.variantsDone+=item.count;
+      if(job?.direction&&!Q.direction)Q.direction=job.direction;   // the first drawing's art direction is reused, so the set matches
+      item.state=job?.state==='complete'?'done':'failed';item.job=job?.id||'';
+      keepQueue(Q);refreshQueue(Q);}
+  }finally{Q.running=false;}
   if(!many)return;
-  stop.remove();line.textContent=plan.next<plan.groups.length?`Stopped: ${plan.next} of ${plan.groups.length} drawn.`:`All ${plan.groups.length} drawn in ${duration((Date.now()-started)/1000)}.`;
-  if(finished.length>1){const all=el('button','primary',`Apply all ${finished.length} drawings`);all.type='button';all.title='Use the first variant of each drawing, with its default settings';
-    all.onclick=run(async()=>{all.disabled=true;let n=0;
-      for(const job of finished){all.textContent=`Applying ${++n} of ${finished.length}…`;await api('/api/design-apply',{job:job.id,variant:0,settings:designDefaults(job)});}
-      all.textContent=`Applied ✓ (${finished.length})`;S.build=null;await status();await library();});
-    head.append(all);}
+  const done=Q.items.filter(q=>q.state==='done').length,left=pending(Q).length;
+  Q.stop.hidden=true;Q.line.textContent=left?`Stopped: ${done} drawn, ${left} still in the queue.`:`All drawn: ${done} of ${Q.items.filter(q=>q.on).length}.`;
+  if(left){const more=el('button','', 'Continue');more.type='button';more.onclick=run(async()=>{more.remove();await runQueue(Q);});Q.head.append(more);}
+  refreshQueue(Q);
+}
+async function applyFinished(Q){
+  const ready=Q.items.filter(q=>q.state==='done'&&!q.applied&&q.job);let n=0;Q.ready.disabled=true;
+  try{for(const item of ready){Q.ready.textContent=`Applying ${++n} of ${ready.length}…`;
+      const job=await api('/api/design-job?job='+item.job);await api('/api/design-apply',{job:job.id,variant:0,settings:designDefaults(job)});item.applied=true;keepQueue(Q);}}
+  finally{Q.ready.disabled=false;}
+  message(`Applied ${ready.length} drawing${ready.length===1?'':'s'}. Install in Mitosis to see them.`);S.build=null;await status();await library();refreshQueue(Q);
+}
+// The queue window: every piece large, with its state; leave pieces out, set their variants, put them in the order to draw.
+function openQueue(Q){
+  if(!Q.dialog){const d=el('dialog','draw-queue');d.setAttribute('aria-label','Drawing queue');document.body.append(d);Q.dialog=d;d.addEventListener('close',()=>{});}
+  renderQueue(Q);if(!Q.dialog.open)Q.dialog.showModal();
+}
+function renderQueue(Q){
+  const d=Q.dialog,scroll=d.querySelector('.draw-queue-list')?.scrollTop||0;d.replaceChildren();
+  const head=el('div','draw-queue-head');const x=el('button','quiet','✕');x.type='button';x.title='Close';x.onclick=()=>d.close();
+  head.append(el('h2','', 'Drawing queue'),x);
+  const hint=el('p','hint','Drag pieces (or use the arrows) to draw them sooner. Untick to leave one out. Click a picture to see it larger; once drawn it shows before and after.');
+  const list=el('div','draw-queue-list');
+  const states={queued:'Queued',drawing:'Drawing…',done:'Drawn',failed:'Failed'};
+  const queuedNow=pending(Q);
+  Q.items.forEach((item,i)=>{
+    const row=el('div','draw-queue-row '+item.state+(item.on?'':' off'));const waiting=item.state==='queued';
+    row.draggable=waiting;row.dataset.i=i;
+    row.ondragstart=e=>{e.dataTransfer.setData('text/plain',String(i));row.classList.add('dragging');};row.ondragend=()=>row.classList.remove('dragging');
+    row.ondragover=e=>{if(waiting){e.preventDefault();row.classList.add('over');}};row.ondragleave=()=>row.classList.remove('over');
+    row.ondrop=e=>{e.preventDefault();const from=+e.dataTransfer.getData('text/plain');moveItem(Q,from,i);};
+    const grip=el('span','draw-queue-grip',waiting?'⋮⋮':'');grip.setAttribute('aria-hidden','true');
+    const tick=el('input');tick.type='checkbox';tick.checked=item.on;tick.disabled=!waiting;tick.title='Draw this piece';
+    tick.onchange=()=>{item.on=tick.checked;keepQueue(Q);refreshQueue(Q);};
+    const pic=new Image();pic.loading='lazy';pic.alt='';pic.className='draw-queue-pic';pic.src=`/api/thumb?key=${encodeURIComponent(item.keys[0])}&big=1${item.applied?`&t=${item.job}`:''}`;
+    pic.title='See it larger';pic.onclick=()=>zoomPiece(Q,item);
+    const text=el('div','draw-queue-text');const place=waiting&&item.on?queuedNow.indexOf(item)+1:0;
+    text.append(el('b','',item.label||'This piece'),el('small','',`${item.applied?'Applied ✓':states[item.state]}${place?` · #${place}`:''}`));
+    const many=el('select');many.className='design-count';for(const n of [1,2,3,4]){const o=el('option','',`${n} variant${n>1?'s':''}`);o.value=n;many.append(o);}many.value=String(item.count);many.disabled=!waiting;
+    many.onchange=()=>{item.count=+many.value;keepQueue(Q);refreshQueue(Q);};
+    const acts=el('div','draw-queue-acts');
+    const btn=(t,title,fn,off)=>{const b=el('button','quiet',t);b.type='button';b.title=title;b.disabled=!!off;b.onclick=fn;acts.append(b);};
+    btn('Draw next','Draw this one as soon as the current drawing is done',()=>moveItem(Q,i,Q.items.indexOf(queuedNow[0]??item)),!waiting||place===1);
+    btn('↑','Earlier',()=>moveItem(Q,i,i-1),!waiting||i===0);btn('↓','Later',()=>moveItem(Q,i,i+1),!waiting||i===Q.items.length-1);
+    if(Q.cards.get(item))btn('Show','Show its drawing in the chat',()=>{d.close();const c=Q.cards.get(item);c.scrollIntoView({block:'center',behavior:'smooth'});c.classList.add('flash');setTimeout(()=>c.classList.remove('flash'),1200);});
+    row.append(grip,tick,pic,text,many,acts);list.append(row);});
+  const foot=el('div','draw-queue-foot');const est=el('span','hint');const left=pending(Q),n=left.reduce((a,q)=>a+q.count,0),s=n*pace(Q);
+  est.textContent=n?`${left.length} piece${left.length===1?'':'s'}, ${n} drawing${n===1?'':'s'} left: about ${duration(s)} (done around ${clockIn(s)}).`:'Nothing left to draw.';
+  foot.append(est);
+  if(!Q.running&&n){const go=el('button','primary',Q.items.some(q=>q.state!=='queued')?'Continue drawing':'Start drawing');go.type='button';
+    go.onclick=run(async()=>{d.close();if(Q.go)Q.go.disabled=true;await runQueue(Q);});foot.append(go);}
+  const close=el('button','', 'Close');close.type='button';close.onclick=()=>d.close();foot.append(close);
+  d.append(head,hint,list,foot);list.scrollTop=scroll;
+}
+function moveItem(Q,from,to){
+  if(from===to||to<0||to>=Q.items.length||Q.items[from]?.state!=='queued')return;
+  const [item]=Q.items.splice(from,1);Q.items.splice(to,0,item);keepQueue(Q);refreshQueue(Q);
+}
+// A piece large: the game's original, what is in your mod now, and the drawing (its first variant) once there is one.
+function zoomPiece(Q,item){
+  const d=el('dialog','piece-zoom');d.setAttribute('aria-label',item.label||'Piece');document.body.append(d);
+  const key=encodeURIComponent(item.keys[0]),views=el('div','piece-zoom-views');
+  const view=(src,caption)=>{const f=el('figure');const im=new Image();im.src=src;im.alt=caption;f.append(im,el('figcaption','',caption));views.append(f);};
+  view(`/api/image?key=${key}&original=1`,'Original');
+  if(item.applied)view(`/api/image?key=${key}&t=${Date.now()}`,'In your mod now');
+  if(item.job&&item.state==='done')view(`/api/design-image?job=${item.job}&variant=0&target=0`,'Drawn (variant 1)');
+  const head=el('div','draw-queue-head');const x=el('button','quiet','✕');x.type='button';x.onclick=()=>d.close();head.append(el('h2','',item.label||'Piece'),x);
+  d.append(head,views);d.addEventListener('close',()=>d.remove());d.addEventListener('click',e=>{if(e.target===d)d.close();});d.showModal();
 }
 // What a drawing starts with (also what "Apply all" uses): zoomed and calmed for a background, the outline kept for a
 // stretched button, the frame filled for the title, and kept white where the game colors the art itself.
