@@ -706,6 +706,10 @@ def silhouette(solid):
 
 MENU_BACKGROUND = re.compile(r'bg\d+\.png', re.I)   # bg2.png and the other themes' menu backgrounds
 # Art direction for a background picture (design.SCENE_SUBJECT): the whole frame is the art, and it repeats.
+# A theme named after a brand, team, artist, film or game: the drawings are made of its visual identity, as fan art.
+IDENTITY_DIRECTION = ('If the request names a brand, team, artist, film, game or character, build the design from its recognisable visual '
+                      'identity: its emblem or logo shapes, signature colors, patterns and iconic objects (for a car brand: its badge, racing '
+                      'stripes, wheels, grille, carbon fiber). For the game title, keep the word MITOSIS and make its round O the emblem. ')
 SCENE_DIRECTION = ('This is a whole background picture that fills the frame edge to edge and repeats as a tile behind menu buttons: describe '
                    'the scene, its colors and lighting, with a few large shapes rather than tiny detail and nothing that must sit in the '
                    'center. Use the colors the request names. No text or logos. ')
@@ -744,12 +748,19 @@ def opaque_tile(pixels, op):
     return np.dstack([(np.clip(rgb, 0, 1) * 255 + .5).astype(np.uint8), np.full((h, w), 255, np.uint8)])
 
 
+def faint_tile(pixels):
+    """A full-size, nearly see-through overlay (alpha never above ~10%): what the menu backgrounds are. A theme coloring it
+    ("design a BMW theme", "everything gold") fills it instead of tinting pixels nobody can see."""
+    return pixels.shape[0] >= 256 and pixels.shape[1] >= 256 and int(pixels[..., 3].max()) <= 26
+
+
 def shade(pixels, op):
     """Apply one operation to an RGBA uint8 array, using the array's own extent as the frame for gradients and glows.
 
     Fully transparent pixels stay untouched unless a glow or outline is drawn into them.
     """
-    if op.get('opaque'): return opaque_tile(pixels, op)   # a menu background: see opaque_tile
+    if op.get('opaque') or (faint_tile(pixels) and op['color_mode'] != 'none' and (op.get('gradient') or hex_color(op.get('color') or ''))):
+        return opaque_tile(pixels, op)   # a menu background: see opaque_tile
     out = pixels.astype(np.float32)
     rgb, alpha = out[..., :3] / 255.0, out[..., 3]
     if op['color_mode'] != 'none' and op['color_amount'] > 0:
@@ -1362,18 +1373,21 @@ class Themes:
         the main art (the title, the virus, the play button and the coin, or the checked assets), since colors alone can't
         make "a Post Malone theme"."""
         title, summary = found['title'], found['summary']
-        result['note'] = ((result.get('note') or '') + f' Inspired by {title} (looked up on Wikipedia).').strip()
+        # Pictures, not just words: the page's emblem, logo and photos on one board the drawings take their look from.
+        board = inspire.pictures(found, self.lab.root / 'inspiration') if draw != 'off' else ''
+        result['note'] = ((result.get('note') or '') + f' Inspired by {title} (looked up on Wikipedia{", with its pictures" if board else ""}).').strip()
         context = f' Inspiration ({title}): {summary[:450]}'
         designer = getattr(self, 'designer', None)
         if result.get('design'): result['design']['prompt'] = (result['design'].get('prompt') or '') + context
         elif designer and draw != 'off' and labsettings.value(self.lab, 'offer_redraws'):
-            rows = [self.lab.row(k) for k in only or [] if k in self.lab.catalog.rows] or designer.title_rows() + [
-                r for name in ('virus.png', 'icon-play', 'icon-coin') for r in [next((r for r in self.lab.catalog.rows.values() if r['name'] == name and r['editable']
-                                                                                     and r.get('primary', True) and not r.get('removed') and not r.get('legacy')), None)] if r]
+            # The whole game in that style (the queue puts the title, background, viruses, play button, coin and food first),
+            # or just the checked assets.
+            rows = [self.lab.row(k) for k in only or [] if k in self.lab.catalog.rows] or self.showcase_rows(designer)
             if rows:
                 plan = result.get('plan') or {}
                 planned = plan.get('operations') or plan.get('ui_colors') or plan.get('hide')
-                result['design'] = dict(self.design_offer(designer, f'{title} theme.{context}', rows[:8]), optional=bool(planned))
+                result['design'] = dict(self.design_offer(designer, f'{title} theme.{context}', rows), optional=bool(planned))
+        if board and result.get('design'): result['design'].update(inspiration=board, inspiration_title=title)
         return result
 
     def _chat(self, message, model='', history=None, only=None, language='', draw='auto'):
@@ -1509,7 +1523,7 @@ class Themes:
         model = self.preferred([m['name'] for m in available])
         system = ('You are the art director of a 2D mobile game. Rewrite the request as one short paragraph (at most 60 words) that says exactly '
                   'what to draw: materials, colors, lighting, and small details or decorations. Keep the subject, and any text in it, exactly as '
-                  'it is. ' + (SCENE_DIRECTION if subject == design.SCENE_SUBJECT else 'Do not describe a background, scenery, or a shadow, floor or stand under it (the art is cut out). ') +
+                  'it is. ' + IDENTITY_DIRECTION + (SCENE_DIRECTION if subject == design.SCENE_SUBJECT else 'Do not describe a background, scenery, or a shadow, floor or stand under it (the art is cut out). ') +
                   'No preamble, no lists, no quotes.')
         # Unloaded at once (the image model needs the graphics card next) unless the player keeps it (Settings: Free the graphics card).
         payload = dict(model=model, stream=False, keep_alive=0 if labsettings.value(self.lab, 'free_gpu') else '10m',
@@ -1530,7 +1544,7 @@ class Themes:
         system = (f'You are the creative art director of a 2D game. Invent {count} clearly different visual concepts for the request, '
                   'each one a distinct idea (different materials, props, story or style), not variations of one look. If the request is '
                   'short or vague, be bold and surprising. Each concept is one paragraph of at most 55 words saying exactly what to draw: '
-                  'materials, colors, lighting, decorations. Keep the subject recognisable and any text in it exactly as it is. ' +
+                  'materials, colors, lighting, decorations. Keep the subject recognisable and any text in it exactly as it is. ' + IDENTITY_DIRECTION +
                   (SCENE_DIRECTION if subject == design.SCENE_SUBJECT else 'Do not describe a background, floor or shadow under it (the art is cut out). ') +
                   'Celebrities, musicians, characters and pop '
                   'culture are fine as fan art (the game\'s own skins use them); swimwear is the limit: never nudity or sexual content, '

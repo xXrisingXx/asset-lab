@@ -44,10 +44,14 @@ SCENE_GROUPS = ('Backgrounds',)
 DEFAULT_SECONDS = 45.0   # one drawing on an 8 GB card, until this PC's own time is known (Designer.learn_time)
 THEME_SHEETS = ('theme.png', 'theme4.png')   # the sheets the game shows all the time: every copy of a sprite gets the drawing
 VIRUSES = ('virus.png', 'light_virus.png', 'spawner.png')
+HERO = ('icon-play', 'icon-coin', 'icon-ingame-potion', 'icon-crown', 'button-split', 'button-eject')   # drawn first in a whole-game set
 SPAWNER_RED = '#e0262f'   # the game paints the spawner red in maps (so players call it the red virus)
 # Store badges and sign-in buttons show other companies' logos: never redrawn with the rest of the game.
 KEEP_AS_IS = {'icon-iphone', 'icon-android', 'icon-facebook', 'icon-gamecenter'}
 SCENE_SUBJECT = 'a seamless repeating background picture for the game menu'   # theme.py words its art direction for scenery by this
+# Told to the art director when a reference board (inspire.pictures) goes with the drawing, so the ideas use the real thing.
+PICTURES_NOTE = ('\nPictures of it go to the image model too: build every idea around its real emblem or logo and its signature colors '
+                 'and shapes (as fan art), not invented symbols.')
 FOOD_MAX = 40   # every food sprite the game uses fits in one set (about 19 today)
 
 
@@ -100,6 +104,12 @@ def wording(prompt):
     if not found: return ''
     text = re.split(r'\s+(?:and|with|in|but|instead)\s+|[.!?;]', (found.group(1) or found.group(2)).strip())[0]
     return text.strip(' "“”\'').strip()[:32]
+
+
+def own_words(prompt):
+    """The player's request without the Wikipedia summary theme.inspired() adds after "Inspiration (…):". The summary is
+    context for the look, never a request ("changed its name to Bayerische Motoren Werke" must not rename the title)."""
+    return re.split(r'\s*\bInspiration \(', prompt, maxsplit=1)[0] or prompt
 
 
 def subject_part(prompt):
@@ -325,6 +335,10 @@ class Designer:
             seen.add(r.get('dup')); out.append(r)
         return out
 
+    def menu_backgrounds(self):
+        """bg2.png and the other game themes' menu backgrounds (one drawing for all of them)."""
+        return [r for r in self.lab.catalog.rows.values() if is_menu_background(r) and r['editable'] and not r.get('removed') and not r.get('legacy')]
+
     def whole_game_rows(self):
         """Everything players look at all the time, for "make the whole game look cool" with drawing: the MITOSIS title,
         the viruses, every sprite on theme.png (the coin, the in-game potion, buttons, icons, panels...) with all its copies,
@@ -349,7 +363,11 @@ class Designer:
         sprites = sorted((r for r in rows.values() if live(r) and r['name'] in names and sheet_of(r) in THEME_SHEETS), key=lambda r: (r['name'], r['source']))
         # The three viruses: light mode, dark mode, and the spawner ("the red virus") that can appear in maps.
         viruses = [r for r in rows.values() if live(r) and r['name'] in VIRUSES]
-        return self.title_rows() + viruses + sprites + self.food_rows()
+        # What players look at most comes first in the queue: the title, the background, the viruses, play and the coin,
+        # the food; then the rest of theme.png.
+        hero = [r for r in sprites if r['name'] in HERO]
+        rest = [r for r in sprites if r['name'] not in HERO]
+        return self.title_rows() + self.menu_backgrounds() + viruses + sorted(hero, key=lambda r: HERO.index(r['name'])) + self.food_rows() + rest
 
     def food_rows(self):
         """Every food sprite the game uses (pellet shapes, blobs and dots in each size), one per art: drawn as one set."""
@@ -362,6 +380,9 @@ class Designer:
     def targets(self, prompt, only=None):
         if only:
             rows = [r for r in (self.lab.row(k) for k in only if k in self.lab.catalog.rows) if r['editable']]
+            if any(is_menu_background(r) for r in rows):
+                # A menu background is one picture for every game theme: redraw them together.
+                rows += [r for r in self.menu_backgrounds() if r['key'] not in {x['key'] for x in rows}]
             return rows[:FOOD_MAX] if rows and all(is_food(r) for r in rows) else rows[:8]   # room for a sprite and its identical copies (the coin has 7)
         subject = subject_part(prompt)
         if re.search(TITLE, subject.lower()): return self.title_rows()
@@ -396,19 +417,20 @@ class Designer:
         return rows[:limit]
 
     # ----- generating ---------------------------------------------------------------------------
-    def start(self, prompt, keys=None, count=None, base=None, direction=None):
+    def start(self, prompt, keys=None, count=None, base=None, direction=None, inspiration=None):
         """base: (job id, variant index) to refine a variant instead of the current art. count: variants to draw
         (Settings > Theme AI & drawing > Drawings per request when not given)."""
         prompt = str(prompt or '').strip()[:800]
         if count is None: count = labsettings.value(self.lab, 'drawings')
         if not prompt: raise ValueError('Describe the design you want.')
+        request = own_words(prompt)
         lacking = self.status()['missing']
         if lacking: raise ValueError('The image model is not installed: ' + ', '.join(lacking))
         if base:
             parent = self.job(base[0])
             rows = [self.lab.row(k) for k in parent['targets']]
         else:
-            rows = self.targets(prompt, keys)
+            rows = self.targets(request, keys)
         if not rows: raise ValueError('Name what to redesign, or check it in the library first.')
         # One drawing per sprite: different sprites are drawn one at a time (the title's sizes share one drawing, and so do
         # copies that share a name you gave and a size, such as the coin the game also downloads).
@@ -428,7 +450,10 @@ class Designer:
                        scene=parent.get('scene', False) if base else rows[0]['group'] in SCENE_GROUPS,   # a background: a whole new picture that tiles
                        food=food)
             if direction: job['direction'] = str(direction)[:700]   # shared by a set drawn together, so they match
-            if job['title'] and wording(prompt): job['text'] = wording(prompt)
+            # A reference board from the inspiration lookup (inspire.pictures): its file in workspace/inspiration.
+            if inspiration and re.fullmatch(r'[0-9a-f]{20}\.png', str(inspiration)) and (self.lab.root / 'inspiration' / inspiration).is_file():
+                job['inspiration'] = str(inspiration)
+            if job['title'] and wording(request): job['text'] = wording(request)
             self.jobs[job['id']] = job
         threading.Thread(target=self._run, args=(job,), daemon=True).start()
         return dict(job)
@@ -448,13 +473,17 @@ class Designer:
                     'filling the whole image edge to edge so it can repeat as a seamless tile. It is shown small and repeated behind '
                     'buttons and text, so use a few large, bold, simple shapes instead of many tiny details, and moderate contrast so '
                     'what is on top stays readable. Use the colors the request names; if it names none, rich colors that are not too '
-                    'bright. No text, no logos, no frame, no border, no single big object in the middle. Clean, high quality game art.')
+                    'bright. No text, no frame, no border, no single big object in the middle. Clean, high quality game art.'
+                    + (' Take the look from the reference picture: its emblem, colors, patterns and style, repeated as a background motif.' if job.get('inspiration') else ''))
         what = self.subject(job)
         if job.get('text'): keep = f'Change the word MITOSIS so it reads exactly "{job["text"]}", in the same lettering style, on one line, centered.'
         elif job['title']: keep = 'Keep the exact word MITOSIS, spelled the same, in the same layout and size, centered.'
         elif job.get('food'): keep = 'Draw it as one simple object that fills most of the square, centered; its shape may change completely.'
         else: keep = 'Keep its outline, size and position, centered.'
         small = '' if job['title'] or max(job['frames'][0]) > 160 else ' It is shown small in the game, so use bold, simple shapes and strong contrast that read at a glance.'
+        if job.get('inspiration'):   # the reference board (inspire.pictures): emblems and photos of what the theme is about
+            small += (' Take the look from the second reference picture: its emblem, colors, shapes and style, as fan art'
+                      + (' (the round O of MITOSIS can become its emblem).' if job['title'] else '.'))
         color = {'green': 'pure green (#00FF00)', 'magenta': 'pure magenta (#FF00FF)', 'blue': 'pure blue (#0040FF)'}[job['key']]
         return (f'{job.get("direction") or job["prompt"]}. Edit {what}. {keep}{small} Crisp, high quality game UI art. '
                 f'The background must stay a perfectly flat solid {color} with nothing else on it: no scenery, no shadow or floor under the art, no frame, no extra text.')
@@ -479,10 +508,11 @@ class Designer:
                 ref = reference(source, job['key'], size)
             if ref is not None: ref.save(folder / 'reference.png')
             runs = []   # (art direction, variants drawn with it)
+            brief = job['prompt'] + (PICTURES_NOTE if job.get('inspiration') else '')
             if not job['base'] and not job.get('direction') and job['total'] > 1 and getattr(self, 'concepts', None):
                 # Several variants: a different idea for each (mummy wraps / chains and a graveyard...), not near-copies.
                 job['message'] = 'Coming up with ideas…'
-                try: ideas = [i.strip()[:700] for i in (self.concepts(job['prompt'], self.subject(job), job['total']) or []) if i.strip()]
+                try: ideas = [i.strip()[:700] for i in (self.concepts(brief, self.subject(job), job['total']) or []) if i.strip()]
                 except Exception: ideas = []
                 if len(ideas) >= 2:
                     job['directions'] = ideas; job['direction'] = ideas[0]   # "More variants" keeps the first idea's style
@@ -490,7 +520,7 @@ class Designer:
             if not runs and not job['base'] and not job.get('direction') and getattr(self, 'director', None):
                 # A short request ("spooky") becomes a concrete art direction the image model can follow.
                 job['message'] = 'Writing the art direction…'
-                try: job['direction'] = (self.director(job['prompt'], self.subject(job)) or '').strip()[:700]
+                try: job['direction'] = (self.director(brief, self.subject(job)) or '').strip()[:700]
                 except Exception: job['direction'] = ''
             if not runs: runs = [(job.get('direction') or '', job['total'])]
             # The planner and the image model do not both fit on an 8 GB card (Settings: Free the graphics card before drawing).
@@ -506,7 +536,9 @@ class Designer:
                         # Leave GPU workspace for diffusion; the text encoder and decoder can run in RAM.
                         '--offload-to-cpu', '--backend', 'te=cpu,vae=cpu',
                         '--threads', str(max(1, min(4, (os.cpu_count() or 2) // 2))),
-                        *(['-r', str(folder / 'reference.png')] if (folder / 'reference.png').is_file() else []), '-p', self.instruction(dict(job, direction=direction)),
+                        *(['-r', str(folder / 'reference.png')] if (folder / 'reference.png').is_file() else []),
+                        *(['-r', str(self.lab.root / 'inspiration' / job['inspiration'])] if job.get('inspiration') else []),   # the look, as pictures
+                        '-p', self.instruction(dict(job, direction=direction)),
                         '--cfg-scale', '1.0', '--steps', str(steps), '--sampling-method', 'euler', '-W', str(size[0]), '-H', str(size[1]),
                         '-s', str((int(time.time()) + number * 7919) % 100000), '-b', str(count), '-o', str(out)]
                 # Cancel can arrive while preparing the command. Publish the child atomically with that check.

@@ -36,6 +36,17 @@ class OpaqueTile(unittest.TestCase):
         self.assertGreater(out[:, 32, 0].mean(), out[:, 0, 0].mean() + 100)   # and the middle is the far color
 
 
+class ThemesFillTheBackground(unittest.TestCase):
+    def test_a_theme_color_fills_a_faint_tile_whatever_the_step_targets(self):
+        """'Design a BMW theme' colors everything: on the faint menu tile that must show, not tint invisible pixels."""
+        plain = dict(theme.clean_plan({'operations': [dict(targets=['everything'], color='#1c69d4', color_mode='colorize')]})['operations'][0])
+        out = theme.shade(pattern(256), plain)
+        self.assertTrue((out[..., 3] == 255).all())
+        self.assertGreater(out[..., 2].mean(), out[..., 1].mean() + 30)        # blue, not the game's teal
+        icon = np.zeros((256, 256, 4), np.uint8); icon[64:192, 64:192] = 255   # ordinary art keeps its transparency
+        self.assertEqual(int(theme.shade(icon, plain)[0, 0, 3]), 0)
+
+
 class BackgroundRequests(Base):
     def setUp(self):
         super().setUp()

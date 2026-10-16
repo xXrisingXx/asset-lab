@@ -625,7 +625,7 @@ MODELS = {'ollama': True, 'models': [{'name': 'best:latest', 'thinking': False, 
 
 
 class ThemeAiTests(SettingsCase):
-    allowed_errors = ('/api/design-image',)   # the stubbed drawing job has no pictures
+    allowed_errors = ('/api/design-image', '/api/inspiration')   # the stubbed drawing job and inspiration board have no pictures
 
     def open_drawer(self):
         b = self.browser
@@ -670,13 +670,13 @@ class ThemeAiTests(SettingsCase):
         self.close_settings()
         self.reset_all()
 
-    def ask_for_a_drawing(self):
+    def ask_for_a_drawing(self, **design):
         b = self.browser
         key = self.server.asset_key('icon-b')
         job = {'id': 'f' * 32, 'state': 'complete', 'message': 'Ready.', 'prompt': 'a witch hat', 'targets': [key], 'names': ['icon-b'], 'frames': [[32, 32]],
                'variants': [{'index': 0, 'warning': ''}, {'index': 1, 'warning': ''}], 'tinted': True, 'tint': '', 'title': False, 'stretched': False, 'direction': '', 'total': 2}
         chat = {'plan': {'reply': '', 'operations': [], 'ui_colors': {}, 'hide': []}, 'source': 'design', 'note': '', 'preview': None,
-                'design': {'prompt': 'a witch hat on icon-b', 'available': True, 'targets': [{'key': key, 'name': 'icon-b', 'size': [32, 32]}]}}
+                'design': {'prompt': 'a witch hat on icon-b', 'available': True, 'targets': [{'key': key, 'name': 'icon-b', 'size': [32, 32]}], **design}}
         self.stub({'/api/theme-status': MODELS, '/api/theme-chat': chat, '/api/design-start': dict(job, state='running', message='Preparing…'), '/api/design-job': job})
         self.open_drawer()
         b.click_selector('#themeInput')
@@ -706,6 +706,21 @@ class ThemeAiTests(SettingsCase):
         b.eval("[...document.querySelectorAll('#themeLog .theme-actions button')].find(x=>x.textContent==='Draw it').click(); true")
         b.wait_for("!!document.querySelector('#themeLog .design-card')")
         self.assertFalse(b.eval(white))
+        self.close_drawer()
+
+    def test_the_inspiration_pictures_are_shown_and_sent_with_the_drawing(self):
+        b = self.browser
+        self.reset_all()
+        self.reload()
+        self.change('drawings', 2)
+        self.close_settings()
+        self.ask_for_a_drawing(inspiration='a' * 20 + '.png', inspiration_title='BMW')
+        b.wait_for("!!document.querySelector('#themeLog .design-inspiration img')")
+        self.assertIn('BMW', b.eval("document.querySelector('#themeLog .design-inspiration figcaption').textContent"))
+        self.assertIn('/api/inspiration?name=' + 'a' * 20, b.eval("document.querySelector('#themeLog .design-inspiration img').getAttribute('src')"))
+        b.eval("[...document.querySelectorAll('#themeLog .theme-actions button')].find(x=>x.textContent==='Draw it').click(); true")
+        b.wait_for("(window.__calls||{})['/api/design-start'] >= 1")
+        self.assertEqual(self.bodies('/api/design-start')[-1]['inspiration'], 'a' * 20 + '.png')
         self.close_drawer()
 
     def test_auto_apply_starts_a_drawing_by_itself(self):

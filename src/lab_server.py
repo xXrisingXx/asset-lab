@@ -6,6 +6,7 @@ import json
 import mimetypes
 import os
 from pathlib import Path
+import re
 import threading
 import traceback
 import urllib.parse
@@ -131,6 +132,10 @@ def server_for(lab, port):
                     if q.get('small'): image.thumbnail((640, 320), Image.Resampling.LANCZOS)
                     return self.send(png(image), 'image/png')
                 if path == '/api/theme-job': return self.send(themes.job(q.get('job', '')))
+                if path == '/api/inspiration':   # a reference board from an inspiration lookup (inspire.pictures)
+                    name = q.get('name', '')
+                    if not re.fullmatch(r'[0-9a-f]{20}\.png', name) or not (lab.root / 'inspiration' / name).is_file(): raise ValueError('No such inspiration picture.')
+                    return self.send((lab.root / 'inspiration' / name).read_bytes(), 'image/png')
                 if path == '/api/ai-activity': return self.send(activity.snapshot(designer, themes))   # the activity strip in Theme AI
                 if path == '/api/builds': return self.send(builds.listing())
                 if path == '/api/chats': return self.send(builds.chats())
@@ -277,7 +282,8 @@ def server_for(lab, port):
                 only = data.get('only') if isinstance(data.get('only'), list) else None
                 if path == '/api/design-start':
                     base = data.get('base') if isinstance(data.get('base'), list) and len(data['base']) == 2 else None
-                    return self.send(designer.start(data.get('prompt', ''), only, int(data.get('count') or labsettings.value(lab, 'drawings')), base, data.get('direction') or None))
+                    return self.send(designer.start(data.get('prompt', ''), only, int(data.get('count') or labsettings.value(lab, 'drawings')), base, data.get('direction') or None,
+                                                    data.get('inspiration') or None))
                 if path == '/api/design-apply':
                     result = designer.apply(data.get('job', ''), int(data.get('variant', 0)), {k: float(v) for k, v in (data.get('settings') or {}).items() if k in DESIGN_SETTINGS})
                     return self.send(result)

@@ -45,7 +45,11 @@ jobs:
           ASSET_LAB_REQUIRE_BROWSER: '1'
         run: |
           python -B -X utf8 -m unittest discover -v -s tests/browser *> ci-browser.log
-          $code = $LASTEXITCODE; Get-Content ci-browser.log; exit $code
+          $code = $LASTEXITCODE; Get-Content ci-browser.log
+          # Failing tests as annotations: readable on the run page without signing in to download the logs.
+          Select-String -Path ci-browser.log -Pattern '^(FAIL|ERROR): ' | Select-Object -First 20 | ForEach-Object { "::error title=Browser test::$($_.Line)" }
+          Select-String -Path ci-browser.log -Pattern '^(\w+Error|AssertionError): ' | Select-Object -First 20 | ForEach-Object { "::error title=Why::$($_.Line.Substring(0, [Math]::Min(400, $_.Line.Length)))" }
+          exit $code
 
       - name: Keep browser diagnostics
         if: failure()

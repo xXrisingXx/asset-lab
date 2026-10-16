@@ -187,13 +187,13 @@ restore.onclick=run(()=>pass($('restoreButton'),'Restoring the original files'))
 launch.onclick=()=>$('launchButton').click();
 
 // ----- asking and applying -----------------------------------------------------------------------
-async function ask(text){
+async function ask(text,opts={}){   // opts: {only: keys, draw: 'on'} for "Redraw with Image AI" from the right-click menu
   if(T.busy||!text.trim())return;
   bubble('user',text);record({t:'user',text});input.value='';setBusy(true);
   const wait=bubble('bot','Thinking…');const started=Date.now();const tick=setInterval(()=>{wait.firstChild.textContent=`Thinking… ${Math.round((Date.now()-started)/1000)}s`+(Date.now()-started>12000?' (the first request loads the model)':'');},1000);
   try{
-    const keys=only();
-    const result=await api('/api/theme-chat',{message:text,model:model.value,history:T.history,only:keys,language:window.LabI18n?.lang||'en',draw:drawMode});   // the model replies in the lab's language
+    const keys=opts.only||only();
+    const result=await api('/api/theme-chat',{message:text,model:model.value,history:T.history,only:keys,language:window.LabI18n?.lang||'en',draw:opts.draw||drawMode});   // the model replies in the lab's language
     clearInterval(tick);wait.firstChild.textContent=result.plan.reply||'Here is the plan.';
     if(result.plan.operations.length||Object.keys(result.plan.ui_colors||{}).length||result.plan.hide?.length){T.history.push({role:'user',content:text},{role:'assistant',content:JSON.stringify(result.plan)});T.history=T.history.slice(-8);}
     const entry=record({t:'bot',text:wait.firstChild.textContent,result,prompt:text,keys});
@@ -226,11 +226,10 @@ function showDesign(box,d,keys,base,offer,entry,restoring){
   const isTitle=t=>t.set==='title'||t.name==='logo';   // a size can carry a name ("MITOSIS title logo (Main menu)")
   // Sets drawn once for all their sprites: the food, and the main menu background of every game theme. Other sprites are
   // drawn once per name, for all their copies (theme.png, theme4.png and the ones in assets.zip look the same).
-  const groups=[],title=d.targets.filter(isTitle),food=d.targets.filter(t=>t.set==='food'),backs=d.targets.filter(t=>t.set==='background');if(title.length)groups.push(title);
-  if(backs.length)groups.push(backs);
-  const byName=new Map();for(const t of d.targets)if(!isTitle(t)&&t.set!=='food'&&t.set!=='background'){if(!byName.has(t.name))byName.set(t.name,[]);byName.get(t.name).push(t);}
-  groups.push(...byName.values());
-  if(food.length)groups.push(food);
+  // Groups keep the order the lab sends (for the whole game: the title, background, viruses, play, coin and food first).
+  const title=d.targets.filter(isTitle),order=new Map();
+  for(const t of d.targets){const id=isTitle(t)?'title':t.set==='food'||t.set==='background'?t.set:'name:'+t.name;if(!order.has(id))order.set(id,[]);order.get(id).push(t);}
+  const groups=[...order.values()];
   const label=g=>isTitle(g[0])?'the MITOSIS title':g[0].set==='food'?(g.length>1?'the food (every pellet shape and size)':'the food'):
     g[0].set==='background'?(g.length>1?'the main menu background (every game theme)':'the main menu background'):g[0].name;
   const what=groups.length>6?`${groups.length} pieces of the game (${groups.slice(0,4).map(label).join(', ')}, …)`:groups.map(label).join(', ')+(title.length>1?' (every size the game uses)':'');
@@ -238,12 +237,15 @@ function showDesign(box,d,keys,base,offer,entry,restoring){
     d.optional?`Want ${what} redrawn to match? The local image model can draw it.`:
     offer?`The rest needs drawing: I'll redraw ${what} with the local image model.`:`I'll redraw ${what} with the local image model. Pick a variant, adjust it, then apply.`;
   if(!d.available)return;
+  /* The pictures the look comes from (a Wikipedia lookup): the drawings get them too, not just words. */
+  if(d.inspiration){const fig=el('figure','design-inspiration');const img=el('img');img.src='/api/inspiration?name='+encodeURIComponent(d.inspiration);img.alt=d.inspiration_title||'';img.loading='lazy';img.onclick=()=>fig.classList.toggle('big');
+    fig.append(img,el('figcaption','',`Inspiration: ${d.inspiration_title||'pictures'} (the drawings take their look from these pictures)`));box.append(fig);}
   const variants=(selected)=>{const s=el('select');s.className='design-count';for(const n of [1,2,3,4]){const o=el('option','',`${n} variant${n>1?'s':''}`);o.value=n;s.append(o);}s.value=String(selected);return s;};
   const bar=el('div','theme-actions');const count=variants(drawings());count.title='Variants for every piece still in the queue (each piece can be set on its own in the queue)';
   // A big set: one variant each, except the pieces worth choosing between (the title and the viruses get two). The queue
   // window sets each piece on its own, leaves pieces out and puts them in the order to draw them.
-  const big=groups.length>6,star=g=>isTitle(g[0])||/virus/i.test(g[0].name);
-  const Q=newQueue({prompt:d.prompt,base,entry,box,optional:d.optional,each:+d.seconds_per_drawing||45,
+  const big=groups.length>6,star=g=>isTitle(g[0])||g[0].set==='background'||/virus/i.test(g[0].name);
+  const Q=newQueue({prompt:d.prompt,base,entry,box,optional:d.optional,each:+d.seconds_per_drawing||45,inspiration:d.inspiration||entry?.batch?.inspiration||'',
     items:groups.map(g=>({keys:g.map(t=>t.key),rep:showKey(g),pieces:distinctPieces(g),label:groups.length>1?label(g):'',count:big?(star(g)?2:1):drawings(),on:true,state:'queued',job:'',applied:false}))});
   if(big)count.value='1';
   Q.go=el('button','primary','');Q.estimate=el('small','hint');
@@ -276,7 +278,7 @@ function showKey(g){return (g.find(t=>t.file==='food1')||g.find(t=>t.sheet==='th
 function distinctPieces(g){const seen=new Set(),out=[];for(const t of g){const id=t.file||t.name;if(seen.has(id))continue;seen.add(id);out.push({key:t.key,name:id});}return out.slice(0,12);}
 function newQueue(o){const Q=Object.assign({items:[],direction:null,running:false,stopped:false,spent:0,variantsDone:0,cards:new Map(),dialog:null},o);
   if(Q.items.length>1)remembered(Q);return Q;}
-function keepQueue(Q){if(Q.entry){Q.entry.batch={items:Q.items,direction:Q.direction};keepChat();}if(Q.items.length>1)remember(Q);}
+function keepQueue(Q){if(Q.entry){Q.entry.batch={items:Q.items,direction:Q.direction,inspiration:Q.inspiration||''};keepChat();}if(Q.items.length>1)remember(Q);}
 // The player's queue choices, kept for next time (on this PC): pieces left out stay unticked but listed, their variants,
 // and the order to draw them. Keyed by the piece's name, which stays the same from one request to the next.
 const PREFS='lab-draw-queue';
@@ -320,7 +322,7 @@ async function runQueue(Q){
       item.state='drawing';refreshQueue(Q);keepQueue(Q);
       const part=el('div','design-part');if(item.label)part.append(el('p','design-part-title',item.label));Q.box.append(part);Q.cards.set(item,part);
       const t0=Date.now();
-      const job=await drawDesign(part,Q.prompt,item.keys,item.count,Q.base,Q.direction,Q.entry,item.label).catch(e=>{part.append(el('p','theme-note error',e.message));return null;});
+      const job=await drawDesign(part,Q.prompt,item.keys,item.count,Q.base,Q.direction,Q.entry,item.label,Q.inspiration).catch(e=>{part.append(el('p','theme-note error',e.message));return null;});
       Q.spent+=(Date.now()-t0)/1000;Q.variantsDone+=item.count;
       if(job?.direction&&!Q.direction)Q.direction=job.direction;   // the first drawing's art direction is reused, so the set matches
       item.state=job?.state==='complete'?'done':'failed';item.job=job?.id||'';
@@ -428,8 +430,8 @@ function zoomPiece(Q,item){
 // What a drawing starts with (also what "Apply all" uses): zoomed and calmed for a background, the outline kept for a
 // stretched button, the frame filled for the title, and kept white where the game colors the art itself.
 function designDefaults(job){return {scale:job.scene?2.5:1,...(job.scene?{calm:0.5}:{}),dx:0,dy:0,tolerance:1,shape:job.stretched?1:0,fill:job.title?1:0,white:job.food||job.spawner||(job.tint||job.tinted)&&setting('keep_white')?1:0};}
-async function drawDesign(box,prompt,keys,count,base,direction,entry,label){
-  let job=await api('/api/design-start',{prompt,only:keys||null,count,base:base||null,direction:direction||null});
+async function drawDesign(box,prompt,keys,count,base,direction,entry,label,inspiration){
+  let job=await api('/api/design-start',{prompt,only:keys||null,count,base:base||null,direction:direction||null,inspiration:inspiration||null});
   const info={id:job.id,keys:keys||null,label:label||''};if(entry){(entry.jobs||(entry.jobs=[])).push(info);keepChat();}
   return watchDesign(box,job,keys,entry,info);
 }
@@ -520,7 +522,7 @@ function designCard(box,job,keys,entry,info){
     const inst=el('button','primary',S.status?.active?'Update Mitosis':'Install in Mitosis');inst.onclick=install.onclick;actions.append(undoD,inst);
     S.build=null;await status();await library();if(S.asset&&!S.dirty)await select(S.asset.key,true);});
   if(info?.applied){apply.disabled=true;apply.textContent='Applied ✓';}
-  more.onclick=run(()=>drawDesign(box,job.prompt,job.targets,drawings(),null,job.direction,entry));   // same art direction: the new variants match
+  more.onclick=run(()=>drawDesign(box,job.prompt,job.targets,drawings(),null,job.direction,entry,'',job.inspiration));   // same art direction: the new variants match
   again.onclick=run(()=>{const extra=refine.value.trim();if(!extra)return refine.focus();return drawDesign(box,extra,null,drawings(),[job.id,S2.variant],null,entry);});
   refine.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();again.click();}};
   const refineRow=el('div','design-refine-row');refineRow.append(refine,again);
@@ -606,6 +608,17 @@ async function activity(){if(!T.open||document.hidden)return;let a;try{a=await (
   showMeter(ramMeter,a.ram?.used||0,a.ram?.total||0);showMeter(vramMeter,a.gpu?.used||0,a.gpu?.total||0);}
 setInterval(activity,2000);document.addEventListener('visibilitychange',activity);
 J.id=newId();showChats();
+// Right-click → Redraw with Image AI: the asset (or the checked assets, when it is one of them) drawn anew by the image
+// model, by the same rules as Theme AI (a menu background becomes one seamless picture for every game theme).
+{const menu=$('contextMenu'),item=el('button','', 'Redraw with Image AI…');item.dataset.action='redraw-ai';item.type='button';menu.prepend(item);
+ new MutationObserver(()=>{if(!menu.hidden)item.hidden=!S.asset?.editable;}).observe(menu,{attributes:true,attributeFilter:['hidden']});
+ item.onclick=run(async()=>{menu.hidden=true;if(!S.asset?.editable)return;
+   const picked=window.LabSelection?.size()?window.LabSelection.keys():[],keys=picked.includes(S.asset.key)?picked:[S.asset.key];
+   const name=keys.length>1?`${keys.length} checked assets`:(S.asset.label||S.asset.name);
+   const look=prompt((window.LabI18n?LabI18n.t:x=>x)(`Describe the new look for “${name}” (for example “a neon city at night”, “made of gold”):`),'');
+   if(!look||!look.trim())return;
+   if(!T.open)toggle(true);
+   await ask(`Redraw ${name}: ${look.trim()}`,{only:keys,draw:'on'});});}
 window.LabThemeChat={reset(){clearTimeout(J.saveTimer);J.saveTimer=0;J.list=[];startChat();}};   // tests: forget the open chat
 run(loadChats)();try{if(localStorage.getItem('lab-theme-open'))toggle(true);}catch(e){}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&T.open&&!$('dialog').open&&document.activeElement!==input)toggle(false);});

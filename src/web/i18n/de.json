@@ -1359,9 +1359,7 @@
   "Mod installed. Opening Mitosis…": "Mod installiert. Mitosis wird geöffnet…",
   "Potions, power-ups and equipment come from the game's server: Mitosis downloads a fresh copy whenever its file was changed, so they can't be restyled. Everything else in the menus and the game can.": "Tränke, Power-ups und Ausrüstung kommen vom Server des Spiels: Mitosis lädt eine frische Kopie, sobald ihre Datei geändert wurde, deshalb lassen sie sich nicht umgestalten. Alles andere in den Menüs und im Spiel schon.",
   "Look things up for inspiration": "Inspiration nachschlagen",
-  "When a request names someone or something (“a Post Malone theme”), Theme AI reads its Wikipedia summary to get the look right. Off: nothing is looked up.": "Wenn eine Anfrage jemanden oder etwas nennt („ein Post-Malone-Theme“), liest Theme AI die Wikipedia-Zusammenfassung, um den Look zu treffen. Aus: Es wird nichts nachgeschlagen.",
   "Inspiration lookups": "Inspirations-Suchen",
-  "When a Theme AI request names a person, band, game or film (unless you turn it off under Theme AI & drawing), only that name is looked up on Wikipedia.": "Wenn eine Theme-AI-Anfrage eine Person, Band, ein Spiel oder einen Film nennt (außer du schaltest es unter Theme AI & Zeichnen aus), wird nur dieser Name auf Wikipedia nachgeschlagen.",
   "Idea: ": "Idee: ",
   "Coming up with ideas…": "Ideen werden ausgedacht…",
   "Nothing else: no accounts, no ads, no tracking and no usage statistics. Your art, edits and requests stay on this PC (only a name to look up goes to Wikipedia), and the lab’s page can only talk to the lab itself.": "Sonst nichts: keine Konten, keine Werbung, kein Tracking und keine Nutzungsstatistik. Deine Grafiken, Änderungen und Anfragen bleiben auf diesem PC (nur ein nachzuschlagender Name geht an Wikipedia), und die Seite von Asset Lab spricht nur mit Asset Lab selbst.",
@@ -2341,7 +2339,10 @@
   "Untick all shown": "Alle angezeigten abwählen",
   "Draw every piece this search shows": "Zeichnet jedes Teil, das diese Suche zeigt",
   "Leave out every piece this search shows": "Lässt jedes Teil weg, das diese Suche zeigt",
-  "No piece matches that search.": "Kein Teil passt zu dieser Suche."
+  "No piece matches that search.": "Kein Teil passt zu dieser Suche.",
+  "Redraw with Image AI…": "Mit der Bild-KI neu zeichnen…",
+  "When a Theme AI request names a person, band, game or film (unless you turn it off under Theme AI & drawing), only that name is looked up on Wikipedia. A few of its pictures are downloaded and kept on this PC, so the drawings can take their look from them.": "Wenn eine Theme-AI-Anfrage eine Person, Band, ein Spiel oder einen Film nennt (außer du schaltest es unter Theme AI & Zeichnen aus), wird nur dieser Name auf Wikipedia nachgeschlagen. Einige seiner Bilder werden heruntergeladen und auf diesem PC gespeichert, damit die Zeichnungen ihren Look daraus übernehmen.",
+  "When a request names someone or something (“a Post Malone theme”), Theme AI reads its Wikipedia summary and pictures to get the look right. Off: nothing is looked up.": "Wenn eine Anfrage jemanden oder etwas nennt („ein Post-Malone-Theme“), liest Theme AI die Wikipedia-Zusammenfassung und Bilder, um den Look zu treffen. Aus: Es wird nichts nachgeschlagen."
  },
  "patterns": {
   "{n} visuals": "{n} Grafiken",
@@ -2723,7 +2724,11 @@
   "Applied {n} drawings. Install in Mitosis to see them.": "{n} Zeichnungen angewendet. Installiere sie in Mitosis, um sie zu sehen.",
   "Applied {n} drawing. Install in Mitosis to see them.": "{n} Zeichnung angewendet. Installiere sie in Mitosis, um sie zu sehen.",
   "{n} pieces, {n2} drawings left: about {s} (done around {s2}).": "{n} Teile, noch {n2} Zeichnungen: etwa {s} (fertig gegen {s2}).",
-  "Original ({n} pictures, one drawing for all)": "Original ({n} Bilder, eine Zeichnung für alle)"
+  "Original ({n} pictures, one drawing for all)": "Original ({n} Bilder, eine Zeichnung für alle)",
+  "Describe the new look for “{s}” (for example “a neon city at night”, “made of gold”):": "Beschreibe den neuen Look für „{s}“ (zum Beispiel „eine Neonstadt bei Nacht“, „aus Gold“):",
+  "{n} checked assets": "{n} markierte Assets",
+  "Inspired by {s} (looked up on Wikipedia, with its pictures).": "Inspiriert von {s} (auf Wikipedia nachgeschlagen, mit seinen Bildern).",
+  "Inspiration: {s} (the drawings take their look from these pictures)": "Inspiration: {s} (die Zeichnungen übernehmen den Look dieser Bilder)"
  },
  "keys": {
   "Ctrl": "Strg",
