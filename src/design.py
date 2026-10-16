@@ -57,8 +57,9 @@ def is_menu_background(row):
 
 
 def is_food(row):
-    """The pellets players eat (food, food1-3, foodc/f/m/r/s...), on the theme sheets."""
-    return row.get('kind') == 'sprite' and row.get('group') == 'Cells & gameplay' and str(row.get('name', '')).startswith('food')
+    """The pellets players eat: the shapes food1-3 and their small copies foods1-3, on the theme sheets. (The round
+    blobs and dots also named food… are not what Mitosis shows, so they are not redrawn.)"""
+    return row.get('kind') == 'sprite' and row.get('group') == 'Cells & gameplay' and bool(re.fullmatch(r'foods?\d+', str(row.get('name', ''))))
 GAME_BG = (13, 40, 41)          # the menu's base color compiled into Mitosis.exe (#0D2829); bg2.png is an overlay on it
 SCENE_ZOOM, SCENE_CALM = 2.5, 0.5   # defaults: big shapes, half calmed (the game shows the tile at about a quarter size)
 # New wording for the title: "make the title say MITOSIS 2", "change the title text to Cell Wars".
@@ -332,8 +333,19 @@ class Designer:
         sheet_of = lambda r: rows.get(r.get('parent', ''), {}).get('name', '')
         live = lambda r: r['editable'] and not r.get('legacy') and not r.get('removed') and not r.get('server_only')
         badge = lambda r: r['name'] in KEEP_AS_IS or re.search(r'discord|app store|google play|facebook|game ?center', r.get('label') or '', re.I)
-        names = {r['name'] for r in rows.values() if live(r) and sheet_of(r) == 'theme.png' and not badge(r)
-                 and not r['name'].startswith('logo') and not is_food(r) and min(r['width'], r['height']) >= 16}
+        main = [r for r in rows.values() if live(r) and sheet_of(r) == 'theme.png']
+        def inside_another(r):
+            """A region mostly inside a bigger sprite's spot on the sheet ("rounded-bg-shadow" sits on the loading spinner):
+            drawing it would paint over that sprite, so it is left out."""
+            x, y, w, h = r['rect']
+            for o in main:
+                if o is r or o['width'] * o['height'] <= w * h: continue
+                ox, oy, ow, oh = o['rect']
+                shared = max(0, min(x + w, ox + ow) - max(x, ox)) * max(0, min(y + h, oy + oh) - max(y, oy))
+                if shared >= 0.6 * w * h: return True
+            return False
+        names = {r['name'] for r in main if not badge(r) and not r['name'].startswith('logo') and not r['name'].startswith('food')
+                 and min(r['width'], r['height']) >= 16 and not inside_another(r)}
         sprites = sorted((r for r in rows.values() if live(r) and r['name'] in names and sheet_of(r) in THEME_SHEETS), key=lambda r: (r['name'], r['source']))
         # The three viruses: light mode, dark mode, and the spawner ("the red virus") that can appear in maps.
         viruses = [r for r in rows.values() if live(r) and r['name'] in VIRUSES]
@@ -359,7 +371,7 @@ class Designer:
         if not names:
             rows = self.family_rows(subject)
             # "Turn the food into crowns": every pellet the game shows, so none keeps the old look.
-            return self.food_rows() if rows and all(is_food(r) for r in rows) else rows
+            return self.food_rows() if rows and any(is_food(r) for r in rows) and all(r['name'].startswith('food') for r in rows) else rows
         rows = [r for r in self.lab.catalog.rows.values() if r['name'] in names and r['editable'] and r.get('primary', True) and not r.get('legacy')]
         seen, out = set(), []
         for r in rows:

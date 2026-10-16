@@ -1557,7 +1557,9 @@ class Themes:
         ready = designer.status()
         return dict(prompt=prompt, available=ready['available'], note='' if ready['available'] else 'The image model is not installed (' + ', '.join(ready['missing']) + ').',
                     seconds_per_drawing=ready.get('seconds_per_drawing') or design.DEFAULT_SECONDS,   # for the finish time of a big set
-                    targets=[dict(key=r['key'], name=r.get('label') or r['name'], size=[r['width'], r['height']], **({'set': 'food'} if design.is_food(r) else {'set': 'background'} if design.is_menu_background(r) else {'set': 'title'} if r['name'] == 'logo' else {})) for r in rows])
+                    targets=[dict(key=r['key'], name=r.get('label') or r['name'], file=r['name'], size=[r['width'], r['height']],
+                                  sheet=designer.lab.catalog.rows.get(r.get('parent', ''), {}).get('name', ''),   # the queue shows the theme.png copy
+                                  **({'set': 'food'} if design.is_food(r) else {'set': 'background'} if design.is_menu_background(r) else {'set': 'title'} if r['name'] == 'logo' else {})) for r in rows])
 
     def plan_request(self, message, model='', history=None, scope=None, language=''):
         """Turn a request into a shading plan: exactly from tag words, else with the local model, else from keywords.

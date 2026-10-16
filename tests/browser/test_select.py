@@ -12,7 +12,7 @@ import json
 import math
 import time
 import numpy as np
-from harness import EditorTestCase, CTRL, SHIFT
+from harness import EditorTestCase, CTRL, SHIFT, SLOW
 
 
 # ----- independent references -----------------------------------------------------------------------------------------------
@@ -800,7 +800,7 @@ class SelectTools(EditorTestCase):
         timings = {}
         def timed(name, fn, limit=3.0):
             t = time.time(); fn(); b.settle(1); timings[name] = time.time() - t
-            self.assertLess(timings[name], limit, f'{name} took {timings[name]:.2f} s')
+            self.assertLess(timings[name], limit * SLOW, f'{name} took {timings[name]:.2f} s')
         self.tool('magic-wand', tolerance=10)
         timed('magic wand', lambda: self.click_at(10.5, 10.5))
         self.assertTrue(b.eval('Ed.select.hasSelection()'))

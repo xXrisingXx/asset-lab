@@ -2722,7 +2722,8 @@
   "All drawn: {n} of {n2}.": "Tout est dessiné : {n} sur {n2}.",
   "Applied {n} drawings. Install in Mitosis to see them.": "{n} dessins appliqués. Installe dans Mitosis pour les voir.",
   "Applied {n} drawing. Install in Mitosis to see them.": "{n} dessin appliqué. Installe dans Mitosis pour le voir.",
-  "{n} pieces, {n2} drawings left: about {s} (done around {s2}).": "{n} pièces, {n2} dessins restants : environ {s} (fini vers {s2})."
+  "{n} pieces, {n2} drawings left: about {s} (done around {s2}).": "{n} pièces, {n2} dessins restants : environ {s} (fini vers {s2}).",
+  "Original ({n} pictures, one drawing for all)": "Original ({n} images, un dessin pour toutes)"
  },
  "keys": {
   "Shift": "Maj",

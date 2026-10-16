@@ -10,7 +10,7 @@ import math
 import struct
 import numpy as np
 from PIL import Image
-from harness import EditorTestCase, ALT, CTRL, SHIFT, output_path
+from harness import EditorTestCase, ALT, CTRL, SHIFT, SLOW, output_path
 
 
 # ----- independent references -----------------------------------------------------------------------------------------------
@@ -1181,7 +1181,7 @@ class TransformTests(EditorTestCase):
         self.apply_transform()
         applied = time.time() - t0
         print(f'\n[transform 2048] open {opened:.2f} s, apply 50 % bilinear {applied:.2f} s')
-        self.assertLess(applied, 8)
+        self.assertLess(applied, 8 * SLOW)
         ref = np.asarray(Image.fromarray(before).resize((1024, 1024), Image.BILINEAR))
         self.assertPixelsClose(self.layer(0)[514:1534, 514:1534], ref[2:1022, 2:1022], max_abs=1)
         self.undo()

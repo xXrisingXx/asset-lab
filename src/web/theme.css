@@ -219,3 +219,4 @@ dialog.piece-zoom{width:min(980px,96vw);max-height:92vh;padding:16px 18px;overfl
 .piece-zoom-views figcaption{font-size:12px;color:var(--muted)}
 .draw-queue-memo{margin:0}.draw-queue-memo .link{padding:0;font-size:inherit}
 .draw-queue-find{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.draw-queue-search{flex:1;min-width:180px;padding:7px 10px}.draw-queue-find .quiet{padding:5px 9px;font-size:11px}.draw-queue-none{margin:0}.draw-queue-row[hidden]{display:none}
+.piece-zoom-set{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;width:100%}.piece-zoom-set figure{max-width:none;flex:none}.piece-zoom-set img{max-height:140px}.piece-zoom-setbox{flex:1 1 100%;max-width:none}

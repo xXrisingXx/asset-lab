@@ -29,7 +29,7 @@ SPAWNER_RED = '#e0262f'                     # the color the game puts over the s
 MODES = ('light', 'dark')
 CONTROLS = {'pc': ('button-explain-split', 'button-explain-eject'), 'phone': ('button-split', 'button-eject')}
 CONTROL_SPOTS = ((2320, 1360, 200), (2090, 1400, 160))   # split, eject: (x, y, size) at 2560 x 1600
-FOOD = ('food1', 'food2', 'food3', 'food', 'foodc1', 'foodr1')   # the pellet shapes and blobs
+FOOD = ('food1', 'food2', 'food3')   # the pellet shapes Mitosis shows (the round blobs and dots named food… are not used)
 FOOD_SIZE = 34
 FOOD_COLORS = ('#f6c94c', '#e74c8b', '#3fb6c0', '#8b6cf0', '#7fd35a', '#f08a3c')
 

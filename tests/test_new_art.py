@@ -55,7 +55,7 @@ class Food(unittest.TestCase):
 
     def test_every_food_sprite_is_one_target_set(self):
         names = [r['name'] for r in self.designer.targets('turn the food into little crowns')]
-        self.assertEqual(names, ['food', 'food1', 'food2', 'foodf1', 'foods1'])   # leftovers and copies are left out
+        self.assertEqual(names, ['food1', 'food2', 'foods1'])   # the shapes Mitosis shows; blobs, dots, leftovers and copies are left out
 
     def test_one_drawing_covers_them_all(self):
         from unittest.mock import patch
@@ -64,7 +64,7 @@ class Food(unittest.TestCase):
              patch.object(design, 'tinted', return_value=True), patch.object(design, 'tints', return_value={}):
             self.lab.catalog.image = lambda k: Image.new('RGBA', (8, 8), (255, 255, 255, 255))
             job = self.designer.start('turn the food into little crowns', count=1)
-            self.assertTrue(job['food']); self.assertEqual(len(job['targets']), 5)
+            self.assertTrue(job['food']); self.assertEqual(len(job['targets']), 3)
             self.assertIn('food pellet', self.designer.instruction(job))
             self.designer.jobs.clear()
             other = self.designer.start('make it spooky', keys=['h', 'a'], count=1)

@@ -42,6 +42,9 @@ from fakegame import make_editor_game, image_array, EDITOR_IMAGES  # noqa: E402,
 
 KEEP = os.environ.get('ASSET_LAB_TEST_KEEP') == '1'   # keep temp folders, screenshot failures into output/
 GPU = os.environ.get('ASSET_LAB_TEST_GPU') == '1'     # use the real graphics card instead of SwiftShader
+# Time limits in tests are for a normal PC; GitHub's build machines (CI=true) are several times slower, so speed checks
+# and long waits scale by this. ASSET_LAB_TEST_SLOW overrides it.
+SLOW = float(os.environ.get('ASSET_LAB_TEST_SLOW') or (3 if os.environ.get('CI') == 'true' else 1))
 LIVE_PORT = 8753                                       # the user's own lab: never touched
 EDGE_PATHS = (os.environ.get('ASSET_LAB_EDGE'), r'C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe',
               r'C:\Program Files\Microsoft\Edge\Application\msedge.exe')
@@ -701,7 +704,8 @@ class Browser:
 
     def wait_for(self, condition, timeout=10, interval=0.025, message=''):
         """Poll a JavaScript condition until it is truthy and return its value. Errors while polling (S.asset is still null...)
-        count as not yet; on timeout the last one is in the message."""
+        count as not yet; on timeout the last one is in the message. The timeout scales with SLOW (GitHub's slower machines)."""
+        timeout *= SLOW
         deadline, last = time.monotonic() + timeout, None
         while True:
             try:

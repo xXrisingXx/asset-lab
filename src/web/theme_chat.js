@@ -244,7 +244,7 @@ function showDesign(box,d,keys,base,offer,entry,restoring){
   // window sets each piece on its own, leaves pieces out and puts them in the order to draw them.
   const big=groups.length>6,star=g=>isTitle(g[0])||/virus/i.test(g[0].name);
   const Q=newQueue({prompt:d.prompt,base,entry,box,optional:d.optional,each:+d.seconds_per_drawing||45,
-    items:groups.map(g=>({keys:g.map(t=>t.key),label:groups.length>1?label(g):'',count:big?(star(g)?2:1):drawings(),on:true,state:'queued',job:'',applied:false}))});
+    items:groups.map(g=>({keys:g.map(t=>t.key),rep:showKey(g),pieces:distinctPieces(g),label:groups.length>1?label(g):'',count:big?(star(g)?2:1):drawings(),on:true,state:'queued',job:'',applied:false}))});
   if(big)count.value='1';
   Q.go=el('button','primary','');Q.estimate=el('small','hint');
   bar.append(Q.go,count);
@@ -270,6 +270,10 @@ const clockIn=s=>new Date(Date.now()+s*1000).toLocaleTimeString(undefined,{hour:
 // Items: {keys, label, count (variants), on (in the queue), state: queued | drawing | done | failed, job, applied}. The
 // next piece is always the first one still queued, so the order (and what is left out) can change while it draws. The
 // items are kept with the chat entry, so a reload can continue them.
+// The copy a piece is shown by: the one on theme.png (theme4.png's title carries the OG tag), the first food shape for
+// the food; and the different pictures a set is made of (the food shapes), each once.
+function showKey(g){return (g.find(t=>t.file==='food1')||g.find(t=>t.sheet==='theme.png'&&t.size?.[1]!==172)||g.find(t=>t.sheet==='theme.png')||g[0]).key;}
+function distinctPieces(g){const seen=new Set(),out=[];for(const t of g){const id=t.file||t.name;if(seen.has(id))continue;seen.add(id);out.push({key:t.key,name:id});}return out.slice(0,12);}
 function newQueue(o){const Q=Object.assign({items:[],direction:null,running:false,stopped:false,spent:0,variantsDone:0,cards:new Map(),dialog:null},o);
   if(Q.items.length>1)remembered(Q);return Q;}
 function keepQueue(Q){if(Q.entry){Q.entry.batch={items:Q.items,direction:Q.direction};keepChat();}if(Q.items.length>1)remember(Q);}
@@ -374,7 +378,7 @@ function renderQueue(Q){
     const grip=el('span','draw-queue-grip',waiting?'⋮⋮':'');grip.setAttribute('aria-hidden','true');
     const tick=el('input');tick.type='checkbox';tick.checked=item.on;tick.disabled=!waiting;tick.title='Draw this piece';
     tick.onchange=()=>{item.on=tick.checked;keepQueue(Q);refreshQueue(Q);};
-    const pic=new Image();pic.loading='lazy';pic.alt='';pic.className='draw-queue-pic';pic.src=`/api/thumb?key=${encodeURIComponent(item.keys[0])}&big=1${item.applied?`&t=${item.job}`:''}`;
+    const pic=new Image();pic.loading='lazy';pic.alt='';pic.className='draw-queue-pic';pic.src=`/api/thumb?key=${encodeURIComponent(item.rep||item.keys[0])}&big=1${item.applied?`&t=${item.job}`:''}`;
     pic.title='See it larger';pic.onclick=()=>zoomPiece(Q,item);
     const text=el('div','draw-queue-text');const place=waiting&&item.on?queuedNow.indexOf(item)+1:0;
     text.append(el('b','',item.label||'This piece'),el('small','',`${item.applied?'Applied ✓':states[item.state]}${place?` · #${place}`:''}`));
@@ -408,11 +412,16 @@ function moveItem(Q,from,to){
 // A piece large: the game's original, what is in your mod now, and the drawing (its first variant) once there is one.
 function zoomPiece(Q,item){
   const d=el('dialog','piece-zoom');d.setAttribute('aria-label',item.label||'Piece');document.body.append(d);
-  const key=encodeURIComponent(item.keys[0]),views=el('div','piece-zoom-views');
-  const view=(src,caption)=>{const f=el('figure');const im=new Image();im.src=src;im.alt=caption;f.append(im,el('figcaption','',caption));views.append(f);};
-  view(`/api/image?key=${key}&original=1`,'Original');
+  const rep=item.rep||item.keys[0],key=encodeURIComponent(rep),views=el('div','piece-zoom-views');
+  const view=(src,caption,into=views)=>{const f=el('figure');const im=new Image();im.src=src;im.alt=caption;f.append(im,el('figcaption','',caption));into.append(f);return f;};
+  const pieces=item.pieces||[];
+  if(pieces.length>1){
+    // A set (the food): every picture it is made of, as the game has them now; one drawing replaces them all.
+    const set=el('div','piece-zoom-set');for(const p of pieces)view(`/api/image?key=${encodeURIComponent(p.key)}&original=1`,p.name,set);
+    const box=el('figure','piece-zoom-setbox');box.append(set,el('figcaption','',`Original (${pieces.length} pictures, one drawing for all)`));views.append(box);}
+  else view(`/api/image?key=${key}&original=1`,'Original');
   if(item.applied)view(`/api/image?key=${key}&t=${Date.now()}`,'In your mod now');
-  if(item.job&&item.state==='done')view(`/api/design-image?job=${item.job}&variant=0&target=0`,'Drawn (variant 1)');
+  if(item.job&&item.state==='done')view(`/api/design-image?job=${item.job}&variant=0&target=${Math.max(0,item.keys.indexOf(rep))}`,'Drawn (variant 1)');
   const head=el('div','draw-queue-head');const x=el('button','quiet','✕');x.type='button';x.onclick=()=>d.close();head.append(el('h2','',item.label||'Piece'),x);
   d.append(head,views);d.addEventListener('close',()=>d.remove());d.addEventListener('click',e=>{if(e.target===d)d.close();});d.showModal();
 }
