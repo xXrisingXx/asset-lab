@@ -2329,7 +2329,19 @@
   "Variants for every piece still in the queue (each piece can be set on its own in the queue)": "Varianten für jedes Teil in der Warteschlange (jedes lässt sich dort einzeln einstellen)",
   "The spawner (the red virus) can appear in maps, and the game paints it red.": "Der Spawner (das rote Virus) kann auf Karten erscheinen, und das Spiel färbt ihn rot.",
   "“Keep it white” is on, so it stays red with the drawing’s detail.": "„Weiß lassen“ ist an, er bleibt also rot mit den Details der Zeichnung.",
-  "It sits in the item files the game downloads: if your drawing does not show in a match, the game has put its own back.": "Er liegt in den Item-Dateien, die das Spiel lädt: Erscheint deine Zeichnung im Spiel nicht, hat das Spiel seine eigene zurückgelegt."
+  "It sits in the item files the game downloads: if your drawing does not show in a match, the game has put its own back.": "Er liegt in den Item-Dateien, die das Spiel lädt: Erscheint deine Zeichnung im Spiel nicht, hat das Spiel seine eigene zurückgelegt.",
+  "Your choices (pieces left out, variants, order) are kept for next time.": "Deine Auswahl (weggelassene Teile, Varianten, Reihenfolge) bleibt fürs nächste Mal gespeichert.",
+  "Forget my choices": "Meine Auswahl vergessen",
+  "Tick every piece again, back to the usual variants and order (from the next request)": "Alle Teile wieder ankreuzen, mit den üblichen Varianten und der üblichen Reihenfolge (ab der nächsten Anfrage)",
+  "Your queue choices are forgotten.": "Deine Warteschlangen-Auswahl ist vergessen.",
+  "The next request starts with everything ticked.": "Die nächste Anfrage beginnt mit allem angekreuzt.",
+  "Search pieces…": "Teile suchen…",
+  "Search the queue": "Warteschlange durchsuchen",
+  "Tick all shown": "Alle angezeigten ankreuzen",
+  "Untick all shown": "Alle angezeigten abwählen",
+  "Draw every piece this search shows": "Zeichnet jedes Teil, das diese Suche zeigt",
+  "Leave out every piece this search shows": "Lässt jedes Teil weg, das diese Suche zeigt",
+  "No piece matches that search.": "Kein Teil passt zu dieser Suche."
  },
  "patterns": {
   "{n} visuals": "{n} Grafiken",

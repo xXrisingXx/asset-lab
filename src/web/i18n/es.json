@@ -2329,7 +2329,19 @@
   "Variants for every piece still in the queue (each piece can be set on its own in the queue)": "Variantes para cada pieza aún en la cola (cada una se ajusta en la cola)",
   "The spawner (the red virus) can appear in maps, and the game paints it red.": "El generador (el virus rojo) puede aparecer en los mapas, y el juego lo pinta de rojo.",
   "“Keep it white” is on, so it stays red with the drawing’s detail.": "“Mantenerlo blanco” está activado, así que sigue rojo con el detalle del dibujo.",
-  "It sits in the item files the game downloads: if your drawing does not show in a match, the game has put its own back.": "Está en los archivos de objetos que descarga el juego: si tu dibujo no aparece en una partida, el juego volvió a poner el suyo."
+  "It sits in the item files the game downloads: if your drawing does not show in a match, the game has put its own back.": "Está en los archivos de objetos que descarga el juego: si tu dibujo no aparece en una partida, el juego volvió a poner el suyo.",
+  "Your choices (pieces left out, variants, order) are kept for next time.": "Tus elecciones (piezas quitadas, variantes, orden) se guardan para la próxima vez.",
+  "Forget my choices": "Olvidar mis elecciones",
+  "Tick every piece again, back to the usual variants and order (from the next request)": "Vuelve a marcar todas las piezas, con las variantes y el orden habituales (desde la próxima petición)",
+  "Your queue choices are forgotten.": "Tus elecciones de la cola se olvidaron.",
+  "The next request starts with everything ticked.": "La próxima petición empieza con todo marcado.",
+  "Search pieces…": "Buscar piezas…",
+  "Search the queue": "Buscar en la cola",
+  "Tick all shown": "Marcar todas las mostradas",
+  "Untick all shown": "Desmarcar todas las mostradas",
+  "Draw every piece this search shows": "Dibuja cada pieza que muestra esta búsqueda",
+  "Leave out every piece this search shows": "Deja fuera cada pieza que muestra esta búsqueda",
+  "No piece matches that search.": "Ninguna pieza coincide con esa búsqueda."
  },
  "patterns": {
   "{n} visuals": "{n} gráficos",

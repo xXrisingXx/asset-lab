@@ -270,8 +270,22 @@ const clockIn=s=>new Date(Date.now()+s*1000).toLocaleTimeString(undefined,{hour:
 // Items: {keys, label, count (variants), on (in the queue), state: queued | drawing | done | failed, job, applied}. The
 // next piece is always the first one still queued, so the order (and what is left out) can change while it draws. The
 // items are kept with the chat entry, so a reload can continue them.
-function newQueue(o){return Object.assign({items:[],direction:null,running:false,stopped:false,spent:0,variantsDone:0,cards:new Map(),dialog:null},o);}
-function keepQueue(Q){if(Q.entry){Q.entry.batch={items:Q.items,direction:Q.direction};keepChat();}}
+function newQueue(o){const Q=Object.assign({items:[],direction:null,running:false,stopped:false,spent:0,variantsDone:0,cards:new Map(),dialog:null},o);
+  if(Q.items.length>1)remembered(Q);return Q;}
+function keepQueue(Q){if(Q.entry){Q.entry.batch={items:Q.items,direction:Q.direction};keepChat();}if(Q.items.length>1)remember(Q);}
+// The player's queue choices, kept for next time (on this PC): pieces left out stay unticked but listed, their variants,
+// and the order to draw them. Keyed by the piece's name, which stays the same from one request to the next.
+const PREFS='lab-draw-queue';
+function prefs(){try{return JSON.parse(localStorage.getItem(PREFS)||'{}')||{};}catch(e){return {};}}
+function remember(Q){const p=prefs();p.pieces=p.pieces||{};
+  for(const q of Q.items)if(q.label)p.pieces[q.label]={on:q.on,count:q.count};
+  // Order: this queue's order, with pieces it does not have kept where they were.
+  const here=Q.items.map(q=>q.label).filter(Boolean),before=(p.order||[]).filter(l=>!here.includes(l));p.order=[...here,...before].slice(0,600);
+  try{localStorage.setItem(PREFS,JSON.stringify(p));}catch(e){}}
+function remembered(Q){const p=prefs(),rank=new Map((p.order||[]).map((l,i)=>[l,i]));let used=false;
+  for(const q of Q.items){const s=p.pieces?.[q.label];if(s){q.on=s.on!==false;if(s.count>=1&&s.count<=4)q.count=s.count;used=true;}}
+  if(rank.size){used=true;const at=new Map(Q.items.map((q,i)=>[q,i]));Q.items.sort((a,b)=>(rank.get(a.label)??1e4+at.get(a))-(rank.get(b.label)??1e4+at.get(b)));}
+  Q.remembered=used;}
 const pending=Q=>Q.items.filter(q=>q.on&&q.state==='queued');
 const pace=Q=>Q.variantsDone?Q.spent/Q.variantsDone:Q.each;   // seconds a variant: this PC's learned time, then this set's real pace
 function refreshQueue(Q){
@@ -327,19 +341,36 @@ function openQueue(Q){
   renderQueue(Q);if(!Q.dialog.open)Q.dialog.showModal();
 }
 function renderQueue(Q){
-  const d=Q.dialog,scroll=d.querySelector('.draw-queue-list')?.scrollTop||0;d.replaceChildren();
+  if(Q.dragging){Q.renderLater=true;return;}   // never rebuilt under a piece being dragged (a drawing finishing would drop it)
+  const d=Q.dialog,scroll=d.querySelector('.draw-queue-list')?.scrollTop||0;
+  const typing=document.activeElement?.classList.contains('draw-queue-search'),caret=typing?document.activeElement.selectionStart:0;d.replaceChildren();
+  // Search by name; the buttons beside it tick or untick every piece the search shows (only pieces still to draw).
+  const find=el('div','draw-queue-find');const search=el('input');search.type='search';search.className='draw-queue-search';search.placeholder='Search pieces…';
+  search.setAttribute('aria-label','Search the queue');search.value=Q.search||'';
+  const shown=()=>Q.items.filter(q=>q.state==='queued'&&(!Q.search||(q.label||'').toLowerCase().includes(Q.search.toLowerCase())));
+  const all=(on,text,title)=>{const b=el('button','quiet',text);b.type='button';b.title=title;b.onclick=()=>{for(const q of shown())q.on=on;keepQueue(Q);refreshQueue(Q);};return b;};
+  find.append(search,all(true,'Tick all shown','Draw every piece this search shows'),all(false,'Untick all shown','Leave out every piece this search shows'));
   const head=el('div','draw-queue-head');const x=el('button','quiet','✕');x.type='button';x.title='Close';x.onclick=()=>d.close();
   head.append(el('h2','', 'Drawing queue'),x);
   const hint=el('p','hint','Drag pieces (or use the arrows) to draw them sooner. Untick to leave one out. Click a picture to see it larger; once drawn it shows before and after.');
+  const memo=el('p','hint draw-queue-memo','Your choices (pieces left out, variants, order) are kept for next time.');
+  const forget=el('button','link','Forget my choices');forget.type='button';forget.title='Tick every piece again, back to the usual variants and order (from the next request)';
+  forget.onclick=()=>{try{localStorage.removeItem(PREFS);}catch(e){}Q.remembered=false;message('Your queue choices are forgotten. The next request starts with everything ticked.');};
+  memo.append(' ',forget);
   const list=el('div','draw-queue-list');
+  // Dragging near the top or bottom edge scrolls the list (faster the closer to the edge), so a piece can travel far.
+  list.ondragover=e=>{const r=list.getBoundingClientRect(),edge=Math.min(80,r.height/4);
+    const up=e.clientY-r.top<edge,down=r.bottom-e.clientY<edge;
+    if(up)list.scrollTop-=Math.ceil(40*(1-(e.clientY-r.top)/edge));else if(down)list.scrollTop+=Math.ceil(40*(1-(r.bottom-e.clientY)/edge));};
   const states={queued:'Queued',drawing:'Drawing…',done:'Drawn',failed:'Failed'};
   const queuedNow=pending(Q);
   Q.items.forEach((item,i)=>{
     const row=el('div','draw-queue-row '+item.state+(item.on?'':' off'));const waiting=item.state==='queued';
     row.draggable=waiting;row.dataset.i=i;
-    row.ondragstart=e=>{e.dataTransfer.setData('text/plain',String(i));row.classList.add('dragging');};row.ondragend=()=>row.classList.remove('dragging');
+    row.ondragstart=e=>{e.dataTransfer.setData('text/plain',String(i));e.dataTransfer.effectAllowed='move';row.classList.add('dragging');Q.dragging=true;};
+    row.ondragend=()=>{row.classList.remove('dragging');Q.dragging=false;if(Q.renderLater){Q.renderLater=false;renderQueue(Q);}};
     row.ondragover=e=>{if(waiting){e.preventDefault();row.classList.add('over');}};row.ondragleave=()=>row.classList.remove('over');
-    row.ondrop=e=>{e.preventDefault();const from=+e.dataTransfer.getData('text/plain');moveItem(Q,from,i);};
+    row.ondrop=e=>{e.preventDefault();Q.dragging=false;Q.renderLater=false;const from=+e.dataTransfer.getData('text/plain');moveItem(Q,from,i);};
     const grip=el('span','draw-queue-grip',waiting?'⋮⋮':'');grip.setAttribute('aria-hidden','true');
     const tick=el('input');tick.type='checkbox';tick.checked=item.on;tick.disabled=!waiting;tick.title='Draw this piece';
     tick.onchange=()=>{item.on=tick.checked;keepQueue(Q);refreshQueue(Q);};
@@ -361,7 +392,14 @@ function renderQueue(Q){
   if(!Q.running&&n){const go=el('button','primary',Q.items.some(q=>q.state!=='queued')?'Continue drawing':'Start drawing');go.type='button';
     go.onclick=run(async()=>{d.close();if(Q.go)Q.go.disabled=true;await runQueue(Q);});foot.append(go);}
   const close=el('button','', 'Close');close.type='button';close.onclick=()=>d.close();foot.append(close);
-  d.append(head,hint,list,foot);list.scrollTop=scroll;
+  // Rows not matching the search are hidden, not removed, so dragging and the order still work on the whole queue.
+  const filter=()=>{const t=(Q.search||'').toLowerCase();let n=0;
+    for(const row of list.children){const name=row.querySelector('b')?.textContent.toLowerCase()||'';const hit=!t||name.includes(t);row.hidden=!hit;if(hit)n++;}
+    none.hidden=!!n;};
+  const none=el('p','hint draw-queue-none','No piece matches that search.');
+  search.oninput=()=>{Q.search=search.value;filter();list.scrollTop=0;};
+  d.append(head,hint,memo,find,list,none,foot);filter();list.scrollTop=scroll;
+  if(typing){search.focus();search.setSelectionRange(caret,caret);}   // a drawing finishing while you type keeps the cursor where it was
 }
 function moveItem(Q,from,to){
   if(from===to||to<0||to>=Q.items.length||Q.items[from]?.state!=='queued')return;

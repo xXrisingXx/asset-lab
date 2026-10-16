@@ -217,3 +217,5 @@ dialog.piece-zoom{width:min(980px,96vw);max-height:92vh;padding:16px 18px;overfl
 .piece-zoom-views figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:6px;flex:1 1 260px;max-width:440px}
 .piece-zoom-views img{width:100%;max-height:60vh;object-fit:contain;image-rendering:auto;border-radius:8px;background:repeating-conic-gradient(#1e2a37 0% 25%,#23303f 0% 50%) 50%/16px 16px}
 .piece-zoom-views figcaption{font-size:12px;color:var(--muted)}
+.draw-queue-memo{margin:0}.draw-queue-memo .link{padding:0;font-size:inherit}
+.draw-queue-find{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.draw-queue-search{flex:1;min-width:180px;padding:7px 10px}.draw-queue-find .quiet{padding:5px 9px;font-size:11px}.draw-queue-none{margin:0}.draw-queue-row[hidden]{display:none}
