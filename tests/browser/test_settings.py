@@ -900,14 +900,14 @@ class StorageTests(SettingsCase):
         b = self.browser
         self.open_settings('about')
         b.eval('await document.fonts.ready; true')
-        self.assertTrue(b.eval("document.fonts.check('700 58px NovuBlackletter')"))
+        b.wait_for("[...document.querySelectorAll('.creator-art')].every(i=>i.complete && i.naturalWidth>0)")
         self.assertEqual(b.eval("document.querySelector('.creator-credit').getAttribute('aria-label')"), 'Created by Novu')
         self.assertEqual(b.eval("[...document.querySelectorAll('.creator-letter')].map(e=>e.firstChild.textContent).join('')"), 'Novu')
-        self.assertTrue(b.eval("document.querySelector('.creator-letter:first-child .creator-crown').naturalWidth > 0"))
+        self.assertTrue(b.eval("[...document.querySelectorAll('.creator-art')].every(i=>i.getAttribute('src')==='/novu-wordmark.png')"))
         self.assertEqual(b.eval("getComputedStyle(document.querySelector('.creator-letter')).animationName"), 'novu-letter')
-        first = b.eval("getComputedStyle(document.querySelector('.creator-letter')).transform")
+        first = b.eval("getComputedStyle(document.querySelector('.creator-letter')).filter")
         time.sleep(.3)
-        self.assertNotEqual(first, b.eval("getComputedStyle(document.querySelector('.creator-letter')).transform"))
+        self.assertNotEqual(first, b.eval("getComputedStyle(document.querySelector('.creator-letter')).filter"))
         for width, height in ((1366,768),(1920,1080),(760,800)):
             b.set_viewport(width,height)
             self.assertTrue(b.eval("const c=document.querySelector('.creator-credit'),r=c.getBoundingClientRect();c.scrollWidth<=c.clientWidth+1 && r.left>=0 && r.right<=innerWidth"))
@@ -916,7 +916,7 @@ class StorageTests(SettingsCase):
         b.call('Emulation.setEmulatedMedia', features=[])
         self.change('reduce_motion', True)
         self.open_settings('about')
-        self.assertEqual(b.eval("getComputedStyle(document.querySelector('.creator-crown')).animationName"), 'none')
+        self.assertEqual(b.eval("getComputedStyle(document.querySelector('.creator-letter')).animationName"), 'none')
         self.close_settings()
         self.reset_all()
 

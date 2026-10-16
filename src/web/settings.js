@@ -196,9 +196,12 @@ function aboutBlock(){
   const a=L.about||{},box=el('div','settings-about'),dl=el('dl','settings-facts');
   const credit=el('div','creator-credit');credit.setAttribute('aria-label','Created by Novu');
   const signature=el('span','creator-signature');signature.setAttribute('aria-hidden','true');
-  for(const letter of 'Novu')signature.append(el('span','creator-letter',letter));
-  const crown=el('img','creator-crown');crown.src='/novu-crown.svg';crown.alt='';
-  signature.firstChild.append(crown);
+  // Four aligned windows onto the supplied lettering keep its exact shapes and crown,
+  // while each letter's light pulses independently. One cached image, no font substitution.
+  for(const letter of 'Novu'){
+    const part=el('span','creator-letter',letter),art=el('img','creator-art');
+    art.src='/novu-wordmark.png';art.alt='';part.append(art);signature.append(part);
+  }
   const byline=el('span','creator-byline','Created by');byline.setAttribute('aria-hidden','true');
   credit.append(byline,signature);box.append(credit);
   const fact=(k,...parts)=>{dl.append(el('dt','',k));const dd=el('dd');dd.append(...parts);dl.append(dd);return dd;};

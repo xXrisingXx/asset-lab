@@ -1,36 +1,51 @@
+![Created by Novu — the animated About credit from Asset Lab](media/readme/novu-credit.png)
+
 # Asset Lab
 
 A local visual editor and theme maker for **Mitos.is: The Game** (Steam). Repaint any sprite, theme the whole game from
 a prompt, or redraw art with a local image model, then install your mod and restore the originals with one click.
 Everything runs on your own PC.
 
-**Created by Novu.** A desktop workspace for finding, painting, styling and reviewing your game art.
+## From original artwork to your own theme
 
-![Asset Lab's layered editor displaying the Novu crimson skin](media/readme/editor.png)
+### 1. Find the asset
 
-## A look inside
+The original **MITOSIS main-menu title**, opened from the game's sprite sheet. Browse and search on the left,
+work on the canvas in the center, and manage layers and adjustments on the right. Both sidebars can collapse
+when you need more room.
 
-### Theme AI
+![Asset Lab layout with the original MITOSIS main-menu title selected](media/readme/editor.png)
 
-Describe the look, inspect the plan and preview, then apply it to your workspace. Scope a request to checked assets,
-or style a whole family of buttons, panels or icons.
+### 2. Describe the look in Theme AI
 
-![Theme AI applying rainbow outlines and a subtle glow to button artwork](media/readme/theme-ai.png)
+> Give the Mitosis logo an icy cyan-to-violet gradient with luminous highlights and a subtle glow.
+> Keep the existing lettering readable.
 
-### Review before installing
+Theme AI turns the request into a plan and previews the change. **Apply** saves it to the workspace;
+installation remains a separate step. The capture below shows the applied result alongside its conversation.
 
-Compare original and edited art side by side. Remove a change from the mod without deleting your work, then install
-when you are happy with the result.
+![Theme AI conversation and the changed MITOSIS title in the editor](media/readme/theme-ai.png)
 
-![Review dialog with before-and-after artwork and per-item Remove controls](media/readme/review.png)
+### 3. Inspect the finished artwork
 
-These are unretouched interface captures from a separate demonstration workspace, using copies of game artwork and
-the custom Novu skin. The Windows desktop version uses the same editor inside its own window with native window controls.
+The same title after applying the theme, with the chat panel closed for a clear view of the result.
 
-![Created by Novu with glowing red letters and a crown over the N](media/readme/novu-credit.png)
+![The MITOSIS title after the Theme AI change, shown in the full editor layout](media/readme/theme-result.png)
 
-The About credit animates each letter and the crown, and respects both Windows and Asset Lab reduced-motion settings.
-The [Novu crimson skin PNG](media/skins/novu-crimson.png) is also included: a flat circular design with transparent corners.
+<details>
+<summary>See the plan and before/after review</summary>
+
+![Theme AI's proposed plan and preview before applying](media/readme/theme-plan.png)
+
+Compare original and edited artwork before installing. Remove an item from the mod without deleting your work.
+
+![Review dialog comparing the original and themed artwork](media/readme/review.png)
+
+</details>
+
+These are unretouched captures of a real Theme AI workflow in a separate demonstration workspace, using copies of
+Mitosis game artwork. No changes were installed into the game for these screenshots. The desktop version uses the
+same editor inside its own Windows window with native window controls.
 
 ## Get started
 
