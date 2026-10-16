@@ -58,15 +58,25 @@ class Food(unittest.TestCase):
         names = [r['name'] for r in self.designer.targets('turn the food into little crowns')]
         self.assertEqual(names, ['food1', 'food2', 'foods1'])   # the shapes Mitosis shows; blobs, dots, leftovers and copies are left out
 
-    def test_one_drawing_covers_them_all(self):
+    def test_each_food_is_drawn_on_its_own_with_its_mass(self):
         from unittest.mock import patch
+        # food1 fills little of its square, food2 a lot; foods1 is food2's small copy (same shape, its own number).
+        def art(k):
+            im = Image.new('RGBA', (32, 32), (0, 0, 0, 0))
+            box = {'b': (13, 13, 19, 19), 'c': (4, 4, 28, 28), 'e': (4, 4, 28, 28)}.get(k, (0, 0, 32, 32))
+            im.paste((255, 255, 255, 255), box); return im
+        self.lab.catalog.image = art
+        self.assertEqual([[r['name'] for r in kind] for kind in self.designer.food_kinds()], [['food1'], ['food2', 'foods1']])
         self.designer.jobs, self.designer.lock = {}, __import__('threading').Lock()
-        with patch.object(self.designer, 'status', return_value=dict(missing=[])), patch('threading.Thread'), patch.object(design, 'key_for', return_value='green'), \
-             patch.object(design, 'tinted', return_value=True), patch.object(design, 'tints', return_value={}):
-            self.lab.catalog.image = lambda k: Image.new('RGBA', (8, 8), (255, 255, 255, 255))
-            job = self.designer.start('turn the food into little crowns', count=1)
-            self.assertTrue(job['food']); self.assertEqual(len(job['targets']), 3)
-            self.assertIn('food pellet', self.designer.instruction(job))
+        with patch.object(self.designer, 'status', return_value=dict(missing=[])), patch('threading.Thread'), patch.object(design, 'key_for', return_value='green'),              patch.object(design, 'tinted', return_value=True), patch.object(design, 'tints', return_value={}):
+            job = self.designer.start('turn the food into little crowns', keys=['c', 'e', 'b'], count=1)
+            self.assertTrue(job['food']); self.assertEqual(job['targets'], ['c', 'e'])            # one food: its big and small picture
+            self.assertEqual(job['food_tier'], [1, 2])
+            text = self.designer.instruction(job)
+            self.assertIn('worth the most mass', text); self.assertIn('look clearly different from the other two', text)
+            self.designer.jobs.clear()
+            small = self.designer.start('turn the food into little crowns', keys=['b'], count=1)
+            self.assertIn('worth the least mass', self.designer.instruction(small))
             self.designer.jobs.clear()
             other = self.designer.start('make it spooky', keys=['h', 'a'], count=1)
             self.assertFalse(other['food']); self.assertEqual(other['targets'], ['h'])
@@ -113,3 +123,12 @@ class PartBecomes(unittest.TestCase):
         self.assertEqual(theme.ALIASES['red virus'], ['spawner.png'])
         self.assertTrue(re.search(design.BRANDS, 'the app store badge')); self.assertFalse(re.search(design.BRANDS, 'the store icon'))
         for word in ('round', 'circle', 'shadow', 'left', 'next', 'close'): self.assertIn(word, theme.STOP)
+
+
+class OnlyTheTitleSaysMitosis(unittest.TestCase):
+    def test_the_brand_rule_keeps_words_off_everything_but_the_title(self):
+        import theme
+        title = theme.identity(design.Designer.subject(dict(title=True, names=['logo'])))
+        food = theme.identity(design.Designer.subject(dict(title=False, food=True, food_tier=[0, 3], names=['food1'])))
+        self.assertIn('make its round O the emblem', title)
+        self.assertNotIn('round O', food); self.assertIn('no text', food)

@@ -719,7 +719,14 @@ MENU_BACKGROUND = re.compile(r'bg\d+\.png', re.I)   # bg2.png and the other them
 # A theme named after a brand, team, artist, film or game: the drawings are made of its visual identity, as fan art.
 IDENTITY_DIRECTION = ('If the request names a brand, team, artist, film, game or character, build the design from its recognisable visual '
                       'identity: its emblem or logo shapes, signature colors, patterns and iconic objects (for a car brand: its badge, racing '
-                      'stripes, wheels, grille, carbon fiber). For the game title, keep the word MITOSIS and make its round O the emblem. ')
+                      'stripes, wheels, grille, carbon fiber). ')
+
+
+def identity(subject):
+    """The brand rule for one piece: only the title carries the word MITOSIS (its round O can be the emblem); everything else
+    gets no words at all, or the model writes the game's name on food and coins."""
+    if 'MITOSIS' in subject: return IDENTITY_DIRECTION + 'Keep the word MITOSIS and make its round O the emblem. '
+    return IDENTITY_DIRECTION + 'Never mention the game title, MITOSIS, letters or words: this piece has no text. '
 SCENE_DIRECTION = ('This is a whole background picture that fills the frame edge to edge and repeats as a tile behind menu buttons: describe '
                    'the scene, its colors and lighting, with a few large shapes rather than tiny detail and nothing that must sit in the '
                    'center. Use the colors the request names. No text or logos. ')
@@ -909,6 +916,12 @@ def scene_request(piece, lookup=None):
     if not re.search(BACKGROUND_WORDS, low): return False
     if any(re.search(rf'\b(?:{words})\b', low) for words in MOOD_WORDS.values()) or re.search(VAGUE, low): return True
     return any(w not in FEELINGS and not re.fullmatch(r'background|backdrop|wallpaper|bg|scenery|backgrounds', w) for w in unknown_words(piece, lookup))
+
+
+def food_set(designer, row):
+    """The queue draws each food on its own (they are different things worth different mass): which one, smallest first."""
+    which, of = designer.food_kind(row)
+    return dict(set='food', kind=which, tier=design.FOOD_TIERS[min(2, round(which * 2 / max(1, of - 1)))][0] if of > 1 else '')
 
 
 def unknown_words(prompt, lookup=None):
@@ -1567,7 +1580,7 @@ class Themes:
         model = self.preferred([m['name'] for m in available])
         system = ('You are the art director of a 2D mobile game. Rewrite the request as one short paragraph (at most 60 words) that says exactly '
                   'what to draw: materials, colors, lighting, and small details or decorations. Keep the subject, and any text in it, exactly as '
-                  'it is. ' + IDENTITY_DIRECTION + (SCENE_DIRECTION if subject == design.SCENE_SUBJECT else 'Do not describe a background, scenery, or a shadow, floor or stand under it (the art is cut out). ') +
+                  'it is. ' + identity(subject) + (SCENE_DIRECTION if subject == design.SCENE_SUBJECT else 'Do not describe a background, scenery, or a shadow, floor or stand under it (the art is cut out). ') +
                   'No preamble, no lists, no quotes.')
         # Unloaded at once (the image model needs the graphics card next) unless the player keeps it (Settings: Free the graphics card).
         payload = dict(model=model, stream=False, keep_alive=0 if labsettings.value(self.lab, 'free_gpu') else '10m',
@@ -1590,7 +1603,7 @@ class Themes:
                   'short or vague, be bold and surprising. Each concept is one paragraph of at most 55 words saying exactly what to draw: '
                   'materials, colors, lighting, decorations. Keep the subject recognisable and any text in it exactly as it is. '
                   'When the request names what to draw ("little tires", "a donut"), every concept is exactly that, one of it, '
-                  'varying only its style. ' + IDENTITY_DIRECTION +
+                  'varying only its style. ' + identity(subject) +
                   (SCENE_DIRECTION if subject == design.SCENE_SUBJECT else 'Do not describe a background, floor or shadow under it (the art is cut out). ') +
                   'Celebrities, musicians, characters and pop '
                   'culture are fine as fan art (the game\'s own skins use them); swimwear is the limit: never nudity or sexual content, '
@@ -1619,7 +1632,7 @@ class Themes:
                     seconds_per_drawing=ready.get('seconds_per_drawing') or design.DEFAULT_SECONDS,   # for the finish time of a big set
                     targets=[dict(key=r['key'], name=r.get('label') or r['name'], file=r['name'], size=[r['width'], r['height']],
                                   sheet=designer.lab.catalog.rows.get(r.get('parent', ''), {}).get('name', ''),   # the queue shows the theme.png copy
-                                  **({'set': 'food'} if design.is_food(r) else {'set': 'background'} if design.is_menu_background(r) else {'set': 'title'} if r['name'] == 'logo' else {})) for r in rows])
+                                  **(food_set(designer, r) if design.is_food(r) else {'set': 'background'} if design.is_menu_background(r) else {'set': 'title'} if r['name'] == 'logo' else {})) for r in rows])
 
     def plan_request(self, message, model='', history=None, scope=None, language=''):
         """Turn a request into a shading plan: exactly from tag words, else with the local model, else from keywords.

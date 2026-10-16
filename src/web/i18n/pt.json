@@ -2362,7 +2362,10 @@
   "Drawings will use the whole graphics card and every processor core, at high priority. They finish sooner, but the computer will be slow while it draws: games, videos and other apps may stutter or lag.": "Os desenhos vão usar a placa de vídeo inteira e todos os núcleos do processador, em prioridade alta. Terminam antes, mas o computador fica lento enquanto desenha: jogos, vídeos e outros apps podem travar.",
   "Turn on Accelerate": "Ativar o Accelerate",
   "Accelerate is on: drawings use the full graphics card and processor.": "Accelerate ativado: os desenhos usam a placa de vídeo e o processador inteiros.",
-  "Accelerate is off: drawings leave room for other apps.": "Accelerate desativado: os desenhos deixam espaço para outros apps."
+  "Accelerate is off: drawings leave room for other apps.": "Accelerate desativado: os desenhos deixam espaço para outros apps.",
+  "the food (least mass)": "a comida (menos massa)",
+  "the food (more mass)": "a comida (mais massa)",
+  "the food (most mass)": "a comida (a maior massa)"
  },
  "patterns": {
   "{n} visuals": "{n} gráficos",
@@ -2752,7 +2755,9 @@
   "{n} messages": "{n} mensagens",
   "{n} min ago": "há {n} min",
   "{n} h ago": "há {n} h",
-  "{n} d ago": "há {n} d"
+  "{n} d ago": "há {n} d",
+  "This drawing becomes one of the game’s {n} foods (each is worth a different mass), in every size and copy.": "Este desenho vira uma das {n} comidas do jogo (cada uma vale uma massa diferente), em cada tamanho e cópia.",
+  "This drawing becomes one of the game’s {n} foods (each is worth a different mass), in every size and copy. The game paints each pellet its own color, so “Keep it white” is on: the pellets keep their colors and get the drawing’s detail.": "Este desenho vira uma das {n} comidas do jogo (cada uma vale uma massa diferente), em cada tamanho e cópia. O jogo pinta cada bolinha com a própria cor, então “Manter branco” está ativado: as bolinhas mantêm as cores e ganham o detalhe do desenho."
  },
  "keys": {
   "Space": "Espaço"

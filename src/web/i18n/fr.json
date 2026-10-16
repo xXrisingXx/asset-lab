@@ -2362,7 +2362,10 @@
   "Drawings will use the whole graphics card and every processor core, at high priority. They finish sooner, but the computer will be slow while it draws: games, videos and other apps may stutter or lag.": "Les dessins utiliseront toute la carte graphique et tous les cœurs du processeur, en priorité haute. Ils finissent plus tôt, mais l’ordinateur sera lent pendant le dessin : jeux, vidéos et autres applis peuvent saccader.",
   "Turn on Accelerate": "Activer Accelerate",
   "Accelerate is on: drawings use the full graphics card and processor.": "Accelerate est activé : les dessins utilisent toute la carte graphique et le processeur.",
-  "Accelerate is off: drawings leave room for other apps.": "Accelerate est désactivé : les dessins laissent de la place aux autres applis."
+  "Accelerate is off: drawings leave room for other apps.": "Accelerate est désactivé : les dessins laissent de la place aux autres applis.",
+  "the food (least mass)": "la nourriture (le moins de masse)",
+  "the food (more mass)": "la nourriture (plus de masse)",
+  "the food (most mass)": "la nourriture (le plus de masse)"
  },
  "patterns": {
   "{n} visuals": "{n} visuels",
@@ -2752,7 +2755,9 @@
   "{n} messages": "{n} messages",
   "{n} min ago": "il y a {n} min",
   "{n} h ago": "il y a {n} h",
-  "{n} d ago": "il y a {n} j"
+  "{n} d ago": "il y a {n} j",
+  "This drawing becomes one of the game’s {n} foods (each is worth a different mass), in every size and copy.": "Ce dessin devient l’une des {n} nourritures du jeu (chacune vaut une masse différente), dans chaque taille et copie.",
+  "This drawing becomes one of the game’s {n} foods (each is worth a different mass), in every size and copy. The game paints each pellet its own color, so “Keep it white” is on: the pellets keep their colors and get the drawing’s detail.": "Ce dessin devient l’une des {n} nourritures du jeu (chacune vaut une masse différente), dans chaque taille et copie. Le jeu peint chaque pastille de sa propre couleur, donc « Garder blanc » est activé : les pastilles gardent leurs couleurs et prennent le détail du dessin."
  },
  "keys": {
   "Shift": "Maj",

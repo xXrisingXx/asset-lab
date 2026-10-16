@@ -2362,7 +2362,10 @@
   "Drawings will use the whole graphics card and every processor core, at high priority. They finish sooner, but the computer will be slow while it draws: games, videos and other apps may stutter or lag.": "Los dibujos usarán toda la tarjeta gráfica y todos los núcleos del procesador, con prioridad alta. Terminan antes, pero el ordenador irá lento mientras dibuja: juegos, vídeos y otras apps pueden ir a tirones.",
   "Turn on Accelerate": "Activar Accelerate",
   "Accelerate is on: drawings use the full graphics card and processor.": "Accelerate activado: los dibujos usan toda la tarjeta gráfica y el procesador.",
-  "Accelerate is off: drawings leave room for other apps.": "Accelerate desactivado: los dibujos dejan sitio a otras apps."
+  "Accelerate is off: drawings leave room for other apps.": "Accelerate desactivado: los dibujos dejan sitio a otras apps.",
+  "the food (least mass)": "la comida (menos masa)",
+  "the food (more mass)": "la comida (más masa)",
+  "the food (most mass)": "la comida (la mayor masa)"
  },
  "patterns": {
   "{n} visuals": "{n} gráficos",
@@ -2752,7 +2755,9 @@
   "{n} messages": "{n} mensajes",
   "{n} min ago": "hace {n} min",
   "{n} h ago": "hace {n} h",
-  "{n} d ago": "hace {n} d"
+  "{n} d ago": "hace {n} d",
+  "This drawing becomes one of the game’s {n} foods (each is worth a different mass), in every size and copy.": "Este dibujo se convierte en una de las {n} comidas del juego (cada una vale una masa distinta), en cada tamaño y copia.",
+  "This drawing becomes one of the game’s {n} foods (each is worth a different mass), in every size and copy. The game paints each pellet its own color, so “Keep it white” is on: the pellets keep their colors and get the drawing’s detail.": "Este dibujo se convierte en una de las {n} comidas del juego (cada una vale una masa distinta), en cada tamaño y copia. El juego pinta cada bolita de su propio color, así que “Mantenerlo blanco” está activado: las bolitas conservan sus colores y reciben el detalle del dibujo."
  },
  "keys": {
   "Shift": "Mayús",

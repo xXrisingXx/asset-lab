@@ -748,6 +748,23 @@ class ThemeAiTests(SettingsCase):
         self.assertFalse(self.saved('accelerate'))
         self.close_drawer()
 
+    def test_the_three_foods_are_drawn_one_by_one(self):
+        b = self.browser
+        self.reset_all()
+        self.reload()
+        self.change('drawings', 2)
+        self.close_settings()
+        foods = [dict(key=f'k{i}', name=n, file=n, size=[s, s], sheet='theme.png', set='food', kind=k, tier=t)
+                 for i, (n, s, k, t) in enumerate([('food1', 128, 0, 'least mass'), ('food2', 128, 1, 'more mass'), ('food3', 128, 2, 'most mass'),
+                                                   ('foods1', 64, 2, 'most mass'), ('foods2', 64, 1, 'more mass'), ('foods3', 64, 0, 'least mass')])]
+        self.ask_for_a_drawing(targets=foods)
+        text = b.eval("document.querySelector('#themeLog .theme-bubble:last-child p').textContent")
+        for tier in ('least mass', 'more mass', 'most mass'): self.assertIn(f'the food ({tier})', text)
+        b.eval("document.querySelector('#themeLog .theme-bubble:last-child .theme-actions button.primary').click(); true")
+        b.wait_for("(window.__calls||{})['/api/design-start'] >= 1")
+        self.assertEqual(sorted(self.bodies('/api/design-start')[0]['only']), ['k0', 'k5'])   # the smallest food: its big and small picture
+        self.close_drawer()
+
     def test_a_piece_with_its_own_words_is_drawn_from_them(self):
         b = self.browser
         self.reset_all()

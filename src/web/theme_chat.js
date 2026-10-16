@@ -236,15 +236,15 @@ function renderResult(wait,entry,restoring){
 const GAME_BG='#0D2829';
 const drawings=()=>{const n=+setting('drawings');return n>=1&&n<=4?n:2;};   // Settings › Theme AI & drawing › Drawings per request
 function showDesign(box,d,keys,base,offer,entry,restoring){
-  // One drawing per distinct sprite; the title's sizes share one drawing, and so does all the food.
+  // One drawing per distinct sprite; the title's sizes share one drawing, and each food (big picture and small copy) has one.
   const isTitle=t=>t.set==='title'||t.name==='logo';   // a size can carry a name ("MITOSIS title logo (Main menu)")
   // Sets drawn once for all their sprites: the food, and the main menu background of every game theme. Other sprites are
   // drawn once per name, for all their copies (theme.png, theme4.png and the ones in assets.zip look the same).
   // Groups keep the order the lab sends (for the whole game: the title, background, viruses, play, coin and food first).
   const title=d.targets.filter(isTitle),order=new Map();
-  for(const t of d.targets){const id=isTitle(t)?'title':t.set==='food'||t.set==='background'?t.set:'name:'+t.name;if(!order.has(id))order.set(id,[]);order.get(id).push(t);}
+  for(const t of d.targets){const id=isTitle(t)?'title':t.set==='food'?'food:'+(t.kind??0):t.set==='background'?t.set:'name:'+t.name;if(!order.has(id))order.set(id,[]);order.get(id).push(t);}
   const groups=[...order.values()];
-  const label=g=>isTitle(g[0])?'the MITOSIS title':g[0].set==='food'?(g.length>1?'the food (every pellet shape and size)':'the food'):
+  const label=g=>isTitle(g[0])?'the MITOSIS title':g[0].set==='food'?(g[0].tier?`the food (${g[0].tier})`:g.length>1?'the food (every pellet shape and size)':'the food'):
     g[0].set==='background'?(g.length>1?'the main menu background (every game theme)':'the main menu background'):g[0].name;
   const what=groups.length>6?`${groups.length} pieces of the game (${groups.slice(0,4).map(label).join(', ')}, …)`:groups.map(label).join(', ')+(title.length>1?' (every size the game uses)':'');
   box.firstChild.textContent=!d.available?(offer?'':`This needs the image model, which is not installed.`):
@@ -288,7 +288,7 @@ const clockIn=s=>new Date(Date.now()+s*1000).toLocaleTimeString(undefined,{hour:
 // items are kept with the chat entry, so a reload can continue them.
 // The copy a piece is shown by: the one on theme.png (theme4.png's title carries the OG tag), the first food shape for
 // the food; and the different pictures a set is made of (the food shapes), each once.
-function showKey(g){return (g.find(t=>t.file==='food1')||g.find(t=>t.sheet==='theme.png'&&t.size?.[1]!==172)||g.find(t=>t.sheet==='theme.png')||g[0]).key;}
+function showKey(g){return (g.find(t=>/^food\d+$/.test(t.file||''))||g.find(t=>t.sheet==='theme.png'&&t.size?.[1]!==172)||g.find(t=>t.sheet==='theme.png')||g[0]).key;}
 function distinctPieces(g){const seen=new Set(),out=[];for(const t of g){const id=t.file||t.name;if(seen.has(id))continue;seen.add(id);out.push({key:t.key,name:id});}return out.slice(0,12);}
 function newQueue(o){const Q=Object.assign({items:[],direction:null,running:false,stopped:false,spent:0,variantsDone:0,cards:new Map(),dialog:null},o);
   if(Q.items.length>1)remembered(Q);return Q;}
@@ -488,7 +488,7 @@ function designCard(box,job,keys,entry,info){
   const card=el('div','design-card');box.append(card);
   // Settings › Theme AI & drawing › Keep game-colored icons white ticks "Keep it white" for icons the game colors.
   const S2={variant:0,settings:designDefaults(job),applied:null};   // food: the game paints every pellet its own color
-  if(job.food)card.append(el('p','theme-note',`This drawing becomes every food pellet (${job.targets.length} shapes and sizes). The game paints each pellet its own color, so “Keep it white” is on: the pellets keep their colors and get the drawing’s detail.`));
+  if(job.food)card.append(el('p','theme-note',(job.food_tier?.[1]>1?`This drawing becomes one of the game’s ${job.food_tier[1]} foods (each is worth a different mass), in every size and copy. `:`This drawing becomes every food pellet (${job.targets.length} shapes and sizes). `)+'The game paints each pellet its own color, so “Keep it white” is on: the pellets keep their colors and get the drawing’s detail.'));
   else if(job.spawner)card.append(el('p','theme-note','The spawner (the red virus) can appear in maps, and the game paints it red. “Keep it white” is on, so it stays red with the drawing’s detail. It sits in the item files the game downloads: if your drawing does not show in a match, the game has put its own back.'));
   else if(job.tint)card.append(el('p','theme-note',`The game colors this white icon ${job.tint} in the menu, so “In game” shows each variant the way the game will draw it. Tick “Keep it white” to get the game’s color with the drawing’s detail.`));
   else if(job.tinted)card.append(el('p','theme-note','This icon is plain white because the game colors it (teal in the menu), so a colorful drawing will come out tinted. Light, mostly white designs keep their look.'));

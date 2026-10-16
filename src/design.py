@@ -54,6 +54,11 @@ SCENE_SUBJECT = 'a seamless repeating background picture for the game menu'   # 
 # Told to the art director when a reference board (inspire.pictures) goes with the drawing, so the ideas use the real thing.
 PICTURES_NOTE = ('\nPictures of it go to the image model too: what the request asks for comes first ("little tires" are tires), '
                  'styled with its real emblem or logo, signature colors and shapes (as fan art), not invented symbols.')
+# The game's foods are different things worth different mass (the bigger, the more): smallest first.
+# The game itself shows the more valuable foods bigger, so each drawing fills its square; worth shows in its detail.
+FOOD_TIERS = (('least mass', 'the first of the three foods, worth the least mass: the simplest, plainest one'),
+              ('more mass', 'the second of the three foods, worth more mass: a richer, more detailed one'),
+              ('most mass', 'the third of the three foods, worth the most mass: the most impressive, valuable-looking one'))
 FOOD_MAX = 40   # every food sprite the game uses fits in one set (about 19 today)
 
 
@@ -422,6 +427,30 @@ class Designer:
         rest = [r for r in sprites if r['name'] not in HERO]
         return self.title_rows() + self.menu_backgrounds() + viruses + sorted(hero, key=lambda r: HERO.index(r['name'])) + self.food_rows() + rest
 
+    def food_kinds(self):
+        """The game's different foods, each worth a different mass, smallest first: one list of sprites per food (its big
+        picture and its small copy). The small copies are matched by shape: their numbers differ (foods1 is the small
+        food3). The more of its square a food fills, the more it is worth (the molecule, the "<", then the X)."""
+        if getattr(self, '_kinds', None) is None:
+            rows = self.food_rows()
+            big = [r for r in rows if re.fullmatch(r'food\d+', r['name'])]
+            mask = lambda r: np.asarray(self.lab.catalog.image(r['key']).convert('RGBA').getchannel('A').resize((32, 32))) > 100
+            masks = {r['key']: mask(r) for r in rows}
+            kinds = {r['key']: [r] for r in big}
+            for r in rows:
+                if r['key'] in kinds or not big: continue
+                twin = max(big, key=lambda b: (masks[b['key']] & masks[r['key']]).sum() / max(1, (masks[b['key']] | masks[r['key']]).sum()))
+                kinds[twin['key']].append(r)
+            order = sorted(big, key=lambda b: masks[b['key']].mean())
+            self._kinds = [kinds[b['key']] for b in order] or ([rows] if rows else [])
+        return self._kinds
+
+    def food_kind(self, row):
+        """(which food, how many foods) for a food sprite, by its name (every sheet's copy is the same food)."""
+        for i, kind in enumerate(self.food_kinds()):
+            if row.get('name') in {r['name'] for r in kind}: return i, len(self.food_kinds())
+        return 0, 1
+
     def food_rows(self):
         """Every food sprite the game uses (pellet shapes, blobs and dots in each size), one per art: drawn as one set."""
         rows, seen = [], set()
@@ -495,7 +524,9 @@ class Designer:
         # Food is the exception: one drawing for every pellet shape and size, the way a player swaps them all for crowns.
         first = rows[0]
         food, menu = is_food(first), is_menu_background(first)   # and one drawing for the menu background of every game theme
-        rows = [r for r in rows if (food and is_food(r)) or (menu and is_menu_background(r)) or r['name'] == first['name'] or (first.get('label') and r.get('label') == first['label'] and (r['width'], r['height']) == (first['width'], first['height']))]
+        # A food is drawn once for its big picture and its small copy; the other foods are different things (more mass).
+        tier = self.food_kind(first) if food else None
+        rows = [r for r in rows if (food and is_food(r) and self.food_kind(r) == tier) or (menu and is_menu_background(r)) or r['name'] == first['name'] or (first.get('label') and r.get('label') == first['label'] and (r['width'], r['height']) == (first['width'], first['height']))]
         with self.lock:
             if any(j['state'] == 'running' for j in self.jobs.values()): raise ValueError('A design is already being drawn.')
             job = dict(id=uuid.uuid4().hex, state='running', prompt=prompt, targets=[r['key'] for r in rows], names=[r.get('label') or r['name'] for r in rows],
@@ -506,7 +537,7 @@ class Designer:
                        tint=tints().get(rows[0]['name'], '') or (SPAWNER_RED if rows[0]['name'] == 'spawner.png' else ''),   # the color the game multiplies this art by
                        spawner=rows[0]['name'] == 'spawner.png',
                        scene=parent.get('scene', False) if base else rows[0]['group'] in SCENE_GROUPS,   # a background: a whole new picture that tiles
-                       food=food)
+                       food=food, **({'food_tier': list(tier)} if food else {}))
             if direction: job['direction'] = str(direction)[:700]   # shared by a set drawn together, so they match
             # A reference board from the inspiration lookup (inspire.pictures): its file in workspace/inspiration.
             if inspiration and re.fullmatch(r'[0-9a-f]{20}\.png', str(inspiration)) and (self.lab.root / 'inspiration' / inspiration).is_file():
@@ -519,7 +550,10 @@ class Designer:
     @staticmethod
     def subject(job):
         if job['title']: return 'the game title logo that reads MITOSIS (the O is a round dot)'
-        if job.get('food'): return 'a small food pellet that players eat in a top-down cell game, seen from above'
+        if job.get('food'):
+            which, of = job.get('food_tier') or (0, 1)
+            what = 'a food that players eat in a top-down cell game, seen from above'
+            return f'{what}: {FOOD_TIERS[min(2, round(which * 2 / max(1, of - 1)))][1]}' if of > 1 else what
         if job.get('scene'): return SCENE_SUBJECT
         # "Play button (Main menu)" -> "play button"; "icon-crown" -> "icon crown".
         name = re.sub(r'[-_]+', ' ', re.sub(r'\.png$|\s*\([^)]*\)\s*$', '', job['names'][0])).strip()
@@ -536,7 +570,11 @@ class Designer:
         what = self.subject(job)
         if job.get('text'): keep = f'Change the word MITOSIS so it reads exactly "{job["text"]}", in the same lettering style, on one line, centered.'
         elif job['title']: keep = 'Keep the exact word MITOSIS, spelled the same, in the same layout and size, centered.'
-        elif job.get('food'): keep = 'Draw it as one simple object that fills most of the square, centered; its shape may change completely.'
+        elif job.get('food'):
+            keep = 'Draw it as one simple object that fills most of the square, centered; its shape may change completely.'
+            if (job.get('food_tier') or (0, 1))[1] > 1:
+                keep += (' The game has three foods, each worth a different mass, so this one must look clearly different from the other two '
+                         'and fit its worth (for "tires": a plain little tire, a sturdier tire, a big shiny racing tire), still filling most of the square.')
         else: keep = 'Keep its outline, size and position, centered.'
         small = '' if job['title'] or max(job['frames'][0]) > 160 else ' It is shown small in the game, so use bold, simple shapes and strong contrast that read at a glance.'
         if job.get('inspiration'):   # the reference board (inspire.pictures): emblems and photos of what the theme is about
@@ -545,7 +583,8 @@ class Designer:
                          '. Draw what is asked above (the object itself, e.g. a tire), not a copy of the reference picture.'))
         color = {'green': 'pure green (#00FF00)', 'magenta': 'pure magenta (#FF00FF)', 'blue': 'pure blue (#0040FF)'}[job['key']]
         return (f'{job.get("direction") or job["prompt"]}. Edit {what}. {keep}{small} Crisp, high quality game UI art. '
-                f'The background must stay a perfectly flat solid {color} with nothing else on it: no scenery, no shadow or floor under the art, no frame, no extra text.')
+                f'The background must stay a perfectly flat solid {color} with nothing else on it: no scenery, no shadow or floor under the art, no frame, no extra text.'
+                + ('' if job['title'] or job.get('text') else ' Do not write any words or letters on it.'))
 
     def _run(self, job):
         folder = self.folder / job['id']

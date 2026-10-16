@@ -2362,7 +2362,10 @@
   "Drawings will use the whole graphics card and every processor core, at high priority. They finish sooner, but the computer will be slow while it draws: games, videos and other apps may stutter or lag.": "Zeichnungen nutzen die ganze Grafikkarte und alle Prozessorkerne mit hoher Priorität. Sie sind schneller fertig, aber der Computer ist beim Zeichnen langsam: Spiele, Videos und andere Apps können ruckeln oder hängen.",
   "Turn on Accelerate": "Accelerate einschalten",
   "Accelerate is on: drawings use the full graphics card and processor.": "Accelerate ist an: Zeichnungen nutzen die ganze Grafikkarte und den Prozessor.",
-  "Accelerate is off: drawings leave room for other apps.": "Accelerate ist aus: Zeichnungen lassen Platz für andere Apps."
+  "Accelerate is off: drawings leave room for other apps.": "Accelerate ist aus: Zeichnungen lassen Platz für andere Apps.",
+  "the food (least mass)": "das Futter (wenigste Masse)",
+  "the food (more mass)": "das Futter (mehr Masse)",
+  "the food (most mass)": "das Futter (meiste Masse)"
  },
  "patterns": {
   "{n} visuals": "{n} Grafiken",
@@ -2752,7 +2755,9 @@
   "{n} messages": "{n} Nachrichten",
   "{n} min ago": "vor {n} Min.",
   "{n} h ago": "vor {n} Std.",
-  "{n} d ago": "vor {n} T."
+  "{n} d ago": "vor {n} T.",
+  "This drawing becomes one of the game’s {n} foods (each is worth a different mass), in every size and copy.": "Diese Zeichnung wird zu einem der {n} Futter des Spiels (jedes ist unterschiedlich viel Masse wert), in jeder Größe und Kopie.",
+  "This drawing becomes one of the game’s {n} foods (each is worth a different mass), in every size and copy. The game paints each pellet its own color, so “Keep it white” is on: the pellets keep their colors and get the drawing’s detail.": "Diese Zeichnung wird zu einem der {n} Futter des Spiels (jedes ist unterschiedlich viel Masse wert), in jeder Größe und Kopie. Das Spiel färbt jedes Kügelchen in einer eigenen Farbe, daher ist „Weiß lassen“ an: Die Kügelchen behalten ihre Farben und bekommen die Details der Zeichnung."
  },
  "keys": {
   "Ctrl": "Strg",
