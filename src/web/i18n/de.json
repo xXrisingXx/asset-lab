@@ -2326,7 +2326,10 @@
   "In your mod now": "Jetzt in deinem Mod",
   "Drawn (variant 1)": "Gezeichnet (Variante 1)",
   "Use the first variant of each finished drawing now, while the rest keep drawing": "Nimmt jetzt die erste Variante jeder fertigen Zeichnung, während der Rest weiterzeichnet",
-  "Variants for every piece still in the queue (each piece can be set on its own in the queue)": "Varianten für jedes Teil in der Warteschlange (jedes lässt sich dort einzeln einstellen)"
+  "Variants for every piece still in the queue (each piece can be set on its own in the queue)": "Varianten für jedes Teil in der Warteschlange (jedes lässt sich dort einzeln einstellen)",
+  "The spawner (the red virus) can appear in maps, and the game paints it red.": "Der Spawner (das rote Virus) kann auf Karten erscheinen, und das Spiel färbt ihn rot.",
+  "“Keep it white” is on, so it stays red with the drawing’s detail.": "„Weiß lassen“ ist an, er bleibt also rot mit den Details der Zeichnung.",
+  "It sits in the item files the game downloads: if your drawing does not show in a match, the game has put its own back.": "Er liegt in den Item-Dateien, die das Spiel lädt: Erscheint deine Zeichnung im Spiel nicht, hat das Spiel seine eigene zurückgelegt."
  },
  "patterns": {
   "{n} visuals": "{n} Grafiken",

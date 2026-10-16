@@ -25,6 +25,7 @@ MENU_TEXT = [('Player', 80, 100, 30, TEAL), ('Ranks', 1477, 104, 32, TEAL), ('Ac
 SCREENS = ('menu', 'match')
 ARENA, ARENA_TILE = (236, 238, 240), 0.5   # the arena: worldbg.png's light triangles
 ARENA_DARK = (46, 52, 60, 255)              # dark mode: the same pattern, darkened (close, not measured)
+SPAWNER_RED = '#e0262f'                     # the color the game puts over the spawner (design.SPAWNER_RED)
 MODES = ('light', 'dark')
 CONTROLS = {'pc': ('button-explain-split', 'button-explain-eject'), 'phone': ('button-split', 'button-eject')}
 CONTROL_SPOTS = ((2320, 1360, 200), (2090, 1400, 160))   # split, eject: (x, y, size) at 2560 x 1600
@@ -113,6 +114,8 @@ def match(lab, mode='light', controls='pc'):
     virus = sprite(lab, 'light_virus.png' if mode == 'dark' else 'virus.png') or sprite(lab, 'virus.png')
     for (x, y, size) in ((1180, 640, 360), (1950, 1180, 300)):
         if virus: place(canvas, virus, x - size / 2, y - size / 2, size, size)
+    spawner = sprite(lab, 'spawner.png')   # "the red virus": maps can spawn it, and the game paints it red
+    if spawner: place(canvas, tinted(spawner, SPAWNER_RED), 330, 230, 260, 260)
     # Split and eject, bottom right (where the game keeps its action buttons; a close placement, not measured in a match).
     # The art is white; the game shades it to read on the arena (dark on light, white on dark: a stand-in, not measured).
     for name, (x, y, size) in zip(CONTROLS[controls], CONTROL_SPOTS):

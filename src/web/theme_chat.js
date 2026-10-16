@@ -252,7 +252,9 @@ function showDesign(box,d,keys,base,offer,entry,restoring){
   bar.append(Q.estimate);box.append(bar);
   count.onchange=()=>{for(const q of Q.items)if(q.state==='queued')q.count=+count.value;refreshQueue(Q);};
   refreshQueue(Q);
-  Q.go.onclick=run(async()=>{Q.go.disabled=true;count.disabled=true;await runQueue(Q);});
+  Q.go.onclick=run(async()=>{Q.go.disabled=true;count.disabled=true;
+    if(!pending(Q).length)for(const q of Q.items)if(q.on&&q.state!=='drawing')Object.assign(q,{state:'queued',applied:false,job:''});   // Draw again: a new round
+    await runQueue(Q);});
   if(restoring&&entry?.jobs?.length){bar.hidden=true;(async()=>{for(const info of entry.jobs)await resumeDesign(box,info,entry);
     // A queue cut off by a reload: what is left can be drawn, in the order it had.
     if(!entry.batch?.items)return;Object.assign(Q,{items:entry.batch.items,direction:entry.batch.direction||null});
@@ -378,7 +380,7 @@ function zoomPiece(Q,item){
 }
 // What a drawing starts with (also what "Apply all" uses): zoomed and calmed for a background, the outline kept for a
 // stretched button, the frame filled for the title, and kept white where the game colors the art itself.
-function designDefaults(job){return {scale:job.scene?2.5:1,...(job.scene?{calm:0.5}:{}),dx:0,dy:0,tolerance:1,shape:job.stretched?1:0,fill:job.title?1:0,white:job.food||(job.tint||job.tinted)&&setting('keep_white')?1:0};}
+function designDefaults(job){return {scale:job.scene?2.5:1,...(job.scene?{calm:0.5}:{}),dx:0,dy:0,tolerance:1,shape:job.stretched?1:0,fill:job.title?1:0,white:job.food||job.spawner||(job.tint||job.tinted)&&setting('keep_white')?1:0};}
 async function drawDesign(box,prompt,keys,count,base,direction,entry,label){
   let job=await api('/api/design-start',{prompt,only:keys||null,count,base:base||null,direction:direction||null});
   const info={id:job.id,keys:keys||null,label:label||''};if(entry){(entry.jobs||(entry.jobs=[])).push(info);keepChat();}
@@ -425,6 +427,7 @@ function designCard(box,job,keys,entry,info){
   // Settings › Theme AI & drawing › Keep game-colored icons white ticks "Keep it white" for icons the game colors.
   const S2={variant:0,settings:designDefaults(job),applied:null};   // food: the game paints every pellet its own color
   if(job.food)card.append(el('p','theme-note',`This drawing becomes every food pellet (${job.targets.length} shapes and sizes). The game paints each pellet its own color, so “Keep it white” is on: the pellets keep their colors and get the drawing’s detail.`));
+  else if(job.spawner)card.append(el('p','theme-note','The spawner (the red virus) can appear in maps, and the game paints it red. “Keep it white” is on, so it stays red with the drawing’s detail. It sits in the item files the game downloads: if your drawing does not show in a match, the game has put its own back.'));
   else if(job.tint)card.append(el('p','theme-note',`The game colors this white icon ${job.tint} in the menu, so “In game” shows each variant the way the game will draw it. Tick “Keep it white” to get the game’s color with the drawing’s detail.`));
   else if(job.tinted)card.append(el('p','theme-note','This icon is plain white because the game colors it (teal in the menu), so a colorful drawing will come out tinted. Light, mostly white designs keep their look.'));
   // One idea per variant when the AI came up with several; the line follows the variant picked.

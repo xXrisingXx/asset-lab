@@ -43,6 +43,8 @@ NEW_ART = (r'\b(?:(?:entirely|completely|totally|really) (?:different|new)|somet
 SCENE_GROUPS = ('Backgrounds',)
 DEFAULT_SECONDS = 45.0   # one drawing on an 8 GB card, until this PC's own time is known (Designer.learn_time)
 THEME_SHEETS = ('theme.png', 'theme4.png')   # the sheets the game shows all the time: every copy of a sprite gets the drawing
+VIRUSES = ('virus.png', 'light_virus.png', 'spawner.png')
+SPAWNER_RED = '#e0262f'   # the game paints the spawner red in maps (so players call it the red virus)
 # Store badges and sign-in buttons show other companies' logos: never redrawn with the rest of the game.
 KEEP_AS_IS = {'icon-iphone', 'icon-android', 'icon-facebook', 'icon-gamecenter'}
 SCENE_SUBJECT = 'a seamless repeating background picture for the game menu'   # theme.py words its art direction for scenery by this
@@ -333,7 +335,8 @@ class Designer:
         names = {r['name'] for r in rows.values() if live(r) and sheet_of(r) == 'theme.png' and not badge(r)
                  and not r['name'].startswith('logo') and not is_food(r) and min(r['width'], r['height']) >= 16}
         sprites = sorted((r for r in rows.values() if live(r) and r['name'] in names and sheet_of(r) in THEME_SHEETS), key=lambda r: (r['name'], r['source']))
-        viruses = [r for r in rows.values() if live(r) and r['name'] in ('virus.png', 'light_virus.png')]
+        # The three viruses: light mode, dark mode, and the spawner ("the red virus") that can appear in maps.
+        viruses = [r for r in rows.values() if live(r) and r['name'] in VIRUSES]
         return self.title_rows() + viruses + sprites + self.food_rows()
 
     def food_rows(self):
@@ -408,7 +411,8 @@ class Designer:
                        key=parent['key'] if base else key_for(prompt), base=base, at=time.time(), title=rows[0]['name'] == 'logo',
                        # Button and panel skins are stretched by the game, so their outline should stay; white icons are tinted by it.
                        stretched=rows[0]['group'] == 'Buttons & panels' and rows[0]['name'] != 'logo', tinted=tinted(self.lab.catalog.image(rows[0]['key'])),
-                       tint=tints().get(rows[0]['name'], ''),   # the color the game multiplies this icon by, when measured
+                       tint=tints().get(rows[0]['name'], '') or (SPAWNER_RED if rows[0]['name'] == 'spawner.png' else ''),   # the color the game multiplies this art by
+                       spawner=rows[0]['name'] == 'spawner.png',
                        scene=parent.get('scene', False) if base else rows[0]['group'] in SCENE_GROUPS,   # a background: a whole new picture that tiles
                        food=food)
             if direction: job['direction'] = str(direction)[:700]   # shared by a set drawn together, so they match
