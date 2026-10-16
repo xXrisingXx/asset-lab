@@ -203,10 +203,12 @@ function renderResult(wait,entry,restoring){
 const GAME_BG='#0D2829';
 const drawings=()=>{const n=+setting('drawings');return n>=1&&n<=4?n:2;};   // Settings › Theme AI & drawing › Drawings per request
 function showDesign(box,d,keys,base,offer,entry,restoring){
-  // One drawing per distinct sprite; the title's sizes share one drawing.
-  const groups=[],title=d.targets.filter(t=>t.name==='logo');if(title.length)groups.push(title);
-  for(const t of d.targets)if(t.name!=='logo')groups.push([t]);
-  const label=g=>g[0].name==='logo'?'the MITOSIS title':g[0].name;
+  // One drawing per distinct sprite; the title's sizes share one drawing, and so does all the food.
+  const isTitle=t=>t.set==='title'||t.name==='logo';   // a size can carry a name ("MITOSIS title logo (Main menu)")
+  const groups=[],title=d.targets.filter(isTitle),food=d.targets.filter(t=>t.set==='food');if(title.length)groups.push(title);
+  for(const t of d.targets)if(!isTitle(t)&&t.set!=='food')groups.push([t]);
+  if(food.length)groups.push(food);
+  const label=g=>isTitle(g[0])?'the MITOSIS title':g[0].set==='food'?(g.length>1?'the food (every pellet shape and size)':'the food'):g[0].name;
   const what=groups.map(label).join(', ')+(title.length>1?' (every size the game uses)':'');
   box.firstChild.textContent=!d.available?(offer?'':`This needs the image model, which is not installed.`):
     d.optional?`Want ${what} redrawn to match? The local image model can draw it.`:
@@ -267,8 +269,9 @@ function showFont(box,font,note){
 function designCard(box,job,keys,entry,info){
   const card=el('div','design-card');box.append(card);
   // Settings › Theme AI & drawing › Keep game-colored icons white ticks "Keep it white" for icons the game colors.
-  const S2={variant:0,settings:{scale:1,dx:0,dy:0,tolerance:1,shape:job.stretched?1:0,fill:job.title?1:0,white:(job.tint||job.tinted)&&setting('keep_white')?1:0},applied:null};
-  if(job.tint)card.append(el('p','theme-note',`The game colors this white icon ${job.tint} in the menu, so “In game” shows each variant the way the game will draw it. Tick “Keep it white” to get the game’s color with the drawing’s detail.`));
+  const S2={variant:0,settings:{scale:job.scene?2.5:1,...(job.scene?{calm:0.5}:{}),dx:0,dy:0,tolerance:1,shape:job.stretched?1:0,fill:job.title?1:0,white:job.food||(job.tint||job.tinted)&&setting('keep_white')?1:0},applied:null};   // food: the game paints every pellet its own color
+  if(job.food)card.append(el('p','theme-note',`This drawing becomes every food pellet (${job.targets.length} shapes and sizes). The game paints each pellet its own color, so “Keep it white” is on: the pellets keep their colors and get the drawing’s detail.`));
+  else if(job.tint)card.append(el('p','theme-note',`The game colors this white icon ${job.tint} in the menu, so “In game” shows each variant the way the game will draw it. Tick “Keep it white” to get the game’s color with the drawing’s detail.`));
   else if(job.tinted)card.append(el('p','theme-note','This icon is plain white because the game colors it (teal in the menu), so a colorful drawing will come out tinted. Light, mostly white designs keep their look.'));
   // One idea per variant when the AI came up with several; the line follows the variant picked.
   const ideaOf=i=>(job.directions||[])[i]||job.direction||'';const dir=el('p','design-direction');const dirText=document.createTextNode(ideaOf(0));dir.append(el('b','',job.directions?.length>1?'Idea: ':'Art direction: '),dirText);dir.hidden=!ideaOf(0);card.append(dir);
@@ -293,7 +296,7 @@ function designCard(box,job,keys,entry,info){
   let timer;function refresh(){clearTimeout(timer);timer=setTimeout(()=>frames.forEach((im,t)=>im.src=url(t)),150);}
   const sliders=el('div','design-sliders');
   // A new background fills its frame: only zoom and position apply (nothing is cut out or kept from the old shape).
-  const knobs=job.scene?[['scale','Zoom',1,2.5,0.02],['dx','Left / right',-1,1,0.02],['dy','Up / down',-1,1,0.02]]:[['scale','Size',0.5,1.8,0.02],['dx','Left / right',-1,1,0.02],['dy','Up / down',-1,1,0.02],['tolerance','Background cut-out',0.6,1.6,0.05]];
+  const knobs=job.scene?[['scale','Zoom',1,3,0.02],['calm','Calmer',0,0.9,0.01],['dx','Left / right',-1,1,0.02],['dy','Up / down',-1,1,0.02]]:[['scale','Size',0.5,1.8,0.02],['dx','Left / right',-1,1,0.02],['dy','Up / down',-1,1,0.02],['tolerance','Background cut-out',0.6,1.6,0.05]];
   for(const [k,label,min,max,step] of knobs){
     const row=el('label');const r=el('input');r.type='range';r.min=min;r.max=max;r.step=step;r.value=S2.settings[k];r.oninput=()=>{S2.settings[k]=+r.value;refresh();};row.append(el('span','',label),r);sliders.append(row);}
   const shapeRow=el('label','design-shape');const shape=el('input');shape.type='checkbox';shape.checked=!!S2.settings.shape;

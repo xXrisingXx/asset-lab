@@ -193,7 +193,7 @@ class Case(unittest.TestCase):
         self.edit('bg2.png');self.lab.install(self.lab.build()['id'])
         self.edit('item-a')                              # saving while installed works from the original backups
         mod=self.lab.mod()
-        self.assertEqual({e['name']:e['installed'] for e in mod['edits']},{'bg2.png':True,'item-a':False})
+        self.assertEqual({e['name']:e['installed'] for e in mod['edits']},{'Main menu background':True,'item-a':False})   # bg2.png carries its UI map name
         self.assertEqual(mod['installed']['edits'],[self.key('bg2.png')])
         self.assertTrue(mod['pending'])
         self.lab.stage_many([self.key('item-a')],False);self.assertFalse(self.lab.pending())

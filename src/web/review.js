@@ -19,11 +19,25 @@ async function open(){R.out=new Set();R.colorsOut={};R.hideOut=new Set();R.chang
 async function savePalette(){const colors={...R.data.palette};for(const f of Object.keys(R.colorsOut))delete colors[f];await api('/api/palette',{colors});}
 async function saveHide(){await api('/api/hide',{groups:R.data.hide.filter(h=>!R.hideOut.has(h))});}
 
+// Everything out of the mod at once (nothing is deleted), or all of it back in.
+async function setAll(on){const d=R.data,keys=d.edits.map(e=>e.key);
+  if(keys.length)await api('/api/stage-many',{keys,enabled:on});keys.forEach(k=>on?R.out.delete(k):R.out.add(k));
+  if(Object.keys(d.palette).length){R.colorsOut=on?{}:{...d.palette};await savePalette();}
+  if(d.hide.length){R.hideOut=on?new Set():new Set(d.hide);await saveHide();}
+  for(const a of d.audio||[])if(!!a.staged!==on){await api('/api/audio-stage',{key:a.key,enabled:on});a.staged=on;}
+  R.changed=true;render();}
 function render(){
+  // Rebuilt after every Remove / Put back: keep the place in the list.
+  const scrolled=dlg.querySelector('.review-body')?.scrollTop||0,page=dlg.scrollTop;
   const d=R.data;dlg.replaceChildren();
   const edits=d.edits.filter(e=>!R.out.has(e.key)).length,colors=Object.keys(d.palette).filter(f=>!(f in R.colorsOut)).length,hidden=d.hide.filter(h=>!R.hideOut.has(h)).length;
   const sounds=(d.audio||[]).filter(a=>a.staged).length;
-  const head=el('div','review-head');const h=el('h2','', 'Review your mod');const x=el('button','quiet','✕');x.type='button';x.onclick=()=>dlg.close();head.append(h,x);
+  const head=el('div','review-head');const h=el('h2','', 'Review your mod');const x=el('button','quiet','✕');x.type='button';x.onclick=()=>dlg.close();
+  const total=d.edits.length+Object.keys(d.palette).length+d.hide.length+(d.audio||[]).length,anyIn=edits||colors||hidden||sounds;
+  const all=el('button','review-all',anyIn?'Remove all':'Put all back');all.type='button';all.id='reviewAll';all.hidden=!total;
+  all.title=anyIn?'Leave everything out of the mod (your work stays saved)':'Include everything in the mod again';
+  all.onclick=run(async()=>{all.disabled=true;try{await setAll(!anyIn);}finally{all.disabled=false;}});
+  head.append(h,all,x);
   const summary=[`${edits} edit${edits===1?'':'s'}`,colors&&`${colors} game color${colors===1?'':'s'}`,hidden&&`${hidden} hidden menu control${hidden===1?'':'s'}`,sounds&&`${sounds} sound${sounds===1?'':'s'}`].filter(Boolean).join(' · ');
   const sub=el('p','review-sub',(d.installed?'Installed in Mitosis now. Items marked New are not in the game yet; Update Mitosis puts the list below in. ':'Nothing is installed yet. ')+`This mod: ${summary}. Remove leaves an item out without deleting your work; Put back includes it again.`);
   const body=el('div','review-body');dlg.append(head,sub,body);
@@ -77,6 +91,7 @@ function render(){
   const go=el('button','primary',d.installed?'Update Mitosis':'Install in Mitosis');go.type='button';go.disabled=!d.installed&&!(edits||colors||hidden||sounds);
   go.onclick=()=>{dlg.close();setTimeout(()=>$('installButton').click(),0);};
   foot.append(files,close,go);dlg.append(foot);
+  body.scrollTop=scrolled;dlg.scrollTop=page;
 }
 function section(body,title,action){const sec=el('section','review-section');const h=el('div','review-section-head');h.append(el('span','section-label',title));if(action)h.append(action);sec.append(h);body.append(sec);return sec;}
 

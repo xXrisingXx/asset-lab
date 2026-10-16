@@ -49,7 +49,8 @@ class NameTests(Base):
         self.assertEqual(again.search('potion', tidy=True)['total'], 2)
         self.lab.labels.name([self.key('virus-deep')], '')
         self.assertEqual({r['name'] for r in self.lab.search('speed', tidy=True)['items']}, {'virus-pale'})
-        self.assertEqual(json.loads((self.root / 'asset-names.json').read_text())['label'][0]['label'], 'Speed potion')
+        saved = {e['name']: e['label'] for e in json.loads((self.root / 'asset-names.json').read_text())['label']}
+        self.assertEqual(saved.get('virus-pale'), 'Speed potion'); self.assertNotIn('virus-deep', saved)
 
     def test_a_name_with_a_screen_in_brackets_is_found_without_it(self):
         self.lab.labels.name([self.key('icon-a')], 'Square flag icon (Ranks)')

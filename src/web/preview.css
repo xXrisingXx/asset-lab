@@ -1,0 +1,5 @@
+﻿/* Game preview */
+dialog.game-preview{width:min(1280px,94vw);max-height:94vh;padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+dialog.game-preview:not([open]){display:none}
+.game-preview-head{display:flex;align-items:center;gap:12px}.game-preview-head h2{margin:0;margin-right:auto}
+.game-preview-image{width:100%;aspect-ratio:16/10;object-fit:contain;border-radius:8px;border:1px solid var(--line);background:#0d2829}

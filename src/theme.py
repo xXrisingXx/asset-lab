@@ -854,7 +854,7 @@ def rule_plan(prompt, lookup=None):
         # Game colors from the code: "make the pink red", "arrows cyan", "menu background navy" (not the pattern),
         # "light mode background white", "header bars purple", "menu buttons gold".
         paints = [hex_color(c) for c in re.findall(any_color, re.sub(r'\bthe pink\b|\bthe teal\b', ' ', clause))]
-        names = list(dict.fromkeys(n for word, found in known.items() if re.search(rf'\b{re.escape(word)}\b', clause) for n in found))
+        names = list(dict.fromkeys(n for word, found in known.items() if re.search(rf'(?<![a-z0-9]){re.escape(word)}(?:e?s)?(?![a-z0-9])', clause) for n in found))
         # With the exe off limits a named game color is still noted (the chat explains it) rather than painted on
         # art: the game multiplies that art by its own color, so gold on teal-tinted white would come out olive.
         # A sprite named outright ("the ranks button icon") is its art, though, and "menu background navy" falls
@@ -1330,9 +1330,9 @@ class Themes:
             rows, prompt = designer.title_rows(), f'{message}. Redesign the game title to match.'
             if re.search(WHOLE_GAME + r'|\breskin', message.lower()):
                 # A whole-game look ("full spooky reskin") offers the virus too: the game's most recognisable sprite, and
-                # one that shows in matches. Each part is drawn on its own from the same request.
+                # one that shows in matches, and the food (every pellet as one set). Each part is drawn on its own from the same request.
                 virus = [r for r in self.lab.catalog.rows.values() if r['name'] == 'virus.png' and r['editable'] and r.get('primary', True) and not r.get('removed')][:1]
-                if virus: rows, prompt = rows + virus, message
+                if virus or designer.food_rows(): rows, prompt = rows + virus + designer.food_rows(), message
             result['design'] = dict(self.design_offer(designer, prompt, rows), optional=True)
         return self.text_offer(result, message, only)   # a whole-game mood also offers the player names in a matching look
 
@@ -1427,7 +1427,7 @@ class Themes:
     def design_offer(designer, prompt, rows):
         ready = designer.status()
         return dict(prompt=prompt, available=ready['available'], note='' if ready['available'] else 'The image model is not installed (' + ', '.join(ready['missing']) + ').',
-                    targets=[dict(key=r['key'], name=r.get('label') or r['name'], size=[r['width'], r['height']]) for r in rows])
+                    targets=[dict(key=r['key'], name=r.get('label') or r['name'], size=[r['width'], r['height']], **({'set': 'food'} if design.is_food(r) else {'set': 'title'} if r['name'] == 'logo' else {})) for r in rows])
 
     def plan_request(self, message, model='', history=None, scope=None, language=''):
         """Turn a request into a shading plan: exactly from tag words, else with the local model, else from keywords.

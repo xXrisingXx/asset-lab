@@ -38,4 +38,37 @@ class Backgrounds(unittest.TestCase):
         self.assertNotEqual(out.getpixel((2, 64))[:3], (200, 0, 0))     # centered: it is cropped away
 
 
+class Food(unittest.TestCase):
+    """Food is redrawn as one set: every pellet shape and size the game uses gets the same new art (crowns, say)."""
+
+    def setUp(self):
+        from types import SimpleNamespace
+        def row(key, name, size=128, **k):
+            return dict(dict(key=key, name=name, kind='sprite', group='Cells & gameplay', editable=True, primary=True, legacy=False, removed=False,
+                             dup=key, width=size, height=size, source='assets/theme.png', parent='sheet', label='', live=True), **k)
+        rows = [row('a', 'food'), row('b', 'food1'), row('c', 'food2'), row('d', 'foodf1', 64), row('e', 'foods1', 64),
+                row('f', 'foode1', 64, legacy=True), row('g', 'food1', dup='b', primary=False), row('h', 'cell-skin')]
+        self.lab = SimpleNamespace(catalog=SimpleNamespace(rows={r['key']: r for r in rows}, children={}))
+        self.lab.row = lambda k: self.lab.catalog.rows[k]
+        self.designer = design.Designer.__new__(design.Designer)
+        self.designer.lab, self.designer.themes = self.lab, SimpleNamespace(named=lambda text: ({}, text))
+
+    def test_every_food_sprite_is_one_target_set(self):
+        names = [r['name'] for r in self.designer.targets('turn the food into little crowns')]
+        self.assertEqual(names, ['food', 'food1', 'food2', 'foodf1', 'foods1'])   # leftovers and copies are left out
+
+    def test_one_drawing_covers_them_all(self):
+        from unittest.mock import patch
+        self.designer.jobs, self.designer.lock = {}, __import__('threading').Lock()
+        with patch.object(self.designer, 'status', return_value=dict(missing=[])), patch('threading.Thread'), patch.object(design, 'key_for', return_value='green'), \
+             patch.object(design, 'tinted', return_value=True), patch.object(design, 'tints', return_value={}):
+            self.lab.catalog.image = lambda k: Image.new('RGBA', (8, 8), (255, 255, 255, 255))
+            job = self.designer.start('turn the food into little crowns', count=1)
+            self.assertTrue(job['food']); self.assertEqual(len(job['targets']), 5)
+            self.assertIn('food pellet', self.designer.instruction(job))
+            self.designer.jobs.clear()
+            other = self.designer.start('make it spooky', keys=['h', 'a'], count=1)
+            self.assertFalse(other['food']); self.assertEqual(other['targets'], ['h'])
+
+
 if __name__ == '__main__': unittest.main()

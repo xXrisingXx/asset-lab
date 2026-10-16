@@ -174,3 +174,5 @@ input.fonts-num{width:62px;padding:5px 6px}
 .theme-bubble .fonts-look{margin-top:7px}.theme-bubble .fonts-look select{font-size:11px;padding:6px 7px}.theme-bubble .fonts-look button{font-size:15px;padding:3px 10px}
 /* Narrow windows: one column that scrolls as a whole, the preview and its buttons first */
 @media (max-width:760px){.fonts-body{grid-template-columns:1fr;overflow:auto}.fonts-controls,.fonts-stage{overflow:visible}.fonts-stage{order:-1}.fonts-shot{height:clamp(180px,34vh,360px)}}
+
+.review-head .review-all{margin-left:auto}

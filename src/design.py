@@ -40,6 +40,14 @@ NEW_ART = (r'\b(?:(?:entirely|completely|totally|really) (?:different|new)|somet
            r'starfield|nebula|outer space|tv static|static noise)\b')
 # Backgrounds are replaced by a whole new picture that tiles, not restyled around a cut-out.
 SCENE_GROUPS = ('Backgrounds',)
+FOOD_MAX = 40   # every food sprite the game uses fits in one set (about 19 today)
+
+
+def is_food(row):
+    """The pellets players eat (food, food1-3, foodc/f/m/r/s...), on the theme sheets."""
+    return row.get('kind') == 'sprite' and row.get('group') == 'Cells & gameplay' and str(row.get('name', '')).startswith('food')
+GAME_BG = (13, 40, 41)          # the menu's base color compiled into Mitosis.exe (#0D2829); bg2.png is an overlay on it
+SCENE_ZOOM, SCENE_CALM = 2.5, 0.5   # defaults: big shapes, half calmed (the game shows the tile at about a quarter size)
 # New wording for the title: "make the title say MITOSIS 2", "change the title text to Cell Wars".
 WORDING = r'\b(?:say|says|read|reads|spell|spells)\s+(.+)$|\b(?:text|wording|word|name)\s+(?:to|into)\s+(.+)$'
 
@@ -276,14 +284,27 @@ class Designer:
             seen.add(r.get('dup')); out.append(r)
         return out
 
+    def food_rows(self):
+        """Every food sprite the game uses (pellet shapes, blobs and dots in each size), one per art: drawn as one set."""
+        rows, seen = [], set()
+        for r in sorted(self.lab.catalog.rows.values(), key=lambda r: (r['name'], r['source'])):
+            if not is_food(r) or not r['editable'] or not r.get('primary', True) or r.get('legacy') or r.get('removed') or r.get('dup') in seen: continue
+            seen.add(r.get('dup')); rows.append(r)
+        return rows
+
     def targets(self, prompt, only=None):
         if only:
-            rows = [self.lab.row(k) for k in only if k in self.lab.catalog.rows]
-            return [r for r in rows if r['editable']][:8]   # room for a sprite and its identical copies (the coin has 7)
+            rows = [r for r in (self.lab.row(k) for k in only if k in self.lab.catalog.rows) if r['editable']]
+            return rows[:FOOD_MAX] if rows and all(is_food(r) for r in rows) else rows[:8]   # room for a sprite and its identical copies (the coin has 7)
         subject = subject_part(prompt)
         if re.search(TITLE, subject.lower()): return self.title_rows()
+        # "Full spooky reskin" is the whole game (offered as the title, the virus and the food), not the full-screen button.
+        if re.search(r'\b(?:full|whole|entire|complete|total)\s+(?:\w+\s+)?(?:reskin|redesign|makeover|overhaul|look)\b|^\s*reskin\b', subject.lower()): return []
         names = {n for found in self.themes.named(subject)[0].values() for n in found}
-        if not names: return self.family_rows(subject)
+        if not names:
+            rows = self.family_rows(subject)
+            # "Turn the food into crowns": every pellet the game shows, so none keeps the old look.
+            return self.food_rows() if rows and all(is_food(r) for r in rows) else rows
         rows = [r for r in self.lab.catalog.rows.values() if r['name'] in names and r['editable'] and r.get('primary', True) and not r.get('legacy')]
         seen, out = set(), []
         for r in rows:
@@ -324,8 +345,10 @@ class Designer:
         if not rows: raise ValueError('Name what to redesign, or check it in the library first.')
         # One drawing per sprite: different sprites are drawn one at a time (the title's sizes share one drawing, and so do
         # copies that share a name you gave and a size, such as the coin the game also downloads).
+        # Food is the exception: one drawing for every pellet shape and size, the way a player swaps them all for crowns.
         first = rows[0]
-        rows = [r for r in rows if r['name'] == first['name'] or (first.get('label') and r.get('label') == first['label'] and (r['width'], r['height']) == (first['width'], first['height']))]
+        food = is_food(first)
+        rows = [r for r in rows if (food and is_food(r)) or r['name'] == first['name'] or (first.get('label') and r.get('label') == first['label'] and (r['width'], r['height']) == (first['width'], first['height']))]
         with self.lock:
             if any(j['state'] == 'running' for j in self.jobs.values()): raise ValueError('A design is already being drawn.')
             job = dict(id=uuid.uuid4().hex, state='running', prompt=prompt, targets=[r['key'] for r in rows], names=[r.get('label') or r['name'] for r in rows],
@@ -334,7 +357,8 @@ class Designer:
                        # Button and panel skins are stretched by the game, so their outline should stay; white icons are tinted by it.
                        stretched=rows[0]['group'] == 'Buttons & panels' and rows[0]['name'] != 'logo', tinted=tinted(self.lab.catalog.image(rows[0]['key'])),
                        tint=tints().get(rows[0]['name'], ''),   # the color the game multiplies this icon by, when measured
-                       scene=parent.get('scene', False) if base else rows[0]['group'] in SCENE_GROUPS)   # a background: a whole new picture that tiles
+                       scene=parent.get('scene', False) if base else rows[0]['group'] in SCENE_GROUPS,   # a background: a whole new picture that tiles
+                       food=food)
             if direction: job['direction'] = str(direction)[:700]   # shared by a set drawn together, so they match
             if job['title'] and wording(prompt): job['text'] = wording(prompt)
             self.jobs[job['id']] = job
@@ -344,18 +368,21 @@ class Designer:
     @staticmethod
     def subject(job):
         if job['title']: return 'the game title logo that reads MITOSIS (the O is a round dot)'
+        if job.get('food'): return 'a small food pellet that players eat in a top-down cell game, seen from above'
         # "Play button (Main menu)" -> "play button"; "icon-crown" -> "icon crown".
         name = re.sub(r'[-_]+', ' ', re.sub(r'\.png$|\s*\([^)]*\)\s*$', '', job['names'][0])).strip()
         return f'a game sprite: {name}'
 
     def instruction(self, job):
         if job.get('scene'):
-            return (f'{job.get("direction") or job["prompt"]}. A brand new full-frame background picture for a 2D top-down game menu, '
-                    'filling the whole image edge to edge with even detail everywhere so it can repeat as a seamless tile. '
-                    'No text, no logos, no frame, no border, no single big object in the middle. Rich, crisp, high quality game art.')
+            return (f'{job.get("direction") or job["prompt"]}. A brand new full-frame background picture for a 2D game menu, '
+                    'filling the whole image edge to edge so it can repeat as a seamless tile. It is shown small and repeated behind '
+                    'buttons and text, so use a few large, bold, simple shapes instead of many tiny details, dark muted colors and low '
+                    'contrast. No text, no logos, no frame, no border, no single big object in the middle. Clean, high quality game art.')
         what = self.subject(job)
         if job.get('text'): keep = f'Change the word MITOSIS so it reads exactly "{job["text"]}", in the same lettering style, on one line, centered.'
         elif job['title']: keep = 'Keep the exact word MITOSIS, spelled the same, in the same layout and size, centered.'
+        elif job.get('food'): keep = 'Draw it as one simple object that fills most of the square, centered; its shape may change completely.'
         else: keep = 'Keep its outline, size and position, centered.'
         small = '' if job['title'] or max(job['frames'][0]) > 160 else ' It is shown small in the game, so use bold, simple shapes and strong contrast that read at a glance.'
         color = {'green': 'pure green (#00FF00)', 'magenta': 'pure magenta (#FF00FF)', 'blue': 'pure blue (#0040FF)'}[job['key']]
@@ -467,8 +494,20 @@ class Designer:
         folder = self.folder / job['id']
         if raw: return Image.open(folder / f'raw-{int(index)}.png').convert('RGBA')
         s = {'scale': 1.0, 'dx': 0.0, 'dy': 0.0, 'tolerance': 1.0, 'shape': 1.0 if job.get('stretched') else 0.0, 'fill': 1.0 if job['title'] else 0.0, 'white': 0.0, **(settings or {})}
-        if job.get('scene'):   # a background fills its frame; Size zooms in and the arrows move the view
-            out = cover(Image.open(folder / f'variant-{int(index)}.png').convert('RGBA'), tuple(job['frames'][int(target)]), float(s['scale']), float(s['dx']), float(s['dy']))
+        if job.get('scene'):
+            # A background fills its frame. Zoom picks a part of the drawing (the game shows the tile small and repeated, so
+            # zooming in keeps shapes big enough to read), which is then made to tile again; Calmer fades it toward the
+            # game's own background color, so the menu's text stays readable on top of it.
+            s = {'scale': SCENE_ZOOM, 'calm': SCENE_CALM, 'dx': 0.0, 'dy': 0.0, 'white': 0.0, **(settings or {})}
+            frame = tuple(job['frames'][int(target)])
+            raw = Image.open(folder / f'raw-{int(index)}.png').convert('RGBA')
+            out = seamless(cover(raw, frame, float(s['scale']), float(s['dx']), float(s['dy']))).resize(frame, Image.Resampling.LANCZOS)
+            calm = max(0.0, min(0.9, float(s['calm'])))
+            if calm:
+                a = np.asarray(out, np.float32)[..., :3]
+                grey = a.mean(axis=2, keepdims=True)
+                a = (a * (1 - calm * 0.5) + grey * calm * 0.5) * (1 - calm) + np.array(GAME_BG, np.float32) * calm   # less color, then toward the game's teal
+                out = Image.fromarray(np.dstack([np.clip(a, 0, 255), np.full(a.shape[:2], 255, np.float32)]).astype(np.uint8), 'RGBA')
             return whiten(out) if float(s['white']) >= 0.5 else out
         art = unkey(Image.open(folder / f'raw-{int(index)}.png'), job['key'], float(s['tolerance'])) if float(s['tolerance']) != 1.0 else \
             Image.open(folder / f'variant-{int(index)}.png').convert('RGBA')

@@ -19,10 +19,11 @@ from lab_core import Lab, VERSION, ROOT, adjust, png, data_home
 from theme import Themes, clean_plan, UI_COLORS, HIDE
 from design import Designer
 import runtime
+import preview
 import audio as soundlab
 import settings as labsettings
 AUDIO_REQUEST = 210 * 1024 * 1024   # a 150 MB sound file, even sent as base64 in JSON (only /api/audio-source)
-DESIGN_SETTINGS = ('scale', 'dx', 'dy', 'tolerance', 'shape', 'fill', 'white')
+DESIGN_SETTINGS = ('scale', 'dx', 'dy', 'tolerance', 'shape', 'fill', 'white', 'calm')
 from PIL import Image
 
 
@@ -130,6 +131,9 @@ def server_for(lab, port):
                     return self.send(lab.asset_notes(key))
                 if path == '/api/asset-notes-all':
                     return self.send(lab.export_asset_notes(), 'application/zip', filename='mitosis-all-visual-locations.zip')
+                if path == '/api/preview':   # the menu or a match, rebuilt from the game's sprites with your edits
+                    with lab.lock: image = preview.render(lab, q.get('screen', 'menu'), int(q.get('w', 1280)))
+                    return self.send(png(image), 'image/png')
                 if path == '/api/thumb': return self.send(lab.thumbnail(key, q.get('original') == '1', (320, 240) if q.get('big') else (144, 112)), 'image/png')
                 if path == '/api/mod':
                     # What the next install contains, with the friendly name of each game color for the review.

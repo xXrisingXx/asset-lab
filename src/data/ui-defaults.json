@@ -381,6 +381,66 @@
   {
    "id": "sprite|theme4.png|vip_icon",
    "label": "Battle Pass button icon (Main menu)"
+  },
+  {
+   "id": "image||bg2.png",
+   "label": "Main menu background"
+  },
+  {
+   "id": "image||bg7.png",
+   "label": "Main menu background (2nd game theme)"
+  },
+  {
+   "id": "image||bg9.png",
+   "label": "Main menu background (3rd game theme)"
+  },
+  {
+   "id": "sprite|theme.png|button-explain-split",
+   "label": "Split button (in a match, PC)"
+  },
+  {
+   "id": "sprite|theme.png|button-explain-eject",
+   "label": "Eject button (in a match, PC)"
+  },
+  {
+   "id": "sprite|theme2.png|button-explain-split",
+   "label": "Split button (in a match, PC)"
+  },
+  {
+   "id": "sprite|theme2.png|button-explain-eject",
+   "label": "Eject button (in a match, PC)"
+  },
+  {
+   "id": "sprite|theme4.png|button-explain-split",
+   "label": "Split button (in a match, PC)"
+  },
+  {
+   "id": "sprite|theme4.png|button-explain-eject",
+   "label": "Eject button (in a match, PC)"
+  },
+  {
+   "id": "sprite|theme.png|button-split",
+   "label": "Split button (in a match, phones)"
+  },
+  {
+   "id": "sprite|theme.png|button-eject",
+   "label": "Eject button (in a match, phones)"
+  },
+  {
+   "id": "sprite|theme2.png|button-split",
+   "label": "Split button (in a match, phones)"
+  },
+  {
+   "id": "sprite|theme2.png|button-eject",
+   "label": "Eject button (in a match, phones)"
+  },
+  {
+   "id": "sprite|theme4.png|button-split",
+   "label": "Split button (in a match, phones)"
+  },
+  {
+   "id": "sprite|theme4.png|button-eject",
+   "label": "Eject button (in a match, phones)"
   }
  ],
  "removed": [
