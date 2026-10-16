@@ -130,3 +130,9 @@ html[data-compact-cards] .asset-list{grid-template-columns:repeat(3,minmax(0,1fr
 html[data-compact-cards] .asset-card{min-height:0}html[data-compact-cards] .asset-card .thumb{height:58px}html[data-compact-cards] .asset-card img{max-height:52px}
 html[data-compact-cards] .asset-card .asset-label{font-size:10px;padding:5px 6px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 html[data-compact-cards] .asset-card small{display:none}html[data-compact-cards] .asset-card .fav{top:38px}
+
+/* About › Suggestions */
+.settings-suggest{margin:14px 0 18px;padding:14px;border:1px solid var(--accent,var(--cyan));border-radius:10px;background:#16212c}
+.settings-suggest h3{margin:0 0 4px}.settings-suggest .hint{margin:0 0 10px}
+.suggest-text{width:100%;box-sizing:border-box;resize:vertical;min-height:84px;padding:9px;border-radius:6px;border:1px solid var(--line);background:#101720;color:var(--text);font:inherit}
+.suggest-actions{display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap}.suggest-note{color:var(--muted)}

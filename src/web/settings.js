@@ -192,6 +192,21 @@ function privacyBlock(){
   for(const p of L.privacy){const li=el('li');li.append(el('b','',p.what),document.createTextNode(p.text));if(p.hosts.length){const hs=el('div');for(const h of p.hosts)hs.append(el('span','settings-host',h));li.append(hs);}list.append(li);}
   box.append(list,el('p','settings-note',L.note));return box;
 }
+// Suggestions: straight to the creator's Google Form. The lab sends them (this page cannot reach the internet), and
+// only what is typed and the version go out. An unsent draft is kept in this browser.
+function suggestBlock(a){
+  const DRAFT='lab-suggest-draft',sec=el('section','settings-suggest');sec.id='settingsSuggest';
+  sec.append(el('h3','','Suggestions'),el('p','hint','Have an idea, a wish or a bug? Send it to the creator, who reads every one. Only what you type and your Asset Lab version are sent: no name, no account.'));
+  const area=el('textarea','suggest-text');area.id='suggestText';area.rows=4;area.maxLength=a.suggest?.max_length||2000;area.placeholder='I wish Asset Lab could…';
+  area.setAttribute('aria-label','Your suggestion');try{area.value=localStorage.getItem(DRAFT)||'';}catch(e){}
+  const send=btn('Send suggestion','primary');send.id='suggestSend';const note=el('small','suggest-note','');note.setAttribute('role','status');
+  const fit=()=>{send.disabled=!a.suggest?.ready||area.value.trim().length<3;};
+  area.oninput=()=>{try{localStorage.setItem(DRAFT,area.value);}catch(e){}fit();};
+  send.onclick=async()=>{send.disabled=true;note.textContent='Sending…';
+    try{await api('/api/suggest',{text:area.value});area.value='';try{localStorage.removeItem(DRAFT);}catch(e){}note.textContent='Thank you! Your suggestion was sent.';}
+    catch(e){note.textContent=e.message;}finally{fit();}};
+  if(!a.suggest?.ready){area.disabled=true;note.textContent='Suggestions open in a later version.';}
+  fit();const row=el('div','suggest-actions');row.append(send,note);sec.append(area,row);return sec;}
 function aboutBlock(){
   const a=L.about||{},box=el('div','settings-about'),dl=el('dl','settings-facts');
   const credit=el('div','creator-credit');credit.setAttribute('aria-label','Created by Novu');
@@ -203,7 +218,7 @@ function aboutBlock(){
     art.src='/novu-wordmark.png';art.alt='';part.append(art);signature.append(part);
   }
   const byline=el('span','creator-byline','Created by');byline.setAttribute('aria-hidden','true');
-  credit.append(byline,signature);box.append(credit);
+  credit.append(byline,signature);box.append(credit,suggestBlock(a));
   const fact=(k,...parts)=>{dl.append(el('dt','',k));const dd=el('dd');dd.append(...parts);dl.append(dd);return dd;};
   fact('Version','Asset Lab '+(a.version||'(unknown)'));
   if(a.repo){const link=el('a','',`github.com/${a.repo}`);link.href=a.releases;link.target='_blank';link.rel='noopener noreferrer';

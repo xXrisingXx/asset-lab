@@ -25,6 +25,7 @@ import runtime
 import preview
 import audio as soundlab
 import settings as labsettings
+import suggest
 AUDIO_REQUEST = 210 * 1024 * 1024   # a 150 MB sound file, even sent as base64 in JSON (only /api/audio-source)
 DESIGN_SETTINGS = ('scale', 'dx', 'dy', 'tolerance', 'shape', 'fill', 'white', 'calm')
 from PIL import Image
@@ -244,6 +245,7 @@ def server_for(lab, port):
                     themes.reindex()   # its art is what Theme AI samples now
                     return self.send(result)
                 if path == '/api/chat-save': return self.send(builds.save_chat(str(data.get('id') or ''), data.get('entries'), data.get('history'), str(data.get('title') or ''), bool(data.get('named'))))
+                if path == '/api/suggest': return self.send(suggest.send(data.get('text'), VERSION))   # Settings › About › Suggestions
                 if path == '/api/chat-rename': return self.send(builds.rename_chat(str(data.get('id') or ''), str(data.get('title') or '')))
                 if path == '/api/chat-delete': return self.send(builds.delete_chat(str(data.get('id') or '')))
                 if path in ('/api/pool-remove', '/api/pool-restore'):

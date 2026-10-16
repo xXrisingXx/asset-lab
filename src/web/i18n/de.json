@@ -2365,7 +2365,22 @@
   "Accelerate is off: drawings leave room for other apps.": "Accelerate ist aus: Zeichnungen lassen Platz für andere Apps.",
   "the food (least mass)": "das Futter (wenigste Masse)",
   "the food (more mass)": "das Futter (mehr Masse)",
-  "the food (most mass)": "das Futter (meiste Masse)"
+  "the food (most mass)": "das Futter (meiste Masse)",
+  "Suggestions": "Vorschläge",
+  "Have an idea, a wish or a bug? Send it to the creator, who reads every one. Only what you type and your Asset Lab version are sent: no name, no account.": "Eine Idee, ein Wunsch oder ein Fehler? Schick es dem Entwickler, der jede Nachricht liest. Gesendet wird nur, was du schreibst, und deine Asset-Lab-Version: kein Name, kein Konto.",
+  "I wish Asset Lab could…": "Ich wünschte, Asset Lab könnte…",
+  "Your suggestion": "Dein Vorschlag",
+  "Send suggestion": "Vorschlag senden",
+  "Sending…": "Wird gesendet…",
+  "Thank you! Your suggestion was sent.": "Danke! Dein Vorschlag wurde gesendet.",
+  "Suggestions open in a later version.": "Vorschläge sind in einer späteren Version möglich.",
+  "Suggestions are not open in this version yet.": "Vorschläge sind in dieser Version noch nicht möglich.",
+  "Write your suggestion first.": "Schreib zuerst deinen Vorschlag.",
+  "Thanks! Wait a few seconds before sending another one.": "Danke! Warte ein paar Sekunden, bevor du noch einen sendest.",
+  "That is a lot of suggestions for one hour. Thanks! Try again a bit later.": "Das sind viele Vorschläge für eine Stunde. Danke! Versuch es etwas später wieder.",
+  "Your suggestion could not be sent (no internet?). It is still in the box: try again later.": "Dein Vorschlag konnte nicht gesendet werden (kein Internet?). Er steht noch im Feld: versuch es später wieder.",
+  "Suggestions you send": "Vorschläge, die du sendest",
+  "What you type under About › Suggestions, and the Asset Lab version, go to the creator’s Google Form when you press Send. No name, account or anything else.": "Was du unter Über › Vorschläge schreibst und die Asset-Lab-Version gehen an das Google-Formular des Entwicklers, wenn du auf Senden drückst. Kein Name, kein Konto, sonst nichts."
  },
  "patterns": {
   "{n} visuals": "{n} Grafiken",
@@ -2757,7 +2772,8 @@
   "{n} h ago": "vor {n} Std.",
   "{n} d ago": "vor {n} T.",
   "This drawing becomes one of the game’s {n} foods (each is worth a different mass), in every size and copy.": "Diese Zeichnung wird zu einem der {n} Futter des Spiels (jedes ist unterschiedlich viel Masse wert), in jeder Größe und Kopie.",
-  "This drawing becomes one of the game’s {n} foods (each is worth a different mass), in every size and copy. The game paints each pellet its own color, so “Keep it white” is on: the pellets keep their colors and get the drawing’s detail.": "Diese Zeichnung wird zu einem der {n} Futter des Spiels (jedes ist unterschiedlich viel Masse wert), in jeder Größe und Kopie. Das Spiel färbt jedes Kügelchen in einer eigenen Farbe, daher ist „Weiß lassen“ an: Die Kügelchen behalten ihre Farben und bekommen die Details der Zeichnung."
+  "This drawing becomes one of the game’s {n} foods (each is worth a different mass), in every size and copy. The game paints each pellet its own color, so “Keep it white” is on: the pellets keep their colors and get the drawing’s detail.": "Diese Zeichnung wird zu einem der {n} Futter des Spiels (jedes ist unterschiedlich viel Masse wert), in jeder Größe und Kopie. Das Spiel färbt jedes Kügelchen in einer eigenen Farbe, daher ist „Weiß lassen“ an: Die Kügelchen behalten ihre Farben und bekommen die Details der Zeichnung.",
+  "Keep it under {n} characters, please.": "Bitte unter {n} Zeichen bleiben."
  },
  "keys": {
   "Ctrl": "Strg",

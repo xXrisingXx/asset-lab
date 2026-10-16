@@ -2365,7 +2365,22 @@
   "Accelerate is off: drawings leave room for other apps.": "Accelerate desativado: os desenhos deixam espaço para outros apps.",
   "the food (least mass)": "a comida (menos massa)",
   "the food (more mass)": "a comida (mais massa)",
-  "the food (most mass)": "a comida (a maior massa)"
+  "the food (most mass)": "a comida (a maior massa)",
+  "Suggestions": "Sugestões",
+  "Have an idea, a wish or a bug? Send it to the creator, who reads every one. Only what you type and your Asset Lab version are sent: no name, no account.": "Uma ideia, um desejo ou um bug? Envie para o criador, que lê todas. Só vai o que você escreve e a sua versão do Asset Lab: sem nome, sem conta.",
+  "I wish Asset Lab could…": "Eu queria que o Asset Lab pudesse…",
+  "Your suggestion": "Sua sugestão",
+  "Send suggestion": "Enviar sugestão",
+  "Sending…": "Enviando…",
+  "Thank you! Your suggestion was sent.": "Obrigado! Sua sugestão foi enviada.",
+  "Suggestions open in a later version.": "As sugestões chegam numa versão futura.",
+  "Suggestions are not open in this version yet.": "As sugestões ainda não estão abertas nesta versão.",
+  "Write your suggestion first.": "Escreva sua sugestão primeiro.",
+  "Thanks! Wait a few seconds before sending another one.": "Obrigado! Espere alguns segundos antes de enviar outra.",
+  "That is a lot of suggestions for one hour. Thanks! Try again a bit later.": "São muitas sugestões em uma hora. Obrigado! Tente de novo mais tarde.",
+  "Your suggestion could not be sent (no internet?). It is still in the box: try again later.": "Não foi possível enviar sua sugestão (sem internet?). Ela continua na caixa: tente mais tarde.",
+  "Suggestions you send": "Sugestões que você envia",
+  "What you type under About › Suggestions, and the Asset Lab version, go to the creator’s Google Form when you press Send. No name, account or anything else.": "O que você escreve em Sobre › Sugestões e a versão do Asset Lab vão para o Formulário Google do criador quando você clica em Enviar. Sem nome, conta ou qualquer outra coisa."
  },
  "patterns": {
   "{n} visuals": "{n} gráficos",
@@ -2757,7 +2772,8 @@
   "{n} h ago": "há {n} h",
   "{n} d ago": "há {n} d",
   "This drawing becomes one of the game’s {n} foods (each is worth a different mass), in every size and copy.": "Este desenho vira uma das {n} comidas do jogo (cada uma vale uma massa diferente), em cada tamanho e cópia.",
-  "This drawing becomes one of the game’s {n} foods (each is worth a different mass), in every size and copy. The game paints each pellet its own color, so “Keep it white” is on: the pellets keep their colors and get the drawing’s detail.": "Este desenho vira uma das {n} comidas do jogo (cada uma vale uma massa diferente), em cada tamanho e cópia. O jogo pinta cada bolinha com a própria cor, então “Manter branco” está ativado: as bolinhas mantêm as cores e ganham o detalhe do desenho."
+  "This drawing becomes one of the game’s {n} foods (each is worth a different mass), in every size and copy. The game paints each pellet its own color, so “Keep it white” is on: the pellets keep their colors and get the drawing’s detail.": "Este desenho vira uma das {n} comidas do jogo (cada uma vale uma massa diferente), em cada tamanho e cópia. O jogo pinta cada bolinha com a própria cor, então “Manter branco” está ativado: as bolinhas mantêm as cores e ganham o detalhe do desenho.",
+  "Keep it under {n} characters, please.": "Mantenha abaixo de {n} caracteres, por favor."
  },
  "keys": {
   "Space": "Espaço"

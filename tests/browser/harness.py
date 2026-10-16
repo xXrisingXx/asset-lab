@@ -560,7 +560,7 @@ class Browser:
             for domain in ('Page', 'Runtime', 'Log', 'Network', 'Inspector'): self.call(domain + '.enable')
             self.call('Page.addScriptToEvaluateOnNewDocument', source=HELPER_JS)
             # The first-start tour would cover the page; tests that want it call LabTour.start() or clear this mark.
-            self.call('Page.addScriptToEvaluateOnNewDocument', source="try{if(location.port&&!sessionStorage.getItem('tour-test'))localStorage.setItem('lab-tour-done','1')}catch(e){}")
+            self.call('Page.addScriptToEvaluateOnNewDocument', source="try{if(location.port&&!sessionStorage.getItem('tour-test'))localStorage.setItem('lab-tour-done','1');localStorage.setItem('lab-suggest-asked','1')}catch(e){}")
             self.call('Runtime.evaluate', expression=HELPER_JS)
             self.call('Emulation.setFocusEmulationEnabled', enabled=True)
             # Hosted Windows runners may disable OS animations. Tests explicitly opt into reduced motion.

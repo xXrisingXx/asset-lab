@@ -20,6 +20,8 @@ import threading
 import time
 import uuid
 
+import suggest
+
 CATEGORIES = [
     dict(id='general', label='General', intro='Starting Asset Lab, installing your mod and opening the game.'),
     dict(id='appearance', label='Appearance', intro='How the lab looks on your screen.'),
@@ -151,6 +153,8 @@ PRIVACY = [
     dict(what='Inspiration lookups', hosts=['en.wikipedia.org', 'upload.wikimedia.org', 'thumb.wikimedia.org'],
          text='When a Theme AI request names a person, band, game or film (unless you turn it off under Theme AI & drawing), only that name is looked up on Wikipedia. '
               'A few of its pictures are downloaded and kept on this PC, so the drawings can take their look from them.'),
+    dict(what='Suggestions you send', hosts=['docs.google.com'],
+         text='What you type under About › Suggestions, and the Asset Lab version, go to the creator’s Google Form when you press Send. No name, account or anything else.'),
     dict(what='Links you paste', hosts=[],
          text='A link you paste in the sound editor is downloaded from that website; web pages are read by the link helper, which may only reach public internet addresses.'),
 ]
@@ -469,7 +473,7 @@ def about(lab, version):
                dict(id='app', label='Asset Lab’s program files', path=str(app))]
     if local and (Path(local) / 'AssetLab').is_dir(): folders.append(dict(id='launcher', label='Launcher: Python, downloads, update backups', path=str(Path(local) / 'AssetLab')))
     return dict(version=version, repo=repo, releases=f'https://github.com/{repo}/releases' if repo else '', launcher=bool(os.environ.get('ASSET_LAB_LAUNCHER')),
-                source=(app / '.git').exists(), folders=folders, notices=(app / 'THIRD-PARTY-NOTICES.md').is_file())
+                source=(app / '.git').exists(), folders=folders, notices=(app / 'THIRD-PARTY-NOTICES.md').is_file(), suggest=suggest.info())
 
 
 def notices():

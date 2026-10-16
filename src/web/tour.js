@@ -4,7 +4,7 @@
 // Uses app.js globals: $.
 (()=>{
 const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
-const KEY='lab-tour-done';
+const KEY='lab-tour-done',ASKED='lab-suggest-asked';
 const STEPS=[
   {title:'Welcome to Asset Lab',text:'Asset Lab lets you restyle Mitos.is: recolor or redraw its art, change its text and sounds, and install it all as a mod. Your game files are backed up first, and Restore original always puts them back. This quick tour shows you around.'},
   {at:'.library',title:'1. Find the art',text:'The library holds every picture in the game. Search by name (“play button”, “coin”), pick a category, or drop an image here to find art that looks like it. Click a card to open it; double-click to check it.'},
@@ -45,7 +45,14 @@ function start(){
   document.body.append(shade,ring,box);show(0);addEventListener('resize',place);addEventListener('keydown',keys,true);}
 function end(quiet){
   for(const n of [shade,ring,box])n?.remove();shade=ring=box=target=null;removeEventListener('resize',place);removeEventListener('keydown',keys,true);
-  if(quiet!==true)try{localStorage.setItem(KEY,'1');}catch(e){}}
+  if(quiet!==true){try{localStorage.setItem(KEY,'1');}catch(e){}askForIdeas();}}
+// The first time the tour ends (finished or skipped), About opens at Suggestions: the creator wants to hear from players.
+function askForIdeas(){
+  let asked=true;try{asked=!!localStorage.getItem(ASKED);localStorage.setItem(ASKED,'1');}catch(e){}
+  if(asked||!window.LabSettings)return;
+  setTimeout(()=>{LabSettings.open('about');let tries=0;
+    const go=()=>{const box=document.getElementById('suggestText');if(!box&&tries++<30)return setTimeout(go,100);
+      box?.scrollIntoView({block:'center'});if(box&&!box.disabled)box.focus();};go();},250);}
 function keys(e){if(!box)return;
   if(e.key==='Escape'){e.preventDefault();e.stopPropagation();end();}
   else if(e.key==='ArrowRight'){e.preventDefault();e.stopPropagation();show(index+1);}
