@@ -76,7 +76,7 @@ async function openSettings(category){
   if(!dlg)return;
   if(category&&L.categories.some(c=>c.id===category)){L.category=category;L.query='';search.value='';}
   if(!dlg.open){render();dlg.showModal();search.focus();}
-  if(!L.values&&!L.old){try{await load();}catch(e){}render();}
+  if((!L.values||!L.categories.length)&&!L.old){try{await load();}catch(e){}render();}
 }
 function show(category){L.category=category;if(L.query){L.query='';search.value='';}render();panel.scrollTop=0;}
 
@@ -89,7 +89,7 @@ function render(){
   if(!panel)return;
   const q=L.query.trim().toLowerCase();panel.replaceChildren();
   if(L.old){panel.append(stale());return paintNav({});}
-  if(!L.values){panel.append(el('p','settings-empty','Loading your settings…'));return paintNav({});}
+  if(!L.values||!L.categories.length){panel.append(el('p','settings-empty','Loading your settings…'));return paintNav({});}
   if(q){const counts=results(q);paintNav(counts);resetCat.hidden=true;return paint();}
   const cat=L.categories.find(c=>c.id===L.category)||L.categories[0];L.category=cat.id;
   panel.setAttribute('aria-labelledby','settingsTab-'+cat.id);panel.append(section(cat,L.schema.filter(s=>s.category===cat.id),true));
@@ -216,6 +216,16 @@ function aboutBlock(){
   for(const letter of 'Novu'){
     const part=el('span','creator-letter',letter),art=el('img','creator-art');
     art.src='/novu-wordmark.png';art.alt='';part.append(art);signature.append(part);
+  }
+  signature.append(el('span','creator-crown'));
+  const sheen=el('span','creator-sheen'),sheenArt=el('img','creator-art');
+  sheenArt.src='/novu-wordmark.png';sheenArt.alt='';sheen.append(sheenArt);signature.append(sheen);
+  for(let i=0;i<7;i++){
+    const ember=el('span','creator-ember');ember.style.setProperty('--i',i);signature.append(ember);
+  }
+  for(const [x,y,delay] of [[54,18,0],[81,26,2.8],[29,38,5.6]]){
+    const glint=el('span','creator-glint');glint.style.left=x+'px';glint.style.top=y+'px';
+    glint.style.animationDelay=-delay+'s';signature.append(glint);
   }
   const byline=el('span','creator-byline','Created by');byline.setAttribute('aria-hidden','true');
   credit.append(byline,signature);box.append(credit,suggestBlock(a));

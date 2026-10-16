@@ -2380,7 +2380,8 @@
   "That is a lot of suggestions for one hour. Thanks! Try again a bit later.": "São muitas sugestões em uma hora. Obrigado! Tente de novo mais tarde.",
   "Your suggestion could not be sent (no internet?). It is still in the box: try again later.": "Não foi possível enviar sua sugestão (sem internet?). Ela continua na caixa: tente mais tarde.",
   "Suggestions you send": "Sugestões que você envia",
-  "What you type under About › Suggestions, and the Asset Lab version, go to the creator’s Google Form when you press Send. No name, account or anything else.": "O que você escreve em Sobre › Sugestões e a versão do Asset Lab vão para o Formulário Google do criador quando você clica em Enviar. Sem nome, conta ou qualquer outra coisa."
+  "What you type under About › Suggestions, and the Asset Lab version, go to the creator’s Google Form when you press Send. No name, account or anything else.": "O que você escreve em Sobre › Sugestões e a versão do Asset Lab vão para o Formulário Google do criador quando você clica em Enviar. Sem nome, conta ou qualquer outra coisa.",
+  "Check it in the library and ask again, or right-click it › Redraw with Image AI.": "Marque na biblioteca e peça de novo, ou clique com o botão direito › Redesenhar com a IA de imagem."
  },
  "patterns": {
   "{n} visuals": "{n} gráficos",
@@ -2773,7 +2774,8 @@
   "{n} d ago": "há {n} d",
   "This drawing becomes one of the game’s {n} foods (each is worth a different mass), in every size and copy.": "Este desenho vira uma das {n} comidas do jogo (cada uma vale uma massa diferente), em cada tamanho e cópia.",
   "This drawing becomes one of the game’s {n} foods (each is worth a different mass), in every size and copy. The game paints each pellet its own color, so “Keep it white” is on: the pellets keep their colors and get the drawing’s detail.": "Este desenho vira uma das {n} comidas do jogo (cada uma vale uma massa diferente), em cada tamanho e cópia. O jogo pinta cada bolinha com a própria cor, então “Manter branco” está ativado: as bolinhas mantêm as cores e ganham o detalhe do desenho.",
-  "Keep it under {n} characters, please.": "Mantenha abaixo de {n} caracteres, por favor."
+  "Keep it under {n} characters, please.": "Mantenha abaixo de {n} caracteres, por favor.",
+  "I could not tell which art {s} is, so nothing was redrawn for it.": "Não consegui saber qual arte é {s}, então nada foi redesenhado para ela."
  },
  "keys": {
   "Space": "Espaço"

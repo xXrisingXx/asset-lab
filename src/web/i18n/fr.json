@@ -2380,7 +2380,8 @@
   "That is a lot of suggestions for one hour. Thanks! Try again a bit later.": "Ça fait beaucoup de suggestions en une heure. Merci ! Réessaie un peu plus tard.",
   "Your suggestion could not be sent (no internet?). It is still in the box: try again later.": "Ta suggestion n’a pas pu être envoyée (pas d’internet ?). Elle est toujours dans la case : réessaie plus tard.",
   "Suggestions you send": "Suggestions que tu envoies",
-  "What you type under About › Suggestions, and the Asset Lab version, go to the creator’s Google Form when you press Send. No name, account or anything else.": "Ce que tu écris dans À propos › Suggestions et la version d’Asset Lab vont au formulaire Google du créateur quand tu appuies sur Envoyer. Ni nom, ni compte, rien d’autre."
+  "What you type under About › Suggestions, and the Asset Lab version, go to the creator’s Google Form when you press Send. No name, account or anything else.": "Ce que tu écris dans À propos › Suggestions et la version d’Asset Lab vont au formulaire Google du créateur quand tu appuies sur Envoyer. Ni nom, ni compte, rien d’autre.",
+  "Check it in the library and ask again, or right-click it › Redraw with Image AI.": "Coche-le dans la bibliothèque et redemande, ou clic droit › Redessiner avec l’IA d’image."
  },
  "patterns": {
   "{n} visuals": "{n} visuels",
@@ -2773,7 +2774,8 @@
   "{n} d ago": "il y a {n} j",
   "This drawing becomes one of the game’s {n} foods (each is worth a different mass), in every size and copy.": "Ce dessin devient l’une des {n} nourritures du jeu (chacune vaut une masse différente), dans chaque taille et copie.",
   "This drawing becomes one of the game’s {n} foods (each is worth a different mass), in every size and copy. The game paints each pellet its own color, so “Keep it white” is on: the pellets keep their colors and get the drawing’s detail.": "Ce dessin devient l’une des {n} nourritures du jeu (chacune vaut une masse différente), dans chaque taille et copie. Le jeu peint chaque pastille de sa propre couleur, donc « Garder blanc » est activé : les pastilles gardent leurs couleurs et prennent le détail du dessin.",
-  "Keep it under {n} characters, please.": "Reste sous {n} caractères, s’il te plaît."
+  "Keep it under {n} characters, please.": "Reste sous {n} caractères, s’il te plaît.",
+  "I could not tell which art {s} is, so nothing was redrawn for it.": "Je n’ai pas pu savoir quel visuel est {s}, donc rien n’a été redessiné pour lui."
  },
  "keys": {
   "Shift": "Maj",

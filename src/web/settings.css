@@ -50,27 +50,42 @@ dialog.settings:not([open]){display:none}
 .settings-row button.danger{border-color:#7a4a40;color:#ffb3a3}.settings-row button.danger:hover{background:#3a2724}
 .settings-path{font-family:Consolas,monospace;font-size:11px;color:#b9c7d6;overflow-wrap:anywhere;user-select:text}
 /* storage, privacy and about */
-.creator-credit{display:flex;align-items:center;justify-content:center;gap:24px;min-height:150px;padding:24px 20px 14px;margin:4px 0 24px;border:1px solid #54303b;border-radius:14px;background:radial-gradient(ellipse at 65% 55%,#40132188,transparent 65%),#10151d;overflow:hidden}
-.creator-byline{color:var(--muted);font-size:12px;letter-spacing:.16em;text-transform:uppercase}
-.creator-signature{display:block;position:relative;flex:0 0 270px;width:270px;height:210px;mix-blend-mode:screen;animation:novu-breathe 4.8s ease-in-out infinite}
-/* Always moving while About is open: the whole word breathes a red glow, a flash of light runs across the letters
-   N, o, v, u in turn, each letter floats on its own, and the crown twinkles. One 9.6 s loop (tools/record_credit.py
-   records it for the README). The lab's Reduce motion setting and the system setting stop it. */
-.creator-letter{position:absolute;inset:0;font-size:0;animation:novu-wave 4.8s ease-in-out infinite,novu-float 9.6s ease-in-out infinite;pointer-events:none}
-.creator-signature::before{content:'';position:absolute;left:14px;top:12px;width:72px;height:56px;pointer-events:none;border-radius:50%;
-  background:radial-gradient(circle,#ffb3bd 0,#ff3d5a77 30%,transparent 70%);mix-blend-mode:screen;animation:novu-crown 2.4s ease-in-out infinite}
-@keyframes novu-breathe{0%,100%{filter:drop-shadow(0 0 3px #ff1f3d44)}50%{filter:drop-shadow(0 0 16px #ff1f3dbb)}}
-@keyframes novu-wave{0%,52%,100%{filter:brightness(1)}64%{filter:brightness(1.75) saturate(1.15) drop-shadow(0 0 10px #ff6077)}76%{filter:brightness(1)}}
+.creator-credit{display:flex;position:relative;isolation:isolate;flex-direction:column;align-items:center;justify-content:center;gap:14px;min-height:300px;padding:28px 20px 26px;margin:4px 0 24px;border:1px solid #54303b80;border-radius:14px;background:radial-gradient(ellipse at 50% 66%,#36101f70,transparent 65%),#0c1119;overflow:hidden}
+.creator-credit::after{content:'';position:absolute;bottom:18px;left:25%;right:25%;height:1px;background:linear-gradient(90deg,transparent,#ec526040,transparent)}
+.creator-byline{display:flex;align-items:center;gap:16px;color:#c5aeb7;font-size:10px;letter-spacing:.3em;text-transform:uppercase}
+.creator-byline::before,.creator-byline::after{content:'';width:42px;height:1px;background:linear-gradient(90deg,transparent,#e6717b65)}
+.creator-byline::after{transform:rotate(180deg)}
+/* Blend the black-backed art itself: drop shadows on its opaque rectangle make boxes.
+   Separate feathered fog drifts behind aligned letters; only the whole mark floats. */
+.creator-signature{display:block;position:relative;flex:0 0 210px;width:270px;height:210px;mix-blend-mode:screen;animation:novu-float 9.6s ease-in-out infinite}
+.creator-signature::before,.creator-signature::after{content:'';position:absolute;inset:-40px -85px;pointer-events:none;mask-image:radial-gradient(ellipse,#000 15%,transparent 68%);
+  background:radial-gradient(ellipse at 35% 48%,#b5103478,transparent 56%),radial-gradient(ellipse at 68% 60%,#ed15365c,transparent 52%);animation:novu-fog 12s ease-in-out infinite alternate}
+.creator-signature::after{background:radial-gradient(ellipse at 55% 32%,#ff304145,transparent 52%),radial-gradient(ellipse at 32% 70%,#c20e425c,transparent 48%);animation-duration:16s;animation-delay:-8s}
+.creator-letter{position:absolute;inset:0;z-index:1;font-size:0;mix-blend-mode:screen;animation:novu-wave 6.4s ease-in-out infinite;pointer-events:none}
+.creator-crown{position:absolute;z-index:2;left:12px;top:10px;width:92px;height:76px;pointer-events:none;mix-blend-mode:screen;
+  background:radial-gradient(ellipse,#ff768c32,transparent 68%);animation:novu-crown 4.8s ease-in-out infinite}
+/* Light is masked over another copy of the actual art, so it never lights a rectangular tile. */
+.creator-sheen{position:absolute;inset:0;z-index:3;pointer-events:none;mix-blend-mode:screen;filter:brightness(1.7) saturate(.65);
+  mask-image:linear-gradient(112deg,transparent 38%,#0009 48%,#000 50%,#0009 52%,transparent 62%);mask-size:350% 100%;mask-repeat:no-repeat;animation:novu-sheen 10s cubic-bezier(.4,0,.2,1) infinite;opacity:0}
+.creator-ember{position:absolute;z-index:0;left:calc(12% + var(--i)*12%);top:84%;width:2px;height:2px;border-radius:50%;background:#ff9a98;box-shadow:0 0 6px #ff354c;pointer-events:none;opacity:0;animation:novu-ember calc(7s + var(--i)*.7s) linear infinite;animation-delay:calc(var(--i)*-1.9s)}
+.creator-glint{position:absolute;z-index:4;width:13px;height:13px;pointer-events:none;opacity:0;mix-blend-mode:screen;
+  background:radial-gradient(ellipse 12% 50%,#fff5df,transparent),radial-gradient(ellipse 50% 12%,#fff5df,transparent);animation:novu-glint 8.4s ease-in-out infinite}
+@keyframes novu-sheen{0%,12%{mask-position:100% 0;opacity:0}20%{opacity:.65}48%{opacity:.65}58%,100%{mask-position:0% 0;opacity:0}}
+@keyframes novu-ember{0%{opacity:0;transform:translate(0,0) scale(.6)}20%{opacity:.5}70%{opacity:.3}100%{opacity:0;transform:translate(18px,-160px) scale(.2)}}
+@keyframes novu-glint{0%,25%,45%,100%{opacity:0;transform:scale(.45) rotate(0deg)}35%{opacity:.85;transform:scale(1.15) rotate(45deg)}}
+@keyframes novu-wave{0%,100%{filter:brightness(1)}50%{filter:brightness(1.3) saturate(1.08)}}
 @keyframes novu-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
-@keyframes novu-crown{0%,100%{opacity:.2;transform:scale(.85)}50%{opacity:1;transform:scale(1.12)}}
+@keyframes novu-fog{0%{opacity:.45;transform:translate(-12px,5px) scale(.94) rotate(-6deg)}100%{opacity:.85;transform:translate(12px,-5px) scale(1.08) rotate(6deg)}}
+@keyframes novu-crown{0%,100%{opacity:.25;transform:scale(.9)}50%{opacity:.85;transform:scale(1.1)}}
 .creator-art{position:absolute;width:330px;max-width:none;height:330px;left:-40px;top:-48px}
 .creator-letter:nth-child(1){clip-path:inset(0 155px 0 0)}
 .creator-letter:nth-child(2){clip-path:inset(0 117.5px 0 115px)}
 .creator-letter:nth-child(3){clip-path:inset(0 70px 0 152.5px)}
 .creator-letter:nth-child(4){clip-path:inset(0 0 0 200px)}
-.creator-letter:nth-child(2){animation-delay:.22s,-2.4s}.creator-letter:nth-child(3){animation-delay:.44s,-4.8s}.creator-letter:nth-child(4){animation-delay:.66s,-7.2s}
-@media(prefers-reduced-motion:reduce){.creator-signature,.creator-letter,.creator-signature::before{animation:none}.creator-signature::before{display:none}}
-@media(max-width:460px){.creator-credit{flex-direction:column;gap:0;padding-inline:12px}.creator-byline{font-size:10px}}
+.creator-letter:nth-child(2){animation-delay:-1.2s}.creator-letter:nth-child(3){animation-delay:-2.4s}.creator-letter:nth-child(4){animation-delay:-3.6s}
+@media(prefers-reduced-motion:reduce){.creator-credit *,.creator-credit::after,.creator-signature::before,.creator-signature::after{animation:none}.creator-sheen,.creator-glint,.creator-ember{display:none}}
+html[data-reduce-motion] .creator-sheen,html[data-reduce-motion] .creator-glint,html[data-reduce-motion] .creator-ember{display:none}
+@media(max-width:460px){.creator-credit{flex-direction:column;gap:0;padding-inline:12px}.creator-byline{font-size:10px}.creator-signature{flex-basis:210px}}
 .settings-usage{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0 4px}
 .settings-usage>div{background:#1b2430;border:1px solid var(--line);border-radius:8px;padding:9px 11px;min-width:0}
 .settings-usage small{display:block;font-size:10.5px;color:var(--muted)}.settings-usage b{display:block;font-size:17px;font-weight:650;margin:2px 0}

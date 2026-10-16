@@ -132,3 +132,22 @@ class OnlyTheTitleSaysMitosis(unittest.TestCase):
         food = theme.identity(design.Designer.subject(dict(title=False, food=True, food_tier=[0, 3], names=['food1'])))
         self.assertIn('make its round O the emblem', title)
         self.assertNotIn('round O', food); self.assertIn('no text', food)
+
+
+class ReviewCases(unittest.TestCase):
+    """Found in review before the release: shades stay shading, a second part keeps its verb, a style is not a theme."""
+    def test_shade_words_are_the_shaders(self):
+        import theme
+        for text in ('make the buttons a deep purple', 'make the buttons a darker shade of blue', 'make the buttons a lighter tone', 'make the buttons a tad lighter'):
+            self.assertEqual(theme.unknown_words(text), [], text)
+            self.assertFalse(design.wants_design(text, theme.unknown_words(text)), text)
+
+    def test_a_second_part_borrows_the_verb(self):
+        import theme
+        self.assertEqual(theme.with_verbs(['make the coin a big diamond and the virus a pumpkin']), ['make the coin a big diamond', 'make the virus a pumpkin'])
+        self.assertEqual(theme.with_verbs(['make the title spooky and the food gold']), ['make the title spooky and the food gold'])   # no new thing: left alone
+
+    def test_a_style_for_one_part_is_not_a_whole_game_theme(self):
+        import theme, re
+        self.assertFalse(re.search(theme.GAME_THEME, 'put a bmw logo on the coin in a bmw style'))
+        self.assertTrue(re.search(theme.GAME_THEME, 'create me a bmw theme and make the food little tires'))

@@ -975,22 +975,34 @@ class StorageTests(SettingsCase):
         self.assertEqual(b.eval("[...document.querySelectorAll('.creator-letter')].map(e=>e.firstChild.textContent).join('')"), 'Novu')
         self.assertTrue(b.eval("[...document.querySelectorAll('.creator-art')].every(i=>i.getAttribute('src')==='/novu-wordmark.png')"))
         names = b.eval("getComputedStyle(document.querySelector('.creator-letter')).animationName.split(',').map(s=>s.trim())")
-        self.assertEqual(set(names), {'novu-wave', 'novu-float'})
-        # Always moving: the word's glow breathes and every letter floats, all the time.
-        moving = "[getComputedStyle(document.querySelector('.creator-signature')).filter,getComputedStyle(document.querySelector('.creator-letter')).transform].join('|')"
+        self.assertEqual(set(names), {'novu-wave'})
+        # Fog drifts independently; the intact word floats without rectangular shadows.
+        moving = "[getComputedStyle(document.querySelector('.creator-signature'),'::before').transform,getComputedStyle(document.querySelector('.creator-signature')).transform].join('|')"
+        self.assertEqual(b.eval("getComputedStyle(document.querySelector('.creator-signature')).filter"), 'none')
+        self.assertTrue(b.eval("[...document.querySelectorAll('.creator-letter')].every(e=>!getComputedStyle(e).filter.includes('drop-shadow') && getComputedStyle(e).mixBlendMode==='screen')"))
+        # Sample the animation timeline deterministically; headless Edge can defer its first frame.
+        b.eval("window.creditAnimations=document.querySelector('.creator-credit').getAnimations({subtree:true});creditAnimations.forEach(a=>{a.pause();a.currentTime=0})")
         first = b.eval(moving)
-        time.sleep(.3)
+        b.eval("creditAnimations.forEach(a=>{a.currentTime=3000})")
         self.assertNotEqual(first, b.eval(moving))
-        for width, height in ((1366,768),(1920,1080),(760,800)):
+        self.assertGreater(b.eval("Number(getComputedStyle(document.querySelector('.creator-sheen')).opacity)"), 0)
+        b.eval("creditAnimations.forEach(a=>a.play())")
+        self.assertTrue(b.eval("creditAnimations.every(a=>a.playState==='running')"))
+        for width, height in ((1366,768),(1920,1080),(760,800),(440,800)):
             b.set_viewport(width,height)
-            self.assertTrue(b.eval("const c=document.querySelector('.creator-credit'),r=c.getBoundingClientRect();c.scrollWidth<=c.clientWidth+1 && r.left>=0 && r.right<=innerWidth"))
+            # Decorative fog may extend outside its box, but is clipped; the actual mark must fit.
+            self.assertTrue(b.eval("const c=document.querySelector('.creator-credit'),r=c.getBoundingClientRect(),s=c.querySelector('.creator-signature').getBoundingClientRect();getComputedStyle(c).overflowX==='hidden' && r.left>=0 && r.right<=innerWidth && s.left>=r.left && s.right<=r.right"))
         b.call('Emulation.setEmulatedMedia', features=[{'name':'prefers-reduced-motion','value':'reduce'}])
         self.assertEqual(b.eval("getComputedStyle(document.querySelector('.creator-letter')).animationName"), 'none')
+        self.assertTrue(b.eval("['::before','::after'].every(p=>getComputedStyle(document.querySelector('.creator-signature'),p).animationName==='none') && getComputedStyle(document.querySelector('.creator-crown')).animationName==='none'"))
         self.assertEqual(b.eval("getComputedStyle(document.querySelector('.creator-signature')).animationName"), 'none')
+        self.assertTrue(b.eval("[...document.querySelectorAll('.creator-sheen,.creator-glint,.creator-ember')].every(e=>getComputedStyle(e).display==='none')"))
         b.call('Emulation.setEmulatedMedia', features=[{'name':'prefers-reduced-motion','value':'no-preference'}])
         self.change('reduce_motion', True)
         self.open_settings('about')
         self.assertEqual(b.eval("getComputedStyle(document.querySelector('.creator-letter')).animationName"), 'none')
+        self.assertTrue(b.eval("[...document.querySelectorAll('.creator-sheen,.creator-glint,.creator-ember')].every(e=>getComputedStyle(e).display==='none')"))
+        self.assertTrue(b.eval("['::before','::after'].every(p=>getComputedStyle(document.querySelector('.creator-signature'),p).animationName==='none') && getComputedStyle(document.querySelector('.creator-crown')).animationName==='none'"))
         self.close_settings()
         self.reset_all()
 

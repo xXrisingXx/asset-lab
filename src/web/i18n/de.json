@@ -2380,7 +2380,8 @@
   "That is a lot of suggestions for one hour. Thanks! Try again a bit later.": "Das sind viele Vorschläge für eine Stunde. Danke! Versuch es etwas später wieder.",
   "Your suggestion could not be sent (no internet?). It is still in the box: try again later.": "Dein Vorschlag konnte nicht gesendet werden (kein Internet?). Er steht noch im Feld: versuch es später wieder.",
   "Suggestions you send": "Vorschläge, die du sendest",
-  "What you type under About › Suggestions, and the Asset Lab version, go to the creator’s Google Form when you press Send. No name, account or anything else.": "Was du unter Über › Vorschläge schreibst und die Asset-Lab-Version gehen an das Google-Formular des Entwicklers, wenn du auf Senden drückst. Kein Name, kein Konto, sonst nichts."
+  "What you type under About › Suggestions, and the Asset Lab version, go to the creator’s Google Form when you press Send. No name, account or anything else.": "Was du unter Über › Vorschläge schreibst und die Asset-Lab-Version gehen an das Google-Formular des Entwicklers, wenn du auf Senden drückst. Kein Name, kein Konto, sonst nichts.",
+  "Check it in the library and ask again, or right-click it › Redraw with Image AI.": "Hake es in der Bibliothek an und frag noch einmal, oder Rechtsklick › Mit der Bild-KI neu zeichnen."
  },
  "patterns": {
   "{n} visuals": "{n} Grafiken",
@@ -2773,7 +2774,8 @@
   "{n} d ago": "vor {n} T.",
   "This drawing becomes one of the game’s {n} foods (each is worth a different mass), in every size and copy.": "Diese Zeichnung wird zu einem der {n} Futter des Spiels (jedes ist unterschiedlich viel Masse wert), in jeder Größe und Kopie.",
   "This drawing becomes one of the game’s {n} foods (each is worth a different mass), in every size and copy. The game paints each pellet its own color, so “Keep it white” is on: the pellets keep their colors and get the drawing’s detail.": "Diese Zeichnung wird zu einem der {n} Futter des Spiels (jedes ist unterschiedlich viel Masse wert), in jeder Größe und Kopie. Das Spiel färbt jedes Kügelchen in einer eigenen Farbe, daher ist „Weiß lassen“ an: Die Kügelchen behalten ihre Farben und bekommen die Details der Zeichnung.",
-  "Keep it under {n} characters, please.": "Bitte unter {n} Zeichen bleiben."
+  "Keep it under {n} characters, please.": "Bitte unter {n} Zeichen bleiben.",
+  "I could not tell which art {s} is, so nothing was redrawn for it.": "Ich konnte nicht erkennen, welche Grafik {s} ist, deshalb wurde dafür nichts neu gezeichnet."
  },
  "keys": {
   "Ctrl": "Strg",

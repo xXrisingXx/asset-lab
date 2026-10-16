@@ -71,6 +71,10 @@ def server_for(lab, port):
 
     class Handler(BaseHTTPRequestHandler):
         timeout = 30  # a browser's idle pre-opened connection must not keep the server from stopping
+        # Keep-alive: the page reuses a few connections instead of opening one per request. Every closed connection
+        # lingers for minutes in Windows (TIME_WAIT), and a lab left open (or a long test run) used up the PC's sockets
+        # (ERR_NO_BUFFER_SPACE). Every answer goes through send(), which always says its length.
+        protocol_version = 'HTTP/1.1'
 
         def log_message(self, *args): pass
 
@@ -82,6 +86,7 @@ def server_for(lab, port):
                                 'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob: data:; media-src 'self' blob:; connect-src 'self'; frame-ancestors 'none'"}.items():
                 self.send_header(name, value)
             if filename: self.send_header('Content-Disposition', 'attachment; filename="' + filename + '"')
+            if self.close_connection: self.send_header('Connection', 'close')   # said, so the browser does not reuse it
             self.end_headers()
             self.wfile.write(data)
 
@@ -96,6 +101,7 @@ def server_for(lab, port):
             and values of the wrong kind in a request (a list where a name belongs) are 400; anything else is the lab's own
             fault (500). Those two kinds also print their traceback to the log (the Asset Lab window), so no bug is hidden."""
             if isinstance(exc, (BrokenPipeError, ConnectionResetError, ConnectionAbortedError)): return
+            self.close_connection = True   # a request refused before its body was read must not leave that body for the next one
             if isinstance(exc, (TypeError, AttributeError)): status, text = 400, f'The request was not understood: a value has the wrong type ({exc}).'
             elif isinstance(exc, (ValueError, OSError, KeyError, RuntimeError)): status, text = 400, str(exc)
             else: status, text = 500, f'Something went wrong in the lab ({type(exc).__name__}: {exc}). The details are in the Asset Lab window.'

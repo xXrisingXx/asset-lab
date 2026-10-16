@@ -315,6 +315,8 @@ SERVER_NOTE = ('Potions, power-ups and equipment come from the game\'s server: M
 # A request for a whole look named after something ("a bmw theme", "bmw style"), not a change to one part.
 # The whole game, not one part ("make my game look like gta", "everything should be lego").
 WHOLE = r'(?:(?:i want |make )?(?:it|everything|all|all of it|(?:the |my |this )?(?:whole |entire )?(?:game|look|ui|menu|menus|theme|style)))'
+# What asks for the whole game in a look named after something ("a bmw theme"), unlike "the coin in a bmw style".
+GAME_THEME = r'\b(?:theme[ds]?|reskin|makeover|overhaul)\b'
 THEMED = r'\b(?:theme[ds]?|style|aesthetic|vibes?|reskin|edition|version|makeover)\b'
 CLAUSES = r'[.;\n]+|,?\s+(?:and then|then|also|plus)\s+|,?\s+and\s+(?=(?:make|give|put|add|draw|turn|theme|redesign|redraw|paint|stick|change|set)\b)'
 # Text: requests about the game's fonts become a font style with a preview ("player names black with a white glow").
@@ -918,6 +920,24 @@ def scene_request(piece, lookup=None):
     return any(w not in FEELINGS and not re.fullmatch(r'background|backdrop|wallpaper|bg|scenery|backgrounds', w) for w in unknown_words(piece, lookup))
 
 
+# "...and the virus a pumpkin": a second part that borrows the first one's verb.
+SECOND_PART = re.compile(r'(?P<head>.*?\b(?:make|turn|change|redraw|redesign|replace|swap)\s+the\s.+?)\s*,?\s+and\s+(?P<tail>the\s+\w+.*)$', re.I)
+VERB = re.compile(r'\b(make|turn|change|redraw|redesign|replace|swap)\b', re.I)
+
+
+def with_verbs(pieces):
+    """Split "make the coin a big diamond and the virus a pumpkin" into two requests, each with its verb, so the
+    virus is not lost inside the coin's description. Only when the second part is itself a change ("a pumpkin")."""
+    out = []
+    for piece in pieces:
+        found = SECOND_PART.match(piece)
+        tail = found and found.group('tail')
+        if found and design.becomes(VERB.search(found.group('head')).group(1) + ' ' + tail):
+            out += [found.group('head'), VERB.search(found.group('head')).group(1) + ' ' + tail]
+        else: out.append(piece)
+    return out
+
+
 def food_set(designer, row):
     """The queue draws each food on its own (they are different things worth different mass): which one, smallest first."""
     which, of = designer.food_kind(row)
@@ -935,7 +955,8 @@ def unknown_words(prompt, lookup=None):
                   r'#[0-9a-f]{6}', r'glow(?:s|ing|y)?|halos?|luminous|neon|outer|inner|proper|nice|lens|flares?|sparkl\w*|glints?|gleam\w*|twinkl\w*',
                   r'gloss(?:y)?|shiny|shine|polished|pixelated?|pixel art|8-?bit|retro|posteri[sz]ed?|cel.?shaded|cartoon(?:y)?|scanlines?|crt|vhs|grain(?:y)?|film grain|noisy|gritty',
                   r'gradients?|fad(?:e|es|ing)|ombre|blend(?:s|ed|ing)?|vertical|top to bottom|downward|diagonal|radial|circular|from the cent(?:er|re)|strip(?:e|es|ed)|bands?|duotone|tritone|gradient map|mapped',
-                  r'colou?r(?:s|ed)?|backgrounds?|bg']
+                  r'colou?r(?:s|ed)?|backgrounds?|bg',
+                  r'deep(?:er)?|shades?|tones?|tint(?:s|ed)?|hues?|tad|touch|slightly|bit|much|lot|way|rich(?:er)?|pale(?:r)?|vivid|muted|saturated|warm(?:er)?|cool(?:er)?']
     rest = re.sub(r'(?<![a-z0-9#])(?:' + '|'.join(f'(?:{v})' for v in vocabulary) + r')(?![a-z0-9])', ' ', text)
     return [word for word in re.findall(r"[a-z0-9#][a-z0-9'-]*", rest) if word not in SMALL_WORDS and word not in STOP and not word.isdigit()]
 
@@ -1372,6 +1393,8 @@ class Themes:
                     game=dict(colors=[dict(name=name, field=field, was=was, what=what) for name, (field, was, what) in UI_COLORS.items()],
                               hide=[dict(id=group, label=label) for group, (label, _) in HIDE.items()]))
 
+    _turn = threading.local()   # what one chat request learns on the way (parts it could not find), per server thread
+
     def chat(self, message, model='', history=None, only=None, language='', draw='auto'):
         """The reply to a request, with a word about server-only art when the request names some (see ServerArt), and
         inspiration from Wikipedia when it names someone or something ("a Post Malone theme"; Settings can turn it off).
@@ -1381,13 +1404,13 @@ class Themes:
         self.inspiration = None
         if labsettings.value(self.lab, 'web_inspiration') and inspire.candidates(str(message or '')[:2000]):
             self.inspiration = inspire.lookup(str(message or ''))
-        self.lost = []
+        self._turn.lost = []
         try: result = self._chat(message, model, history, only, language, draw)
         finally: found, self.inspiration = self.inspiration, None
         if found: self.inspired(result, found, only, draw, str(message or ''))
-        if self.lost and not (result.get('design') or {}).get('targets'):
+        if self._turn.lost and not (result.get('design') or {}).get('targets'):
             # "Make the leaderboard icon a trophy": no sprite here goes by that name, so nothing was guessed.
-            parts = ', '.join(f'“{p}”' for p in dict.fromkeys(self.lost))
+            parts = ', '.join(f'“{p}”' for p in dict.fromkeys(self._turn.lost))
             result['note'] = ((result.get('note') or '') + f' I could not tell which art {parts} is, so nothing was redrawn for it. '
                               'Check it in the library and ask again, or right-click it › Redraw with Image AI.').strip()
         if re.search(SERVER_ART, str(message or '').lower()) and result.get('source') != 'command':
@@ -1421,7 +1444,7 @@ class Themes:
             # "Make it look like the matrix": the mood's title offer grows into the whole game, still offered (not started).
             rows = self.showcase_rows(designer)
             if rows: result['design'] = part = dict(self.design_offer(designer, f'{title} theme.{context}', rows), optional=True)
-        elif part and designer and not only and part.get('targets') and re.search(THEMED, message.lower()) and labsettings.value(self.lab, 'offer_redraws'):
+        elif part and designer and not only and part.get('targets') and re.search(GAME_THEME, message.lower()) and labsettings.value(self.lab, 'offer_redraws'):
             # "Create me a bmw theme and make the food little tires": the whole game in the theme, and the parts the
             # request describes on their own (the food) drawn from those words, still in the theme.
             rows = self.showcase_rows(designer)
@@ -1460,6 +1483,7 @@ class Themes:
             message = re.sub(DRAW_ASK, ' ', message, flags=re.I)
             message = re.sub(r'\s+([.,!?])', r'\1', re.sub(r'\s{2,}', ' ', message)).strip(' .,') or 'give the game a bold new look'
         pieces = [p.strip(' ,') for p in re.split(CLAUSES, message) if p and p.strip(' ,')]
+        pieces = with_verbs(pieces)
         split = [text_split(p) for p in pieces if about_text(p, only)]   # "christmas theme and red names": both
         texts = [t for t, _ in split]
         font = texts and self.font_request('. '.join(texts))
@@ -1473,15 +1497,16 @@ class Themes:
             return result
         designer = getattr(self, 'designer', None) if draw != 'off' else None   # Image AI off: colors and effects only
         drawn, rest, lost = [], message, []   # lost: parts asked to change that no sprite here is known by
-        self.lost = lost
+        self._turn.lost = lost
         if designer:
             for piece in pieces:
                 change = design.becomes(piece)
-                wants = draw == 'on' or design.wants_design(piece, unknown_words(piece, self.named)) or scene_request(piece, self.named) or bool(change and unknown_words(change[1]))
+                wants = draw == 'on' or design.wants_design(piece, unknown_words(piece, self.named)) or scene_request(piece, self.named) \
+                    or bool(change and unknown_words(change[1]) and not changes_anything(rule_plan(change[1])))
                 if wants and designer.targets(piece, only): drawn.append(piece)
                 elif wants and change and not only and not re.search(THEMED, piece.lower()) and not re.fullmatch(WHOLE, change[0]): lost.append(change[0])
             rest = '. '.join(p for p in pieces if p not in drawn)
-        if draw == 'on' and designer and not drawn:
+        if draw == 'on' and designer and not drawn and not lost:
             # Image AI on, nothing named ("make the game look cool"): the main art is drawn in the new style, and the rest
             # of the game is shaded to match.
             rows = self.showcase_rows(designer, only)
@@ -1490,7 +1515,7 @@ class Themes:
                 result['design'] = self.design_offer(designer, message, rows)
                 return self.text_offer(result, message, only)
         if drawn:
-            rows, seen = [], set()
+            rows, seen, own = [], set(), {}   # own: each part's own words, when the request changes several parts
             for piece in drawn:
                 found = designer.targets(piece, only)
                 if (scene_request(piece, self.named) or re.search(BACKGROUND_WORDS, piece.lower())) and not only:
@@ -1500,8 +1525,9 @@ class Themes:
                         found = [r for r in self.lab.catalog.rows.values() if r['name'].lower().startswith('worldbg') and r['editable'] and r.get('primary', True)][:4] or found
                     else: found = [r for r in found if design.is_menu_background(r)] or found
                 for r in found:
-                    if r['key'] not in seen: seen.add(r['key']); rows.append(r)
+                    if r['key'] not in seen: seen.add(r['key']); rows.append(r); own[r['key']] = piece
             part = self.design_offer(designer, '. '.join(drawn), rows)
+            if len(drawn) > 1: part['prompts'] = own   # "the coin a diamond and the virus a pumpkin": the coin is not told about pumpkins
             if not rest.strip():
                 # about drawing chosen art ("make the potion spooky"): no player-name offer
                 return dict(plan=dict(reply='', operations=[], ui_colors={}, hide=[]), source='design', note=part.pop('note'), preview=None, design=part)
