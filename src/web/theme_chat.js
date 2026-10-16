@@ -64,7 +64,17 @@ let drawMode='auto';try{const v=localStorage.getItem('lab-theme-draw');if(v==='o
 for(const [id,label,tip] of [['auto','Auto','Draw new art when the request needs it'],['on','On','Always draw new art with the image model'],['off','Off','Only recolor and shade the existing art']]){
   const b=el('button','',label);b.type='button';b.dataset.draw=id;b.title=tip;b.onclick=()=>{drawMode=id;try{localStorage.setItem('lab-theme-draw',id);}catch(e){}showDraw();};drawSeg.append(b);}
 function showDraw(){drawSeg.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.draw===drawMode));}
-drawRow.append(el('span','section-label','IMAGE AI'),drawSeg);showDraw();
+// Accelerate (Settings › Theme AI & drawing): drawings use the whole graphics card and every processor core. Turning
+// it on warns first that the computer is slow while it draws.
+const accel=el('button','accelerate','⚡ Accelerate');accel.id='themeAccelerate';accel.type='button';
+accel.title='Draw faster with the whole graphics card and every processor core (the computer is slow while it draws)';
+function showAccel(){const on=!!(window.LabSettings&&LabSettings.get('accelerate'));accel.classList.toggle('active',on);accel.setAttribute('aria-pressed',String(on));}
+accel.onclick=run(async()=>{const on=!(window.LabSettings&&LabSettings.get('accelerate'));
+  if(on&&!await confirmAction('Turn on Accelerate?','Drawings will use the whole graphics card and every processor core, at high priority. They finish sooner, but the computer will be slow while it draws: games, videos and other apps may stutter or lag.','Turn on Accelerate'))return;
+  const res=await api('/api/settings',{values:{accelerate:on}});window.LabSettings?.merge?.(res);showAccel();
+  message(on?'Accelerate is on: drawings use the full graphics card and processor.':'Accelerate is off: drawings leave room for other apps.');});
+window.LabSettings?.ready?.then?.(showAccel);document.addEventListener('lab-setting',e=>{if(e.detail==='accelerate')showAccel();});
+drawRow.append(el('span','section-label','IMAGE AI'),drawSeg,accel);showDraw();showAccel();
 form.append(drawRow,input,row);
 
 // Dock: what is waiting to be installed, whether Mitosis is open, and the install / restore actions.
@@ -326,7 +336,7 @@ async function runQueue(Q){
       item.state='drawing';refreshQueue(Q);keepQueue(Q);
       const part=el('div','design-part');if(item.label)part.append(el('p','design-part-title',item.label));Q.box.append(part);Q.cards.set(item,part);
       const t0=Date.now();
-      const job=await drawDesign(part,item.prompt||Q.prompt,item.keys,item.count,Q.base,Q.direction,Q.entry,item.label,Q.inspiration).catch(e=>{part.append(el('p','theme-note error',e.message));return null;});
+      const job=await drawDesign(part,item.prompt||Q.prompt,item.keys,item.count,Q.base,Q.direction,Q.entry,item.label,item.prompt?'':Q.inspiration).catch(e=>{part.append(el('p','theme-note error',e.message));return null;});
       Q.spent+=(Date.now()-t0)/1000;Q.variantsDone+=item.count;
       item.state=job?.state==='complete'?'done':'failed';item.job=job?.id||'';
       keepQueue(Q);refreshQueue(Q);}

@@ -1588,7 +1588,9 @@ class Themes:
         system = (f'You are the creative art director of a 2D game. Invent {count} clearly different visual concepts for the request, '
                   'each one a distinct idea (different materials, props, story or style), not variations of one look. If the request is '
                   'short or vague, be bold and surprising. Each concept is one paragraph of at most 55 words saying exactly what to draw: '
-                  'materials, colors, lighting, decorations. Keep the subject recognisable and any text in it exactly as it is. ' + IDENTITY_DIRECTION +
+                  'materials, colors, lighting, decorations. Keep the subject recognisable and any text in it exactly as it is. '
+                  'When the request names what to draw ("little tires", "a donut"), every concept is exactly that, one of it, '
+                  'varying only its style. ' + IDENTITY_DIRECTION +
                   (SCENE_DIRECTION if subject == design.SCENE_SUBJECT else 'Do not describe a background, floor or shadow under it (the art is cut out). ') +
                   'Celebrities, musicians, characters and pop '
                   'culture are fine as fan art (the game\'s own skins use them); swimwear is the limit: never nudity or sexual content, '

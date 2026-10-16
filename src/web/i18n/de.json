@@ -2353,7 +2353,16 @@
   "Rename this chat (F2)": "Diesen Chat umbenennen (F2)",
   "Name this chat": "Diesen Chat benennen",
   "Chat name": "Chatname",
-  "Wait for the answer, then switch chats.": "Warte auf die Antwort und wechsle dann den Chat."
+  "Wait for the answer, then switch chats.": "Warte auf die Antwort und wechsle dann den Chat.",
+  "Accelerate": "Accelerate",
+  "⚡ Accelerate": "⚡ Accelerate",
+  "Draws with the whole graphics card and every processor core, at high priority: faster, but the computer is slow while it draws (games and videos may stutter).": "Zeichnet mit der ganzen Grafikkarte und allen Prozessorkernen, mit hoher Priorität: schneller, aber der Computer ist beim Zeichnen langsam (Spiele und Videos können ruckeln).",
+  "Draw faster with the whole graphics card and every processor core (the computer is slow while it draws)": "Schneller zeichnen mit der ganzen Grafikkarte und allen Prozessorkernen (der Computer ist dabei langsam)",
+  "Turn on Accelerate?": "Accelerate einschalten?",
+  "Drawings will use the whole graphics card and every processor core, at high priority. They finish sooner, but the computer will be slow while it draws: games, videos and other apps may stutter or lag.": "Zeichnungen nutzen die ganze Grafikkarte und alle Prozessorkerne mit hoher Priorität. Sie sind schneller fertig, aber der Computer ist beim Zeichnen langsam: Spiele, Videos und andere Apps können ruckeln oder hängen.",
+  "Turn on Accelerate": "Accelerate einschalten",
+  "Accelerate is on: drawings use the full graphics card and processor.": "Accelerate ist an: Zeichnungen nutzen die ganze Grafikkarte und den Prozessor.",
+  "Accelerate is off: drawings leave room for other apps.": "Accelerate ist aus: Zeichnungen lassen Platz für andere Apps."
  },
  "patterns": {
   "{n} visuals": "{n} Grafiken",

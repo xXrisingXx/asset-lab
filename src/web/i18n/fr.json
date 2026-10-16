@@ -2353,7 +2353,16 @@
   "Rename this chat (F2)": "Renommer ce chat (F2)",
   "Name this chat": "Nommer ce chat",
   "Chat name": "Nom du chat",
-  "Wait for the answer, then switch chats.": "Attends la réponse, puis change de chat."
+  "Wait for the answer, then switch chats.": "Attends la réponse, puis change de chat.",
+  "Accelerate": "Accelerate",
+  "⚡ Accelerate": "⚡ Accelerate",
+  "Draws with the whole graphics card and every processor core, at high priority: faster, but the computer is slow while it draws (games and videos may stutter).": "Dessine avec toute la carte graphique et tous les cœurs du processeur, en priorité haute : plus rapide, mais l’ordinateur est lent pendant le dessin (jeux et vidéos peuvent saccader).",
+  "Draw faster with the whole graphics card and every processor core (the computer is slow while it draws)": "Dessiner plus vite avec toute la carte graphique et tous les cœurs (l’ordinateur est lent pendant le dessin)",
+  "Turn on Accelerate?": "Activer Accelerate ?",
+  "Drawings will use the whole graphics card and every processor core, at high priority. They finish sooner, but the computer will be slow while it draws: games, videos and other apps may stutter or lag.": "Les dessins utiliseront toute la carte graphique et tous les cœurs du processeur, en priorité haute. Ils finissent plus tôt, mais l’ordinateur sera lent pendant le dessin : jeux, vidéos et autres applis peuvent saccader.",
+  "Turn on Accelerate": "Activer Accelerate",
+  "Accelerate is on: drawings use the full graphics card and processor.": "Accelerate est activé : les dessins utilisent toute la carte graphique et le processeur.",
+  "Accelerate is off: drawings leave room for other apps.": "Accelerate est désactivé : les dessins laissent de la place aux autres applis."
  },
  "patterns": {
   "{n} visuals": "{n} visuels",

@@ -584,9 +584,18 @@ class ThemeAiTests(Base):
         arg = lambda name: calls[-1][calls[-1].index(name) + 1]
         self.assertEqual((arg('--steps'), arg('-b'), len(unloads)), ('4', '2', 1))
         self.assertIn('--offload-to-cpu', calls[-1])
-        self.assertEqual(arg('--backend'), 'te=cpu,vae=cpu')
+        # The picture encoder and decoder run on the graphics card (same picture, minutes sooner); the text encoder in RAM.
+        self.assertEqual((arg('--backend'), arg('--flash-attn')), ('te=cpu', 'on'))
         self.assertGreaterEqual(int(arg('--threads')), 1)
-        self.assertLessEqual(int(arg('--threads')), 4)
+        self.assertLessEqual(int(arg('--threads')), 6)
+        # Accelerate: everything on the graphics card and every core (the planner is unloaded even when free_gpu is off).
+        self.lab.settings.update({'accelerate': True, 'free_gpu': False})
+        self.draw(calls, unloads)
+        self.assertNotIn('--backend', calls[-1])
+        self.assertEqual(int(arg('--threads')), os.cpu_count() or 4)
+        self.assertEqual(len(unloads), 2)
+        self.lab.settings.update({'accelerate': False, 'free_gpu': True})
+        unloads.clear(); unloads.append('first')
         self.lab.settings.update({'drawings': 3, 'drawing_quality': 'detailed', 'free_gpu': False})
         job = self.draw(calls, unloads)
         self.assertEqual((job['total'], len(job['variants']), arg('--steps'), arg('-b'), len(unloads)), (3, 3, '8', '3', 1))   # no unload this time

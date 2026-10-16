@@ -181,6 +181,7 @@ input.fonts-num{width:62px;padding:5px 6px}
 
 .review-head .review-all{margin-left:auto}
 .theme-drawmode{display:flex;align-items:center;gap:8px;margin-bottom:6px}.theme-drawmode .segmented button{padding:3px 10px;font-size:11px}
+.theme-drawmode .accelerate{margin-left:auto;padding:4px 10px;font-size:11px}.theme-drawmode .accelerate.active{background:#3a2a17;border-color:var(--orange);color:var(--orange);font-weight:600}
 /* AI activity strip */
 .theme-activity{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:11px;color:var(--muted);padding:2px 0 8px}
 .theme-activity .act-text{flex:1;min-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}

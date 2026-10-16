@@ -723,6 +723,31 @@ class ThemeAiTests(SettingsCase):
         self.assertEqual(self.bodies('/api/design-start')[-1]['inspiration'], 'a' * 20 + '.png')
         self.close_drawer()
 
+    def test_accelerate_warns_then_turns_on(self):
+        b = self.browser
+        self.reset_all()
+        self.reload()
+        self.close_settings() if b.eval("document.getElementById('settingsDialog')?.open") else None
+        self.open_drawer()
+        self.assertEqual(b.eval("document.getElementById('themeAccelerate').getAttribute('aria-pressed')"), 'false')
+        b.click_selector('#themeAccelerate')
+        b.wait_for("document.getElementById('dialog').open")
+        self.assertIn('slow', b.eval("document.getElementById('dialogText').textContent"))
+        b.eval("document.querySelector('#dialog button[value=cancel]').click(); true")   # cancelled: stays off
+        b.wait_for("!document.getElementById('dialog').open")
+        self.assertFalse(self.saved('accelerate'))
+        b.click_selector('#themeAccelerate')
+        b.wait_for("document.getElementById('dialog').open")
+        b.click_selector('#dialogAccept')
+        b.wait_for("document.getElementById('themeAccelerate').getAttribute('aria-pressed') === 'true'")
+        self.assertTrue(self.saved('accelerate'))
+        self.assertTrue(b.eval("LabSettings.get('accelerate')"))                          # the Settings window agrees
+        b.click_selector('#themeAccelerate')                                              # off: no warning needed
+        b.wait_for("document.getElementById('themeAccelerate').getAttribute('aria-pressed') === 'false'")
+        self.assertFalse(b.eval("document.getElementById('dialog').open"))
+        self.assertFalse(self.saved('accelerate'))
+        self.close_drawer()
+
     def test_a_piece_with_its_own_words_is_drawn_from_them(self):
         b = self.browser
         self.reset_all()

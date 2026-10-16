@@ -26,7 +26,7 @@ const EXTRAS={storage:{usage:'disk space usage size workspace builds local ai ru
 const L={values:null,changed:[],schema:[],categories:[],about:null,privacy:[],note:'',file:'',damaged:false,old:false,category:'general',query:'',usage:null,usageAt:0,models:null,started:false};
 let readyDone;const ready=new Promise(r=>{readyDone=r;});
 function get(k){if(L.values&&k in L.values)return L.values[k];const s=typeof S==='object'&&S?S.settings:null;return s&&k in s?s[k]:undefined;}
-window.LabSettings={get,ready,values:()=>({...(L.values||{})}),open:c=>openSettings(c),beforeGameChange};
+window.LabSettings={get,ready,values:()=>({...(L.values||{})}),open:c=>openSettings(c),beforeGameChange,merge:res=>merge(res)};   // merge: a change made outside this window
 
 const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
 const btn=(text,cls,title)=>{const b=el('button',cls||'',text);b.type='button';if(title)b.title=title;return b;};
@@ -260,7 +260,8 @@ async function save(key,value){
     if(key==='keep_builds')refreshUsage();}
   catch(e){L.values={...L.values,[key]:before};apply(key);sync(key);problem(rowOf(key),e.message);status.textContent='Not saved';status.classList.add('on','error');}
 }
-function merge(res){const old=L.values;L.values=res.values;L.changed=res.changed||[];store.set(CACHE,lookOf(L.values));for(const k of Object.keys(L.values))if(!same(old[k],L.values[k]))apply(k);
+function merge(res){const old=L.values||{};L.values=res.values;L.changed=res.changed||[];store.set(CACHE,lookOf(L.values));
+  for(const k of Object.keys(L.values))if(!same(old[k],L.values[k])){apply(k);document.dispatchEvent(new CustomEvent('lab-setting',{detail:k}));}   /* others follow a change (Theme AI's Accelerate) */
   if(L.lang!==undefined&&L.values.language!==L.lang)relanguage();}
 // A new language needs the page drawn again: once it is saved, the page reloads and Settings opens where it was.
 function relanguage(){L.lang=L.values.language;say('Switching the language…');try{sessionStorage.setItem(REOPEN,L.category||'general');}catch(e){}setTimeout(()=>location.reload(),150);}

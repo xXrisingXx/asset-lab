@@ -92,6 +92,8 @@ SCHEMA = [
        keywords='tint icons redraw'),
     _s('web_inspiration', 'theme', 'Look things up for inspiration', 'When a request names someone or something (“a Post Malone theme”), Theme AI reads '
        'its Wikipedia summary and pictures to get the look right. Off: nothing is looked up.', 'bool', True, keywords='wikipedia internet web search online'),
+    _s('accelerate', 'theme', 'Accelerate', 'Draws with the whole graphics card and every processor core, at high priority: faster, '
+       'but the computer is slow while it draws (games and videos may stutter).', 'bool', False, keywords='speed fast faster gpu cpu turbo performance'),
     _s('free_gpu', 'theme', 'Free the graphics card before drawing', 'Unloads the planner model first, so both don’t fight over graphics memory. Turn it off only with 12 GB or more.',
        'bool', True, keywords='vram gpu memory unload'),
     # ----- text and fonts

@@ -171,11 +171,19 @@ def key_for(prompt):
     return 'green'
 
 
+CANVAS_BUDGET = 768 * 768
+
+
 def canvas_size(w, h):
     """A model canvas (multiples of 16, about 0.45 megapixels) with room around the art for drips, hats and glow."""
     aspect = max(0.4, min(4.0, w / max(1, h)))
     width = 1024 if aspect >= 1 else max(512, round(1024 * aspect / 16) * 16)
     height = max(384, min(1024, round(width / aspect * 1.75 / 16) * 16))
+    # At most 768 x 768 worth of pixels: a square 1024 canvas (food, coins, icons) no longer fits beside the reference
+    # pictures on an 8 GB card and draws about 5 times slower, for detail the game never shows (sprites are 64-256 px).
+    if width * height > CANVAS_BUDGET:
+        scale = (CANVAS_BUDGET / (width * height)) ** 0.5
+        width, height = max(384, int(width * scale) // 16 * 16), max(384, int(height * scale) // 16 * 16)
     return width, height
 
 
@@ -574,8 +582,10 @@ class Designer:
                 try: job['direction'] = (self.director(brief, self.subject(job)) or '').strip()[:700]
                 except Exception: job['direction'] = ''
             if not runs: runs = [(job.get('direction') or '', job['total'])]
+            # Settings › Accelerate: everything on the graphics card, every core, high priority (the PC is slow meanwhile).
+            fast = bool(labsettings.value(self.lab, 'accelerate'))
             # The planner and the image model do not both fit on an 8 GB card (Settings: Free the graphics card before drawing).
-            if labsettings.value(self.lab, 'free_gpu'): runtime.OLLAMA.unload()
+            if fast or labsettings.value(self.lab, 'free_gpu'): runtime.OLLAMA.unload()
             job['message'] = 'Loading the image model…'
             steps = labsettings.STEPS[labsettings.value(self.lab, 'drawing_quality')]   # Settings: Drawing quality
             log, made, failed = [], 0, 0
@@ -584,9 +594,12 @@ class Designer:
                 one = len(runs) > 1
                 out = folder / (f'raw-{made}.png' if one else 'raw-%d.png')
                 args = [str(runtime.path('sd')), '--diffusion-model', str(runtime.path('diffusion')), '--vae', str(runtime.path('vae')), '--llm', str(runtime.path('llm')),
-                        # Leave GPU workspace for diffusion; the text encoder and decoder can run in RAM.
-                        '--offload-to-cpu', '--backend', 'te=cpu,vae=cpu',
-                        '--threads', str(max(1, min(4, (os.cpu_count() or 2) // 2))),
+                        # Weights wait in RAM and visit the graphics card one part at a time, so 8 GB is enough. The picture
+                        # encoder and decoder (small, but slow on the processor: about 3 minutes of every drawing) run on the
+                        # graphics card, with flash attention: the same picture, about ten times sooner. The text encoder stays
+                        # on the processor unless Accelerate is on.
+                        '--offload-to-cpu', '--flash-attn', 'on', *([] if fast else ['--backend', 'te=cpu']),
+                        '--threads', str(os.cpu_count() or 4) if fast else str(max(1, min(6, (os.cpu_count() or 2) // 2))),
                         *(['-r', str(folder / 'reference.png')] if (folder / 'reference.png').is_file() else []),
                         *(['-r', str(self.lab.root / 'inspiration' / job['inspiration'])] if job.get('inspiration') else []),   # the look, as pictures
                         '-p', self.instruction(dict(job, direction=direction)),
@@ -596,7 +609,7 @@ class Designer:
                 with self.lock:
                     if job.get('cancelled'): raise RuntimeError('Cancelled.')
                     proc = subprocess.Popen(args, cwd=str(runtime.path('sd').parent), stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                            creationflags=runtime.QUIET | getattr(subprocess, 'BELOW_NORMAL_PRIORITY_CLASS', 0),
+                                            creationflags=runtime.QUIET | getattr(subprocess, 'HIGH_PRIORITY_CLASS' if fast else 'BELOW_NORMAL_PRIORITY_CLASS', 0),
                                             text=True, encoding='utf-8', errors='replace')
                     job['pid'] = proc.pid
                 which = f'idea {number + 1} of {len(runs)}' if one else f'{job["total"]} variant{"s" if job["total"] > 1 else ""}'
