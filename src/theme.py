@@ -9,6 +9,7 @@ import base64
 import fnmatch
 import io
 import json
+import random
 import re
 import threading
 import time
@@ -122,7 +123,31 @@ MOODS = [
     (r'invert(?:ed)?|negative', dict(invert=True)), (r'hide|remove|invisible|get rid of', dict(opacity=0)),
     (r'more transparent|see-?through|fainter|subtle[r]?|less visible', dict(opacity=0.5)),
     (r'less transparent|more (?:visible|opaque|solid)|stronger|bolder', dict(opacity=2.2)),
-    (r'warm(?:er)?', dict(hue_shift=-12, saturation=1.1)), (r'cool(?:er)?|cold(?:er)?', dict(hue_shift=14, saturation=1.05))]
+    # "Cool" alone means awesome ("make it look cool", see VAGUE); only cool colors or tones shift the hue.
+    (r'warm(?:er)?', dict(hue_shift=-12, saturation=1.1)), (r'cool[- ](?:colou?rs?|tones?|toned|palette|hues?)|cold(?:er)?', dict(hue_shift=14, saturation=1.05))]
+# Praise without a look in it ("make it cool", "something epic", "glow it up"): the model invents a bold theme, the
+# image model can draw one, and without either a curated look is picked (CREATIVE_LOOKS) instead of a timid nudge.
+VAGUE = (r'\b(?:cool(?:er)?|awesome|epic|sick|dope|fresh|amazing|beautiful|pretty|prettier|badass|sleek(?:er)?|modern|unique|interesting|'
+         r'fun(?:ner)?|crazy|insane|wild|lit|stylish|aesthetic|vibes?|better|nicer|best|hype|swag(?:gy)?|surprise me|whatever|anything|'
+         r'glow ?up|makeover|upgrade|improve|spice (?:it |this |the game )?up|level (?:it )?up|revamp|refresh(?:ed)?|new look|look good|look great)\b')
+CREATIVE_LOOKS = ('synthwave gradient on the buttons and panels with a neon glow and a chrome logo',
+                  'cyberpunk theme with neon outlines and a strong glow on the icons',
+                  'glossy gold buttons with a subtle glow and dark panels',
+                  'ocean gradient on the buttons and panels with a soft glow and glossy icons',
+                  'royal theme with gold outlines and a subtle glow',
+                  'galaxy gradient on the buttons with a holographic outline on the icons')
+# Starting ideas handed to the model with an open-ended request, so "make it cool" twice gives two different looks.
+CONCEPTS = ('molten lava: black panels, orange-to-red glowing gradients, ember glow', 'arctic ice: pale blue gradients, white frosty outlines, cold glow',
+            'royal gold: deep purple panels, glossy gold buttons and outlines', 'toxic waste: acid green gradients on black, sickly green glow',
+            'vaporwave sunset: pink-to-orange-to-purple gradients, soft glow', 'deep ocean: navy to teal gradients, aqua outlines, glossy',
+            'galaxy: indigo-to-magenta gradients, starlight sparkle, white outlines', 'candy pop: bright pastel gradients, glossy finish, white outlines',
+            'retro arcade: bold primary colors, pixelated icons, scanlines', 'cherry blossom: soft pink gradients, white outlines, gentle glow',
+            'gold and black luxury: black panels, gold gradients and gold outlines', 'neon jungle: emerald gradients, lime outlines, strong green glow')
+# Words about the tool, not the game ("using image generation", "with the AI"): never a sprite name, and asking for
+# the image model this way turns drawing on for that request.
+DRAW_ASK = (r'\b(?:using|use|with|via|through|by)\s+(?:the\s+|an?\s+)?(?:ai\s+|local\s+)?(?:image\s*(?:generation|generator|gen|model|ai)|ai\s+(?:art|images?|drawing)|'
+            r'drawing|image\s*model)\b|\b(?:image\s*generation|generate\s+(?:new\s+)?(?:art|images?)|draw\s+new\s+art)\b')
+TOOL_WORDS = set('image images generation generator generate generated picture pictures art artwork ai drawing draw drawn model using cool awesome epic'.split())
 
 
 def families_of(row, sheet=''):
@@ -557,16 +582,17 @@ RISKY = {'invert': r'invert|negative|opposite|flip the colou?rs', 'pixelate': r'
          'grain': r'grain|nois[ey]|gritty|film|dust|rough|vintage|glitch|static'}
 
 
-def tame(plan, said):
+def tame(plan, said, bold=False):
     """Small models tend to switch on every field a schema offers. Effects that wreck art are kept only
-    when the conversation asked for something like them, and exact repeats of an operation are dropped."""
+    when the conversation asked for something like them, and exact repeats of an operation are dropped.
+    bold: an open-ended request ("make it cool") left the look to the model, so its gloss and sparkle stay."""
     said, kept, seen = said.lower(), [], set()
     wants_glow = re.search(r'glow|neon|lumin|radiat|halo|light up|lit up', said)
     wants_gloss = re.search(r'gloss|shin[ey]|glass|polish|chrome|metal|wet|candy|bubble|jelly|crystal', said)
     for op in plan['operations']:
         op = dict(op, **{field: (False if field == 'invert' else 0.0) for field, words in RISKY.items() if op[field] and not re.search(words, said)})
-        if op['gloss'] and not wants_gloss: op['gloss'] = 0.0
-        if op['flare'] and not re.search(r'flare|sparkl|glint|highlight|shin[ey]|star|gleam|twinkl', said): op['flare'] = 0.0
+        if op['gloss'] and not wants_gloss and not bold: op['gloss'] = 0.0
+        if op['flare'] and not bold and not re.search(r'flare|sparkl|glint|highlight|shin[ey]|star|gleam|twinkl', said): op['flare'] = 0.0
         if op['rim_color'] and op['color_mode'] == 'none' and not re.search(r'inside|interior|inner|fill|body|cent(?:er|re)|middle|within|dark|bright|light', said):
             # A rim-only operation promises to leave the art inside alone, so stray tone tweaks are dropped.
             op.update(hue_shift=0.0, saturation=1.0, brightness=1.0, contrast=1.0, gloss=0.0, opacity=1.0)
@@ -575,6 +601,9 @@ def tame(plan, said):
         if wants_glow and painted and not op['glow_color']: op.update(glow_color='auto', glow_size=12.0, glow_strength=1.6)
         if op['glow_color'] and re.search(rf'\b(?:{QUIET_WORDS})\s+(?:\w+\s+)?glow', said): op.update(glow_size=min(op['glow_size'], 8.0), glow_strength=min(op['glow_strength'], 0.9))
         fingerprint = json.dumps({k: v for k, v in op.items() if k not in ('targets', 'match', 'exclude')}, sort_keys=True)
+        whole = json.dumps(op, sort_keys=True)
+        if (whole, 'same') in seen: continue   # the very same step again (small models repeat themselves)
+        seen.add((whole, 'same'))
         # The same treatment again on a single family, after "everything" already applied it, only costs time.
         if changes(op) and not ((fingerprint, 'everything') in seen and not op['match'] and op['targets'] != ['everything']):
             kept.append(op)
@@ -675,11 +704,52 @@ def silhouette(solid):
     return ~outside
 
 
+MENU_BACKGROUND = re.compile(r'bg\d+\.png', re.I)   # bg2.png and the other themes' menu backgrounds
+# Art direction for a background picture (design.SCENE_SUBJECT): the whole frame is the art, and it repeats.
+SCENE_DIRECTION = ('This is a whole background picture that fills the frame edge to edge and repeats as a tile behind menu buttons: describe '
+                   'the scene, its colors and lighting, with a few large shapes rather than tiny detail and nothing that must sit in the '
+                   'center. Use the colors the request names. No text or logos. ')
+
+
+def opaque_tile(pixels, op):
+    """A recolored main menu background. The menu's teal (#0D2829) is compiled into Mitosis.exe and bg2.png is only a
+    faint black pattern over it, so a tinted pattern still shows the teal. This fills the whole tile with the new color
+    instead, with the game's pattern kept as a soft shade of it (lighter on a dark color, darker on a light one).
+    Gradients run there and back across the tile, so its edges meet and it repeats without seams."""
+    h, w = pixels.shape[:2]
+    stops = [rgb_of(hex_color(c)) for c in (op.get('gradient') or []) if hex_color(c)] or ([rgb_of(hex_color(op['color']))] if hex_color(op.get('color') or '') else [])
+    if not stops: return pixels
+    if len(stops) == 1: base = np.broadcast_to(np.asarray(stops[0], np.float32), (h, w, 3)).copy()
+    else:
+        yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
+        if op.get('gradient_type') == 'radial': t = np.hypot((xx + .5) / w - .5, (yy + .5) / h - .5) / np.hypot(.5, .5)
+        else:
+            angle = np.radians(float(op.get('gradient_angle') or 0.0))   # 0 = left to right, 90 = top to bottom
+            along = ((xx + .5) / w * np.cos(angle) + (yy + .5) / h * np.sin(angle)) % 1.0
+            t = 1 - np.abs(2 * along - 1)   # 0 at both edges, 1 in the middle: seamless when tiled
+        pos = np.clip(t, 0, 1) * (len(stops) - 1)
+        i = np.minimum(pos.astype(int), len(stops) - 2)
+        f = (pos - i)[..., None]
+        table = np.asarray(stops, np.float32)
+        base = table[i] * (1 - f) + table[i + 1] * f
+    base = np.clip(base * float(op.get('brightness') or 1.0), 0, 1)
+    alpha = pixels[..., 3:4].astype(np.float32) / 255
+    if alpha.min() > 0.99:
+        # Already a filled tile (an earlier recolor or a drawn background): its detail is in the brightness instead.
+        lum = pixels[..., :3].astype(np.float32) @ np.array([0.2126, 0.7152, 0.0722], np.float32) / 255
+        pattern = np.clip(np.abs(lum - np.median(lum))[..., None] * 3, 0, 0.35)
+    else: pattern = np.clip(alpha * 6, 0, 0.35)   # the faint triangles, made readable
+    dark = (base @ np.array([0.2126, 0.7152, 0.0722], np.float32))[..., None] < 0.3
+    rgb = np.where(dark, base + (1 - base) * pattern * 0.3, base * (1 - pattern))
+    return np.dstack([(np.clip(rgb, 0, 1) * 255 + .5).astype(np.uint8), np.full((h, w), 255, np.uint8)])
+
+
 def shade(pixels, op):
     """Apply one operation to an RGBA uint8 array, using the array's own extent as the frame for gradients and glows.
 
     Fully transparent pixels stay untouched unless a glow or outline is drawn into them.
     """
+    if op.get('opaque'): return opaque_tile(pixels, op)   # a menu background: see opaque_tile
     out = pixels.astype(np.float32)
     rgb, alpha = out[..., :3] / 255.0, out[..., 3]
     if op['color_mode'] != 'none' and op['color_amount'] > 0:
@@ -804,6 +874,20 @@ SMALL_WORDS = set('''a an the on in of to it its me my i is be are and with plus
     turn turns set put add adds use get let have has please want wants like only just all every each any also too then now there here this that these
     those them they their into onto from up out off over under around around while when where what which very really still again same one ones
     thing things something anything bit lot kind sort way side look looks style themed theme it's im i'm'''.split())
+
+
+BACKGROUND_WORDS = r'\b(?:background|backdrop|wallpaper|bg|scenery)s?\b'
+FEELINGS = set('hate hates ugly annoying annoyed love loves bad gross tired sick rid want wish please really so very green teal greenish ugh honestly'.split())
+
+
+def scene_request(piece, lookup=None):
+    """A background asked to show something ("a starry night sky background", "anime background", "spooky background"),
+    not just a color or a brightness: the image model draws it as a seamless tile. Feelings about the old one ("I hate
+    the green background") are not a picture; colors alone get an opaque recolor instead (see opaque_tile)."""
+    low = piece.lower()
+    if not re.search(BACKGROUND_WORDS, low): return False
+    if any(re.search(rf'\b(?:{words})\b', low) for words in MOOD_WORDS.values()) or re.search(VAGUE, low): return True
+    return any(w not in FEELINGS and not re.fullmatch(r'background|backdrop|wallpaper|bg|scenery|backgrounds', w) for w in unknown_words(piece, lookup))
 
 
 def unknown_words(prompt, lookup=None):
@@ -954,7 +1038,8 @@ def ollama(path, payload=None, timeout=6):
 
 
 def models():
-    try: listed = ollama('/api/tags').get('models', [])
+    # An Ollama that is off refuses at once; one that is busy unloading a model can take a few seconds to list them.
+    try: listed = ollama('/api/tags', timeout=6).get('models', [])
     except (OSError, ValueError): return []
     usable = [m for m in listed if 'completion' in (m.get('capabilities') or ['completion']) and 'embed' not in m['name']
               and 'vision' not in (m.get('capabilities') or []) and m.get('size', 0) > 1.5e9]
@@ -1097,7 +1182,7 @@ class Themes:
         scan = re.sub(rf"\b(?:{WORDS['menu_background']}|{WORDS['world_background']})\b", ' ', scan)
         for word in dict.fromkeys(re.findall(r'[a-z]{4,}', scan)):
             stem = next((s for s in (word, word[:-1] if word.endswith('s') else '', word[:-2] if word.endswith('es') else '') if s in self.tokens), '')
-            if not stem or stem in STOP or word in STOP or stem in COLORS or stem in GRADIENTS or family_words.fullmatch(word): continue
+            if not stem or stem in STOP or word in STOP or word in TOOL_WORDS or stem in COLORS or stem in GRADIENTS or family_words.fullmatch(word): continue
             rows = self.tokens[stem]
             # A word that is part of a name you gave means those sprites: "the star icon" is the Star button, not every star effect.
             given = [(k, r) for k, r in rows if re.search(rf'\b{stem}', re.sub(r'\([^)]*\)', ' ', r.get('label', '').lower()))]
@@ -1173,6 +1258,10 @@ class Themes:
                 '- color: "#rrggbb", with color_mode: "tint" recolors only colored pixels and keeps white, grey and black as they are (best for buttons, cells, logo); '
                 '"colorize" recolors every pixel by its brightness, so white becomes the color (use for white icons, fonts, light backgrounds); '
                 '"fill" paints a flat color and keeps only the shape (use for menu_background). color_amount 0-1 is the strength.\n'
+                '- The main menu background (menu_background) is a faint pattern over a fixed green-teal that players dislike and that cannot be '
+                'changed directly. A color or gradient given to menu_background in its own operation fills the whole tile, so the teal is gone, and '
+                'keeps the pattern as a soft shade. Whenever the user asks for a background color, mood or "the background", give menu_background its '
+                'own operation with color_mode "fill" and a color or gradient that fits; never only tint it or shift its hue.\n'
                 '- hue_shift (-180..180 degrees), saturation (0 = greyscale, 1 = unchanged, up to 3), brightness (0.1-3), contrast (0.1-3), '
                 'opacity (0 hides, 1 unchanged, up to 4 strengthens faint art), invert (true/false).\n'
                 '- gradient: a list of 2-8 "#rrggbb" stops painted across EACH sprite instead of one flat color, or gradient_preset: one of ' + ', '.join(GRADIENTS) + '. '
@@ -1240,15 +1329,18 @@ class Themes:
                     game=dict(colors=[dict(name=name, field=field, was=was, what=what) for name, (field, was, what) in UI_COLORS.items()],
                               hide=[dict(id=group, label=label) for group, (label, _) in HIDE.items()]))
 
-    def chat(self, message, model='', history=None, only=None, language=''):
+    def chat(self, message, model='', history=None, only=None, language='', draw='auto'):
         """The reply to a request, with a word about server-only art when the request names some (see ServerArt), and
-        inspiration from Wikipedia when it names someone or something ("a Post Malone theme"; Settings can turn it off)."""
+        inspiration from Wikipedia when it names someone or something ("a Post Malone theme"; Settings can turn it off).
+        draw: the Image AI switch in the chat. 'auto' draws when the request needs it, 'on' always draws new art (the
+        main pieces of the game when nothing is named), 'off' only recolors and shades."""
+        draw = draw if draw in ('auto', 'on', 'off') else 'auto'
         self.inspiration = None
         if labsettings.value(self.lab, 'web_inspiration') and inspire.candidates(str(message or '')[:2000]):
             self.inspiration = inspire.lookup(str(message or ''))
-        try: result = self._chat(message, model, history, only, language)
+        try: result = self._chat(message, model, history, only, language, draw)
         finally: found, self.inspiration = self.inspiration, None
-        if found: self.inspired(result, found, only)
+        if found: self.inspired(result, found, only, draw)
         if re.search(SERVER_ART, str(message or '').lower()) and result.get('source') != 'command':
             plan = result.get('plan') or {}
             if plan.get('operations'): plan['operations'] = [op for op in plan['operations'] if not set(op.get('targets') or []) <= {'potions', 'equipment'}]
@@ -1258,7 +1350,14 @@ class Themes:
             else: result['note'] = ((result.get('note') or '') + ' ' + SERVER_NOTE).strip()
         return result
 
-    def inspired(self, result, found, only):
+    def showcase_rows(self, designer, only=None):
+        """What "draw the whole game" redraws: the checked assets, or everything players look at in game (see
+        Designer.whole_game_rows: the title, the viruses, all of theme.png and the food)."""
+        if only: return [r for r in (self.lab.row(k) for k in only if k in self.lab.catalog.rows) if r['editable']][:24]
+        # A game without those (another Mitosis version, a test game) draws a few of its buttons and icons instead.
+        return designer.whole_game_rows() or designer.family_rows('buttons icons logo cells')
+
+    def inspired(self, result, found, only, draw='auto'):
         """A request that names someone or something: say what was looked up, carry it into the drawings, and offer to redraw
         the main art (the title, the virus, the play button and the coin, or the checked assets), since colors alone can't
         make "a Post Malone theme"."""
@@ -1267,7 +1366,7 @@ class Themes:
         context = f' Inspiration ({title}): {summary[:450]}'
         designer = getattr(self, 'designer', None)
         if result.get('design'): result['design']['prompt'] = (result['design'].get('prompt') or '') + context
-        elif designer and labsettings.value(self.lab, 'offer_redraws'):
+        elif designer and draw != 'off' and labsettings.value(self.lab, 'offer_redraws'):
             rows = [self.lab.row(k) for k in only or [] if k in self.lab.catalog.rows] or designer.title_rows() + [
                 r for name in ('virus.png', 'icon-play', 'icon-coin') for r in [next((r for r in self.lab.catalog.rows.values() if r['name'] == name and r['editable']
                                                                                      and r.get('primary', True) and not r.get('removed') and not r.get('legacy')), None)] if r]
@@ -1277,7 +1376,7 @@ class Themes:
                 result['design'] = dict(self.design_offer(designer, f'{title} theme.{context}', rows[:8]), optional=bool(planned))
         return result
 
-    def _chat(self, message, model='', history=None, only=None, language=''):
+    def _chat(self, message, model='', history=None, only=None, language='', draw='auto'):
         """only: catalog keys of checked assets; the plan is then previewed and applied to those alone. language: the
         lab's language ('es', 'pt', 'fr', 'de'; '' or 'en' for English), the one the planner model writes its reply in
         (fixed replies stay English here: the page translates them).
@@ -1289,6 +1388,12 @@ class Themes:
         if not message: raise ValueError('Describe the look you want.')
         command = self.command(message)
         if command: return command
+        # "...using image generation": a word about the tool, not the game. It turns drawing on for this request and is
+        # taken out, so "image" is not read as a sprite name.
+        if re.search(DRAW_ASK, message.lower()):
+            if draw == 'auto': draw = 'on'
+            message = re.sub(DRAW_ASK, ' ', message, flags=re.I)
+            message = re.sub(r'\s+([.,!?])', r'\1', re.sub(r'\s{2,}', ' ', message)).strip(' .,') or 'give the game a bold new look'
         pieces = [p.strip(' ,') for p in re.split(CLAUSES, message) if p and p.strip(' ,')]
         split = [text_split(p) for p in pieces if about_text(p, only)]   # "christmas theme and red names": both
         texts = [t for t, _ in split]
@@ -1296,21 +1401,34 @@ class Themes:
         if font:                                    # "theme it halloween and make the names spooky": the font card plus the theme
             others = [p for p in pieces if not about_text(p, only)] + [o for _, more in split for o in more]
             if not others: return font
-            result = self._chat('. '.join(others), model, history, only, language)
+            result = self._chat('. '.join(others), model, history, only, language, draw)
             plan = result.get('plan') or {}
             if not (plan.get('operations') or plan.get('ui_colors') or plan.get('hide') or result.get('design')): return font
             result['font'] = font['font']
             return result
-        designer = getattr(self, 'designer', None)
+        designer = getattr(self, 'designer', None) if draw != 'off' else None   # Image AI off: colors and effects only
         drawn, rest = [], message
         if designer:
             for piece in pieces:
-                if design.wants_design(piece, unknown_words(piece, self.named)) and designer.targets(piece, only): drawn.append(piece)
+                if (draw == 'on' or design.wants_design(piece, unknown_words(piece, self.named)) or scene_request(piece, self.named)) and designer.targets(piece, only): drawn.append(piece)
             rest = '. '.join(p for p in pieces if p not in drawn)
+        if draw == 'on' and designer and not drawn:
+            # Image AI on, nothing named ("make the game look cool"): the main art is drawn in the new style, and the rest
+            # of the game is shaded to match.
+            rows = self.showcase_rows(designer, only)
+            if rows:
+                result = self.plan_request(message, model, history, scope, language)
+                result['design'] = self.design_offer(designer, message, rows)
+                return self.text_offer(result, message, only)
         if drawn:
             rows, seen = [], set()
             for piece in drawn:
-                for r in designer.targets(piece, only):
+                found = designer.targets(piece, only)
+                if scene_request(piece, self.named) and not only:
+                    # A background picture is for backgrounds: "night sky" must not also redraw a "soccer-field-night" item.
+                    arena = re.search(r'\b(?:arena|world|in-?game|match)\b', piece.lower())
+                    found = [r for r in found if (r['name'].lower().startswith('worldbg') if arena else design.is_menu_background(r))] or found
+                for r in found:
                     if r['key'] not in seen: seen.add(r['key']); rows.append(r)
             part = self.design_offer(designer, '. '.join(drawn), rows)
             if not rest.strip():
@@ -1320,11 +1438,21 @@ class Themes:
             result['design'] = part
             return self.text_offer(result, rest, only)
         result = self.plan_request(message, model, history, scope, language)
+        if draw == 'off' and getattr(self, 'designer', None) and design.wants_design(message, unknown_words(message, self.named)):
+            result['note'] = (result['note'] + ' ' if result['note'] else '') + ('Image AI is off, so only colors and effects were planned. '
+                                                                                 'Switch it to Auto or On to draw new art.')
         if designer and re.search(design.OBJECTS, message.lower()):
             # New objects need drawing, and drawing needs a target the request did not name.
             result['note'] = (result['note'] + ' ' if result['note'] else '') + ('To draw new things, say what to draw them on (the title, the icons, '
                                                                                  '"the speed potion") or check those assets in the library first.')
-        if designer and labsettings.value(self.lab, 'offer_redraws') and design.wants_design(message, unknown_words(message, self.named)) and designer.title_rows():
+        low = message.lower()
+        parts = [f for f, words in WORDS.items() if f != 'everything' and re.search(rf'\b(?:{words})\b', low)]
+        if designer and labsettings.value(self.lab, 'offer_redraws') and re.search(VAGUE, low) and not parts and not only:
+            # "Make the game look cool": the colors are planned now, and redrawing everything players look at is offered
+            # (with its time, in the chat); Image AI On would start it straight away.
+            rows = self.showcase_rows(designer)
+            if rows: result['design'] = dict(self.design_offer(designer, message, rows), optional=True)
+        elif designer and labsettings.value(self.lab, 'offer_redraws') and design.wants_design(message, unknown_words(message, self.named)) and designer.title_rows():
             # "Make the game spooky": the palette is shaded now; redrawing the title is offered, not started (unless the
             # player turned these offers off in Settings).
             rows, prompt = designer.title_rows(), f'{message}. Redesign the game title to match.'
@@ -1381,7 +1509,7 @@ class Themes:
         model = self.preferred([m['name'] for m in available])
         system = ('You are the art director of a 2D mobile game. Rewrite the request as one short paragraph (at most 60 words) that says exactly '
                   'what to draw: materials, colors, lighting, and small details or decorations. Keep the subject, and any text in it, exactly as '
-                  'it is. Do not describe a background, scenery, or a shadow, floor or stand under it (the art is cut out). '
+                  'it is. ' + (SCENE_DIRECTION if subject == design.SCENE_SUBJECT else 'Do not describe a background, scenery, or a shadow, floor or stand under it (the art is cut out). ') +
                   'No preamble, no lists, no quotes.')
         # Unloaded at once (the image model needs the graphics card next) unless the player keeps it (Settings: Free the graphics card).
         payload = dict(model=model, stream=False, keep_alive=0 if labsettings.value(self.lab, 'free_gpu') else '10m',
@@ -1402,8 +1530,9 @@ class Themes:
         system = (f'You are the creative art director of a 2D game. Invent {count} clearly different visual concepts for the request, '
                   'each one a distinct idea (different materials, props, story or style), not variations of one look. If the request is '
                   'short or vague, be bold and surprising. Each concept is one paragraph of at most 55 words saying exactly what to draw: '
-                  'materials, colors, lighting, decorations. Keep the subject recognisable and any text in it exactly as it is. Do not '
-                  'describe a background, floor or shadow under it (the art is cut out). Celebrities, musicians, characters and pop '
+                  'materials, colors, lighting, decorations. Keep the subject recognisable and any text in it exactly as it is. ' +
+                  (SCENE_DIRECTION if subject == design.SCENE_SUBJECT else 'Do not describe a background, floor or shadow under it (the art is cut out). ') +
+                  'Celebrities, musicians, characters and pop '
                   'culture are fine as fan art (the game\'s own skins use them); swimwear is the limit: never nudity or sexual content, '
                   'and never anyone who could be a minor in anything suggestive. '
                   f'Answer with exactly {count} lines, one concept per line, no numbering, no preamble.')
@@ -1427,12 +1556,15 @@ class Themes:
     def design_offer(designer, prompt, rows):
         ready = designer.status()
         return dict(prompt=prompt, available=ready['available'], note='' if ready['available'] else 'The image model is not installed (' + ', '.join(ready['missing']) + ').',
-                    targets=[dict(key=r['key'], name=r.get('label') or r['name'], size=[r['width'], r['height']], **({'set': 'food'} if design.is_food(r) else {'set': 'title'} if r['name'] == 'logo' else {})) for r in rows])
+                    seconds_per_drawing=ready.get('seconds_per_drawing') or design.DEFAULT_SECONDS,   # for the finish time of a big set
+                    targets=[dict(key=r['key'], name=r.get('label') or r['name'], size=[r['width'], r['height']], **({'set': 'food'} if design.is_food(r) else {'set': 'background'} if design.is_menu_background(r) else {'set': 'title'} if r['name'] == 'logo' else {})) for r in rows])
 
     def plan_request(self, message, model='', history=None, scope=None, language=''):
         """Turn a request into a shading plan: exactly from tag words, else with the local model, else from keywords.
         language: the lab's language, which the model writes its reply in."""
         low = message.lower()
+        # Open-ended: praise with no look in it once those words are set aside ("make the game look cool", not "cool red buttons").
+        vague = bool(re.search(VAGUE, low)) and not changes_anything(rule_plan(re.sub(VAGUE, ' ', low), self.named))
         size, motion = re.search(SIZE_WORDS, low), re.search(MOTION_WORDS, low)
         if size or motion:
             # "Make the font bigger", "make the quests icon flash": nothing else asked, so say what is possible instead of
@@ -1447,7 +1579,7 @@ class Themes:
         # A follow-up that leans on the last plan ("make it darker", "more glow") needs the model's memory of it;
         # a complete request in tag words ("christmas theme", "gold buttons") does not, even mid-conversation.
         follow_up = history and re.search(r'\b(?:it|that|this|them|those|more|less|again|instead|too|also|rest|back)\b', message.lower())
-        if not follow_up and not unknown_words(message, self.named):
+        if not follow_up and not vague and not unknown_words(message, self.named):
             # Written entirely in tag words ("rainbow outline, subtle glow, dark inside"): plan it exactly as
             # said. The model is for requests that need interpreting, and for follow-ups that build on a theme.
             exact = rule_plan(message, self.named)
@@ -1459,11 +1591,16 @@ class Themes:
                 if isinstance(turn, dict) and turn.get('role') in ('user', 'assistant') and isinstance(turn.get('content'), str):
                     turns.append(dict(role=turn['role'], content=turn['content'][:4000]))
             hints = self.hints(message)
-            turns.append(dict(role='user', content=message + ('\n\nSprites named in this request: ' + '; '.join(hints) if hints else '')
+            brief = ('\n\nThis request is open-ended, so the look is up to you: be bold and creative. Pick one clear concept and make '
+                     'it obvious across the game with several operations (a palette or gradient on buttons and panels, outlines and '
+                     'glows on icons, a finish like gloss), and say the concept in the reply. A small hue shift is not enough. '
+                     f'Do not default to cyberpunk; one idea you could build on: {random.choice(CONCEPTS)}.') if vague else ''
+            turns.append(dict(role='user', content=message + brief + ('\n\nSprites named in this request: ' + '; '.join(hints) if hints else '')
                               + (f'\n\nInspiration ({self.inspiration["title"]}, from Wikipedia; use its signature colors and mood): {self.inspiration["summary"]}' if getattr(self, 'inspiration', None) else '')))
             payload = dict(model=model, messages=turns, stream=False, format=SCHEMA, keep_alive='10m',
-                           options=dict(temperature=0.2, num_ctx=8192, num_predict=1400, **MODEL_OPTIONS.get(model, {})))
+                           options=dict(temperature=0.6 if vague else 0.2, num_ctx=8192, num_predict=1400, **MODEL_OPTIONS.get(model, {})))
             if next(m for m in available if m['name'] == model)['thinking']: payload['think'] = False
+            self.activity = f'Planning the look with {model}…'   # shown in the AI activity strip (activity.py)
             try:
                 answer = ollama('/api/chat', payload, timeout=300)
                 content = answer.get('message', {}).get('content', '')
@@ -1476,16 +1613,34 @@ class Themes:
                     content = ollama('/api/chat', payload, timeout=300).get('message', {}).get('content', '')
                     found = re.search(r'\{.*\}', content, re.S)
                     raw = json.loads(found.group(0) if found else content)
-                plan, source = tame(clean_plan(raw), said), model
+                plan, source = tame(clean_plan(raw), said, bold=vague), model
+                parts = {f for f, words in WORDS.items() if f != 'everything' and re.search(rf'\b(?:{words})\b', low)}
+                if vague and parts and not re.search(WHOLE_GAME, low):
+                    # "Make the buttons look sick": the bold look stays on the buttons, not the whole game.
+                    kept = []
+                    for op in plan['operations']:
+                        aim = parts if op['targets'] == ['everything'] and not op['match'] else parts & set(op['targets'])
+                        if aim: kept.append(dict(op, targets=sorted(aim)))
+                    plan = dict(plan, operations=kept)
                 named = [name for names_ in self.named(message)[0].values() for name in names_]
                 if named and not re.search(r'\b(?:everything|all|whole|entire|theme)\b', message.lower()):
                     # The request was about named things; a step that forgot to name them would repaint a whole family.
                     for op in plan['operations']:
                         if not op['match']: op.update(targets=['everything'], match=named[:12])
+                    # Steps that only differed in their targets are now the same step: keep one.
+                    plan['operations'] = list({json.dumps(op, sort_keys=True): op for op in plan['operations']}.values())
             except (OSError, ValueError, KeyError, AttributeError) as exc:
                 note = f'The local model {model} did not return a usable plan ({str(exc)[:120]}); used the keyword planner instead.'
+            finally: self.activity = None
         elif plan is None: note = 'Ollama is not running, so the keyword planner was used. Start Ollama for full prompts.'
-        if plan is None: plan = rule_plan(message, self.named)
+        if plan is None and not vague: plan = rule_plan(message, self.named)
+        if vague and (plan is None or not changes_anything(plan)):
+            # "Make it cool" with no model to interpret it: a bold, finished look instead of nothing (or a timid nudge).
+            # Parts named ("make the buttons look sick") keep the look on them; otherwise a whole-game look.
+            parts = [m.group(0) for f, words in WORDS.items() if f != 'everything' for m in [re.search(rf'\b(?:{words})\b', low)] if m]
+            look = (f'{random.choice(("synthwave", "galaxy", "ocean", "sunset", "aurora", "candy", "cyberpunk"))} gradient on the {" and ".join(parts)} with a neon glow'
+                    if parts else random.choice(CREATIVE_LOOKS))
+            plan = dict(rule_plan(look, self.named), reply=f'You left the look open, so I picked one: “{look}”. Ask again for another, or name a mood, colors or parts to steer it.')
         if exe_palette.BLOCKED and (plan['ui_colors'] or plan['hide']):
             # Mitosis.exe refuses to run once edited: menu controls drawn from art are hidden through that art instead,
             # and game colors (set in its code) are explained rather than planned.
@@ -1540,6 +1695,10 @@ class Themes:
 
     def compile(self, plan, scope=None, force=False):
         """sheet key -> [(operation, rectangles or None for the whole sheet)]"""
+        for op in plan['operations']:
+            # A new color or gradient for the menu backgrounds alone fills their tiles (see opaque_tile).
+            only_menu = (op['targets'] == ['menu_background'] and not op['match']) or (op['match'] and all(MENU_BACKGROUND.fullmatch(m) for m in op['match']))
+            op['opaque'] = bool(only_menu and op['color_mode'] != 'none' and (op.get('gradient') or hex_color(op.get('color') or '')))
         work = {}
         for sheet_key, sheet in self.sheets.items():
             steps = []

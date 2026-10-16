@@ -213,13 +213,19 @@ function swRender(force){if(!sw.root||shownPanel()!=='color')return;refreshAsset
     {id:'asset',name:'This asset',colors:sw.asset.colors.map(h=>({hex:h,name:''})),empty:Ed.doc?'No opaque colors here.':'Open an asset to see its colors.'},
     ...PS_SWATCHES.map(([name,list])=>({id:name.split(' ')[0].toLowerCase(),name,colors:list.split(' ').map(h=>({hex:'#'+h,name:''}))}))];
   const sig=JSON.stringify([groups.slice(0,3).map(g=>g.colors.map(c=>c.hex+c.name)),[...sw.closed],!!Ed.doc]);if(!force&&sig===sw.sig)return swMarkSel();sw.sig=sig;
-  const scroll=sw.list.scrollTop,rows=[];
-  for(const g of groups){if(g.id==='recent'&&!g.colors.length)continue;const open=!sw.closed.has(g.id),sec=el('section','ed-sw-group');sec.dataset.group=g.id;
+  const scroll=sw.list.scrollTop,rows=[],existing=new Map([...sw.list.children].map(n=>[n.dataset.group,n]));
+  for(const g of groups){if(g.id==='recent'&&!g.colors.length)continue;const open=!sw.closed.has(g.id),groupSig=JSON.stringify([open,g.colors,g.empty]);
+    const kept=existing.get(g.id);if(kept&&kept.swSignature===groupSig){rows.push(kept);continue;}
+    const sec=el('section','ed-sw-group');sec.dataset.group=g.id;sec.swSignature=groupSig;
     const h=btn('ed-sw-head');h.setAttribute('aria-expanded',String(open));h.append(el('span','ed-sw-arrow',open?'▾':'▸'),el('span','ed-sw-name',g.name),el('span','ed-sw-count',String(g.colors.length)));
     h.onclick=()=>{if(sw.closed.has(g.id))sw.closed.delete(g.id);else sw.closed.add(g.id);store.set('ed-swatch-closed',[...sw.closed]);swRender(true);};sec.append(h);
     if(open){const body=el('div','ed-sw-grid');g.colors.forEach((c,i)=>body.append(swatchButton(c,g.id,i)));if(!g.colors.length)body.append(el('span','ed-sw-empty',g.empty||''));sec.append(body);}
     rows.push(sec);}
-  sw.list.replaceChildren(...rows);sw.list.scrollTop=scroll;swMarkSel();}
+  // A recent-color timer can fire between mouse-down and mouse-up. Keep unrelated buttons attached,
+  // including their identity and focus, so single/double clicks are not silently lost.
+  for(const node of [...sw.list.children])if(!rows.includes(node))node.remove();
+  rows.forEach((node,i)=>{if(sw.list.children[i]!==node)sw.list.insertBefore(node,sw.list.children[i]||null);});
+  sw.list.scrollTop=scroll;swMarkSel();}
 // The selected swatch is marked in place, so a double-click lands on the same element as its first click.
 function swMarkSel(){if(!sw.list)return;if(!sw.mine[sw.sel])sw.sel=-1;for(const b of sw.list.querySelectorAll('.ed-swatch[data-group="mine"]'))b.classList.toggle('selected',+b.dataset.index===sw.sel);sw.delB.disabled=sw.sel<0;}
 Ed.registerPanel('color',{title:'Color',order:30,render(c){if(sw.root!==c)swBuild(c);swTop();swRender();}});

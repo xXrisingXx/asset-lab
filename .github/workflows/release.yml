@@ -66,12 +66,22 @@ jobs:
           catch { ($_ | Out-String) + $_.ScriptStackTrace | Add-Content ci-build.log; $code = 1 }
           Get-Content ci-build.log; exit $code
 
+      # The notes are the commit message without any attribution trailers (Co-Authored-By, "Generated with …").
+      # It is read from the environment, never pasted into the script, so its text can't run as code.
+      - name: Release notes
+        shell: pwsh
+        env:
+          MESSAGE: ${{ github.event.head_commit.message }}
+        run: |
+          $lines = $env:MESSAGE -split "`r?`n" | Where-Object { $_ -notmatch '^\s*(co-authored-by:|signed-off-by:.*noreply@anthropic|.*generated with \[?claude)' }
+          ($lines -join "`n").Trim() | Out-File release-notes.md -Encoding utf8
+
       - name: Publish
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ env.VERSION }}
           name: Asset Lab ${{ env.VERSION }}
-          body: ${{ github.event.head_commit.message }}
+          body_path: release-notes.md
           files: |
             dist/AssetLab.exe
             dist/asset-lab-app.zip

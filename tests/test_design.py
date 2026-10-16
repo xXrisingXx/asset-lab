@@ -1,4 +1,7 @@
 import json
+import threading
+import time
+import unittest
 from unittest.mock import patch
 import numpy as np
 from PIL import Image
@@ -20,6 +23,15 @@ def drawn(key=(0, 255, 0)):
                 a = (30 - d) / 10   # glow: red over the key color
                 px[x, y] = tuple(round(220 * a + k * (1 - a)) if i == 0 else round(20 * a + k * (1 - a)) for i, k in enumerate(key))
     return im
+
+
+class ProgressTests(unittest.TestCase):
+    def test_weight_loading_does_not_masquerade_as_drawing_or_reset_decoding(self):
+        for line in ('|####| 149/149 - 1.50GB/s', '|####| 4/4 - 200MB/s',
+                     '[I] loading tensors completed', '[I] using VAE for encoding / decoding'):
+            self.assertIsNone(design.render_progress(line, '1 variant', 4))
+        self.assertEqual(design.render_progress('|====>| 1/4 - 5.00s/it', '1 variant', 4), 'Drawing 1 variant: step 1 of 4')
+        self.assertEqual(design.render_progress('[I] decoding 1 latents', '1 variant', 4), 'Finishing the images…')
 
 
 class CutOutTests(Base):
@@ -107,6 +119,45 @@ class ChatRoutingTests(Base):
         super().setUp()
         self.designer = Designer(self.lab, self.themes)
         self.themes.designer = self.designer
+
+    def test_cancel_while_the_child_is_starting_still_kills_it(self):
+        entered, release, killed, cancelling = (threading.Event() for _ in range(4))
+        class Child:
+            pid, returncode = 4242, 1
+            @property
+            def stdout(child):
+                killed.wait(3)
+                yield 'renderer stopped\n'
+            def wait(child, timeout=None): return 1
+        def launch(*args, **kwargs):
+            entered.set()
+            release.wait(3)
+            return Child()
+        def kill(args, **kwargs):
+            self.assertEqual(args[args.index('/PID') + 1], '4242')
+            killed.set()
+        def cancel(job_id):
+            cancelling.set()
+            self.designer.cancel(job_id)
+        with patch.object(design.runtime, 'missing', return_value=[]), \
+             patch.object(design.runtime.OLLAMA, 'unload'), \
+             patch.object(design.subprocess, 'Popen', side_effect=launch), \
+             patch.object(design.subprocess, 'run', side_effect=kill):
+            job = self.designer.start('ruby crown', [self.rows('virus-pale')[0]['key']], count=1, direction='ruby crown')
+            self.assertTrue(entered.wait(3))
+            stopper = threading.Thread(target=cancel, args=(job['id'],))
+            stopper.start()
+            try:
+                self.assertTrue(cancelling.wait(3))
+                release.set()
+                stopper.join(3)
+                self.assertTrue(killed.wait(3), 'Cancel missed the child during startup')
+                deadline = time.monotonic() + 3
+                while self.designer.job(job['id'])['state'] == 'running' and time.monotonic() < deadline: time.sleep(.01)
+                finished = self.designer.job(job['id'])
+                self.assertEqual((finished['state'], finished['message'], finished['variants']), ('failed', 'Cancelled.', []))
+            finally:
+                release.set(); killed.set(); stopper.join(3)
 
     def test_help_and_undo_are_chat_commands(self):
         self.assertIn('image model', self.themes.chat('what can you do?')['plan']['reply'])

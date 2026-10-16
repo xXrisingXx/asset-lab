@@ -40,7 +40,7 @@ const log=el('div','theme-log');log.id='themeLog';log.setAttribute('role','log')
 const form=el('form','theme-form');const input=el('textarea');input.id='themeInput';input.rows=2;input.placeholder='Describe a look… e.g. “rainbow outline on the buttons with a subtle glow”';input.setAttribute('aria-label','Theme request');
 const row=el('div','theme-send');
 const ideas=el('details','theme-ideas');ideas.append(el('summary','', 'Ideas'));const ideaList=el('div','theme-idea-list');ideas.append(ideaList);
-for(const idea of ['Theme it rainbow with proper glows','Synthwave with a chrome logo and neon outlines','Fire gradient buttons with a strong orange glow','Holographic glass panels','Glossy gold everything','Retro 8-bit pixel look','Deep ocean blues, keep the logo','Hide the main menu pattern','Make the MITOSIS title spooky with dripping blood and bats','Put a party hat on the MITOSIS title','Christmas theme and put a santa hat on the title']){
+for(const idea of ['Make the menu background solid black','Deep purple to blue gradient background','Starry night sky background','Theme it rainbow with proper glows','Synthwave with a chrome logo and neon outlines','Fire gradient buttons with a strong orange glow','Holographic glass panels','Glossy gold everything','Retro 8-bit pixel look','Deep ocean blues, keep the logo','Hide the main menu pattern','Make the MITOSIS title spooky with dripping blood and bats','Put a party hat on the MITOSIS title','Christmas theme and put a santa hat on the title']){
   const b=el('button','', idea);b.type='button';b.onclick=()=>{input.value=idea;ideas.open=false;input.focus();};ideaList.append(b);}
 const tags=el('details','theme-ideas');tags.append(el('summary','', 'Words'));const tagList=el('div','theme-idea-list theme-tags');tags.append(tagList);
 for(const [label,words] of [['Parts','buttons · panels · icons · logo · cells · food · effects · fonts · menu background · arena — or a sprite or your own name for it: “the white virus”, “the speed potion”'],
@@ -52,7 +52,16 @@ for(const [label,words] of [['Parts','buttons · panels · icons · logo · cell
   ['Text','player names · menu text — a look (gold · neon sign · candy cane · galaxy…) · a font (“in impact”) · “red, orange and yellow gradient” · left to right · diagonal · 45 degrees · hollow · wide / narrow · white glow · black outline'],
   ['Styles','neon · glass · pastel · greyscale · retro 8-bit · cartoon · scanlines · grainy · hide · more / less transparent']]){const p=el('p');p.append(el('b','',label+' '),document.createTextNode(words));tagList.append(p);}
 const auto=el('label','compact');const autoBox=el('input');autoBox.type='checkbox';autoBox.id='themeAuto';auto.title='Apply the plan as soon as it is ready';auto.append(autoBox,document.createTextNode(' Auto-apply'));
-const send=el('button','primary','Plan');send.id='themeSend';send.type='submit';row.append(ideas,tags,auto,send);form.append(input,row);
+const send=el('button','primary','Plan');send.id='themeSend';send.type='submit';row.append(ideas,tags,auto,send);
+// Image AI: Auto draws when a request needs new art ("put a hat on the title"), On always draws new art (the main
+// pieces of the game when nothing is named), Off only recolors and shades. Remembered between visits.
+const drawRow=el('div','theme-drawmode');drawRow.id='themeDraw';const drawSeg=el('div','segmented');
+let drawMode='auto';try{const v=localStorage.getItem('lab-theme-draw');if(v==='on'||v==='off')drawMode=v;}catch(e){}
+for(const [id,label,tip] of [['auto','Auto','Draw new art when the request needs it'],['on','On','Always draw new art with the image model'],['off','Off','Only recolor and shade the existing art']]){
+  const b=el('button','',label);b.type='button';b.dataset.draw=id;b.title=tip;b.onclick=()=>{drawMode=id;try{localStorage.setItem('lab-theme-draw',id);}catch(e){}showDraw();};drawSeg.append(b);}
+function showDraw(){drawSeg.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.draw===drawMode));}
+drawRow.append(el('span','section-label','IMAGE AI'),drawSeg);showDraw();
+form.append(drawRow,input,row);
 
 // Dock: what is waiting to be installed, whether Mitosis is open, and the install / restore actions.
 const dock=el('div','theme-dock');
@@ -72,11 +81,12 @@ const game=el('div','theme-game');game.id='gamePanel';game.hidden=true;
 drawer.append(head,scopeLine,log,game,form,dock);document.body.append(drawer);
 const hex=v=>String(v||'').toUpperCase();
 function renderGame(){
-  const info=T.info?.game;if(!info||game.hidden)return;
+  const info=T.info?.game;if(game.hidden)return;
   const palette=S.status?.palette||{},hidden=new Set(S.status?.hidden||[]),locked=false;
   game.replaceChildren();
   const blocked=S.status?.game_colors?.blocked;
   if(blocked){game.append(el('b','','Game colors & menu'),el('p','hint',blocked),el('p','hint','Recolor the menu through its art instead: ask Theme AI for “menu background navy” (the pattern) or redesign art with the image model.'),el('p','hint','To hide the App Store, Google Play or Discord badges or the OG tag, ask Theme AI: “hide the discord button”. It makes their art transparent; the empty spot can still be clicked. Worm.is and Strike.is are not drawn from editable art.'));return;}
+  if(!info)return;
   const top=el('div','theme-game-head');top.append(el('b','','Game colors & menu'));
   const reset=el('button','quiet','Reset all');reset.disabled=locked||!(Object.keys(palette).length||hidden.size);
   reset.onclick=run(async()=>{await api('/api/palette',{colors:{}});await api('/api/hide',{groups:[]});await status();renderGame();});top.append(reset);
@@ -98,7 +108,7 @@ function renderGame(){
   game.append(list,el('p','hint','Hiding skips creating these controls and their links. Byte-verified against your Mitosis.exe; restore puts the original back.'));
 }
 function showGame(open){game.hidden=!open;log.hidden=open;form.hidden=open;gameButton.textContent=open?'Back to chat':'Game colors…';gameButton.classList.toggle('active',open);if(open)renderGame();}
-gameButton.onclick=run(async()=>{if(game.hidden&&!T.info)await refresh();showGame(game.hidden);});
+gameButton.onclick=run(async()=>{showGame(game.hidden);if(!game.hidden&&!T.info)await refresh();});
 
 function scroll(){log.scrollTop=log.scrollHeight;}
 function bubble(kind,text){const b=el('div','theme-bubble '+kind);if(text)b.append(el('p','',text));log.append(b);scroll();return b;}
@@ -183,7 +193,7 @@ async function ask(text){
   const wait=bubble('bot','Thinking…');const started=Date.now();const tick=setInterval(()=>{wait.firstChild.textContent=`Thinking… ${Math.round((Date.now()-started)/1000)}s`+(Date.now()-started>12000?' (the first request loads the model)':'');},1000);
   try{
     const keys=only();
-    const result=await api('/api/theme-chat',{message:text,model:model.value,history:T.history,only:keys,language:window.LabI18n?.lang||'en'});   // the model replies in the lab's language
+    const result=await api('/api/theme-chat',{message:text,model:model.value,history:T.history,only:keys,language:window.LabI18n?.lang||'en',draw:drawMode});   // the model replies in the lab's language
     clearInterval(tick);wait.firstChild.textContent=result.plan.reply||'Here is the plan.';
     if(result.plan.operations.length||Object.keys(result.plan.ui_colors||{}).length||result.plan.hide?.length){T.history.push({role:'user',content:text},{role:'assistant',content:JSON.stringify(result.plan)});T.history=T.history.slice(-8);}
     const entry=record({t:'bot',text:wait.firstChild.textContent,result,prompt:text,keys});
@@ -214,26 +224,91 @@ const drawings=()=>{const n=+setting('drawings');return n>=1&&n<=4?n:2;};   // S
 function showDesign(box,d,keys,base,offer,entry,restoring){
   // One drawing per distinct sprite; the title's sizes share one drawing, and so does all the food.
   const isTitle=t=>t.set==='title'||t.name==='logo';   // a size can carry a name ("MITOSIS title logo (Main menu)")
-  const groups=[],title=d.targets.filter(isTitle),food=d.targets.filter(t=>t.set==='food');if(title.length)groups.push(title);
-  for(const t of d.targets)if(!isTitle(t)&&t.set!=='food')groups.push([t]);
+  // Sets drawn once for all their sprites: the food, and the main menu background of every game theme. Other sprites are
+  // drawn once per name, for all their copies (theme.png, theme4.png and the ones in assets.zip look the same).
+  const groups=[],title=d.targets.filter(isTitle),food=d.targets.filter(t=>t.set==='food'),backs=d.targets.filter(t=>t.set==='background');if(title.length)groups.push(title);
+  if(backs.length)groups.push(backs);
+  const byName=new Map();for(const t of d.targets)if(!isTitle(t)&&t.set!=='food'&&t.set!=='background'){if(!byName.has(t.name))byName.set(t.name,[]);byName.get(t.name).push(t);}
+  groups.push(...byName.values());
   if(food.length)groups.push(food);
-  const label=g=>isTitle(g[0])?'the MITOSIS title':g[0].set==='food'?(g.length>1?'the food (every pellet shape and size)':'the food'):g[0].name;
-  const what=groups.map(label).join(', ')+(title.length>1?' (every size the game uses)':'');
+  const label=g=>isTitle(g[0])?'the MITOSIS title':g[0].set==='food'?(g.length>1?'the food (every pellet shape and size)':'the food'):
+    g[0].set==='background'?(g.length>1?'the main menu background (every game theme)':'the main menu background'):g[0].name;
+  const what=groups.length>6?`${groups.length} pieces of the game (${groups.slice(0,4).map(label).join(', ')}, …)`:groups.map(label).join(', ')+(title.length>1?' (every size the game uses)':'');
   box.firstChild.textContent=!d.available?(offer?'':`This needs the image model, which is not installed.`):
     d.optional?`Want ${what} redrawn to match? The local image model can draw it.`:
     offer?`The rest needs drawing: I'll redraw ${what} with the local image model.`:`I'll redraw ${what} with the local image model. Pick a variant, adjust it, then apply.`;
   if(!d.available)return;
-  const bar=el('div','theme-actions');const count=el('select');count.className='design-count';for(const n of [1,2,3,4]){const o=el('option','',`${n} variant${n>1?'s':''}`);o.value=n;count.append(o);}count.value=String(drawings());
-  const go=el('button','primary',groups.length>1?`Draw all ${groups.length}`:'Draw it');
-  bar.append(go,count,el('small','hint',`about ${35*groups.length} s per variant`));box.append(bar);
-  go.onclick=run(async()=>{go.disabled=true;count.disabled=true;
-    let direction=null;   // the first drawing's art direction is reused, so a set comes out in one style
-    for(const g of groups){const part=el('div','design-part');if(groups.length>1)part.append(el('p','design-part-title',label(g)));box.append(part);
-      const done=await drawDesign(part,d.prompt,g.map(t=>t.key),+count.value,base,direction,entry,groups.length>1?label(g):'');if(done&&done.direction&&!direction)direction=done.direction;}});
-  if(d.optional)go.textContent='Redraw it';
-  if(restoring&&entry?.jobs?.length){bar.hidden=true;(async()=>{for(const info of entry.jobs)await resumeDesign(box,info,entry);})();return;}
+  const variants=(selected)=>{const s=el('select');s.className='design-count';for(const n of [1,2,3,4]){const o=el('option','',`${n} variant${n>1?'s':''}`);o.value=n;s.append(o);}s.value=String(selected);return s;};
+  const bar=el('div','theme-actions');const count=variants(drawings());count.title='Variants for everything in this set (each piece can be changed below)';
+  // A big set: one variant each, except the pieces worth choosing between (the title and the viruses get two); each piece
+  // can be set on its own, or left out, in the list below.
+  const big=groups.length>6,star=g=>isTitle(g[0])||/virus/i.test(g[0].name);
+  const picks=groups.map(g=>({g,on:true,count:big?(star(g)?2:1):drawings(),row:null,card:null}));
+  if(big)count.value='1';
+  const go=el('button','primary','');
+  // How long it will take, from this PC's own drawing time (learned by the lab; 45 s each until it knows).
+  const each=+d.seconds_per_drawing||45,estimate=el('small','hint');
+  const guess=()=>{const chosen=picks.filter(p=>p.on),n=chosen.reduce((a,p)=>a+p.count,0),s=n*each;
+    go.textContent=groups.length>1?`${d.optional?'Redraw':'Draw'} ${chosen.length} of ${groups.length}`:d.optional?'Redraw it':'Draw it';go.disabled=!chosen.length;
+    estimate.textContent=groups.length>1?`${n} drawing${n===1?'':'s'}: about ${duration(s)} (done around ${clockIn(s)}).`:'May take several minutes; speed depends on your PC.';};
+  bar.append(go,count,estimate);box.append(bar);
+  if(groups.length>1){
+    // Every piece, with its art now: tick it off, choose its variants, and once drawn click it to see the drawing.
+    const list=el('details','design-picks');list.append(el('summary','',`Choose what to draw and how many variants (${groups.length})`));const rows=el('div','design-pick-rows');list.append(rows);
+    for(const p of picks){const row=el('div','design-pick');p.row=row;const tick=el('input');tick.type='checkbox';tick.checked=true;tick.title='Draw this one';
+      const thumb=new Image();thumb.loading='lazy';thumb.alt='';thumb.src=`/api/thumb?key=${encodeURIComponent(p.g[0].key)}`;
+      const name=el('button','link design-pick-name',label(p.g));name.type='button';name.title='Show this drawing (once it is drawn)';
+      const many=variants(p.count);many.onchange=()=>{p.count=+many.value;guess();};
+      tick.onchange=()=>{p.on=tick.checked;row.classList.toggle('off',!p.on);many.disabled=!p.on;guess();};
+      const show=()=>{if(p.card){p.card.scrollIntoView({block:'center',behavior:'smooth'});p.card.classList.add('flash');setTimeout(()=>p.card.classList.remove('flash'),1200);}else message(p.on?'Not drawn yet.':'Left out of this set.');};
+      name.onclick=show;thumb.onclick=show;
+      row.append(tick,thumb,name,many);p.tick=tick;p.many=many;p.thumb=thumb;rows.append(row);}
+    box.append(list);}
+  count.onchange=()=>{for(const p of picks){p.count=+count.value;if(p.many)p.many.value=count.value;}guess();};
+  guess();
+  go.onclick=run(async()=>{go.disabled=true;count.disabled=true;for(const p of picks){if(p.tick)p.tick.disabled=true;if(p.many)p.many.disabled=true;}
+    const chosen=picks.filter(p=>p.on);
+    const plan={prompt:d.prompt,count:+count.value,next:0,direction:null,groups:chosen.map(p=>({keys:p.g.map(t=>t.key),label:groups.length>1?label(p.g):'',count:p.count}))};
+    if(entry){entry.batch=plan;keepChat();}
+    await drawBatch(box,plan,base,entry,each,(i,part)=>{const p=chosen[i];if(p){p.card=part;p.row?.classList.add('drawn');}});
+    for(const p of chosen)if(p.thumb)p.thumb.src=`/api/thumb?key=${encodeURIComponent(p.g[0].key)}&t=${Date.now()}`;});   // applied art shows here
+  if(restoring&&entry?.jobs?.length){bar.hidden=true;(async()=>{for(const info of entry.jobs)await resumeDesign(box,info,entry);
+    const rest=entry.batch&&entry.batch.groups.length-entry.batch.next;
+    if(rest>0){const more=el('button','primary',`Continue drawing the rest (${rest} left)`);more.type='button';
+      more.onclick=run(async()=>{more.remove();await drawBatch(box,entry.batch,base,entry,each);});box.append(more);}})();return;}
   if(!restoring&&autoBox.checked&&!d.optional)go.click();
 }
+const duration=s=>{s=Math.max(1,Math.round(s));const h=Math.floor(s/3600),m=Math.round((s%3600)/60);return h?`${h} h ${m} min`:m?`${m} min`:`${s} s`;};
+const clockIn=s=>new Date(Date.now()+s*1000).toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});
+// A set of drawings, one after another in one style, with the time left; it can be stopped between drawings and continued
+// after a reload (plan.next), and every finished drawing can be applied at once.
+async function drawBatch(box,plan,base,entry,each,onPart){
+  const many=plan.groups.length>1,line=el('p','design-batch');const stop=el('button','quiet','Stop after this drawing');stop.type='button';
+  const head=el('div','design-batch-head');head.append(line);if(many)head.append(stop);if(many)box.append(head);
+  let stopped=false;stop.onclick=()=>{stopped=true;stop.disabled=true;stop.textContent='Stopping after this drawing…';};
+  const started=Date.now(),first=plan.next,finished=[];
+  for(;plan.next<plan.groups.length&&!stopped;plan.next++){
+    const g=plan.groups[plan.next],n=x=>x.count||plan.count;
+    // Time left: the variants still to draw times this PC's pace (measured on this set once one is done).
+    const doneVariants=plan.groups.slice(first,plan.next).reduce((a,x)=>a+n(x),0),leftVariants=plan.groups.slice(plan.next).reduce((a,x)=>a+n(x),0);
+    const per=doneVariants?(Date.now()-started)/1000/doneVariants:each,left=per*leftVariants;
+    line.textContent=`Drawing ${plan.next+1} of ${plan.groups.length} · about ${duration(left)} left · done around ${clockIn(left)}`;
+    const part=el('div','design-part');if(g.label)part.append(el('p','design-part-title',g.label));box.append(part);onPart&&onPart(plan.next,part);
+    const job=await drawDesign(part,plan.prompt,g.keys,n(g),base,plan.direction,entry,g.label);
+    if(job?.direction&&!plan.direction)plan.direction=job.direction;   // the first drawing's art direction is reused, so the set matches
+    if(job?.state==='complete')finished.push(job);
+    if(entry){entry.batch=plan;keepChat();}}
+  if(!many)return;
+  stop.remove();line.textContent=plan.next<plan.groups.length?`Stopped: ${plan.next} of ${plan.groups.length} drawn.`:`All ${plan.groups.length} drawn in ${duration((Date.now()-started)/1000)}.`;
+  if(finished.length>1){const all=el('button','primary',`Apply all ${finished.length} drawings`);all.type='button';all.title='Use the first variant of each drawing, with its default settings';
+    all.onclick=run(async()=>{all.disabled=true;let n=0;
+      for(const job of finished){all.textContent=`Applying ${++n} of ${finished.length}…`;await api('/api/design-apply',{job:job.id,variant:0,settings:designDefaults(job)});}
+      all.textContent=`Applied ✓ (${finished.length})`;S.build=null;await status();await library();});
+    head.append(all);}
+}
+// What a drawing starts with (also what "Apply all" uses): zoomed and calmed for a background, the outline kept for a
+// stretched button, the frame filled for the title, and kept white where the game colors the art itself.
+function designDefaults(job){return {scale:job.scene?2.5:1,...(job.scene?{calm:0.5}:{}),dx:0,dy:0,tolerance:1,shape:job.stretched?1:0,fill:job.title?1:0,white:job.food||(job.tint||job.tinted)&&setting('keep_white')?1:0};}
 async function drawDesign(box,prompt,keys,count,base,direction,entry,label){
   let job=await api('/api/design-start',{prompt,only:keys||null,count,base:base||null,direction:direction||null});
   const info={id:job.id,keys:keys||null,label:label||''};if(entry){(entry.jobs||(entry.jobs=[])).push(info);keepChat();}
@@ -278,7 +353,7 @@ function showFont(box,font,note){
 function designCard(box,job,keys,entry,info){
   const card=el('div','design-card');box.append(card);
   // Settings › Theme AI & drawing › Keep game-colored icons white ticks "Keep it white" for icons the game colors.
-  const S2={variant:0,settings:{scale:job.scene?2.5:1,...(job.scene?{calm:0.5}:{}),dx:0,dy:0,tolerance:1,shape:job.stretched?1:0,fill:job.title?1:0,white:job.food||(job.tint||job.tinted)&&setting('keep_white')?1:0},applied:null};   // food: the game paints every pellet its own color
+  const S2={variant:0,settings:designDefaults(job),applied:null};   // food: the game paints every pellet its own color
   if(job.food)card.append(el('p','theme-note',`This drawing becomes every food pellet (${job.targets.length} shapes and sizes). The game paints each pellet its own color, so “Keep it white” is on: the pellets keep their colors and get the drawing’s detail.`));
   else if(job.tint)card.append(el('p','theme-note',`The game colors this white icon ${job.tint} in the menu, so “In game” shows each variant the way the game will draw it. Tick “Keep it white” to get the game’s color with the drawing’s detail.`));
   else if(job.tinted)card.append(el('p','theme-note','This icon is plain white because the game colors it (teal in the menu), so a colorful drawing will come out tinted. Light, mostly white designs keep their look.'));
@@ -393,6 +468,23 @@ async function loadChats(){
   else if(J.list.length)await openChat(J.list[0].id);
   else startChat();
   showChats();}
+// AI activity: what the local AI is doing (planning, loading the image model, drawing, finishing) and how much RAM and
+// graphics memory (VRAM) are in use, refreshed while Theme AI is open (activity.py).
+const act=el('div','theme-activity');act.id='themeActivity';const actDot=el('span','act-dot'),actText=el('span','act-text','');
+const meter=(label,tip)=>{const m=el('span','act-meter');m.title=tip;const bar=el('i');m.append(el('b','',label),el('span','act-bar'),el('small'));m.querySelector('.act-bar').append(bar);return m;};
+const ramMeter=meter('RAM','Memory in use on this PC'),vramMeter=meter('VRAM','Graphics card memory in use (the image model and the planner both need it)');
+act.append(actDot,actText,ramMeter,vramMeter);chatBar.after(act);
+const STAGE={idle:'Idle',planning:'Planning',text:'Writing the art direction',loading:'Loading the image model',drawing:'Drawing on the graphics card',finishing:'Finishing the images'};
+const gb=b=>(b/2**30).toFixed(1);
+function showMeter(m,used,total){m.hidden=!total;if(!total)return;const share=Math.min(1,used/total);m.querySelector('i').style.width=(share*100).toFixed(0)+'%';
+  m.classList.toggle('high',share>0.9);m.querySelector('small').textContent=`${gb(used)} / ${gb(total)} GB`;}
+async function activity(){if(!T.open||document.hidden)return;let a;try{a=await (await fetch('/api/ai-activity')).json();}catch(e){return;}
+  act.dataset.stage=a.stage;actDot.className='act-dot '+a.stage;
+  const loaded=(a.loaded||[]).map(m=>m.name.replace(/:latest$/,'')).join(', ');
+  actText.textContent=a.stage==='idle'?(loaded?`Idle · ${loaded} loaded`:'Idle'):(a.detail||STAGE[a.stage]||a.stage);
+  actDot.translate=false;actDot.title=a.gpu?.name?`${a.gpu.name}${a.gpu.busy!=null?` · ${a.gpu.busy}%`:''}`:'';   // a product name stays as it is
+  showMeter(ramMeter,a.ram?.used||0,a.ram?.total||0);showMeter(vramMeter,a.gpu?.used||0,a.gpu?.total||0);}
+setInterval(activity,2000);document.addEventListener('visibilitychange',activity);
 J.id=newId();showChats();
 window.LabThemeChat={reset(){clearTimeout(J.saveTimer);J.saveTimer=0;J.list=[];startChat();}};   // tests: forget the open chat
 run(loadChats)();try{if(localStorage.getItem('lab-theme-open'))toggle(true);}catch(e){}

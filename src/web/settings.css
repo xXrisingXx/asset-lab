@@ -52,16 +52,24 @@ dialog.settings:not([open]){display:none}
 /* storage, privacy and about */
 .creator-credit{display:flex;align-items:center;justify-content:center;gap:24px;min-height:150px;padding:24px 20px 14px;margin:4px 0 24px;border:1px solid #54303b;border-radius:14px;background:radial-gradient(ellipse at 65% 55%,#40132188,transparent 65%),#10151d;overflow:hidden}
 .creator-byline{color:var(--muted);font-size:12px;letter-spacing:.16em;text-transform:uppercase}
-.creator-signature{display:block;position:relative;flex:0 0 270px;width:270px;height:210px;mix-blend-mode:screen}
-.creator-letter{position:absolute;inset:0;font-size:0;animation:novu-letter 4.8s ease-in-out infinite;pointer-events:none}
+.creator-signature{display:block;position:relative;flex:0 0 270px;width:270px;height:210px;mix-blend-mode:screen;animation:novu-breathe 4.8s ease-in-out infinite}
+/* Always moving while About is open: the whole word breathes a red glow, a flash of light runs across the letters
+   N, o, v, u in turn, each letter floats on its own, and the crown twinkles. One 9.6 s loop (tools/record_credit.py
+   records it for the README). The lab's Reduce motion setting and the system setting stop it. */
+.creator-letter{position:absolute;inset:0;font-size:0;animation:novu-wave 4.8s ease-in-out infinite,novu-float 9.6s ease-in-out infinite;pointer-events:none}
+.creator-signature::before{content:'';position:absolute;left:14px;top:12px;width:72px;height:56px;pointer-events:none;border-radius:50%;
+  background:radial-gradient(circle,#ffb3bd 0,#ff3d5a77 30%,transparent 70%);mix-blend-mode:screen;animation:novu-crown 2.4s ease-in-out infinite}
+@keyframes novu-breathe{0%,100%{filter:drop-shadow(0 0 3px #ff1f3d44)}50%{filter:drop-shadow(0 0 16px #ff1f3dbb)}}
+@keyframes novu-wave{0%,52%,100%{filter:brightness(1)}64%{filter:brightness(1.75) saturate(1.15) drop-shadow(0 0 10px #ff6077)}76%{filter:brightness(1)}}
+@keyframes novu-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes novu-crown{0%,100%{opacity:.2;transform:scale(.85)}50%{opacity:1;transform:scale(1.12)}}
 .creator-art{position:absolute;width:330px;max-width:none;height:330px;left:-40px;top:-48px}
 .creator-letter:nth-child(1){clip-path:inset(0 155px 0 0)}
 .creator-letter:nth-child(2){clip-path:inset(0 117.5px 0 115px)}
 .creator-letter:nth-child(3){clip-path:inset(0 70px 0 152.5px)}
 .creator-letter:nth-child(4){clip-path:inset(0 0 0 200px)}
-.creator-letter:nth-child(2){animation-delay:-3.6s}.creator-letter:nth-child(3){animation-delay:-2.4s}.creator-letter:nth-child(4){animation-delay:-1.2s}
-@keyframes novu-letter{0%,100%{filter:brightness(1)}50%{filter:brightness(1.22)}}
-@media(prefers-reduced-motion:reduce){.creator-letter{animation:none}}
+.creator-letter:nth-child(2){animation-delay:.22s,-2.4s}.creator-letter:nth-child(3){animation-delay:.44s,-4.8s}.creator-letter:nth-child(4){animation-delay:.66s,-7.2s}
+@media(prefers-reduced-motion:reduce){.creator-signature,.creator-letter,.creator-signature::before{animation:none}.creator-signature::before{display:none}}
 @media(max-width:460px){.creator-credit{flex-direction:column;gap:0;padding-inline:12px}.creator-byline{font-size:10px}}
 .settings-usage{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0 4px}
 .settings-usage>div{background:#1b2430;border:1px solid var(--line);border-radius:8px;padding:9px 11px;min-width:0}

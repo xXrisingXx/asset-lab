@@ -583,6 +583,10 @@ class ThemeAiTests(Base):
         self.assertEqual((job['state'], job['total'], len(job['variants'])), ('complete', 2, 2))   # the default: 2 drawings
         arg = lambda name: calls[-1][calls[-1].index(name) + 1]
         self.assertEqual((arg('--steps'), arg('-b'), len(unloads)), ('4', '2', 1))
+        self.assertIn('--offload-to-cpu', calls[-1])
+        self.assertEqual(arg('--backend'), 'te=cpu,vae=cpu')
+        self.assertGreaterEqual(int(arg('--threads')), 1)
+        self.assertLessEqual(int(arg('--threads')), 4)
         self.lab.settings.update({'drawings': 3, 'drawing_quality': 'detailed', 'free_gpu': False})
         job = self.draw(calls, unloads)
         self.assertEqual((job['total'], len(job['variants']), arg('--steps'), arg('-b'), len(unloads)), (3, 3, '8', '3', 1))   # no unload this time

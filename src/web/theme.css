@@ -176,3 +176,21 @@ input.fonts-num{width:62px;padding:5px 6px}
 @media (max-width:760px){.fonts-body{grid-template-columns:1fr;overflow:auto}.fonts-controls,.fonts-stage{overflow:visible}.fonts-stage{order:-1}.fonts-shot{height:clamp(180px,34vh,360px)}}
 
 .review-head .review-all{margin-left:auto}
+.theme-drawmode{display:flex;align-items:center;gap:8px;margin-bottom:6px}.theme-drawmode .segmented button{padding:3px 10px;font-size:11px}
+/* AI activity strip */
+.theme-activity{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:11px;color:var(--muted);padding:2px 0 8px}
+.theme-activity .act-text{flex:1;min-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.act-dot{width:8px;height:8px;border-radius:50%;background:#4b5a6a;flex:none}
+.act-dot.planning,.act-dot.text{background:#7aa7ff}.act-dot.loading{background:var(--yellow)}.act-dot.drawing{background:var(--cyan)}.act-dot.finishing{background:#b79cff}
+.act-dot:not(.idle){animation:act-pulse 1.2s ease-in-out infinite}@keyframes act-pulse{50%{opacity:.35}}
+.act-meter{display:inline-flex;align-items:center;gap:4px}.act-meter b{font-weight:600;font-size:10px;letter-spacing:.04em}
+.act-bar{width:44px;height:5px;border-radius:3px;background:#273241;overflow:hidden}.act-bar i{display:block;height:100%;background:var(--cyan)}
+.act-meter.high .act-bar i{background:var(--orange)}.act-meter small{font-size:10px}
+.design-batch-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:6px 0}.design-batch{margin:0;font-size:12px;color:var(--cyan);flex:1;min-width:180px}
+.design-picks{margin:6px 0;font-size:12px}.design-picks summary{cursor:pointer;color:var(--cyan)}
+.design-pick-rows{display:flex;flex-direction:column;gap:3px;max-height:260px;overflow:auto;margin-top:6px;scrollbar-width:thin}
+.design-pick{display:flex;align-items:center;gap:6px;padding:2px 4px;border-radius:5px}.design-pick:hover{background:#1e2835}
+.design-pick img{width:28px;height:28px;object-fit:contain;cursor:pointer;background:repeating-conic-gradient(#1e2a37 0% 25%,#23303f 0% 50%) 50%/8px 8px;border-radius:4px}
+.design-pick-name{flex:1;min-width:0;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0}
+.design-pick select{padding:2px 4px;font-size:11px}.design-pick.off{opacity:.45}.design-pick.drawn .design-pick-name::after{content:' ✓';color:var(--cyan)}
+.design-part.flash{outline:2px solid var(--cyan);outline-offset:3px;border-radius:6px}

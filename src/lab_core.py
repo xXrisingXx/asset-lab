@@ -1,6 +1,5 @@
 """Mitos.is Asset Lab: versioned pixel edits and reversible visual-only game installs."""
 from contextlib import contextmanager
-import csv
 import hashlib
 import io
 import json
@@ -96,12 +95,41 @@ def overlap(a, b):
     return x < X + W and X < x + w and y < Y + H and Y < y + h
 
 
+def windows_processes():
+    """Read Windows' process snapshot directly; tasklist can stall for seconds on a busy PC."""
+    import ctypes
+    from ctypes import wintypes
+    class Entry(ctypes.Structure):
+        _fields_ = [('dwSize', wintypes.DWORD), ('cntUsage', wintypes.DWORD), ('pid', wintypes.DWORD),
+                    ('heap', ctypes.c_size_t), ('module', wintypes.DWORD), ('threads', wintypes.DWORD),
+                    ('parent', wintypes.DWORD), ('priority', wintypes.LONG), ('flags', wintypes.DWORD),
+                    ('name', wintypes.WCHAR * 260)]
+    kernel = ctypes.WinDLL('kernel32', use_last_error=True)
+    kernel.CreateToolhelp32Snapshot.argtypes = [wintypes.DWORD, wintypes.DWORD]
+    kernel.CreateToolhelp32Snapshot.restype = wintypes.HANDLE
+    kernel.CloseHandle.argtypes = [wintypes.HANDLE]
+    for fn in (kernel.Process32FirstW, kernel.Process32NextW):
+        fn.argtypes = [wintypes.HANDLE, ctypes.POINTER(Entry)]
+        fn.restype = wintypes.BOOL
+    handle = kernel.CreateToolhelp32Snapshot(2, 0)  # TH32CS_SNAPPROCESS
+    if handle == ctypes.c_void_p(-1).value:
+        raise ValueError('Could not check running games. Close Mitosis and try again.')
+    try:
+        entry = Entry(); entry.dwSize = ctypes.sizeof(entry)
+        rows = []
+        found = kernel.Process32FirstW(handle, ctypes.byref(entry))
+        while found:
+            rows.append((entry.name, entry.pid))
+            found = kernel.Process32NextW(handle, ctypes.byref(entry))
+        if ctypes.get_last_error() != 18:  # ERROR_NO_MORE_FILES; other errors must not mean "game closed".
+            raise ValueError('Could not finish checking running games. Close Mitosis and try again.')
+        return rows
+    finally: kernel.CloseHandle(handle)
+
+
 def game_processes(game=None):
     if os.name != 'nt': return []
-    run = subprocess.run(['tasklist.exe', '/FO', 'CSV', '/NH'], capture_output=True, text=True,
-                         encoding='utf-8', errors='replace', creationflags=0x08000000, timeout=15)
-    if run.returncode: raise ValueError('Could not check running games. Close Mitosis and try again.')
-    matches = [row for row in csv.reader(io.StringIO(run.stdout)) if row and row[0].lower() == 'mitosis.exe']
+    matches = [row for row in windows_processes() if row[0].casefold() == 'mitosis.exe']
     if game is None: return [r[0] for r in matches]
     import ctypes
     from ctypes import wintypes

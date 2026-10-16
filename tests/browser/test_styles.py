@@ -542,6 +542,7 @@ class StyleTests(EditorTestCase):
         self.menu('Layer/Layer Style/Hide All Effects')
         b.wait_for("Ed.history.list().length === 4")
         self.assertEqual(self.labels()[-1], 'Hide All Effects')
+        b.wait_for("!document.querySelector('#edPanel-layers .ed-fx-badge')")
         self.assertFalse(b.eval("!!document.querySelector('#edPanel-layers .ed-fx-badge')"), 'no fx badge while hidden')
         self.assertEqual(b.eval("Ed.menu.tree().find(m => m.name === 'Layer').children.find(c => c.name === 'Layer Style').children.find(c => c.path.endsWith('Hide All Effects')).label"), 'Show All Effects')
         self.menu('Layer/Layer Style/Hide All Effects')   # now labelled Show All Effects

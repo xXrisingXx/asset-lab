@@ -147,6 +147,29 @@ class BuildTests(Base):
         with self.assertRaisesRegex(ValueError, 'recovery'): self.lab.persist()
         self.assert_red_recovered(key, first)
 
+    def test_a_damaged_journal_does_not_stop_the_lab(self):
+        key, first, second = self.switch_fixture()
+        self.builds.switch_file.write_text('{"state": tru')               # cut off mid-write
+        again = Lab(self.game, self.root / 'workspace', self.root / 'ledgers', process_check=lambda: [])
+        builds = Builds(again)                                             # starts instead of raising
+        self.assertFalse(builds.switch_file.exists())
+        self.assertTrue(list(builds.folder.glob('pending-switch.damaged-*.json')))
+        self.assertEqual(again.image(key).getpixel((0, 0)), (255, 0, 0, 255))   # the open build is kept
+        self.assertTrue(any('set aside' in w for w in again.catalog.warnings))
+
+    def test_recovery_keeps_fingerprints_this_start_added(self):
+        key, first, second = self.switch_fixture()
+        class PowerLoss(BaseException): pass
+        with patch.object(self.builds, 'write', side_effect=PowerLoss()):
+            with self.assertRaises(PowerLoss): self.builds.switch(second)
+        journal = json.loads(self.builds.switch_file.read_text())
+        source = next(iter(journal['state']['baseline']))
+        del journal['state']['baseline'][source]                             # as if this file was new since the switch
+        self.builds.switch_file.write_text(json.dumps(journal))
+        again = Lab(self.game, self.root / 'workspace', self.root / 'ledgers', process_check=lambda: [])
+        Builds(again)
+        self.assertIn(source, again.state['baseline'])
+
     def test_missing_target_state_does_not_clear_current_work(self):
         key, first, second = self.switch_fixture()
         (self.builds.folder / second / 'state.json').unlink()

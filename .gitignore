@@ -16,6 +16,7 @@ tools/*
 !tools/test_desktop.ps1
 !tools/test_single_instance.ps1
 !tools/test_update_recovery.py
+!tools/stress_image_generation.py
 tests/evidence/
 tests/test_launcher.ps1
 src/data/exe-references.json

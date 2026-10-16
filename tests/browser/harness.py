@@ -560,6 +560,8 @@ class Browser:
             self.call('Page.addScriptToEvaluateOnNewDocument', source="try{if(location.port&&!sessionStorage.getItem('tour-test'))localStorage.setItem('lab-tour-done','1')}catch(e){}")
             self.call('Runtime.evaluate', expression=HELPER_JS)
             self.call('Emulation.setFocusEmulationEnabled', enabled=True)
+            # Hosted Windows runners may disable OS animations. Tests explicitly opt into reduced motion.
+            self.call('Emulation.setEmulatedMedia', features=[{'name':'prefers-reduced-motion','value':'no-preference'}])
             self.set_viewport(width, height)
         except BaseException:
             self.close()

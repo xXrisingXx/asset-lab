@@ -19,6 +19,7 @@ from lab_core import Lab, VERSION, ROOT, adjust, png, data_home
 from theme import Themes, clean_plan, UI_COLORS, HIDE
 from design import Designer
 from builds import Builds
+import activity
 import runtime
 import preview
 import audio as soundlab
@@ -130,6 +131,7 @@ def server_for(lab, port):
                     if q.get('small'): image.thumbnail((640, 320), Image.Resampling.LANCZOS)
                     return self.send(png(image), 'image/png')
                 if path == '/api/theme-job': return self.send(themes.job(q.get('job', '')))
+                if path == '/api/ai-activity': return self.send(activity.snapshot(designer, themes))   # the activity strip in Theme AI
                 if path == '/api/builds': return self.send(builds.listing())
                 if path == '/api/chats': return self.send(builds.chats())
                 if path == '/api/chat': return self.send(builds.chat(q.get('id', '')))
@@ -286,7 +288,7 @@ def server_for(lab, port):
                     return self.send({'png': 'data:image/png;base64,' + base64.b64encode(image).decode()})
                 if path == '/api/font-apply': return self.send(lab.font_apply(str(data.get('font', '')), data.get('style') or {}))
                 if path == '/api/font-remove': return self.send(lab.font_remove(str(data.get('font', ''))))
-                if path == '/api/theme-chat': return self.send(themes.chat(data.get('message'), data.get('model', ''), data.get('history'), only, language=str(data.get('language') or '')))
+                if path == '/api/theme-chat': return self.send(themes.chat(data.get('message'), data.get('model', ''), data.get('history'), only, language=str(data.get('language') or ''), draw=str(data.get('draw') or 'auto')))
                 if path == '/api/theme-preview': return self.send(themes.preview(clean_plan(data.get('plan')), themes.scope(only)))
                 if path == '/api/theme-apply': return self.send(themes.apply(data.get('plan'), data.get('prompt', ''), only))
                 if path == '/api/theme-undo': return self.send(themes.undo())

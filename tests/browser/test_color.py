@@ -445,6 +445,22 @@ class ColorTests(EditorTestCase):
         b.eval("Ed.select.none(); true")
         b.wait_for("[...document.querySelectorAll('#edPanel-color .ed-sw-group[data-group=\"asset\"] .ed-swatch')].map(s => s.dataset.hex).join() === '#3060f0'", timeout=5)
 
+    def test_32_recent_colors_do_not_interrupt_a_swatch_click(self):
+        b = self.fresh()
+        b.eval("while(Ed.swatches.list().length)Ed.swatches.remove(0);Ed.swatches.add('#00c0a0','Click target');Ed.setColor('fg','#123456');true")
+        self.show_panel('color')
+        b.wait_for("Ed.swatches.recent()[0]==='#123456'")
+        selector = '#edPanel-color .ed-sw-group[data-group="mine"] .ed-swatch'
+        x,y = b.center_of(selector)
+        b.mouse_move(x,y)
+        b.mouse_down(x,y,modifiers=ALT)
+        try:
+            # The debounced recent-color update fires while the mouse is down. The unrelated target must survive.
+            b.eval("Ed.setColor('fg','#abcdef');true")
+            b.wait_for("Ed.swatches.recent()[0]==='#abcdef'")
+        finally: b.mouse_up(x,y,modifiers=ALT)
+        self.assertEqual(b.eval('Ed.swatches.list()'), [], 'Alt-click must still delete its swatch after the recent-color refresh')
+
     # ----- History -------------------------------------------------------------------------------------------------------------
     def test_40_history_click_a_state_and_delete_states(self):
         b = self.fresh()

@@ -82,6 +82,7 @@ class Ollama:
 
     def __init__(self):
         self.url, self.process, self.lock, self.note = SYSTEM, None, threading.Lock(), ''
+        self.retry_at = 0
 
     def up(self, url):
         try: call(url, '/api/version', timeout=1.5); return True
@@ -89,10 +90,17 @@ class Ollama:
 
     def ensure(self):
         with self.lock:
-            if self.up(self.url): return self.url
-            if self.up(SYSTEM): self.url = SYSTEM; return self.url
-            if self.up(BUNDLED): self.url = BUNDLED; self.import_planner(); return self.url  # left running by a restarted lab
-            if missing('ollama'): return self.url  # nothing to start; callers see an empty model list
+            if time.monotonic() < self.retry_at: return self.url
+            for url in dict.fromkeys((self.url, SYSTEM, BUNDLED)):
+                if self.up(url):
+                    switched = url != self.url
+                    self.url = url
+                    if switched and url == BUNDLED: self.import_planner()  # left running by a restarted lab
+                    return self.url
+            if missing('ollama'):
+                # Settings and Theme AI can ask at the same time. Do not queue repeated offline probes.
+                self.retry_at = time.monotonic() + 3
+                return self.url  # nothing to start; callers see an empty model list
             env = dict(os.environ, OLLAMA_HOST=BUNDLED.split('//')[1], OLLAMA_MODELS=str(ROOT / 'ollama-models'))
             (ROOT / 'ollama-models').mkdir(exist_ok=True)
             self.process = subprocess.Popen([str(path('ollama')), 'serve'], env=env, cwd=str(path('ollama').parent), creationflags=QUIET,

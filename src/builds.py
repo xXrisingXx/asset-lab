@@ -19,6 +19,7 @@ import re
 import shutil
 import time
 import uuid
+import exe_palette
 from lab_core import atomic_bytes, atomic_json, read_json
 
 KEYS = {'edits': dict, 'staged': list, 'palette': dict, 'hide': list, 'fonts': dict, 'audio': dict}
@@ -61,13 +62,31 @@ class Builds:
         Restoring it is idempotent: another interruption can safely retry it.
         """
         if not self.switch_file.exists(): return
-        saved = read_json(self.switch_file)
+        try: saved = read_json(self.switch_file, None)
+        except (ValueError, OSError): saved = None
+        try:
+            if not (isinstance(saved, dict) and isinstance(saved.get('state'), dict) and isinstance(saved.get('index'), dict)
+                    and all(isinstance(saved['files'].get(n), (str, type(None))) for n in FILES)): raise ValueError
+            [base64.b64decode(saved['files'][n], validate=True) for n in FILES if saved['files'][n]]
+        except (ValueError, KeyError, TypeError, AttributeError):
+            # A damaged journal must not stop the lab from starting. It is written before any workspace file changes,
+            # so the workspace is still the build that was open; the journal is kept aside for a look.
+            aside = self.switch_file.with_name(f'pending-switch.damaged-{int(time.time())}.json')
+            self.switch_file.replace(aside)
+            self.lab.catalog.warnings.append(f'An interrupted build switch could not be read and was set aside ({aside.name}). The build that was open is kept.')
+            return
         self.lab._build_recovery_required = True
         for name in FILES:
             data = saved['files'][name]
             path = self.lab.root / name
             if data is None: path.unlink(missing_ok=True)
             else: atomic_bytes(path, base64.b64decode(data, validate=True))
+        # What this start of the lab added must stay: fingerprints of game files it saw for the first time (a game update
+        # since the switch), and game colors / hidden buttons it cleared because Mitosis.exe can't be changed.
+        baseline = self.lab.state.get('baseline') or {}
+        saved['state']['baseline'] = {**baseline, **(saved['state'].get('baseline') or {})}
+        if exe_palette.BLOCKED:
+            for field in ('palette', 'hide'): saved['state'].pop(field, None)
         atomic_json(self.lab.state_path, saved['state'])
         atomic_json(self.index_file, saved['index'])
         self.lab.state = saved['state']

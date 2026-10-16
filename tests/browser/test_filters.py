@@ -869,13 +869,16 @@ class FilterTests(EditorTestCase):
         ref = to8(gaussian(premul(c), 25))
         self.close(out[:300, :300], ref[:300, :300], max_abs=3, msg='the top-left corner (edges repeated)')
         # a slow filter run without its dialog shows a progress dialog that cancels
-        b.eval("""window.__busy = null; window.__busyObs = new MutationObserver(() => { const d = document.querySelector('dialog.edf-busy'); if (d) window.__busy = d.dataset.edDialog; });
-            window.__busyObs.observe(document.body, {childList: true}); true""")
+        # Cancel in the progress event's turn. Several DevTools mouse round-trips can let a fast CI worker
+        # finish first, turning this into a machine-speed test instead of testing the Cancel handler.
+        b.eval("""window.__busy = null; window.__cancelAt = null; window.__busyObs = new MutationObserver(() => {
+            const d = document.querySelector('dialog.edf-busy'); if (!d) return; window.__busy = d.dataset.edDialog;
+            const v = Number(d.querySelector('[role=progressbar]').getAttribute('aria-valuenow'));
+            if (v > 0 && v < 100 && window.__cancelAt === null) { window.__cancelAt = v; d.querySelector('button').click(); }
+        }); window.__busyObs.observe(document.body, {childList: true, subtree: true, attributes: true, attributeFilter: ['aria-valuenow']}); true""")
         b.eval("Ed.menu.run('Filter/Noise/Median...', {radius: 60}); true")
-        b.wait_for("!!document.querySelector('dialog.edf-busy')", 10)
+        b.wait_for("window.__cancelAt !== null && !Ed.filters.busy", 20)
         self.assertEqual(b.eval('window.__busy'), 'Median')
-        b.wait_for("parseFloat(document.querySelector('dialog.edf-busy [role=progressbar]').getAttribute('aria-valuenow')) > 0", 20)
-        b.click_selector('dialog.edf-busy button')
         b.wait_for('!Ed.filters.busy && !document.querySelector("dialog.edf-busy")', 10)
         b.eval('window.__busyObs.disconnect(); true')
         self.assertEqual(len(self.labels()), n + 1, 'canceled: nothing applied')

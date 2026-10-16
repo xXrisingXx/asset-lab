@@ -5,6 +5,7 @@ background is then keyed out with proper unmixing (so glows and drips keep soft 
 each target sprite's fixed atlas frame. Variants are kept, so the user can pick, nudge, refine and only then apply.
 """
 import json
+import os
 from pathlib import Path
 import re
 import subprocess
@@ -40,7 +41,17 @@ NEW_ART = (r'\b(?:(?:entirely|completely|totally|really) (?:different|new)|somet
            r'starfield|nebula|outer space|tv static|static noise)\b')
 # Backgrounds are replaced by a whole new picture that tiles, not restyled around a cut-out.
 SCENE_GROUPS = ('Backgrounds',)
+DEFAULT_SECONDS = 45.0   # one drawing on an 8 GB card, until this PC's own time is known (Designer.learn_time)
+THEME_SHEETS = ('theme.png', 'theme4.png')   # the sheets the game shows all the time: every copy of a sprite gets the drawing
+# Store badges and sign-in buttons show other companies' logos: never redrawn with the rest of the game.
+KEEP_AS_IS = {'icon-iphone', 'icon-android', 'icon-facebook', 'icon-gamecenter'}
+SCENE_SUBJECT = 'a seamless repeating background picture for the game menu'   # theme.py words its art direction for scenery by this
 FOOD_MAX = 40   # every food sprite the game uses fits in one set (about 19 today)
+
+
+def is_menu_background(row):
+    """The main menu background of each game theme (bg2.png, bg7.png, bg9.png): drawn as one picture for all of them."""
+    return row.get('group') == 'Backgrounds' and bool(re.fullmatch(r'bg\d+\.png', str(row.get('name', '')), re.I))
 
 
 def is_food(row):
@@ -108,6 +119,17 @@ def canvas_size(w, h):
     width = 1024 if aspect >= 1 else max(512, round(1024 * aspect / 16) * 16)
     height = max(384, min(1024, round(width / aspect * 1.75 / 16) * 16))
     return width, height
+
+
+def render_progress(line, which, steps):
+    """Only sampling bars are drawing steps; tensor-loading bars can also be measured in GB/s."""
+    if 'encode_first_stage completed' in line: return 'Reading the art direction…'
+    picture = re.search(r'generating image: (\d+)/(\d+)', line)
+    if picture: return f'Drawing {which}: image {picture.group(1)} of {picture.group(2)}'
+    step = re.search(r'\|\s*(\d+)/(\d+)\s*-\s*[\d.]+(?:s/it|it/s)', line)
+    if step and int(step.group(2)) == steps: return f'Drawing {which}: step {step.group(1)} of {step.group(2)}'
+    if re.search(r'\bdecoding \d+ latents', line): return 'Finishing the images…'
+    return None
 
 
 def reference(art, key, size):
@@ -268,10 +290,26 @@ class Designer:
         self.lab, self.themes = lab, themes
         self.folder = lab.root / 'designs'
         self.jobs, self.lock = {}, threading.Lock()
+        # How long one drawing takes on this PC (seconds, model loading included), learned from finished drawings, so a big
+        # set ("make the whole game look cool": a hundred sprites) can show when it will be done.
+        self.timing_file = self.folder / 'timing.json'
+        try: self.per_drawing = max(5.0, min(900.0, float(json.loads(self.timing_file.read_text())['seconds_per_drawing'])))
+        except (OSError, ValueError, KeyError, TypeError): self.per_drawing = DEFAULT_SECONDS
+
+    def learn_time(self, seconds, drawings):
+        """One finished job's time per drawing joins the running estimate (recent jobs count most)."""
+        if drawings < 1 or seconds <= 0: return
+        sample = max(5.0, min(900.0, seconds / drawings))
+        self.per_drawing = round(0.6 * self.per_drawing + 0.4 * sample, 1)
+        try:
+            self.folder.mkdir(parents=True, exist_ok=True)
+            self.timing_file.write_text(json.dumps(dict(seconds_per_drawing=self.per_drawing)))
+        except OSError: pass
 
     def status(self):
         lacking = runtime.missing('sd', 'diffusion', 'llm', 'vae')
-        return dict(available=not lacking, missing=lacking, job=next((dict(j) for j in self.jobs.values() if j['state'] == 'running'), None))
+        return dict(available=not lacking, missing=lacking, job=next((dict(j) for j in self.jobs.values() if j['state'] == 'running'), None),
+                    seconds_per_drawing=self.per_drawing)
 
     # ----- what to redraw -----------------------------------------------------------------------
     def title_rows(self):
@@ -283,6 +321,20 @@ class Designer:
             if r.get('dup') in seen: continue
             seen.add(r.get('dup')); out.append(r)
         return out
+
+    def whole_game_rows(self):
+        """Everything players look at all the time, for "make the whole game look cool" with drawing: the MITOSIS title,
+        the viruses, every sprite on theme.png (the coin, the in-game potion, buttons, icons, panels...) with all its copies,
+        and the food as one set. One drawing per sprite; store badges and specks are left as they are."""
+        rows = self.lab.catalog.rows
+        sheet_of = lambda r: rows.get(r.get('parent', ''), {}).get('name', '')
+        live = lambda r: r['editable'] and not r.get('legacy') and not r.get('removed') and not r.get('server_only')
+        badge = lambda r: r['name'] in KEEP_AS_IS or re.search(r'discord|app store|google play|facebook|game ?center', r.get('label') or '', re.I)
+        names = {r['name'] for r in rows.values() if live(r) and sheet_of(r) == 'theme.png' and not badge(r)
+                 and not r['name'].startswith('logo') and not is_food(r) and min(r['width'], r['height']) >= 16}
+        sprites = sorted((r for r in rows.values() if live(r) and r['name'] in names and sheet_of(r) in THEME_SHEETS), key=lambda r: (r['name'], r['source']))
+        viruses = [r for r in rows.values() if live(r) and r['name'] in ('virus.png', 'light_virus.png')]
+        return self.title_rows() + viruses + sprites + self.food_rows()
 
     def food_rows(self):
         """Every food sprite the game uses (pellet shapes, blobs and dots in each size), one per art: drawn as one set."""
@@ -347,8 +399,8 @@ class Designer:
         # copies that share a name you gave and a size, such as the coin the game also downloads).
         # Food is the exception: one drawing for every pellet shape and size, the way a player swaps them all for crowns.
         first = rows[0]
-        food = is_food(first)
-        rows = [r for r in rows if (food and is_food(r)) or r['name'] == first['name'] or (first.get('label') and r.get('label') == first['label'] and (r['width'], r['height']) == (first['width'], first['height']))]
+        food, menu = is_food(first), is_menu_background(first)   # and one drawing for the menu background of every game theme
+        rows = [r for r in rows if (food and is_food(r)) or (menu and is_menu_background(r)) or r['name'] == first['name'] or (first.get('label') and r.get('label') == first['label'] and (r['width'], r['height']) == (first['width'], first['height']))]
         with self.lock:
             if any(j['state'] == 'running' for j in self.jobs.values()): raise ValueError('A design is already being drawn.')
             job = dict(id=uuid.uuid4().hex, state='running', prompt=prompt, targets=[r['key'] for r in rows], names=[r.get('label') or r['name'] for r in rows],
@@ -369,6 +421,7 @@ class Designer:
     def subject(job):
         if job['title']: return 'the game title logo that reads MITOSIS (the O is a round dot)'
         if job.get('food'): return 'a small food pellet that players eat in a top-down cell game, seen from above'
+        if job.get('scene'): return SCENE_SUBJECT
         # "Play button (Main menu)" -> "play button"; "icon-crown" -> "icon crown".
         name = re.sub(r'[-_]+', ' ', re.sub(r'\.png$|\s*\([^)]*\)\s*$', '', job['names'][0])).strip()
         return f'a game sprite: {name}'
@@ -377,8 +430,9 @@ class Designer:
         if job.get('scene'):
             return (f'{job.get("direction") or job["prompt"]}. A brand new full-frame background picture for a 2D game menu, '
                     'filling the whole image edge to edge so it can repeat as a seamless tile. It is shown small and repeated behind '
-                    'buttons and text, so use a few large, bold, simple shapes instead of many tiny details, dark muted colors and low '
-                    'contrast. No text, no logos, no frame, no border, no single big object in the middle. Clean, high quality game art.')
+                    'buttons and text, so use a few large, bold, simple shapes instead of many tiny details, and moderate contrast so '
+                    'what is on top stays readable. Use the colors the request names; if it names none, rich colors that are not too '
+                    'bright. No text, no logos, no frame, no border, no single big object in the middle. Clean, high quality game art.')
         what = self.subject(job)
         if job.get('text'): keep = f'Change the word MITOSIS so it reads exactly "{job["text"]}", in the same lettering style, on one line, centered.'
         elif job['title']: keep = 'Keep the exact word MITOSIS, spelled the same, in the same layout and size, centered.'
@@ -433,20 +487,34 @@ class Designer:
                 one = len(runs) > 1
                 out = folder / (f'raw-{made}.png' if one else 'raw-%d.png')
                 args = [str(runtime.path('sd')), '--diffusion-model', str(runtime.path('diffusion')), '--vae', str(runtime.path('vae')), '--llm', str(runtime.path('llm')),
+                        # Leave GPU workspace for diffusion; the text encoder and decoder can run in RAM.
+                        '--offload-to-cpu', '--backend', 'te=cpu,vae=cpu',
+                        '--threads', str(max(1, min(4, (os.cpu_count() or 2) // 2))),
                         *(['-r', str(folder / 'reference.png')] if (folder / 'reference.png').is_file() else []), '-p', self.instruction(dict(job, direction=direction)),
                         '--cfg-scale', '1.0', '--steps', str(steps), '--sampling-method', 'euler', '-W', str(size[0]), '-H', str(size[1]),
                         '-s', str((int(time.time()) + number * 7919) % 100000), '-b', str(count), '-o', str(out)]
-                proc = subprocess.Popen(args, cwd=str(runtime.path('sd').parent), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, creationflags=runtime.QUIET,
-                                        text=True, encoding='utf-8', errors='replace')
-                job['pid'] = proc.pid
+                # Cancel can arrive while preparing the command. Publish the child atomically with that check.
+                with self.lock:
+                    if job.get('cancelled'): raise RuntimeError('Cancelled.')
+                    proc = subprocess.Popen(args, cwd=str(runtime.path('sd').parent), stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                            creationflags=runtime.QUIET | getattr(subprocess, 'BELOW_NORMAL_PRIORITY_CLASS', 0),
+                                            text=True, encoding='utf-8', errors='replace')
+                    job['pid'] = proc.pid
                 which = f'idea {number + 1} of {len(runs)}' if one else f'{job["total"]} variant{"s" if job["total"] > 1 else ""}'
-                for line in proc.stdout:
-                    log.append(line.rstrip()); log[:] = log[-40:]
-                    if 'loading tensors' in line: job['message'] = 'Loading the image model…'
-                    step = re.search(r'\|\s*(\d+)/(\d+)\s*-', line)
-                    if step and 'MB/s' not in line: job['message'] = f'Drawing {which}: step {step.group(1)} of {step.group(2)}'
-                    if 'decoding' in line: job['message'] = 'Finishing the images…'
-                proc.wait(timeout=1200)
+                job['message'] = 'Loading the image model…'
+                try:
+                    with (folder / 'render.log').open('a', encoding='utf-8') as diagnostics:
+                        for line in proc.stdout:
+                            diagnostics.write(line); diagnostics.flush()
+                            log.append(line.rstrip()); log[:] = log[-40:]
+                            message = render_progress(line, which, steps)
+                            if message: job['message'] = message
+                    proc.wait(timeout=1200)
+                except BaseException:
+                    # A full disk or a locked log must not leave the image model running with the graphics card and
+                    # nobody reading its output (Cancel finds no process once this job ends).
+                    subprocess.run(['taskkill.exe', '/PID', str(proc.pid), '/T', '/F'], capture_output=True, creationflags=runtime.QUIET, timeout=15)
+                    raise
                 if proc.returncode != 0: failed += 1
                 made = len(list(folder.glob('raw-*.png')))
             if job.get('cancelled'): raise RuntimeError('Cancelled.')
@@ -469,6 +537,7 @@ class Designer:
                                             warning=leftover(art)))
                 job['progress'] = index + 1
             job.update(state='complete', message=f'{len(raws)} variant{"s" if len(raws) != 1 else ""} ready. Pick one, adjust it, then apply.')
+            self.learn_time(time.time() - job['at'], len(raws))
         except Exception as exc:  # a background job must always finish
             job.update(state='failed', message=str(exc)[:500])
         finally:
@@ -477,8 +546,10 @@ class Designer:
 
     def cancel(self, job_id):
         job = self.job(job_id)
-        job['cancelled'] = True
-        if job.get('pid'): subprocess.run(['taskkill.exe', '/PID', str(job['pid']), '/T', '/F'], capture_output=True, creationflags=runtime.QUIET)
+        with self.lock:
+            job['cancelled'] = True
+            pid = job.get('pid')
+        if pid: subprocess.run(['taskkill.exe', '/PID', str(pid), '/T', '/F'], capture_output=True, creationflags=runtime.QUIET, timeout=15)
         return dict(job)
 
     def job(self, job_id):
@@ -496,8 +567,9 @@ class Designer:
         s = {'scale': 1.0, 'dx': 0.0, 'dy': 0.0, 'tolerance': 1.0, 'shape': 1.0 if job.get('stretched') else 0.0, 'fill': 1.0 if job['title'] else 0.0, 'white': 0.0, **(settings or {})}
         if job.get('scene'):
             # A background fills its frame. Zoom picks a part of the drawing (the game shows the tile small and repeated, so
-            # zooming in keeps shapes big enough to read), which is then made to tile again; Calmer fades it toward the
-            # game's own background color, so the menu's text stays readable on top of it.
+            # zooming in keeps shapes big enough to read), which is then made to tile again; Calmer softens and darkens the
+            # picture in its own colors (never toward the game's teal, which players want gone), so the menu's text stays
+            # readable on top of it. The result is opaque, so none of that teal shows through.
             s = {'scale': SCENE_ZOOM, 'calm': SCENE_CALM, 'dx': 0.0, 'dy': 0.0, 'white': 0.0, **(settings or {})}
             frame = tuple(job['frames'][int(target)])
             raw = Image.open(folder / f'raw-{int(index)}.png').convert('RGBA')
@@ -505,8 +577,8 @@ class Designer:
             calm = max(0.0, min(0.9, float(s['calm'])))
             if calm:
                 a = np.asarray(out, np.float32)[..., :3]
-                grey = a.mean(axis=2, keepdims=True)
-                a = (a * (1 - calm * 0.5) + grey * calm * 0.5) * (1 - calm) + np.array(GAME_BG, np.float32) * calm   # less color, then toward the game's teal
+                average = a.reshape(-1, 3).mean(axis=0)
+                a = (a * (1 - calm * 0.4) + average * calm * 0.4) * (1 - calm * 0.45)   # less contrast, then darker, same colors
                 out = Image.fromarray(np.dstack([np.clip(a, 0, 255), np.full(a.shape[:2], 255, np.float32)]).astype(np.uint8), 'RGBA')
             return whiten(out) if float(s['white']) >= 0.5 else out
         art = unkey(Image.open(folder / f'raw-{int(index)}.png'), job['key'], float(s['tolerance'])) if float(s['tolerance']) != 1.0 else \
