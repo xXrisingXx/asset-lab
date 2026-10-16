@@ -2385,7 +2385,8 @@
   "Can’t be changed": "Não pode ser alterado",
   "Can’t be changed in game.": "Não pode ser alterado no jogo.",
   "The red virus comes from the game’s server: Mitosis downloads a fresh copy before a match, so edits to it never show in game.": "O vírus vermelho vem do servidor do jogo: o Mitosis baixa uma cópia nova antes de cada partida, então as edições nunca aparecem no jogo.",
-  "The red virus (the spawner) comes from the game's server too: Mitosis downloads a fresh copy before a match, so a new look for it won't show in the game.": "O vírus vermelho (o spawner) também vem do servidor do jogo: o Mitosis baixa uma cópia nova antes de cada partida, então um novo visual não aparece no jogo."
+  "The red virus (the spawner) comes from the game's server too: Mitosis downloads a fresh copy before a match, so a new look for it won't show in the game.": "O vírus vermelho (o spawner) também vem do servidor do jogo: o Mitosis baixa uma cópia nova antes de cada partida, então um novo visual não aparece no jogo.",
+  "At the start the whole tile shows, and it repeats with no seam. Zoom in for bigger shapes: the edges are then blended so it still repeats.": "No início aparece o bloco inteiro, que se repete sem emenda. Aproxime para formas maiores: as bordas são misturadas para continuar repetindo."
  },
  "patterns": {
   "{n} visuals": "{n} gráficos",

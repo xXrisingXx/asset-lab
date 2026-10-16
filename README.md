@@ -58,6 +58,19 @@ Close the chat panel to inspect the new logo on the larger canvas. Saving a desi
 
 ![The AI-generated MITOSIS logo in Asset Lab's full editor layout](media/readme/theme-result.png)
 
+### Backgrounds and the game preview
+
+Ask Theme AI for a new background (“a city at night”, “BMW logos on carbon fiber”) and the image model draws it as a **seamless tile**: it wraps the picture around its edges while it draws, so the copies the game lays side by side meet with no visible seam. Move it with the sliders and it stays seamless; **Calmer** softens it so menu text stays readable.
+
+**Game preview** shows your saved edits the way the game places and colors them: the main menu, and a match in light and dark mode, with PC or phone controls.
+
+![Game preview of the main menu with a modded background, title and spawner](media/readme/preview-menu.webp)
+
+<table><tr>
+<td><img src="media/readme/preview-match-light.webp" alt="Game preview of a match in light mode with modded viruses and food"></td>
+<td><img src="media/readme/preview-match-dark.webp" alt="Game preview of a match in dark mode with modded viruses and food"></td>
+</tr></table>
+
 <details>
 <summary>View the request and before/after review</summary>
 

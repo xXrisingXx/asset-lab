@@ -96,6 +96,24 @@ def seamless(img):
     return Image.fromarray(np.clip(a * m + b * (1 - m), 0, 255).astype(np.uint8)).convert('RGBA')
 
 
+def wrap_shift(img, dx=0.0, dy=0.0):
+    """Move a tile by up to half its size (dx/dy -1..1), wrapping around: what leaves one edge comes in at the other."""
+    a = np.asarray(img.convert('RGBA'))
+    a = np.roll(np.roll(a, int(round(dy * a.shape[0] / 2)), axis=0), int(round(dx * a.shape[1] / 2)), axis=1)
+    return Image.fromarray(a, 'RGBA')
+
+
+def tile_resize(img, frame):
+    """Resize a tile so it still tiles: resized among its own copies, so its edges are filtered with what comes next to
+    them in the game, not with nothing."""
+    w, h = img.size
+    big = Image.new('RGBA', (w * 3, h * 3))
+    for x in range(3):
+        for y in range(3): big.paste(img, (x * w, y * h))
+    big = big.resize((frame[0] * 3, frame[1] * 3), Image.Resampling.LANCZOS)
+    return big.crop((frame[0], frame[1], frame[0] * 2, frame[1] * 2))
+
+
 def cover(art, frame, scale=1.0, dx=0.0, dy=0.0):
     """Fill a frame with a picture (cropping what does not fit); scale zooms in, dx/dy (-1..1) move the crop."""
     W, H = frame
@@ -537,6 +555,7 @@ class Designer:
                        tint=tints().get(rows[0]['name'], '') or (SPAWNER_RED if rows[0]['name'] == 'spawner.png' else ''),   # the color the game multiplies this art by
                        spawner=rows[0]['name'] == 'spawner.png',
                        scene=parent.get('scene', False) if base else rows[0]['group'] in SCENE_GROUPS,   # a background: a whole new picture that tiles
+                       circular=parent.get('circular', False) if base else rows[0]['group'] in SCENE_GROUPS,   # drawn wrapping around its edges (--circular)
                        food=food, **({'food_tier': list(tier)} if food else {}))
             if direction: job['direction'] = str(direction)[:700]   # shared by a set drawn together, so they match
             # A reference board from the inspiration lookup (inspire.pictures): its file in workspace/inspiration.
@@ -641,6 +660,9 @@ class Designer:
                         '--threads', str(os.cpu_count() or 4) if fast else str(max(1, min(6, (os.cpu_count() or 2) // 2))),
                         *(['-r', str(folder / 'reference.png')] if (folder / 'reference.png').is_file() else []),
                         *(['-r', str(self.lab.root / 'inspiration' / job['inspiration'])] if job.get('inspiration') else []),   # the look, as pictures
+                        # A background is drawn as a true tile: the model wraps its picture around the edges while it draws
+                        # (circular padding), so the copies the game lays side by side meet with no seam, at no extra cost.
+                        *(['--circular'] if job.get('circular') else []),
                         '-p', self.instruction(dict(job, direction=direction)),
                         '--cfg-scale', '1.0', '--steps', str(steps), '--sampling-method', 'euler', '-W', str(size[0]), '-H', str(size[1]),
                         '-s', str((int(time.time()) + number * 7919) % 100000), '-b', str(count), '-o', str(out)]
@@ -673,7 +695,7 @@ class Designer:
             if not raws: raise RuntimeError('The image model failed: ' + ' / '.join(l for l in log[-6:] if l.strip())[:400])
             for index, raw in enumerate(raws):
                 if job.get('scene'):   # nothing to cut out: the whole picture is the art, made to tile
-                    seamless(Image.open(raw)).save(folder / f'variant-{index}.png')
+                    (Image.open(raw).convert('RGBA') if job.get('circular') else seamless(Image.open(raw))).save(folder / f'variant-{index}.png')
                     job['variants'].append(dict(index=index, settings=dict(scale=1.0, dx=0.0, dy=0.0, tolerance=1.0, shape=0.0, fill=0.0), warning=''))
                     job['progress'] = index + 1
                     continue
@@ -721,10 +743,14 @@ class Designer:
             # zooming in keeps shapes big enough to read), which is then made to tile again; Calmer softens and darkens the
             # picture in its own colors (never toward the game's teal, which players want gone), so the menu's text stays
             # readable on top of it. The result is opaque, so none of that teal shows through.
-            s = {'scale': SCENE_ZOOM, 'calm': SCENE_CALM, 'dx': 0.0, 'dy': 0.0, 'white': 0.0, **(settings or {})}
+            s = {'scale': 1.0 if job.get('circular') else SCENE_ZOOM, 'calm': SCENE_CALM, 'dx': 0.0, 'dy': 0.0, 'white': 0.0, **(settings or {})}
             frame = tuple(job['frames'][int(target)])
             raw = Image.open(folder / f'raw-{int(index)}.png').convert('RGBA')
-            out = seamless(cover(raw, frame, float(s['scale']), float(s['dx']), float(s['dy']))).resize(frame, Image.Resampling.LANCZOS)
+            if job.get('circular') and float(s['scale']) <= 1.0:
+                # A true tile, shown whole: moving it wraps around, and it is shrunk as a tile, so it still meets itself.
+                out = tile_resize(wrap_shift(raw, float(s['dx']), float(s['dy'])), frame)
+            else:   # zoomed in (or drawn before tiles were): a crop, blended so its edges meet again
+                out = seamless(cover(raw, frame, float(s['scale']), float(s['dx']), float(s['dy']))).resize(frame, Image.Resampling.LANCZOS)
             calm = max(0.0, min(0.9, float(s['calm'])))
             if calm:
                 a = np.asarray(out, np.float32)[..., :3]

@@ -2385,7 +2385,8 @@
   "Can’t be changed": "Nicht änderbar",
   "Can’t be changed in game.": "Im Spiel nicht änderbar.",
   "The red virus comes from the game’s server: Mitosis downloads a fresh copy before a match, so edits to it never show in game.": "Der rote Virus kommt vom Server des Spiels: Mitosis lädt vor einer Runde eine neue Kopie herunter, daher erscheinen Änderungen nie im Spiel.",
-  "The red virus (the spawner) comes from the game's server too: Mitosis downloads a fresh copy before a match, so a new look for it won't show in the game.": "Der rote Virus (der Spawner) kommt ebenfalls vom Server des Spiels: Mitosis lädt vor einer Runde eine neue Kopie herunter, daher erscheint ein neuer Look dafür nicht im Spiel."
+  "The red virus (the spawner) comes from the game's server too: Mitosis downloads a fresh copy before a match, so a new look for it won't show in the game.": "Der rote Virus (der Spawner) kommt ebenfalls vom Server des Spiels: Mitosis lädt vor einer Runde eine neue Kopie herunter, daher erscheint ein neuer Look dafür nicht im Spiel.",
+  "At the start the whole tile shows, and it repeats with no seam. Zoom in for bigger shapes: the edges are then blended so it still repeats.": "Zuerst ist die ganze Kachel zu sehen, sie wiederholt sich ohne Naht. Zoome hinein für größere Formen: Die Ränder werden dann überblendet, damit sie sich weiter wiederholt."
  },
  "patterns": {
   "{n} visuals": "{n} Grafiken",

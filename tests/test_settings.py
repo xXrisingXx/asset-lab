@@ -584,6 +584,7 @@ class ThemeAiTests(Base):
         arg = lambda name: calls[-1][calls[-1].index(name) + 1]
         self.assertEqual((arg('--steps'), arg('-b'), len(unloads)), ('4', '2', 1))
         self.assertIn('--offload-to-cpu', calls[-1])
+        self.assertNotIn('--circular', calls[-1])                     # only backgrounds are drawn as wrapping tiles
         # The picture encoder and decoder run on the graphics card (same picture, minutes sooner); the text encoder in RAM.
         self.assertEqual((arg('--backend'), arg('--flash-attn')), ('te=cpu', 'on'))
         self.assertGreaterEqual(int(arg('--threads')), 1)

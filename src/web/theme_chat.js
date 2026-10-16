@@ -442,7 +442,7 @@ function zoomPiece(Q,item){
 }
 // What a drawing starts with (also what "Apply all" uses): zoomed and calmed for a background, the outline kept for a
 // stretched button, the frame filled for the title, and kept white where the game colors the art itself.
-function designDefaults(job){return {scale:job.scene?2.5:1,...(job.scene?{calm:0.5}:{}),dx:0,dy:0,tolerance:1,shape:job.stretched?1:0,fill:job.title?1:0,white:job.food||job.spawner||(job.tint||job.tinted)&&setting('keep_white')?1:0};}
+function designDefaults(job){return {scale:job.scene&&!job.circular?2.5:1,...(job.scene?{calm:0.5}:{}),dx:0,dy:0,tolerance:1,shape:job.stretched?1:0,fill:job.title?1:0,white:job.food||job.spawner||(job.tint||job.tinted)&&setting('keep_white')?1:0};}
 async function drawDesign(box,prompt,keys,count,base,direction,entry,label,inspiration){
   let job=await api('/api/design-start',{prompt,only:keys||null,count,base:base||null,direction:direction||null,inspiration:inspiration||null});
   const info={id:job.id,keys:keys||null,label:label||''};if(entry){(entry.jobs||(entry.jobs=[])).push(info);keepChat();}
@@ -517,7 +517,8 @@ function designCard(box,job,keys,entry,info){
   // A new background fills its frame: only zoom and position apply (nothing is cut out or kept from the old shape).
   const knobs=job.scene?[['scale','Zoom',1,3,0.02],['calm','Calmer',0,0.9,0.01],['dx','Left / right',-1,1,0.02],['dy','Up / down',-1,1,0.02]]:[['scale','Size',0.5,1.8,0.02],['dx','Left / right',-1,1,0.02],['dy','Up / down',-1,1,0.02],['tolerance','Background cut-out',0.6,1.6,0.05]];
   for(const [k,label,min,max,step] of knobs){
-    const row=el('label');const r=el('input');r.type='range';r.min=min;r.max=max;r.step=step;r.value=S2.settings[k];r.oninput=()=>{S2.settings[k]=+r.value;refresh();};row.append(el('span','',label),r);sliders.append(row);}
+    const row=el('label');const r=el('input');r.type='range';r.min=min;r.max=max;r.step=step;r.value=S2.settings[k];r.oninput=()=>{S2.settings[k]=+r.value;refresh();};row.append(el('span','',label),r);sliders.append(row);
+    if(k==='scale'&&job.circular)row.title='At the start the whole tile shows, and it repeats with no seam. Zoom in for bigger shapes: the edges are then blended so it still repeats.';}
   const shapeRow=el('label','design-shape');const shape=el('input');shape.type='checkbox';shape.checked=!!S2.settings.shape;
   shape.onchange=()=>{S2.settings.shape=shape.checked?1:0;refresh();};shapeRow.title='Trim the drawing to the original outline, so the game places and stretches it the same way';
   shapeRow.append(shape,document.createTextNode(' Keep the original shape'));if(!job.scene)sliders.append(shapeRow);

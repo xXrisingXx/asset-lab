@@ -158,3 +158,27 @@ class LockedArt(unittest.TestCase):
         import lab_core
         self.assertIn('fresh copy', lab_core.locked({'name': 'spawner.png'})['locked'])   # the game downloads it again
         self.assertEqual(lab_core.locked({'name': 'virus.png'}), {})
+
+
+class TrueTiles(unittest.TestCase):
+    """A background drawn as a tile (sd-cli --circular) stays one when it is moved or shrunk to the game's size."""
+    def periodic(self, w=96, h=80):
+        y, x = np.mgrid[0:h, 0:w]
+        a = np.stack([127 + 120 * np.sin(2 * np.pi * x / w * 3), 127 + 120 * np.cos(2 * np.pi * y / h * 2), 127 + 60 * np.sin(2 * np.pi * (x / w + y / h))], -1)
+        return Image.fromarray(np.dstack([a, np.full((h, w), 255)]).astype(np.uint8), 'RGBA')
+
+    def seam(self, img):
+        """The step across the wrap-around, against the steps right beside it (1 = no seam)."""
+        a = np.asarray(img, np.float32)[..., :3]
+        across = lambda b: np.abs(b[:, 0] - b[:, -1]).mean() / ((np.abs(b[:, 1] - b[:, 0]).mean() + np.abs(b[:, -1] - b[:, -2]).mean()) / 2)
+        return max(across(a), across(a.transpose(1, 0, 2)))
+
+    def test_moved_and_shrunk_tiles_still_meet(self):
+        tile = self.periodic()
+        self.assertLess(self.seam(tile), 1.5)
+        moved = design.wrap_shift(tile, 0.37, -0.6)
+        self.assertLess(self.seam(moved), 1.5)
+        small = design.tile_resize(moved, (40, 32))
+        self.assertEqual(small.size, (40, 32)); self.assertLess(self.seam(small), 1.5)
+        cropped = design.cover(tile, (40, 32), 2.5)   # a zoomed crop does not tile by itself: that is what the blend is for
+        self.assertGreater(self.seam(cropped), self.seam(small))
