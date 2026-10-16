@@ -7,6 +7,7 @@ import mimetypes
 import os
 from pathlib import Path
 import re
+import socket
 import threading
 import traceback
 import urllib.parse
@@ -69,6 +70,8 @@ def server_for(lab, port):
         if any(job['state'] == 'running' for job in themes.jobs.values()) or designer.status().get('job'):
             raise ValueError('Wait for the theme or drawing to finish first.')
 
+    IDLE_WAIT = 3   # seconds a kept-alive connection waits for its next request
+
     class Handler(BaseHTTPRequestHandler):
         timeout = 30  # a browser's idle pre-opened connection must not keep the server from stopping
         # Keep-alive: the page reuses a few connections instead of opening one per request. Every closed connection
@@ -78,6 +81,33 @@ def server_for(lab, port):
 
         def log_message(self, *args): pass
 
+        # Kept-alive connections are tracked, so stopping or restarting the lab can end the idle ones: the page polls
+        # every few seconds, so its connection never times out, and Server.server_close waits for every handler.
+        busy = False   # between reading a request and sending its answer
+
+        def setup(self):
+            super().setup()
+            with self.server.open_lock: self.server.open_connections.add(self)
+
+        def finish(self):
+            try: super().finish()
+            finally:
+                with self.server.open_lock: self.server.open_connections.discard(self)
+
+        def parse_request(self):
+            self.busy = True
+            self.connection.settimeout(self.timeout)   # a request is being read and answered: the full timeout
+            return super().parse_request()
+
+        def handle_one_request(self):
+            # Waiting for the next request on a kept-alive connection is short: a closing lab waits at most this long
+            # for it (Windows does not wake a waiting read when another thread shuts the socket), and the page's
+            # polls every 2 seconds still reuse it.
+            try:
+                self.connection.settimeout(IDLE_WAIT)
+                super().handle_one_request()
+            finally: self.busy = False
+
         def send(self, data, mime='application/json', status=200, filename=None):
             if not isinstance(data, bytes): data = json.dumps(data, ensure_ascii=False).encode('utf-8')
             self.send_response(status)
@@ -86,6 +116,7 @@ def server_for(lab, port):
                                 'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob: data:; media-src 'self' blob:; connect-src 'self'; frame-ancestors 'none'"}.items():
                 self.send_header(name, value)
             if filename: self.send_header('Content-Disposition', 'attachment; filename="' + filename + '"')
+            if self.server.closing: self.close_connection = True   # stopping: this answer is the connection's last
             if self.close_connection: self.send_header('Connection', 'close')   # said, so the browser does not reuse it
             self.end_headers()
             self.wfile.write(data)
@@ -387,6 +418,23 @@ def server_for(lab, port):
         daemon_threads = False
         block_on_close = True
         restart = False
+        closing = False
+
+        def __init__(self, *args, **kwargs):
+            self.open_connections, self.open_lock = set(), threading.Lock()
+            super().__init__(*args, **kwargs)
+
+        def end_idle_connections(self):
+            """Stopping: a request being answered still finishes and gets its answer, then its connection closes;
+            connections waiting for a next request end now (their reading side is shut, so the wait returns at once)."""
+            self.closing = True
+            with self.open_lock: handlers = list(self.open_connections)
+            for handler in handlers:
+                if handler.busy: continue   # it closes itself after its answer (send() sees closing)
+                try: handler.connection.shutdown(socket.SHUT_RDWR)
+                except OSError: pass
+                try: handler.connection.close()
+                except OSError: pass
         request_queue_size = 64   # a page load asks for ~45 files at once; the default backlog of 5 refused some (a missing editor script)
     # A restarted server can start before the old one has released the port; give it a moment.
     for attempt in range(40):
@@ -426,6 +474,7 @@ def main():
     try: server.serve_forever()
     except KeyboardInterrupt: pass
     finally:
+        server.end_idle_connections()
         if server.restart and os.environ.get('ASSET_LAB_LAUNCHER'):
             # The launcher owns the server process: exit with "restart me" and it starts the new code itself.
             server.socket.close()

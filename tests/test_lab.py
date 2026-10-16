@@ -6,6 +6,7 @@ from pathlib import Path
 import sys
 import tempfile
 import threading
+import time
 import unittest
 from unittest.mock import patch
 import urllib.error
@@ -285,6 +286,17 @@ class HTTPTests(unittest.TestCase):
     setUp=Case.setUp
     tearDown=Case.tearDown
     key=Case.key
+    def test_a_kept_alive_connection_does_not_stop_the_lab_from_closing(self):
+        # The page polls over one kept-alive connection; closing the window must still end the server at once.
+        import http.client
+        server=server_for(self.lab,0);t=threading.Thread(target=server.serve_forever);t.start()
+        page=http.client.HTTPConnection('127.0.0.1',server.server_port,timeout=5)
+        for _ in range(3):page.request('GET','/api/status');r=page.getresponse();r.read();self.assertFalse(r.will_close)
+        server.shutdown();t.join(5)
+        start=time.monotonic();server.end_idle_connections();server.server_close()
+        self.assertLess(time.monotonic()-start,3,'the idle kept-alive connection held the server open')
+        page.close()
+
     def test_server_read_write_origin_and_shutdown(self):
         server=server_for(self.lab,0);t=threading.Thread(target=server.serve_forever);t.start()
         url=f'http://127.0.0.1:{server.server_port}'

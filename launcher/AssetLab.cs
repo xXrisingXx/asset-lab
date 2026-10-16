@@ -141,8 +141,15 @@ internal static class Program {
         // Waiting for our process avoids slow TCP retries against a socket that has already closed.
         if (owned != null) {
             if (owned.HasExited) return;
-            var status = Request("/api/status", null);
-            Request("/api/shutdown", Convert.ToString(status["token"]));
+            try {
+                var status = Request("/api/status", null);
+                Request("/api/shutdown", Convert.ToString(status["token"]));
+            } catch (WebException) {
+                // It no longer answers: it is already stopping (its port is closed) or it is stuck. Closing the window
+                // must still work, so give it the usual time to finish its work, then end it.
+                if (!owned.WaitForExit(30000)) { try { owned.Kill(); } catch (InvalidOperationException) { } catch (System.ComponentModel.Win32Exception) { } owned.WaitForExit(5000); }
+                return;
+            }
             if (!owned.WaitForExit(30000)) throw new TimeoutException("Asset Lab is still finishing pending work. Please try closing again shortly.");
             return;
         }
