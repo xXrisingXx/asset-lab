@@ -1348,7 +1348,14 @@
   "Mitosis is already open.": "Mitosis est déjà ouvert.",
   "Mitosis updated. Opening Mitosis…": "Mitosis mis à jour. Ouverture de Mitosis…",
   "Mod installed. Opening Mitosis…": "Mod installé. Ouverture de Mitosis…",
-  "Potions, power-ups and equipment come from the game's server: Mitosis downloads a fresh copy whenever its file was changed, so they can't be restyled. Everything else in the menus and the game can.": "Les potions, les bonus et l’équipement viennent du serveur du jeu : Mitosis télécharge une copie neuve dès que leur fichier change, donc on ne peut pas les modifier. Tout le reste des menus et du jeu peut l’être."
+  "Potions, power-ups and equipment come from the game's server: Mitosis downloads a fresh copy whenever its file was changed, so they can't be restyled. Everything else in the menus and the game can.": "Les potions, les bonus et l’équipement viennent du serveur du jeu : Mitosis télécharge une copie neuve dès que leur fichier change, donc on ne peut pas les modifier. Tout le reste des menus et du jeu peut l’être.",
+  "Look things up for inspiration": "Chercher de l’inspiration",
+  "When a request names someone or something (“a Post Malone theme”), Theme AI reads its Wikipedia summary to get the look right. Off: nothing is looked up.": "Quand une demande cite quelqu’un ou quelque chose (« un thème Post Malone »), Theme AI lit son résumé Wikipédia pour réussir le style. Désactivé : rien n’est recherché.",
+  "Inspiration lookups": "Recherches d’inspiration",
+  "When a Theme AI request names a person, band, game or film (unless you turn it off under Theme AI & drawing), only that name is looked up on Wikipedia.": "Quand une demande à Theme AI cite une personne, un groupe, un jeu ou un film (sauf si tu le désactives dans Theme AI et dessin), seul ce nom est recherché sur Wikipédia.",
+  "Idea: ": "Idée : ",
+  "Coming up with ideas…": "Recherche d’idées…",
+  "Nothing else: no accounts, no ads, no tracking and no usage statistics. Your art, edits and requests stay on this PC (only a name to look up goes to Wikipedia), and the lab’s page can only talk to the lab itself.": "Rien d’autre : pas de compte, pas de pub, pas de pistage ni de statistiques d’utilisation. Tes images, tes modifications et tes demandes restent sur ce PC (seul un nom à rechercher part vers Wikipédia), et la page d’Asset Lab ne peut parler qu’à Asset Lab."
  },
  "patterns": {
   "{n} visuals": "{n} visuels",
@@ -1609,7 +1616,9 @@
   "Link helper removed: {s} freed. It is downloaded again, after asking, when a page link needs it.": "Assistant de liens supprimé : {s} libérés. Il sera retéléchargé, après confirmation, quand un lien de page en aura besoin.",
   "This folder does not exist yet: {s}": "Ce dossier n’existe pas encore : {s}",
   "Drawn in {s}": "Dessiné avec {s}",
-  "For {s}: {y}": "Pour {s} : {y}"
+  "For {s}: {y}": "Pour {s} : {y}",
+  "Inspired by {s} (looked up on Wikipedia).": "Inspiré de {s} (recherché sur Wikipédia).",
+  "Drawing idea {n} of {n}: step {n} of {n}": "Dessin de l’idée {n} sur {n} : étape {n} sur {n}"
  },
  "keys": {
   "Shift": "Maj",

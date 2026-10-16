@@ -381,32 +381,50 @@ class Designer:
                 size = canvas_size(source.width, source.height)
                 ref = reference(source, job['key'], size)
             if ref is not None: ref.save(folder / 'reference.png')
-            if not job['base'] and not job.get('direction') and getattr(self, 'director', None):
+            runs = []   # (art direction, variants drawn with it)
+            if not job['base'] and not job.get('direction') and job['total'] > 1 and getattr(self, 'concepts', None):
+                # Several variants: a different idea for each (mummy wraps / chains and a graveyard...), not near-copies.
+                job['message'] = 'Coming up with ideas…'
+                try: ideas = [i.strip()[:700] for i in (self.concepts(job['prompt'], self.subject(job), job['total']) or []) if i.strip()]
+                except Exception: ideas = []
+                if len(ideas) >= 2:
+                    job['directions'] = ideas; job['direction'] = ideas[0]   # "More variants" keeps the first idea's style
+                    runs = [(idea, 1) for idea in ideas]
+            if not runs and not job['base'] and not job.get('direction') and getattr(self, 'director', None):
                 # A short request ("spooky") becomes a concrete art direction the image model can follow.
                 job['message'] = 'Writing the art direction…'
                 try: job['direction'] = (self.director(job['prompt'], self.subject(job)) or '').strip()[:700]
                 except Exception: job['direction'] = ''
+            if not runs: runs = [(job.get('direction') or '', job['total'])]
             # The planner and the image model do not both fit on an 8 GB card (Settings: Free the graphics card before drawing).
             if labsettings.value(self.lab, 'free_gpu'): runtime.OLLAMA.unload()
             job['message'] = 'Loading the image model…'
             steps = labsettings.STEPS[labsettings.value(self.lab, 'drawing_quality')]   # Settings: Drawing quality
-            args = [str(runtime.path('sd')), '--diffusion-model', str(runtime.path('diffusion')), '--vae', str(runtime.path('vae')), '--llm', str(runtime.path('llm')),
-                    *(['-r', str(folder / 'reference.png')] if (folder / 'reference.png').is_file() else []), '-p', self.instruction(job), '--cfg-scale', '1.0', '--steps', str(steps), '--sampling-method', 'euler',
-                    '-W', str(size[0]), '-H', str(size[1]), '-s', str(int(time.time()) % 100000), '-b', str(job['total']), '-o', str(folder / 'raw-%d.png')]
-            proc = subprocess.Popen(args, cwd=str(runtime.path('sd').parent), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, creationflags=runtime.QUIET,
-                                    text=True, encoding='utf-8', errors='replace')
-            job['pid'] = proc.pid
-            log = []
-            for line in proc.stdout:
-                log.append(line.rstrip()); log[:] = log[-40:]
-                if 'loading tensors' in line: job['message'] = 'Loading the image model…'
-                step = re.search(r'\|\s*(\d+)/(\d+)\s*-', line)
-                if step and 'MB/s' not in line: job['message'] = f'Drawing {job["total"]} variant{"s" if job["total"] > 1 else ""}: step {step.group(1)} of {step.group(2)}'
-                if 'decoding' in line: job['message'] = 'Finishing the images…'
-            proc.wait(timeout=1200)
+            log, made, failed = [], 0, 0
+            for number, (direction, count) in enumerate(runs):
+                if job.get('cancelled'): raise RuntimeError('Cancelled.')
+                one = len(runs) > 1
+                out = folder / (f'raw-{made}.png' if one else 'raw-%d.png')
+                args = [str(runtime.path('sd')), '--diffusion-model', str(runtime.path('diffusion')), '--vae', str(runtime.path('vae')), '--llm', str(runtime.path('llm')),
+                        *(['-r', str(folder / 'reference.png')] if (folder / 'reference.png').is_file() else []), '-p', self.instruction(dict(job, direction=direction)),
+                        '--cfg-scale', '1.0', '--steps', str(steps), '--sampling-method', 'euler', '-W', str(size[0]), '-H', str(size[1]),
+                        '-s', str((int(time.time()) + number * 7919) % 100000), '-b', str(count), '-o', str(out)]
+                proc = subprocess.Popen(args, cwd=str(runtime.path('sd').parent), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, creationflags=runtime.QUIET,
+                                        text=True, encoding='utf-8', errors='replace')
+                job['pid'] = proc.pid
+                which = f'idea {number + 1} of {len(runs)}' if one else f'{job["total"]} variant{"s" if job["total"] > 1 else ""}'
+                for line in proc.stdout:
+                    log.append(line.rstrip()); log[:] = log[-40:]
+                    if 'loading tensors' in line: job['message'] = 'Loading the image model…'
+                    step = re.search(r'\|\s*(\d+)/(\d+)\s*-', line)
+                    if step and 'MB/s' not in line: job['message'] = f'Drawing {which}: step {step.group(1)} of {step.group(2)}'
+                    if 'decoding' in line: job['message'] = 'Finishing the images…'
+                proc.wait(timeout=1200)
+                if proc.returncode != 0: failed += 1
+                made = len(list(folder.glob('raw-*.png')))
             if job.get('cancelled'): raise RuntimeError('Cancelled.')
             raws = sorted(folder.glob('raw-*.png'), key=lambda p: int(re.search(r'(\d+)', p.stem).group(1)))
-            if proc.returncode != 0 or not raws: raise RuntimeError('The image model failed: ' + ' / '.join(l for l in log[-6:] if l.strip())[:400])
+            if not raws: raise RuntimeError('The image model failed: ' + ' / '.join(l for l in log[-6:] if l.strip())[:400])
             for index, raw in enumerate(raws):
                 if job.get('scene'):   # nothing to cut out: the whole picture is the art, made to tile
                     seamless(Image.open(raw)).save(folder / f'variant-{index}.png')

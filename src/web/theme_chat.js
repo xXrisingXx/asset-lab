@@ -270,14 +270,15 @@ function designCard(box,job,keys,entry,info){
   const S2={variant:0,settings:{scale:1,dx:0,dy:0,tolerance:1,shape:job.stretched?1:0,fill:job.title?1:0,white:(job.tint||job.tinted)&&setting('keep_white')?1:0},applied:null};
   if(job.tint)card.append(el('p','theme-note',`The game colors this white icon ${job.tint} in the menu, so “In game” shows each variant the way the game will draw it. Tick “Keep it white” to get the game’s color with the drawing’s detail.`));
   else if(job.tinted)card.append(el('p','theme-note','This icon is plain white because the game colors it (teal in the menu), so a colorful drawing will come out tinted. Light, mostly white designs keep their look.'));
-  if(job.direction){const dir=el('p','design-direction');dir.append(el('b','','Art direction: '),document.createTextNode(job.direction));card.append(dir);}
+  // One idea per variant when the AI came up with several; the line follows the variant picked.
+  const ideaOf=i=>(job.directions||[])[i]||job.direction||'';const dir=el('p','design-direction');const dirText=document.createTextNode(ideaOf(0));dir.append(el('b','',job.directions?.length>1?'Idea: ':'Art direction: '),dirText);dir.hidden=!ideaOf(0);card.append(dir);
   const warn=el('p','theme-note');warn.hidden=true;card.append(warn);
   const showWarning=()=>{const w=(job.variants[S2.variant]||{}).warning;warn.textContent=w||'';warn.hidden=!w;};
   const url=(target,small)=>`/api/design-image?job=${job.id}&variant=${S2.variant}&target=${target}&${new URLSearchParams(Object.entries(S2.settings).map(([k,v])=>[k,String(v)]))}${small?'&small=1':''}&t=${Date.now()}`;
   const picks=el('div','design-variants');
   job.variants.forEach((v,i)=>{const b=el('button','design-variant'+(i===0?' on':''));b.type='button';b.title='Use variant '+(i+1);const im=new Image();im.src=`/api/design-image?job=${job.id}&variant=${i}&target=0&small=1`;b.append(im);
     if(v.warning)b.title+=' · '+v.warning;
-    b.onclick=()=>{S2.variant=i;picks.querySelectorAll('.design-variant').forEach((x,j)=>x.classList.toggle('on',j===i));showWarning();refresh();};picks.append(b);});
+    b.onclick=()=>{S2.variant=i;picks.querySelectorAll('.design-variant').forEach((x,j)=>x.classList.toggle('on',j===i));dirText.textContent=ideaOf(i);dir.hidden=!ideaOf(i);showWarning();refresh();};picks.append(b);});
   showWarning();
   const views=el('div','design-views');
   const frames=job.frames.map((f,t)=>{const fig=el('figure','design-view');const im=new Image();im.alt=job.names[t];fig.append(im,el('figcaption','',`${job.names[t]} · ${f[0]}×${f[1]} frame in the game`));views.append(fig);return im;});

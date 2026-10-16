@@ -55,7 +55,8 @@ def server_for(lab, port):
     themes = Themes(lab)
     designer = Designer(lab, themes)
     themes.designer = designer
-    designer.director = themes.art_direction   # the planner model writes the art direction for each redraw
+    designer.director = themes.art_direction
+    designer.concepts = themes.art_concepts   # and a different idea for each variant   # the planner model writes the art direction for each redraw
 
     class Handler(BaseHTTPRequestHandler):
         timeout = 30  # a browser's idle pre-opened connection must not keep the server from stopping

@@ -20,6 +20,7 @@ from PIL import Image, ImageFilter
 import design
 import exe_palette
 import fonts
+import inspire
 import runtime
 import settings as labsettings
 
@@ -1240,8 +1241,14 @@ class Themes:
                               hide=[dict(id=group, label=label) for group, (label, _) in HIDE.items()]))
 
     def chat(self, message, model='', history=None, only=None, language=''):
-        """The reply to a request, with a word about server-only art when the request names some (see ServerArt)."""
-        result = self._chat(message, model, history, only, language)
+        """The reply to a request, with a word about server-only art when the request names some (see ServerArt), and
+        inspiration from Wikipedia when it names someone or something ("a Post Malone theme"; Settings can turn it off)."""
+        self.inspiration = None
+        if labsettings.value(self.lab, 'web_inspiration') and inspire.candidates(str(message or '')[:2000]):
+            self.inspiration = inspire.lookup(str(message or ''))
+        try: result = self._chat(message, model, history, only, language)
+        finally: found, self.inspiration = self.inspiration, None
+        if found: self.inspired(result, found, only)
         if re.search(SERVER_ART, str(message or '').lower()) and result.get('source') != 'command':
             plan = result.get('plan') or {}
             if plan.get('operations'): plan['operations'] = [op for op in plan['operations'] if not set(op.get('targets') or []) <= {'potions', 'equipment'}]
@@ -1249,6 +1256,25 @@ class Themes:
             if not (plan.get('operations') or plan.get('ui_colors') or plan.get('hide') or drawing or result.get('font')):
                 plan['reply'] = SERVER_NOTE
             else: result['note'] = ((result.get('note') or '') + ' ' + SERVER_NOTE).strip()
+        return result
+
+    def inspired(self, result, found, only):
+        """A request that names someone or something: say what was looked up, carry it into the drawings, and offer to redraw
+        the main art (the title, the virus, the play button and the coin, or the checked assets), since colors alone can't
+        make "a Post Malone theme"."""
+        title, summary = found['title'], found['summary']
+        result['note'] = ((result.get('note') or '') + f' Inspired by {title} (looked up on Wikipedia).').strip()
+        context = f' Inspiration ({title}): {summary[:450]}'
+        designer = getattr(self, 'designer', None)
+        if result.get('design'): result['design']['prompt'] = (result['design'].get('prompt') or '') + context
+        elif designer and labsettings.value(self.lab, 'offer_redraws'):
+            rows = [self.lab.row(k) for k in only or [] if k in self.lab.catalog.rows] or designer.title_rows() + [
+                r for name in ('virus.png', 'icon-play', 'icon-coin') for r in [next((r for r in self.lab.catalog.rows.values() if r['name'] == name and r['editable']
+                                                                                     and r.get('primary', True) and not r.get('removed') and not r.get('legacy')), None)] if r]
+            if rows:
+                plan = result.get('plan') or {}
+                planned = plan.get('operations') or plan.get('ui_colors') or plan.get('hide')
+                result['design'] = dict(self.design_offer(designer, f'{title} theme.{context}', rows[:8]), optional=bool(planned))
         return result
 
     def _chat(self, message, model='', history=None, only=None, language=''):
@@ -1366,6 +1392,31 @@ class Themes:
         text = re.sub(r'<think>.*?</think>', '', answer.get('message', {}).get('content', ''), flags=re.S).strip().strip('"')
         return text if 20 <= len(text) <= 900 else None
 
+    def art_concepts(self, prompt, subject, count):
+        """Several clearly different takes on one request, one per variant ("spooky virus": wrapped like a mummy / chained in a
+        graveyard / cracked bone dripping blood), so the player picks between ideas, not between near-copies. The vaguer the
+        request, the bolder the ideas. A list of up to `count` directions, or [] when no planner model is installed."""
+        available = models()
+        if not available or count < 2: return []
+        model = self.preferred([m['name'] for m in available])
+        system = (f'You are the creative art director of a 2D game. Invent {count} clearly different visual concepts for the request, '
+                  'each one a distinct idea (different materials, props, story or style), not variations of one look. If the request is '
+                  'short or vague, be bold and surprising. Each concept is one paragraph of at most 55 words saying exactly what to draw: '
+                  'materials, colors, lighting, decorations. Keep the subject recognisable and any text in it exactly as it is. Do not '
+                  'describe a background, floor or shadow under it (the art is cut out). Celebrities, musicians, characters and pop '
+                  'culture are fine as fan art (the game\'s own skins use them); swimwear is the limit: never nudity or sexual content, '
+                  'and never anyone who could be a minor in anything suggestive. '
+                  f'Answer with exactly {count} lines, one concept per line, no numbering, no preamble.')
+        payload = dict(model=model, stream=False, keep_alive=0 if labsettings.value(self.lab, 'free_gpu') else '10m',
+                       messages=[dict(role='system', content=system), dict(role='user', content=f'Subject: {subject}\nRequest: {prompt}')],
+                       options=dict(temperature=0.95, num_predict=120 * count, num_ctx=2048, **MODEL_OPTIONS.get(model, {})))
+        if next(m for m in available if m['name'] == model)['thinking']: payload['think'] = False
+        try: answer = ollama('/api/chat', payload, timeout=180)
+        except (OSError, ValueError): return []
+        text = re.sub(r'<think>.*?</think>', '', answer.get('message', {}).get('content', ''), flags=re.S)
+        lines = [re.sub(r'^\s*(?:[-*•]|\d+[.)])\s*', '', l).strip().strip('"') for l in text.splitlines()]
+        return [l for l in lines if 20 <= len(l) <= 600][:count]
+
     def preferred(self, names):
         """The planner model to use when the request names none: Settings > Theme AI & drawing > Planner model when it is
         installed, else the best one installed (names come best first)."""
@@ -1408,7 +1459,8 @@ class Themes:
                 if isinstance(turn, dict) and turn.get('role') in ('user', 'assistant') and isinstance(turn.get('content'), str):
                     turns.append(dict(role=turn['role'], content=turn['content'][:4000]))
             hints = self.hints(message)
-            turns.append(dict(role='user', content=message + ('\n\nSprites named in this request: ' + '; '.join(hints) if hints else '')))
+            turns.append(dict(role='user', content=message + ('\n\nSprites named in this request: ' + '; '.join(hints) if hints else '')
+                              + (f'\n\nInspiration ({self.inspiration["title"]}, from Wikipedia; use its signature colors and mood): {self.inspiration["summary"]}' if getattr(self, 'inspiration', None) else '')))
             payload = dict(model=model, messages=turns, stream=False, format=SCHEMA, keep_alive='10m',
                            options=dict(temperature=0.2, num_ctx=8192, num_predict=1400, **MODEL_OPTIONS.get(model, {})))
             if next(m for m in available if m['name'] == model)['thinking']: payload['think'] = False

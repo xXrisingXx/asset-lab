@@ -90,6 +90,8 @@ SCHEMA = [
        choices=_pick(('fast', 'Fast (4 steps)'), ('balanced', 'Balanced (6 steps)'), ('detailed', 'Detailed (8 steps)')), keywords='steps image model speed'),
     _s('keep_white', 'theme', 'Keep game-colored icons white', 'Ticks “Keep it white” for redraws of icons the game colors itself, so they take the game’s color.', 'bool', False,
        keywords='tint icons redraw'),
+    _s('web_inspiration', 'theme', 'Look things up for inspiration', 'When a request names someone or something (“a Post Malone theme”), Theme AI reads '
+       'its Wikipedia summary to get the look right. Off: nothing is looked up.', 'bool', True, keywords='wikipedia internet web search online'),
     _s('free_gpu', 'theme', 'Free the graphics card before drawing', 'Unloads the planner model first, so both don’t fight over graphics memory. Turn it off only with 12 GB or more.',
        'bool', True, keywords='vram gpu memory unload'),
     # ----- text and fonts
@@ -144,10 +146,13 @@ PRIVACY = [
          text='The image model and the planner model come from Hugging Face, Ollama and stable-diffusion.cpp from GitHub. Once downloaded, they run on this PC: your requests never leave it.'),
     dict(what='Link helper, if you agree', hosts=['github.com', 'files.pythonhosted.org'],
          text='yt-dlp and Deno come from GitHub and PyAV from PyPI, the first time a sound needs them. “Update the link helper” asks GitHub for a newer yt-dlp.'),
+    dict(what='Inspiration lookups', hosts=['en.wikipedia.org'],
+         text='When a Theme AI request names a person, band, game or film (unless you turn it off under Theme AI & drawing), only that name is looked up on Wikipedia.'),
     dict(what='Links you paste', hosts=[],
          text='A link you paste in the sound editor is downloaded from that website; web pages are read by the link helper, which may only reach public internet addresses.'),
 ]
-PRIVACY_NOTE = ('Nothing else: no accounts, no ads, no tracking and no usage statistics. Your art, edits and requests stay on this PC, and the '
+PRIVACY_NOTE = ('Nothing else: no accounts, no ads, no tracking and no usage statistics. Your art, edits and requests stay on this PC (only a '
+                'name to look up goes to Wikipedia), and the '
                 'lab’s page can only talk to the lab itself.')
 
 
