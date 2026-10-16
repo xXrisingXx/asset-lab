@@ -151,3 +151,10 @@ class ReviewCases(unittest.TestCase):
         import theme, re
         self.assertFalse(re.search(theme.GAME_THEME, 'put a bmw logo on the coin in a bmw style'))
         self.assertTrue(re.search(theme.GAME_THEME, 'create me a bmw theme and make the food little tires'))
+
+
+class LockedArt(unittest.TestCase):
+    def test_the_red_virus_is_tagged_as_unchangeable(self):
+        import lab_core
+        self.assertIn('fresh copy', lab_core.locked({'name': 'spawner.png'})['locked'])   # the game downloads it again
+        self.assertEqual(lab_core.locked({'name': 'virus.png'}), {})

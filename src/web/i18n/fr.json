@@ -2381,7 +2381,10 @@
   "Your suggestion could not be sent (no internet?). It is still in the box: try again later.": "Ta suggestion n’a pas pu être envoyée (pas d’internet ?). Elle est toujours dans la case : réessaie plus tard.",
   "Suggestions you send": "Suggestions que tu envoies",
   "What you type under About › Suggestions, and the Asset Lab version, go to the creator’s Google Form when you press Send. No name, account or anything else.": "Ce que tu écris dans À propos › Suggestions et la version d’Asset Lab vont au formulaire Google du créateur quand tu appuies sur Envoyer. Ni nom, ni compte, rien d’autre.",
-  "Check it in the library and ask again, or right-click it › Redraw with Image AI.": "Coche-le dans la bibliothèque et redemande, ou clic droit › Redessiner avec l’IA d’image."
+  "Check it in the library and ask again, or right-click it › Redraw with Image AI.": "Coche-le dans la bibliothèque et redemande, ou clic droit › Redessiner avec l’IA d’image.",
+  "Can’t be changed": "Non modifiable",
+  "Can’t be changed in game.": "Non modifiable en jeu.",
+  "The red virus comes from the game’s server: Mitosis downloads a fresh copy before a match, so edits to it never show in game.": "Le virus rouge vient du serveur du jeu : Mitosis télécharge une copie neuve avant chaque partie, donc les modifications ne s’affichent jamais en jeu."
  },
  "patterns": {
   "{n} visuals": "{n} visuels",

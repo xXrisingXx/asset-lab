@@ -30,6 +30,9 @@ import settings as labsettings   # the player's settings (settings.json beside t
 
 ROOT = Path(__file__).resolve().parent
 # The release number (the launcher passes it; a source checkout reads the VERSION file beside src).
+# Art the game takes back: Mitosis downloads a fresh copy of the file it lives in before a match whenever that file
+# was changed, so an edit never shows in game (seen with the red virus on 2026-10-16). Shown as a tag in the library.
+LOCKED = {'spawner.png': 'The red virus comes from the game’s server: Mitosis downloads a fresh copy before a match, so edits to it never show in game.'}
 VERSION = os.environ.get('ASSET_LAB_VERSION') or ((ROOT.parent / 'VERSION').read_text().strip() if (ROOT.parent / 'VERSION').is_file() else 'dev')
 # The Mitosis UI map that ships with Asset Lab: names for interface sprites and art the game never shows (see merge_defaults).
 DEFAULTS = ROOT / 'data' / 'ui-defaults.json'
@@ -201,6 +204,11 @@ def data_home():
     if os.environ.get('ASSET_LAB_HOME'): return Path(os.environ['ASSET_LAB_HOME'])
     older = Path.home() / 'MitosisAssetLab'
     return older if older.is_dir() else Path.home() / 'AssetLab'
+
+
+def locked(row):
+    """{'locked': why} for art an edit cannot change in game (LOCKED), else {}."""
+    return {'locked': LOCKED[row['name']]} if row.get('name') in LOCKED else {}
 
 
 class Lab:
@@ -747,10 +755,10 @@ class Lab:
             if target is not None:
                 scores = self.similar.rank(target, [r['key'] for r in rows])
                 rows = sorted((r for r in rows if r['key'] in scores), key=lambda r: scores[r['key']])[:240]
-                return {'total': len(rows), 'items': [{**r, 'similarity': round(1 - scores[r['key']], 3), 'saved': bool(self.current(r['key'])), 'staged': r['key'] in self.state['staged']}
+                return {'total': len(rows), 'items': [{**r, 'similarity': round(1 - scores[r['key']], 3), 'saved': bool(self.current(r['key'])), 'staged': r['key'] in self.state['staged'], **locked(r)}
                                                        for r in rows[max(0, offset):max(0, offset)+min(120, limit)]]}
             rows.sort(key=lambda r: (r['group'] == 'Metadata', r['group'] == 'Audio', r['kind'] != 'image', r['name'].casefold(), r['source']))
-            return {'total': len(rows), 'items': [{**r, 'saved': bool(self.current(r['key'])) or r['key'] in sounds, 'staged': r['key'] in self.state['staged'] or bool((sounds.get(r['key']) or {}).get('staged'))}
+            return {'total': len(rows), 'items': [{**r, 'saved': bool(self.current(r['key'])) or r['key'] in sounds, 'staged': r['key'] in self.state['staged'] or bool((sounds.get(r['key']) or {}).get('staged')), **locked(r)}
                                                    for r in rows[max(0, offset):max(0, offset)+min(120, limit)]]}
 
     def history(self, key): return self.state['edits'].get(key, {'versions': [], 'cursor': -1})
@@ -806,7 +814,7 @@ class Lab:
                           children=[self.row(k) for k in self.catalog.children.get(key, [])],
                           copy_list=[dict(key=k, source=self.row(k).get('source_label') or self.row(k)['source'], entry=self.row(k)['entry'], live=self.row(k).get('live', ''))
                                      for k in self.catalog.copies.get(row.get('dup', ''), []) if k != key][:24],
-                          source_sha256=self.state['baseline'][row['source']]['sha256'], changed=bool(row['editable'] and self.changed(key)))
+                          source_sha256=self.state['baseline'][row['source']]['sha256'], changed=bool(row['editable'] and self.changed(key)), **locked(row))
             if row['editable']:
                 im = self.image(key)
                 points = [(im.width//2, max(0, im.height//6)), (im.width//2, im.height//2), (im.width//2, min(im.height-1, im.height*5//6))]

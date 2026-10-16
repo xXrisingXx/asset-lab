@@ -20,3 +20,6 @@ body.inspector-min .inspector-head,body.library-min .library-head{justify-conten
 /* Clicking and dragging around the app should not paint everything blue; text you may want to copy stays selectable */
 body{user-select:none;-webkit-user-select:none}
 input,textarea,pre,[contenteditable],.theme-bubble,.dialog-text,#dialogText,#dialogDetails,.review-files pre{user-select:text;-webkit-user-select:text}
+.asset-card .locked-tag{position:absolute;left:6px;top:62px;font-size:9px;font-weight:700;padding:2px 6px;border-radius:9px;background:#5a2326;color:#ffb8b8;border:1px solid #9b4146}
+.locked-note{display:block;color:#ffb8b8;background:#3a2023;border:1px solid #7a3a3f;border-radius:6px;padding:7px 9px;margin-bottom:6px;line-height:1.45}
+.badge.locked-badge{color:#ffb8b8;background:#3a2023;border-color:#9b4146;margin-right:6px}
