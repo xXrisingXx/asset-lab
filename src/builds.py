@@ -224,7 +224,12 @@ class Builds:
             out = []
             for f in self.chat_folder().glob('*.json'):
                 doc = read_json(f, {}) or {}
-                if doc.get('id') == f.stem: out.append(dict(id=f.stem, title=doc.get('title') or 'New chat', updated=doc.get('updated', 0), count=len(doc.get('entries') or [])))
+                if doc.get('id') != f.stem: continue
+                entries = [e for e in doc.get('entries') or [] if isinstance(e, dict)]
+                asked = [e.get('text') or '' for e in entries if e.get('t') == 'user']
+                # The chat list shows how much is in a chat and the last thing asked, to tell chats apart.
+                out.append(dict(id=f.stem, title=doc.get('title') or 'New chat', named=bool(doc.get('named')), updated=doc.get('updated', 0),
+                                count=len(entries), asked=len(asked), last=' '.join(str(asked[-1]).split())[:90] if asked else ''))
             out.sort(key=lambda c: c['updated'], reverse=True)
             return dict(active=self.active().get('chat') or '', chats=out)
 
@@ -236,13 +241,17 @@ class Builds:
             if self.active().get('chat') != cid: self.active()['chat'] = cid; self.write()
             return doc
 
-    def save_chat(self, cid, entries, history, title=''):
+    def save_chat(self, cid, entries, history, title='', named=False):
+        """named: the title is a name the player gave (kept from then on); otherwise it follows the first request."""
         cid = ident(cid)
         if not isinstance(entries, list) or not isinstance(history or [], list): raise ValueError('Send the chat as a list of entries.')
         doc = dict(id=cid, title=clean_name(title, 'New chat')[:60], updated=time.time(), entries=entries[-60:], history=(history or [])[-40:])
+        if named: doc['named'] = True
         if len(json.dumps(doc)) > MAX_CHAT: raise ValueError('This chat is too long to save. Start a new chat.')
         with self.lab.lock:
             folder = self.chat_folder()
+            before = read_json(folder / (cid + '.json'), None) or {}
+            if before.get('named') and not named: doc.update(title=before.get('title') or doc['title'], named=True)   # a name you gave stays
             if not (folder / (cid + '.json')).is_file() and len(list(folder.glob('*.json'))) >= MAX_CHATS:
                 oldest = min(folder.glob('*.json'), key=lambda f: f.stat().st_mtime)   # the oldest chat makes room
                 oldest.unlink(missing_ok=True)
@@ -250,6 +259,23 @@ class Builds:
             self.active()['chat'] = cid
             self.write()
             return dict(id=cid, title=doc['title'], updated=doc['updated'])
+
+    def rename_chat(self, cid, title):
+        """Give a chat its own name; an empty name goes back to following the first request. The chat keeps its place
+        in the list (renaming is not a change to the conversation)."""
+        cid = ident(cid)
+        with self.lab.lock:
+            path = self.chat_folder() / (cid + '.json')
+            doc = read_json(path, None)
+            if not doc: raise ValueError('That chat no longer exists.')
+            name = clean_name(title, '')[:60]
+            if name: doc.update(title=name, named=True)
+            else:
+                doc.pop('named', None)
+                first = next((e.get('text') for e in doc.get('entries') or [] if isinstance(e, dict) and e.get('t') == 'user'), '')
+                doc['title'] = clean_name(first, 'New chat')[:60]
+            atomic_json(path, doc)
+        return self.chats()
 
     def delete_chat(self, cid):
         cid = ident(cid)

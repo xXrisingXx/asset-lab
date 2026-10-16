@@ -5,13 +5,17 @@
 const T={open:false,info:null,history:[],busy:false,job:null,plan:null,prompt:'',passing:false,game:null};
 // Chats: each build keeps its Theme AI conversations (builds.py). The open one is saved as it goes, so the conversation,
 // what was applied and any drawing still being made come back after a reload, and older chats can be opened again.
-const STORE='lab-theme-chat',J={entries:[],id:'',saveTimer:0,list:[]};   // STORE: where chats lived before (moved over once)
+const STORE='lab-theme-chat',J={entries:[],id:'',saveTimer:0,list:[],name:''};   // name: a name given to the open chat before its first save   // STORE: where chats lived before (moved over once)
 const newId=()=>[...crypto.getRandomValues(new Uint8Array(8))].map(b=>b.toString(16).padStart(2,'0')).join('');
 function chatTitle(){const first=J.entries.find(e=>e.t==='user');return first?first.text.replace(/\s+/g,' ').trim().slice(0,60):'New chat';}
 function chatBody(){let entries=J.entries.slice(-60);while(entries.length>2&&JSON.stringify(entries).length>5e6)entries=entries.slice(Math.ceil(entries.length/4));
-  return {id:J.id,title:chatTitle(),entries,history:T.history};}
+  return {id:J.id,title:J.name||chatTitle(),named:!!J.name,entries,history:T.history};}
 async function saveChat(){clearTimeout(J.saveTimer);J.saveTimer=0;if(!J.entries.length)return false;
-  try{const r=await api('/api/chat-save',chatBody());if(!J.list.some(c=>c.id===r.id))J.list.unshift({id:r.id,title:r.title,updated:r.updated});else J.list.find(c=>c.id===r.id).title=r.title;showChats();return true;}catch(e){return false;}}
+  try{const r=await api('/api/chat-save',chatBody()),asked=J.entries.filter(e=>e.t==='user'),was=J.list.find(c=>c.id===r.id);
+    /* The chat just saved goes to the top of the list (newest first), with what the list shows about it. */
+    J.list=[{id:r.id,title:r.title,updated:r.updated,named:!!J.name||!!was?.named,count:J.entries.length,asked:asked.length,
+      last:(asked[asked.length-1]?.text||'').replace(/\s+/g,' ').trim().slice(0,90)},...J.list.filter(c=>c.id!==r.id)];
+    J.name='';showChats();return true;}catch(e){return false;}}
 function keepChat(){clearTimeout(J.saveTimer);J.saveTimer=setTimeout(saveChat,300);}
 // Leaving the page: the last word is sent even while the page closes.
 addEventListener('pagehide',()=>{if(!J.saveTimer||!J.entries.length||!S.token)return;clearTimeout(J.saveTimer);
@@ -565,20 +569,76 @@ function restoreChat(saved){
     const b=bubble('bot',entry.error||entry.text);if(entry.error){b.classList.add('error');return;}
     if(entry.result)try{renderResult(b,entry,true);}catch(e){b.append(el('p','theme-note','This part of the chat could not be shown again.'));}});
   scroll();}
-// The chat bar: this build's saved chats, a new one (the others stay saved) and delete. Chat titles are your own words,
-// so they are not translated.
-const chatBar=el('div','theme-chats');const chatPick=el('select');chatPick.id='themeChats';chatPick.setAttribute('aria-label','Saved chats of this build');
-const fresh=el('button','quiet','New chat');fresh.id='themeNewChat';fresh.type='button';fresh.title='Start a new conversation. This one stays saved in the list.';
-const drop=el('button','quiet','🗑');drop.id='themeDeleteChat';drop.type='button';drop.title='Delete this chat (the art it made is not touched)';
-chatBar.append(chatPick,fresh,drop);head.after(chatBar);
-function showChats(){chatPick.replaceChildren();const shown=J.list.some(c=>c.id===J.id)?J.list:[{id:J.id,title:'New chat'},...J.list];
-  for(const c of shown){const o=el('option','',c.title||'New chat');o.value=c.id;if(c.title&&c.title!=='New chat')o.translate=false;chatPick.append(o);}chatPick.value=J.id;drop.disabled=!J.list.some(c=>c.id===J.id);}
-function startChat(){J.id=newId();restoreChat(null);showChats();}
-async function openChat(id){await saveChat();try{const doc=await api('/api/chat?'+new URLSearchParams({id}));J.id=id;restoreChat(doc);}catch(e){startChat();}showChats();}
-fresh.onclick=run(async()=>{if(T.busy)return;await saveChat();startChat();input.focus();});
-chatPick.onchange=run(async()=>{if(T.busy){chatPick.value=J.id;return;}await openChat(chatPick.value);});
-drop.onclick=run(async()=>{if(T.busy)return;if(!await confirmAction('Delete this chat?','The conversation is removed from this build. Art it applied stays, and Undo still works.','Delete chat'))return;
-  clearTimeout(J.saveTimer);J.entries=[];const r=await api('/api/chat-delete',{id:J.id});J.list=r.chats;if(J.list.length)await openChat(J.list[0].id);else startChat();});
+// The chat bar: the open chat's name, which opens this build's chats (search, open, rename, delete), and New chat.
+// Chat names are your own words, so they are not translated.
+const chatBar=el('div','theme-chats');
+const chatPick=el('button','chat-pick');chatPick.id='themeChats';chatPick.type='button';
+chatPick.title='Your chats in this build: open, rename or delete one (double-click to rename this one)';
+chatPick.setAttribute('aria-haspopup','listbox');chatPick.setAttribute('aria-expanded','false');
+const pickTitle=el('b','chat-pick-title','New chat'),pickCount=el('small','chat-pick-count','');
+chatPick.append(pickTitle,pickCount,el('span','chat-pick-caret','▾'));
+const fresh=el('button','quiet','+ New chat');fresh.id='themeNewChat';fresh.type='button';fresh.title='Start a new conversation. This one stays saved in the list.';
+const chatMenu=el('div','chat-menu');chatMenu.id='themeChatMenu';chatMenu.hidden=true;
+const chatFind=el('input','chat-find');chatFind.type='search';chatFind.id='themeChatSearch';chatFind.placeholder='Search chats';chatFind.setAttribute('aria-label','Search chats');
+const chatRows=el('div','chat-list');chatRows.setAttribute('role','listbox');chatRows.setAttribute('aria-label','Saved chats of this build');
+const chatNone=el('p','chat-none','No chats match.');
+chatMenu.append(chatFind,chatRows,chatNone);chatBar.append(chatPick,fresh,chatMenu);head.after(chatBar);
+const own=(node,title)=>{node.translate=!title||title==='New chat';return node;};   // your own words stay as written
+function ago(t){const s=Math.max(0,Date.now()/1000-(+t||0));if(s<60)return 'just now';if(s<3600)return `${Math.floor(s/60)} min ago`;
+  if(s<86400)return `${Math.floor(s/3600)} h ago`;if(s<7*86400)return `${Math.floor(s/86400)} d ago`;
+  try{return new Date(t*1000).toLocaleDateString(undefined,{month:'short',day:'numeric'});}catch(e){return '';}}
+/* The open chat is listed even before its first message (as "New chat", not saved yet). */
+function chatList(){return J.list.some(c=>c.id===J.id)?J.list:[{id:J.id,title:J.name||'New chat',named:!!J.name,count:0,unsaved:true},...J.list];}
+function chatMeta(c){return c.unsaved?'Not saved yet (say something first)':`${c.asked===1?'1 message':`${c.asked??c.count??0} messages`} · ${ago(c.updated)}`;}
+function showChats(){const cur=chatList().find(c=>c.id===J.id),title=cur?.title||'New chat';
+  own(pickTitle,title).textContent=title;pickCount.textContent=J.list.length>1?`${J.list.length} chats`:'';
+  if(!chatMenu.hidden)renderChats();}
+function renderChats(){const q=chatFind.value.trim().toLowerCase();chatFind.hidden=J.list.length<6&&!q;   // search once there are a few
+  const rows=chatList().filter(c=>!q||`${c.title} ${c.last||''}`.toLowerCase().includes(q));
+  chatRows.replaceChildren(...rows.map(chatRow));chatNone.hidden=rows.length>0;}
+function chatRow(c){const row=el('div','chat-row'+(c.id===J.id?' current':''));row.dataset.id=c.id;row.tabIndex=-1;
+  row.setAttribute('role','option');row.setAttribute('aria-selected',String(c.id===J.id));
+  const text=el('div','chat-row-text');text.append(own(el('b','',c.title||'New chat'),c.title),el('small','',chatMeta(c)));
+  if(c.last&&c.last!==c.title)text.append(own(el('span','chat-row-last',`“${c.last}”`),c.last));   // the last request, to tell chats apart
+  const ren=el('button','chat-act','✎');ren.type='button';ren.title='Rename this chat (F2)';ren.dataset.act='rename';
+  const del=el('button','chat-act','🗑');del.type='button';del.title='Delete this chat (the art it made is not touched)';del.dataset.act='delete';del.disabled=!!c.unsaved;
+  row.append(text,ren,del);return row;}
+function openChats(){chatMenu.hidden=false;chatPick.setAttribute('aria-expanded','true');chatFind.value='';renderChats();
+  (chatFind.hidden?chatRows.querySelector('.current')||chatRows.firstElementChild:chatFind)?.focus();}
+function closeChats(focus){chatMenu.hidden=true;chatPick.setAttribute('aria-expanded','false');if(focus)chatPick.focus();}
+// Renaming in place: Enter or leaving the box keeps the name, Escape cancels; an empty name goes back to the first request.
+function renameChat(row){const c=chatList().find(x=>x.id===row?.dataset.id),name=row?.querySelector('.chat-row-text b');if(!c||!name)return;
+  const box=el('input','chat-rename');box.value=c.unsaved?J.name:(c.named?c.title:'');box.placeholder=c.unsaved?'Name this chat':c.title;
+  box.maxLength=60;box.setAttribute('aria-label','Chat name');name.replaceWith(box);box.focus();box.select();let done=false;
+  const finish=run(async keep=>{if(done)return;done=true;const title=box.value.replace(/\s+/g,' ').trim();
+    if(keep&&title!==(c.unsaved?J.name:(c.named?c.title:''))){if(c.unsaved)J.name=title;else J.list=(await api('/api/chat-rename',{id:c.id,title})).chats;}
+    showChats();renderChats();chatRows.querySelector(`[data-id="${c.id}"]`)?.focus();});
+  box.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter'){e.preventDefault();finish(true);}else if(e.key==='Escape'){e.preventDefault();finish(false);}});
+  box.addEventListener('blur',()=>finish(true));box.addEventListener('click',e=>e.stopPropagation());}
+async function deleteChat(id){const c=J.list.find(x=>x.id===id);if(!c||T.busy)return;
+  if(!await confirmAction('Delete this chat?','The conversation is removed from this build. Art it applied stays, and Undo still works.','Delete chat'))return;
+  if(id===J.id){clearTimeout(J.saveTimer);J.entries=[];}
+  J.list=(await api('/api/chat-delete',{id})).chats;
+  if(id===J.id){if(J.list.length)await openChat(J.list[0].id);else startChat();}else showChats();
+  if(!chatMenu.hidden){renderChats();chatRows.querySelector('.chat-row')?.focus();}}
+function startChat(){J.id=newId();J.name='';restoreChat(null);showChats();}
+async function openChat(id){await saveChat();try{const doc=await api('/api/chat?'+new URLSearchParams({id}));J.id=id;J.name='';restoreChat(doc);}catch(e){startChat();}showChats();}
+fresh.onclick=run(async()=>{if(T.busy)return;closeChats();await saveChat();startChat();input.focus();});
+chatPick.onclick=()=>chatMenu.hidden?openChats():closeChats();
+chatPick.ondblclick=()=>{if(chatMenu.hidden)openChats();renameChat(chatRows.querySelector('.chat-row.current'));};
+chatFind.oninput=renderChats;
+chatRows.addEventListener('click',run(async e=>{const row=e.target.closest('.chat-row');if(!row||e.target.closest('.chat-rename'))return;
+  const act=e.target.closest('[data-act]')?.dataset.act;if(act==='rename')return renameChat(row);if(act==='delete')return deleteChat(row.dataset.id);
+  if(T.busy&&row.dataset.id!==J.id)return message('Wait for the answer, then switch chats.');
+  closeChats();if(row.dataset.id!==J.id)await openChat(row.dataset.id);}));
+chatMenu.addEventListener('keydown',e=>{const rows=[...chatRows.children],i=rows.indexOf(document.activeElement);
+  if(e.key==='Escape'){e.preventDefault();e.stopPropagation();closeChats(true);}
+  else if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();
+    const n=e.key==='ArrowDown'?Math.min(rows.length-1,i+1):i-1;if(n<0&&!chatFind.hidden)chatFind.focus();else rows[Math.max(0,n)]?.focus();}
+  else if(e.key==='Enter'&&(i>=0||document.activeElement===chatFind)){e.preventDefault();(rows[i]||rows[0])?.click();}
+  else if(e.key==='F2'&&i>=0){e.preventDefault();renameChat(rows[i]);}
+  else if(e.key==='Delete'&&i>=0){e.preventDefault();run(deleteChat)(rows[i].dataset.id);}});
+document.addEventListener('pointerdown',e=>{if(!chatMenu.hidden&&!chatBar.contains(e.target)&&!$('dialog').contains(e.target))closeChats();});
 async function loadChats(){
   let r={active:'',chats:[]};try{r=await api('/api/chats');}catch(e){}J.list=r.chats;
   // A chat from before chats were saved per build becomes this build's first chat.

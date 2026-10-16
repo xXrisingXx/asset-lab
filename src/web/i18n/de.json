@@ -2342,7 +2342,18 @@
   "No piece matches that search.": "Kein Teil passt zu dieser Suche.",
   "Redraw with Image AI…": "Mit der Bild-KI neu zeichnen…",
   "When a Theme AI request names a person, band, game or film (unless you turn it off under Theme AI & drawing), only that name is looked up on Wikipedia. A few of its pictures are downloaded and kept on this PC, so the drawings can take their look from them.": "Wenn eine Theme-AI-Anfrage eine Person, Band, ein Spiel oder einen Film nennt (außer du schaltest es unter Theme AI & Zeichnen aus), wird nur dieser Name auf Wikipedia nachgeschlagen. Einige seiner Bilder werden heruntergeladen und auf diesem PC gespeichert, damit die Zeichnungen ihren Look daraus übernehmen.",
-  "When a request names someone or something (“a Post Malone theme”), Theme AI reads its Wikipedia summary and pictures to get the look right. Off: nothing is looked up.": "Wenn eine Anfrage jemanden oder etwas nennt („ein Post-Malone-Theme“), liest Theme AI die Wikipedia-Zusammenfassung und Bilder, um den Look zu treffen. Aus: Es wird nichts nachgeschlagen."
+  "When a request names someone or something (“a Post Malone theme”), Theme AI reads its Wikipedia summary and pictures to get the look right. Off: nothing is looked up.": "Wenn eine Anfrage jemanden oder etwas nennt („ein Post-Malone-Theme“), liest Theme AI die Wikipedia-Zusammenfassung und Bilder, um den Look zu treffen. Aus: Es wird nichts nachgeschlagen.",
+  "+ New chat": "+ Neuer Chat",
+  "Your chats in this build: open, rename or delete one (double-click to rename this one)": "Deine Chats in diesem Build: öffnen, umbenennen oder löschen (Doppelklick benennt diesen um)",
+  "Search chats": "Chats durchsuchen",
+  "No chats match.": "Keine Chats gefunden.",
+  "Not saved yet (say something first)": "Noch nicht gespeichert (schreib zuerst etwas)",
+  "1 message": "1 Nachricht",
+  "just now": "gerade eben",
+  "Rename this chat (F2)": "Diesen Chat umbenennen (F2)",
+  "Name this chat": "Diesen Chat benennen",
+  "Chat name": "Chatname",
+  "Wait for the answer, then switch chats.": "Warte auf die Antwort und wechsle dann den Chat."
  },
  "patterns": {
   "{n} visuals": "{n} Grafiken",
@@ -2728,7 +2739,11 @@
   "Describe the new look for “{s}” (for example “a neon city at night”, “made of gold”):": "Beschreibe den neuen Look für „{s}“ (zum Beispiel „eine Neonstadt bei Nacht“, „aus Gold“):",
   "{n} checked assets": "{n} markierte Assets",
   "Inspired by {s} (looked up on Wikipedia, with its pictures).": "Inspiriert von {s} (auf Wikipedia nachgeschlagen, mit seinen Bildern).",
-  "Inspiration: {s} (the drawings take their look from these pictures)": "Inspiration: {s} (die Zeichnungen übernehmen den Look dieser Bilder)"
+  "Inspiration: {s} (the drawings take their look from these pictures)": "Inspiration: {s} (die Zeichnungen übernehmen den Look dieser Bilder)",
+  "{n} messages": "{n} Nachrichten",
+  "{n} min ago": "vor {n} Min.",
+  "{n} h ago": "vor {n} Std.",
+  "{n} d ago": "vor {n} T."
  },
  "keys": {
   "Ctrl": "Strg",

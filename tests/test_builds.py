@@ -197,6 +197,23 @@ class BuildTests(Base):
         self.assertEqual(len(self.builds.delete_chat('b' * 16)['chats']), 1)
         with self.assertRaises(ValueError): self.builds.chat('../../x')
 
+    def test_a_chat_can_be_renamed_and_keeps_its_name(self):
+        talk = [{'t': 'user', 'text': 'spooky'}, {'t': 'bot', 'text': 'ok'}, {'t': 'user', 'text': 'more  orange\nglow'}]
+        self.builds.save_chat('a' * 16, talk[:2], [], 'spooky')
+        self.builds.save_chat('b' * 16, [{'t': 'user', 'text': 'gold'}], [], 'gold')
+        listed = self.builds.rename_chat('a' * 16, '  Halloween   v2 ')['chats']
+        self.assertEqual([c['title'] for c in listed], ['gold', 'Halloween v2'])   # renaming does not move it up the list
+        self.builds.save_chat('a' * 16, talk, [], 'spooky')                         # the next save sends the first request again
+        a = next(c for c in self.builds.chats()['chats'] if c['id'] == 'a' * 16)
+        self.assertEqual((a['title'], a['named'], a['count'], a['asked'], a['last']), ('Halloween v2', True, 3, 2, 'more orange glow'))
+        self.assertEqual(self.builds.rename_chat('a' * 16, '')['chats'][0]['title'], 'spooky')   # an empty name follows the first request again
+        self.assertFalse(self.builds.chats()['chats'][0]['named'])
+        # A new chat named before its first save keeps that name.
+        self.builds.save_chat('c' * 16, [{'t': 'user', 'text': 'neon'}], [], 'My neon', named=True)
+        self.builds.save_chat('c' * 16, [{'t': 'user', 'text': 'neon'}, {'t': 'bot', 'text': 'ok'}], [], 'neon')
+        self.assertEqual(self.builds.chats()['chats'][0]['title'], 'My neon')
+        with self.assertRaises(ValueError): self.builds.rename_chat('d' * 16, 'x')
+
 
 class RevertTests(Base):
     """Revert to original: an asset, its copies and its spot on a themed sheet go back to the game's art."""

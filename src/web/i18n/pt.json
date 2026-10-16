@@ -2342,7 +2342,18 @@
   "No piece matches that search.": "Nenhuma peça corresponde a essa busca.",
   "Redraw with Image AI…": "Redesenhar com a IA de imagem…",
   "When a Theme AI request names a person, band, game or film (unless you turn it off under Theme AI & drawing), only that name is looked up on Wikipedia. A few of its pictures are downloaded and kept on this PC, so the drawings can take their look from them.": "Quando um pedido ao Theme AI cita uma pessoa, banda, jogo ou filme (a menos que você desligue em Theme AI e desenho), só esse nome é pesquisado na Wikipédia. Algumas das suas imagens são baixadas e guardadas neste PC, para que os desenhos tirem o visual delas.",
-  "When a request names someone or something (“a Post Malone theme”), Theme AI reads its Wikipedia summary and pictures to get the look right. Off: nothing is looked up.": "Quando um pedido cita alguém ou algo (“um tema do Post Malone”), o Theme AI lê o resumo e as imagens da Wikipédia para acertar o visual. Desligado: nada é pesquisado."
+  "When a request names someone or something (“a Post Malone theme”), Theme AI reads its Wikipedia summary and pictures to get the look right. Off: nothing is looked up.": "Quando um pedido cita alguém ou algo (“um tema do Post Malone”), o Theme AI lê o resumo e as imagens da Wikipédia para acertar o visual. Desligado: nada é pesquisado.",
+  "+ New chat": "+ Novo chat",
+  "Your chats in this build: open, rename or delete one (double-click to rename this one)": "Seus chats nesta build: abra, renomeie ou exclua um (clique duplo para renomear este)",
+  "Search chats": "Pesquisar chats",
+  "No chats match.": "Nenhum chat corresponde.",
+  "Not saved yet (say something first)": "Ainda não salvo (escreva algo primeiro)",
+  "1 message": "1 mensagem",
+  "just now": "agora mesmo",
+  "Rename this chat (F2)": "Renomear este chat (F2)",
+  "Name this chat": "Dê um nome a este chat",
+  "Chat name": "Nome do chat",
+  "Wait for the answer, then switch chats.": "Espere a resposta e depois troque de chat."
  },
  "patterns": {
   "{n} visuals": "{n} gráficos",
@@ -2728,7 +2739,11 @@
   "Describe the new look for “{s}” (for example “a neon city at night”, “made of gold”):": "Descreva o novo visual de “{s}” (por exemplo “uma cidade neon à noite”, “feito de ouro”):",
   "{n} checked assets": "{n} recursos marcados",
   "Inspired by {s} (looked up on Wikipedia, with its pictures).": "Inspirado em {s} (pesquisado na Wikipédia, com as suas imagens).",
-  "Inspiration: {s} (the drawings take their look from these pictures)": "Inspiração: {s} (os desenhos tiram o visual destas imagens)"
+  "Inspiration: {s} (the drawings take their look from these pictures)": "Inspiração: {s} (os desenhos tiram o visual destas imagens)",
+  "{n} messages": "{n} mensagens",
+  "{n} min ago": "há {n} min",
+  "{n} h ago": "há {n} h",
+  "{n} d ago": "há {n} d"
  },
  "keys": {
   "Space": "Espaço"

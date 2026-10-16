@@ -243,7 +243,8 @@ def server_for(lab, port):
                     else: result = builds.delete(bid)
                     themes.reindex()   # its art is what Theme AI samples now
                     return self.send(result)
-                if path == '/api/chat-save': return self.send(builds.save_chat(str(data.get('id') or ''), data.get('entries'), data.get('history'), str(data.get('title') or '')))
+                if path == '/api/chat-save': return self.send(builds.save_chat(str(data.get('id') or ''), data.get('entries'), data.get('history'), str(data.get('title') or ''), bool(data.get('named'))))
+                if path == '/api/chat-rename': return self.send(builds.rename_chat(str(data.get('id') or ''), str(data.get('title') or '')))
                 if path == '/api/chat-delete': return self.send(builds.delete_chat(str(data.get('id') or '')))
                 if path in ('/api/pool-remove', '/api/pool-restore'):
                     with lab.lock:

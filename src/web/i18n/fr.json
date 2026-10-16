@@ -2342,7 +2342,18 @@
   "No piece matches that search.": "Aucune pièce ne correspond à cette recherche.",
   "Redraw with Image AI…": "Redessiner avec l’IA d’image…",
   "When a Theme AI request names a person, band, game or film (unless you turn it off under Theme AI & drawing), only that name is looked up on Wikipedia. A few of its pictures are downloaded and kept on this PC, so the drawings can take their look from them.": "Quand une demande à Theme AI cite une personne, un groupe, un jeu ou un film (sauf si tu le désactives dans Theme AI et dessin), seul ce nom est recherché sur Wikipédia. Quelques-unes de ses images sont téléchargées et gardées sur ce PC, pour que les dessins s’en inspirent.",
-  "When a request names someone or something (“a Post Malone theme”), Theme AI reads its Wikipedia summary and pictures to get the look right. Off: nothing is looked up.": "Quand une demande cite quelqu’un ou quelque chose (« un thème Post Malone »), Theme AI lit son résumé et les images Wikipédia pour réussir le style. Désactivé : rien n’est recherché."
+  "When a request names someone or something (“a Post Malone theme”), Theme AI reads its Wikipedia summary and pictures to get the look right. Off: nothing is looked up.": "Quand une demande cite quelqu’un ou quelque chose (« un thème Post Malone »), Theme AI lit son résumé et les images Wikipédia pour réussir le style. Désactivé : rien n’est recherché.",
+  "+ New chat": "+ Nouveau chat",
+  "Your chats in this build: open, rename or delete one (double-click to rename this one)": "Tes chats de ce build : ouvrir, renommer ou supprimer (double-clic pour renommer celui-ci)",
+  "Search chats": "Rechercher des chats",
+  "No chats match.": "Aucun chat ne correspond.",
+  "Not saved yet (say something first)": "Pas encore enregistré (écris d’abord quelque chose)",
+  "1 message": "1 message",
+  "just now": "à l’instant",
+  "Rename this chat (F2)": "Renommer ce chat (F2)",
+  "Name this chat": "Nommer ce chat",
+  "Chat name": "Nom du chat",
+  "Wait for the answer, then switch chats.": "Attends la réponse, puis change de chat."
  },
  "patterns": {
   "{n} visuals": "{n} visuels",
@@ -2728,7 +2739,11 @@
   "Describe the new look for “{s}” (for example “a neon city at night”, “made of gold”):": "Décris le nouveau style de « {s} » (par exemple « une ville néon la nuit », « en or ») :",
   "{n} checked assets": "{n} éléments cochés",
   "Inspired by {s} (looked up on Wikipedia, with its pictures).": "Inspiré de {s} (cherché sur Wikipédia, avec ses images).",
-  "Inspiration: {s} (the drawings take their look from these pictures)": "Inspiration : {s} (les dessins reprennent le style de ces images)"
+  "Inspiration: {s} (the drawings take their look from these pictures)": "Inspiration : {s} (les dessins reprennent le style de ces images)",
+  "{n} messages": "{n} messages",
+  "{n} min ago": "il y a {n} min",
+  "{n} h ago": "il y a {n} h",
+  "{n} d ago": "il y a {n} j"
  },
  "keys": {
   "Shift": "Maj",
