@@ -182,3 +182,20 @@ class TrueTiles(unittest.TestCase):
         self.assertEqual(small.size, (40, 32)); self.assertLess(self.seam(small), 1.5)
         cropped = design.cover(tile, (40, 32), 2.5)   # a zoomed crop does not tile by itself: that is what the blend is for
         self.assertGreater(self.seam(cropped), self.seam(small))
+
+
+class ThemesKeepShapesAndArenas(unittest.TestCase):
+    def test_a_look_restyles_and_a_change_replaces(self):
+        job = lambda p, **k: dict(dict(title=False, scene=False, food=False, base=None, prompt=p), **k)
+        for text in ('make the game look like rainbows and unicorns', 'make it look like the matrix', 'spooky halloween'):
+            self.assertTrue(design.restyles(job(text)), text)
+        for text in ('turn the coin into a donut', 'make the potion a beer bottle', 'make the play button look like a gameboy'):
+            self.assertFalse(design.restyles(job(text)), text)
+        self.assertFalse(design.restyles(job('rainbows', food=True)))
+
+    def test_the_arena_floor_is_pale_and_never_looks_like_food(self):
+        self.assertTrue(design.is_arena_background({'group': 'Backgrounds', 'name': 'worldbg1_w.png'}))
+        self.assertFalse(design.is_arena_background({'group': 'Backgrounds', 'name': 'bg2.png'}))
+        rules = design.ARENA_RULES.lower()
+        for words in ('very pale', 'food', 'seamless tile'): self.assertIn(words, rules)
+        self.assertGreater(design.ARENA_PALE, 0.3)

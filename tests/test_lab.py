@@ -135,9 +135,16 @@ class Case(unittest.TestCase):
         self.edit('items.png');self.edit('item-a')
         with self.assertRaisesRegex(ValueError,'full sheet OR'):self.lab.build()
 
-    def test_overlapping_sprites_conflict(self):
-        self.edit('button-up-skin');self.edit('alias')
-        with self.assertRaisesRegex(ValueError,'share atlas'):self.lab.build()
+    def test_overlapping_sprites_both_reach_the_game(self):
+        # The game packs some sprites so they share pixels (alias sits inside button-up-skin). Both edits install: in the
+        # shared part each writes only the pixels it changed, so the update is never refused.
+        self.edit('button-up-skin','#ff0000');self.edit('alias','#0000ff')
+        sheet=self.lab.row(self.key('button-up-skin'))
+        out=self.lab._compose([self.key('button-up-skin'),self.key('alias')])
+        im=Image.open(io.BytesIO(out[sheet['source']][sheet['entry']])).convert('RGBA')
+        self.assertEqual(im.getpixel((10,20))[:3],(255,0,0))          # button-up-skin outside the shared part
+        self.assertIn(im.getpixel((3,3))[:3],[(255,0,0),(0,0,255)])   # the shared part holds one of the two edits
+        self.lab.build()
 
     def test_install_restore_multiple_files_exact(self):
         files=list((self.game/'assets').glob('*'));before={str(p):file_hash(p) for p in files}

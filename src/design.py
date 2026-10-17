@@ -50,7 +50,31 @@ HERO = ('icon-play', 'icon-coin', 'icon-ingame-potion', 'icon-crown', 'button-sp
 SPAWNER_RED = '#e0262f'   # the game paints the spawner red in maps (so players call it the red virus)
 # Store badges and sign-in buttons show other companies' logos: never redrawn with the rest of the game.
 KEEP_AS_IS = {'icon-iphone', 'icon-android', 'icon-facebook', 'icon-gamecenter'}
+ARENA_SUBJECT = 'the pale floor of the match arena, seen from above, repeating as a seamless tile'   # theme.py: ARENA_DIRECTION
 SCENE_SUBJECT = 'a seamless repeating background picture for the game menu'   # theme.py words its art direction for scenery by this
+# A theme restyles the game's pieces; it does not swap them for other things. Told to the art director for every piece
+# a look is asked for ("make the game look like rainbows and unicorns"), so an arrow stays an arrow and a check box a
+# check box, instead of each piece turning into a unicorn. Not for parts the request turns into something on purpose.
+RESTYLE_NOTE = ('\nThis is a restyle of an existing game sprite, not a new picture: it must stay the same object with the same '
+                'silhouette, pose and direction (an arrow stays an arrow pointing the same way, a check box stays a check box, a '
+                'triangle stays a triangle, a chest stays a chest). Bring the look in through colors, materials, patterns, lighting '
+                'and small accents on it. Never turn it into a character, an animal, a logo or a different object.')
+
+
+def restyles(job):
+    """A drawing that restyles a sprite rather than replacing it: not the title (its words have their own rules), a
+    background (a new picture), the food (new things on purpose) or a part the request turns into something else."""
+    if job.get('title') or job.get('scene') or job.get('food') or job.get('base'): return False
+    request = own_words(job.get('prompt') or '')
+    change = becomes(request)
+    if change and re.fullmatch(WHOLE_PART, change[0]): return True   # "make the game look like rainbows": a look for everything
+    return not (change or re.search(REDRAW, request.lower()) or re.search(NEW_ART, request.lower()))
+
+
+# The whole game as "the part" ("make the game / it / everything look like..."): a look, not one part turned into another.
+WHOLE_PART = r'(?:it|them|everything|all|the (?:whole |entire )?(?:game|menus?|ui|look|art))'
+
+
 # Told to the art director when a reference board (inspire.pictures) goes with the drawing, so the ideas use the real thing.
 PICTURES_NOTE = ('\nPictures of it go to the image model too: what the request asks for comes first ("little tires" are tires), '
                  'styled with its real emblem or logo, signature colors and shapes (as fan art), not invented symbols.')
@@ -60,6 +84,12 @@ FOOD_TIERS = (('least mass', 'the first of the three foods, worth the least mass
               ('more mass', 'the second of the three foods, worth more mass: a richer, more detailed one'),
               ('most mass', 'the third of the three foods, worth the most mass: the most impressive, valuable-looking one'))
 FOOD_MAX = 40   # every food sprite the game uses fits in one set (about 19 today)
+
+
+def is_arena_background(row):
+    """The floor of a match (worldbg.png and its variants): near-white tiles the game itself darkens in dark mode, so one
+    pale drawing serves light and dark mode alike. Drawn as one picture for all of them, like the menu backgrounds."""
+    return row.get('group') == 'Backgrounds' and bool(re.fullmatch(r'worldbg\d*(?:_w)?\.png', str(row.get('name', '')), re.I))
 
 
 def is_menu_background(row):
@@ -72,6 +102,14 @@ def is_food(row):
     blobs and dots also named food… are not what Mitosis shows, so they are not redrawn.)"""
     return row.get('kind') == 'sprite' and row.get('group') == 'Cells & gameplay' and bool(re.fullmatch(r'foods?\d+', str(row.get('name', ''))))
 GAME_BG = (13, 40, 41)          # the menu's base color compiled into Mitosis.exe (#0D2829); bg2.png is an overlay on it
+# The match floor: the cells and the food are drawn on top of it, and the game darkens it in dark mode. Food is the
+# game's own colors on the drawing (see FOOD_TIERS), so the floor stays pale and quiet and never looks like food.
+ARENA_RULES = ('A brand new floor for the arena of a top-down cell game, seen from above, filling the whole image edge to edge so '
+               'it repeats as a seamless tile. Players\' colored cells and small colored food pellets move on top of it, so it must '
+               'stay very pale and quiet: mostly near-white with soft, low-contrast light greys or very pale tints, no dark areas, no '
+               'strong or saturated colors, and no dots, specks, rings, blobs, stars or small shapes that could be mistaken for food, '
+               'cells or viruses. Use a few large, soft shapes or a gentle pattern. No text, no frame, no border.')
+ARENA_PALE = 0.55   # the Paler slider's start: how far an arena drawing is lifted toward white (the game darkens it for dark mode)
 SCENE_ZOOM, SCENE_CALM = 2.5, 0.5   # defaults: big shapes, half calmed (the game shows the tile at about a quarter size)
 # New wording for the title: "make the title say MITOSIS 2", "change the title text to Cell Wars".
 WORDING = r'\b(?:say|says|read|reads|spell|spells)\s+(.+)$|\b(?:text|wording|word|name)\s+(?:to|into)\s+(.+)$'
@@ -415,6 +453,10 @@ class Designer:
         """bg2.png and the other game themes' menu backgrounds (one drawing for all of them)."""
         return [r for r in self.lab.catalog.rows.values() if is_menu_background(r) and r['editable'] and not r.get('removed') and not r.get('legacy')]
 
+    def arena_backgrounds(self):
+        """worldbg.png and its variants: the floor of every match (one drawing for all of them)."""
+        return [r for r in self.lab.catalog.rows.values() if is_arena_background(r) and r['editable'] and not r.get('removed') and not r.get('legacy')]
+
     def whole_game_rows(self):
         """Everything players look at all the time, for "make the whole game look cool" with drawing: the MITOSIS title,
         the viruses, every sprite on theme.png (the coin, the in-game potion, buttons, icons, panels...) with all its copies,
@@ -442,8 +484,9 @@ class Designer:
         # What players look at most comes first in the queue: the title, the background, the viruses, play and the coin,
         # the food; then the rest of theme.png.
         hero = [r for r in sprites if r['name'] in HERO]
-        rest = [r for r in sprites if r['name'] not in HERO]
-        return self.title_rows() + self.menu_backgrounds() + viruses + sorted(hero, key=lambda r: HERO.index(r['name'])) + self.food_rows() + rest
+        # Then the parts players see on the game's screens (named after them: "Battle Pass button icon (Main menu)"), then the rest.
+        rest = sorted((r for r in sprites if r['name'] not in HERO), key=lambda r: (not r.get('label'), r['name'], r['source']))
+        return self.title_rows() + self.menu_backgrounds() + self.arena_backgrounds() + viruses + sorted(hero, key=lambda r: HERO.index(r['name'])) + self.food_rows() + rest
 
     def food_kinds(self):
         """The game's different foods, each worth a different mass, smallest first: one list of sprites per food (its big
@@ -480,6 +523,8 @@ class Designer:
     def targets(self, prompt, only=None):
         if only:
             rows = [r for r in (self.lab.row(k) for k in only if k in self.lab.catalog.rows) if r['editable']]
+            if any(is_arena_background(r) for r in rows):   # the floor of every match, light and dark mode: together
+                rows += [r for r in self.arena_backgrounds() if r['key'] not in {x['key'] for x in rows}]
             if any(is_menu_background(r) for r in rows):
                 # A menu background is one picture for every game theme: redraw them together.
                 rows += [r for r in self.menu_backgrounds() if r['key'] not in {x['key'] for x in rows}]
@@ -544,7 +589,8 @@ class Designer:
         food, menu = is_food(first), is_menu_background(first)   # and one drawing for the menu background of every game theme
         # A food is drawn once for its big picture and its small copy; the other foods are different things (more mass).
         tier = self.food_kind(first) if food else None
-        rows = [r for r in rows if (food and is_food(r) and self.food_kind(r) == tier) or (menu and is_menu_background(r)) or r['name'] == first['name'] or (first.get('label') and r.get('label') == first['label'] and (r['width'], r['height']) == (first['width'], first['height']))]
+        arena = is_arena_background(first)
+        rows = [r for r in rows if (food and is_food(r) and self.food_kind(r) == tier) or (menu and is_menu_background(r)) or (arena and is_arena_background(r)) or r['name'] == first['name'] or (first.get('label') and r.get('label') == first['label'] and (r['width'], r['height']) == (first['width'], first['height']))]
         with self.lock:
             if any(j['state'] == 'running' for j in self.jobs.values()): raise ValueError('A design is already being drawn.')
             job = dict(id=uuid.uuid4().hex, state='running', prompt=prompt, targets=[r['key'] for r in rows], names=[r.get('label') or r['name'] for r in rows],
@@ -556,7 +602,7 @@ class Designer:
                        spawner=rows[0]['name'] == 'spawner.png',
                        scene=parent.get('scene', False) if base else rows[0]['group'] in SCENE_GROUPS,   # a background: a whole new picture that tiles
                        circular=parent.get('circular', False) if base else rows[0]['group'] in SCENE_GROUPS,   # drawn wrapping around its edges (--circular)
-                       food=food, **({'food_tier': list(tier)} if food else {}))
+                       food=food, **({'food_tier': list(tier)} if food else {}), **({'arena': True} if arena else {}))
             if direction: job['direction'] = str(direction)[:700]   # shared by a set drawn together, so they match
             # A reference board from the inspiration lookup (inspire.pictures): its file in workspace/inspiration.
             if inspiration and re.fullmatch(r'[0-9a-f]{20}\.png', str(inspiration)) and (self.lab.root / 'inspiration' / inspiration).is_file():
@@ -573,12 +619,16 @@ class Designer:
             which, of = job.get('food_tier') or (0, 1)
             what = 'a food that players eat in a top-down cell game, seen from above'
             return f'{what}: {FOOD_TIERS[min(2, round(which * 2 / max(1, of - 1)))][1]}' if of > 1 else what
+        if job.get('arena'): return ARENA_SUBJECT
         if job.get('scene'): return SCENE_SUBJECT
         # "Play button (Main menu)" -> "play button"; "icon-crown" -> "icon crown".
         name = re.sub(r'[-_]+', ' ', re.sub(r'\.png$|\s*\([^)]*\)\s*$', '', job['names'][0])).strip()
         return f'a game sprite: {name}'
 
     def instruction(self, job):
+        if job.get('arena'):
+            return (f'{job.get("direction") or job["prompt"]}. {ARENA_RULES}'
+                    + (' Take the look from the reference picture: its colors and patterns, kept very pale.' if job.get('inspiration') else ''))
         if job.get('scene'):
             return (f'{job.get("direction") or job["prompt"]}. A brand new full-frame background picture for a 2D game menu, '
                     'filling the whole image edge to edge so it can repeat as a seamless tile. It is shown small and repeated behind '
@@ -590,10 +640,16 @@ class Designer:
         if job.get('text'): keep = f'Change the word MITOSIS so it reads exactly "{job["text"]}", in the same lettering style, on one line, centered.'
         elif job['title']: keep = 'Keep the exact word MITOSIS, spelled the same, in the same layout and size, centered.'
         elif job.get('food'):
-            keep = 'Draw it as one simple object that fills most of the square, centered; its shape may change completely.'
+            keep = ('Draw it as one simple object that fills most of the square, centered; its shape may change completely. '
+                    'Give it a bold, solid silhouette with a clear dark outline and no fine detail, so it stands out on the arena floor, '
+                    'light or dark, and is never mistaken for part of the background.')
             if (job.get('food_tier') or (0, 1))[1] > 1:
                 keep += (' The game has three foods, each worth a different mass, so this one must look clearly different from the other two '
                          'and fit its worth (for "tires": a plain little tire, a sturdier tire, a big shiny racing tire), still filling most of the square.')
+        elif restyles(job):
+            keep = ('Restyle it, do not replace it: it must still clearly be the same thing as in the first reference picture, with the '
+                    'same outline, pose and direction, size and position, centered. The look comes in through its colors, materials, '
+                    'patterns and small accents only.')
         else: keep = 'Keep its outline, size and position, centered.'
         small = '' if job['title'] or max(job['frames'][0]) > 160 else ' It is shown small in the game, so use bold, simple shapes and strong contrast that read at a glance.'
         if job.get('inspiration'):   # the reference board (inspire.pictures): emblems and photos of what the theme is about
@@ -625,7 +681,7 @@ class Designer:
                 ref = reference(source, job['key'], size)
             if ref is not None: ref.save(folder / 'reference.png')
             runs = []   # (art direction, variants drawn with it)
-            brief = job['prompt'] + (PICTURES_NOTE if job.get('inspiration') else '')
+            brief = job['prompt'] + (PICTURES_NOTE if job.get('inspiration') else '') + (RESTYLE_NOTE if restyles(job) else '')
             if not job['base'] and not job.get('direction') and job['total'] > 1 and getattr(self, 'concepts', None):
                 # Several variants: a different idea for each (mummy wraps / chains and a graveyard...), not near-copies.
                 job['message'] = 'Coming up with ideas…'
@@ -751,6 +807,12 @@ class Designer:
                 out = tile_resize(wrap_shift(raw, float(s['dx']), float(s['dy'])), frame)
             else:   # zoomed in (or drawn before tiles were): a crop, blended so its edges meet again
                 out = seamless(cover(raw, frame, float(s['scale']), float(s['dx']), float(s['dy']))).resize(frame, Image.Resampling.LANCZOS)
+            if job.get('arena'):
+                pale = max(0.0, min(0.95, float(s.get('pale', ARENA_PALE))))
+                a = np.asarray(out, np.float32)[..., :3]
+                a = 255 - (255 - a) * (1 - pale)   # toward white, same colors: food and cells keep standing out on it
+                out = Image.fromarray(np.dstack([np.clip(a, 0, 255), np.full(a.shape[:2], 255, np.float32)]).astype(np.uint8), 'RGBA')
+                return out
             calm = max(0.0, min(0.9, float(s['calm'])))
             if calm:
                 a = np.asarray(out, np.float32)[..., :3]

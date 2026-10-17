@@ -225,3 +225,11 @@ dialog.piece-zoom{width:min(980px,96vw);max-height:92vh;padding:16px 18px;overfl
 .draw-queue-memo{margin:0}.draw-queue-memo .link{padding:0;font-size:inherit}
 .draw-queue-find{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.draw-queue-search{flex:1;min-width:180px;padding:7px 10px}.draw-queue-find .quiet{padding:5px 9px;font-size:11px}.draw-queue-none{margin:0}.draw-queue-row[hidden]{display:none}
 .piece-zoom-set{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;width:100%}.piece-zoom-set figure{max-width:none;flex:none}.piece-zoom-set img{max-height:140px}.piece-zoom-setbox{flex:1 1 100%;max-width:none}
+/* A big drawing set: its controls stay in view, and each finished piece folds into one line */
+.design-batch-head{position:sticky;top:-1px;z-index:6;background:var(--panel2,#1e2835);padding:6px 0;box-shadow:0 6px 10px -8px #000a}
+details.design-part{border-top:1px solid var(--line);padding:4px 0}
+details.design-part>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:4px;padding:3px 0}
+details.design-part>summary::-webkit-details-marker{display:none}
+details.design-part>summary::before{content:'▸';color:var(--muted);font-size:10px;width:12px}
+details.design-part[open]>summary::before{content:'▾'}
+.design-part-state{color:var(--muted);font-weight:400}

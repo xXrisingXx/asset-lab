@@ -2386,7 +2386,12 @@
   "Can’t be changed in game.": "Non modifiable en jeu.",
   "The red virus comes from the game’s server: Mitosis downloads a fresh copy before a match, so edits to it never show in game.": "Le virus rouge vient du serveur du jeu : Mitosis télécharge une copie neuve avant chaque partie, donc les modifications ne s’affichent jamais en jeu.",
   "The red virus (the spawner) comes from the game's server too: Mitosis downloads a fresh copy before a match, so a new look for it won't show in the game.": "Le virus rouge (le spawner) vient aussi du serveur du jeu : Mitosis télécharge une copie neuve avant chaque partie, donc un nouveau style ne s’affichera pas en jeu.",
-  "At the start the whole tile shows, and it repeats with no seam. Zoom in for bigger shapes: the edges are then blended so it still repeats.": "Au départ, toute la tuile est visible et se répète sans raccord. Zoome pour des formes plus grandes : les bords sont alors fondus pour qu’elle se répète toujours."
+  "At the start the whole tile shows, and it repeats with no seam. Zoom in for bigger shapes: the edges are then blended so it still repeats.": "Au départ, toute la tuile est visible et se répète sans raccord. Zoome pour des formes plus grandes : les bords sont alors fondus pour qu’elle se répète toujours.",
+  "the arena floor (in a match, light and dark mode)": "le sol de l’arène (en partie, mode clair et sombre)",
+  "Paler": "Plus pâle",
+  " · drawn": " · dessiné",
+  " · not drawn": " · non dessiné",
+  " · applied ✓": " · appliqué ✓"
  },
  "patterns": {
   "{n} visuals": "{n} visuels",

@@ -1029,11 +1029,24 @@ class Lab:
             r = self.row(k)
             if not r['editable'] or not self.current(k): raise ValueError('Only saved visual edits can be installed.')
             groups.setdefault(r.get('parent', k), []).append(k)
-        def place(image, row, patch):
+        def place(image, row, patch, neighbours=()):
             if row['rotated']: patch = patch.transpose(Image.Transpose.ROTATE_270)
             x, y, w, h = row['rect']
             if patch.size != (w, h): raise ValueError('Sprite geometry mismatch')
-            image.paste(patch, (x, y))  # Replace RGBA exactly; never alpha-blend onto the old skin.
+            shared = [o['rect'] for o in neighbours if o is not row and o['rect'] != row['rect'] and overlap(row['rect'], o['rect'])]
+            if not shared:
+                image.paste(patch, (x, y))  # Replace RGBA exactly; never alpha-blend onto the old skin.
+                return
+            # The game packs some sprites so they share a strip of pixels ("check-on" / "check-off"). There, an edit writes
+            # only the pixels it changed from the game's art, so it does not wipe out its edited neighbour's.
+            new = np.asarray(patch.convert('RGBA'))
+            was = np.asarray(self.catalog.image(row['parent']).convert('RGBA').crop((x, y, x + w, y + h)))
+            now = np.asarray(image.convert('RGBA').crop((x, y, x + w, y + h)))
+            write = np.ones((h, w), bool)
+            for ox, oy, ow, oh in shared:
+                left, top, right, bottom = max(x, ox) - x, max(y, oy) - y, min(x + w, ox + ow) - x, min(y + h, oy + oh) - y
+                write[top:bottom, left:right] = (new[top:bottom, left:right] != was[top:bottom, left:right]).any(-1)
+            image.paste(Image.fromarray(np.where(write[..., None], new, now).astype(np.uint8), 'RGBA'), (x, y))
         sheets = {}
         for sheet_key, edits in groups.items():
             sheet = self.row(sheet_key)
@@ -1042,10 +1055,6 @@ class Lab:
             themed = sheet_key in edits and bool((self.current(sheet_key).get('recipe') or {}).get('theme'))
             if sheet_key in edits and sprites and not themed:
                 raise ValueError('Choose the full sheet OR its individual sprites in the mod list: ' + sheet['name'])
-            for i, first in enumerate(sprites):
-                for second in sprites[i+1:]:
-                    if overlap(self.row(first)['rect'], self.row(second)['rect']):
-                        raise ValueError('These edits share atlas pixels. Keep just one: ' + self.row(first)['name'] + ' / ' + self.row(second)['name'])
             sheets[sheet_key] = dict(image=self.image(sheet_key) if sheet_key in edits else self.catalog.image(sheet_key), whole=sheet_key in edits, sprites=sprites)
         # The same art ships in several files and only one is drawn, so copies follow the edit.
         mirrored, self.mirror_skipped = {}, []
@@ -1064,6 +1073,8 @@ class Lab:
                     if copy in sheets or self.row(copy)['kind'] != 'image': continue
                     slot = target(copy)
                     if slot: slot.update(image=entry['image'].copy(), whole=True)
+        pastes = {}   # sheet slot id -> [(slot, row placed, edited key)]: placed together, so shared strips are known
+        if getattr(self, 'mirror_copies', True):
             for sheet_key, entry in list(sheets.items()):
                 for k in entry['sprites']:
                     for copy in self.catalog.copies.get(self.row(k).get('dup', ''), []):
@@ -1071,9 +1082,12 @@ class Lab:
                         if copy == k or copy in keys or row.get('legacy') or not row.get('parent'): continue
                         if row['parent'] == sheet_key and row['rect'] == self.row(k)['rect']: continue
                         slot = target(row['parent'])
-                        if slot: place(slot['image'], row, self.image(k))
+                        if slot: pastes.setdefault(id(slot), []).append((slot, row, k))
         for entry in sheets.values():
-            for k in entry['sprites']: place(entry['image'], self.row(k), self.image(k))
+            for k in entry['sprites']: pastes.setdefault(id(entry), []).append((entry, self.row(k), k))
+        for jobs in pastes.values():
+            neighbours = [row for _, row, _ in jobs]
+            for slot, row, k in jobs: place(slot['image'], row, self.image(k), neighbours)
         output = {}
         for sheet_key, entry in {**mirrored, **sheets}.items():
             sheet = self.row(sheet_key)

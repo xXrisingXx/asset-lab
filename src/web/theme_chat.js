@@ -242,10 +242,11 @@ function showDesign(box,d,keys,base,offer,entry,restoring){
   // drawn once per name, for all their copies (theme.png, theme4.png and the ones in assets.zip look the same).
   // Groups keep the order the lab sends (for the whole game: the title, background, viruses, play, coin and food first).
   const title=d.targets.filter(isTitle),order=new Map();
-  for(const t of d.targets){const id=isTitle(t)?'title':t.set==='food'?'food:'+(t.kind??0):t.set==='background'?t.set:'name:'+t.name;if(!order.has(id))order.set(id,[]);order.get(id).push(t);}
+  for(const t of d.targets){const id=isTitle(t)?'title':t.set==='food'?'food:'+(t.kind??0):t.set==='background'||t.set==='arena'?t.set:'name:'+t.name;if(!order.has(id))order.set(id,[]);order.get(id).push(t);}
   const groups=[...order.values()];
   const label=g=>isTitle(g[0])?'the MITOSIS title':g[0].set==='food'?(g[0].tier?`the food (${g[0].tier})`:g.length>1?'the food (every pellet shape and size)':'the food'):
-    g[0].set==='background'?(g.length>1?'the main menu background (every game theme)':'the main menu background'):g[0].name;
+    g[0].set==='background'?(g.length>1?'the main menu background (every game theme)':'the main menu background'):
+    g[0].set==='arena'?'the arena floor (in a match, light and dark mode)':g[0].name;
   const what=groups.length>6?`${groups.length} pieces of the game (${groups.slice(0,4).map(label).join(', ')}, …)`:groups.map(label).join(', ')+(title.length>1?' (every size the game uses)':'');
   box.firstChild.textContent=!d.available?(offer?'':`This needs the image model, which is not installed.`):
     d.optional?`Want ${what} redrawn to match? The local image model can draw it.`:
@@ -258,7 +259,7 @@ function showDesign(box,d,keys,base,offer,entry,restoring){
   const bar=el('div','theme-actions');const count=variants(drawings());count.title='Variants for every piece still in the queue (each piece can be set on its own in the queue)';
   // A big set: one variant each, except the pieces worth choosing between (the title and the viruses get two). The queue
   // window sets each piece on its own, leaves pieces out and puts them in the order to draw them.
-  const big=groups.length>6,star=g=>isTitle(g[0])||g[0].set==='background'||/virus/i.test(g[0].name);
+  const big=groups.length>6,star=g=>isTitle(g[0])||g[0].set==='background'||g[0].set==='arena'||/virus/i.test(g[0].name);
   const Q=newQueue({prompt:d.prompt,base,entry,box,optional:d.optional,each:+d.seconds_per_drawing||45,inspiration:d.inspiration||entry?.batch?.inspiration||'',
     items:groups.map(g=>({keys:g.map(t=>t.key),prompt:g.map(t=>d.prompts?.[t.key]).find(Boolean)||'',rep:showKey(g),pieces:distinctPieces(g),label:groups.length>1?label(g):'',count:big?(star(g)?2:1):drawings(),on:true,state:'queued',job:'',applied:false}))});
   if(big)count.value='1';
@@ -334,11 +335,15 @@ async function runQueue(Q){
       await designerFree();   // one drawing at a time (one may still be finishing from before a reload)
       if(Q.stopped||!item.on||item.state!=='queued')continue;
       item.state='drawing';refreshQueue(Q);keepQueue(Q);
-      const part=el('div','design-part');if(item.label)part.append(el('p','design-part-title',item.label));Q.box.append(part);Q.cards.set(item,part);
+      /* Each piece folds into one line once the next starts, so a set of 130 pieces stays a list, not a wall; the queue's
+         controls stay on top (sticky). Click a line to open that piece again. */
+      const part=el('details','design-part');part.open=true;const head=el('summary','design-part-title',item.label||'This piece');head.append(el('small','design-part-state',''));
+      part.append(head);Q.box.append(part);for(const [other,p] of Q.cards)if(p!==part&&other.state!=='drawing')p.open=false;Q.cards.set(item,part);
       const t0=Date.now();
       const job=await drawDesign(part,item.prompt||Q.prompt,item.keys,item.count,Q.base,Q.direction,Q.entry,item.label,item.prompt?'':Q.inspiration).catch(e=>{part.append(el('p','theme-note error',e.message));return null;});
       Q.spent+=(Date.now()-t0)/1000;Q.variantsDone+=item.count;
       item.state=job?.state==='complete'?'done':'failed';item.job=job?.id||'';
+      head.lastChild.textContent=item.state==='done'?' · drawn':' · not drawn';
       keepQueue(Q);refreshQueue(Q);}
   }finally{Q.running=false;}
   if(!many)return;
@@ -350,7 +355,9 @@ async function runQueue(Q){
 async function applyFinished(Q){
   const ready=Q.items.filter(q=>q.state==='done'&&!q.applied&&q.job);let n=0;Q.ready.disabled=true;
   try{for(const item of ready){Q.ready.textContent=`Applying ${++n} of ${ready.length}…`;
-      const job=await api('/api/design-job?job='+item.job);await api('/api/design-apply',{job:job.id,variant:0,settings:designDefaults(job)});item.applied=true;keepQueue(Q);}}
+      const job=await api('/api/design-job?job='+item.job);await api('/api/design-apply',{job:job.id,variant:0,settings:designDefaults(job)});item.applied=true;keepQueue(Q);
+      Q.cards.get(item)?.querySelector('.design-card')?.dispatchEvent(new CustomEvent('applied'));
+      const line=Q.cards.get(item)?.querySelector('.design-part-state');if(line)line.textContent=' · applied ✓';}}
   finally{Q.ready.disabled=false;}
   message(`Applied ${ready.length} drawing${ready.length===1?'':'s'}. Install in Mitosis to see them.`);S.build=null;await status();await library();refreshQueue(Q);
 }
@@ -442,7 +449,7 @@ function zoomPiece(Q,item){
 }
 // What a drawing starts with (also what "Apply all" uses): zoomed and calmed for a background, the outline kept for a
 // stretched button, the frame filled for the title, and kept white where the game colors the art itself.
-function designDefaults(job){return {scale:job.scene&&!job.circular?2.5:1,...(job.scene?{calm:0.5}:{}),dx:0,dy:0,tolerance:1,shape:job.stretched?1:0,fill:job.title?1:0,white:job.food||job.spawner||(job.tint||job.tinted)&&setting('keep_white')?1:0};}
+function designDefaults(job){return {scale:job.scene&&!job.circular?2.5:1,...(job.arena?{pale:0.55}:job.scene?{calm:0.5}:{}),dx:0,dy:0,tolerance:1,shape:job.stretched?1:0,fill:job.title?1:0,white:job.food||job.spawner||(job.tint||job.tinted)&&setting('keep_white')?1:0};}
 async function drawDesign(box,prompt,keys,count,base,direction,entry,label,inspiration){
   let job=await api('/api/design-start',{prompt,only:keys||null,count,base:base||null,direction:direction||null,inspiration:inspiration||null});
   const info={id:job.id,keys:keys||null,label:label||''};if(entry){(entry.jobs||(entry.jobs=[])).push(info);keepChat();}
@@ -500,7 +507,8 @@ function designCard(box,job,keys,entry,info){
   const picks=el('div','design-variants');
   job.variants.forEach((v,i)=>{const b=el('button','design-variant'+(i===0?' on':''));b.type='button';b.title='Use variant '+(i+1);const im=new Image();im.src=`/api/design-image?job=${job.id}&variant=${i}&target=0&small=1`;b.append(im);
     if(v.warning)b.title+=' · '+v.warning;
-    b.onclick=()=>{S2.variant=i;picks.querySelectorAll('.design-variant').forEach((x,j)=>x.classList.toggle('on',j===i));dirText.textContent=ideaOf(i);dir.hidden=!ideaOf(i);showWarning();refresh();};picks.append(b);});
+    b.onclick=()=>{const changed=S2.variant!==i;S2.variant=i;picks.querySelectorAll('.design-variant').forEach((x,j)=>x.classList.toggle('on',j===i));dirText.textContent=ideaOf(i);dir.hidden=!ideaOf(i);showWarning();refresh();
+      if(changed&&S2.live)run(applyNow)();};picks.append(b);});   /* already in the game art: the variant picked replaces it there too */
   showWarning();
   const views=el('div','design-views');
   const frames=job.frames.map((f,t)=>{const fig=el('figure','design-view');const im=new Image();im.alt=job.names[t];fig.append(im,el('figcaption','',`${job.names[t]} · ${f[0]}×${f[1]} frame in the game`));views.append(fig);return im;});
@@ -515,7 +523,7 @@ function designCard(box,job,keys,entry,info){
   let timer;function refresh(){clearTimeout(timer);timer=setTimeout(()=>frames.forEach((im,t)=>im.src=url(t)),150);}
   const sliders=el('div','design-sliders');
   // A new background fills its frame: only zoom and position apply (nothing is cut out or kept from the old shape).
-  const knobs=job.scene?[['scale','Zoom',1,3,0.02],['calm','Calmer',0,0.9,0.01],['dx','Left / right',-1,1,0.02],['dy','Up / down',-1,1,0.02]]:[['scale','Size',0.5,1.8,0.02],['dx','Left / right',-1,1,0.02],['dy','Up / down',-1,1,0.02],['tolerance','Background cut-out',0.6,1.6,0.05]];
+  const knobs=job.scene?[['scale','Zoom',1,3,0.02],job.arena?['pale','Paler',0,0.95,0.01]:['calm','Calmer',0,0.9,0.01],['dx','Left / right',-1,1,0.02],['dy','Up / down',-1,1,0.02]]:[['scale','Size',0.5,1.8,0.02],['dx','Left / right',-1,1,0.02],['dy','Up / down',-1,1,0.02],['tolerance','Background cut-out',0.6,1.6,0.05]];
   for(const [k,label,min,max,step] of knobs){
     const row=el('label');const r=el('input');r.type='range';r.min=min;r.max=max;r.step=step;r.value=S2.settings[k];r.oninput=()=>{S2.settings[k]=+r.value;refresh();};row.append(el('span','',label),r);sliders.append(row);
     if(k==='scale'&&job.circular)row.title='At the start the whole tile shows, and it repeats with no seam. Zoom in for bigger shapes: the edges are then blended so it still repeats.';}
@@ -530,12 +538,14 @@ function designCard(box,job,keys,entry,info){
     whiteRow.append(white,document.createTextNode(' Keep it white (the game colors it)'));sliders.append(whiteRow);}
   const actions=el('div','theme-actions');const apply=el('button','primary','Apply to the game art');const more=el('button','','More variants');
   const refine=el('input');refine.placeholder='Refine this one… e.g. “bigger bats, less blood”';refine.className='design-refine';const again=el('button','','Refine');
-  apply.onclick=run(async()=>{apply.disabled=true;const r=await api('/api/design-apply',{job:job.id,variant:S2.variant,settings:S2.settings});S2.applied=r;apply.textContent='Applied ✓';
-    if(info){info.applied=true;keepChat();}
-    const undoD=el('button','quiet','Undo design');undoD.onclick=run(async()=>{await api('/api/design-undo',{job:job.id});undoD.remove();apply.disabled=false;apply.textContent='Apply to the game art';if(info){info.applied=false;keepChat();}S.build=null;await status();await library();});
-    const inst=el('button','primary',S.status?.active?'Update Mitosis':'Install in Mitosis');inst.onclick=install.onclick;actions.append(undoD,inst);
-    S.build=null;await status();await library();if(S.asset&&!S.dirty)await select(S.asset.key,true);});
-  if(info?.applied){apply.disabled=true;apply.textContent='Applied ✓';}
+  /* Applying (again): the picked variant, with its settings, becomes the game art. */
+  async function applyNow(){apply.disabled=true;const r=await api('/api/design-apply',{job:job.id,variant:S2.variant,settings:S2.settings});S2.applied=r;S2.live=true;apply.textContent='Applied ✓';
+    if(info){info.applied=true;info.variant=S2.variant;keepChat();}S.build=null;await status();await library();if(S.asset&&!S.dirty)await select(S.asset.key,true);return r;}
+  apply.onclick=run(async()=>{await applyNow();
+    const undoD=el('button','quiet','Undo design');undoD.onclick=run(async()=>{await api('/api/design-undo',{job:job.id});undoD.remove();S2.live=false;apply.disabled=false;apply.textContent='Apply to the game art';if(info){info.applied=false;keepChat();}S.build=null;await status();await library();});
+    const inst=el('button','primary',S.status?.active?'Update Mitosis':'Install in Mitosis');inst.onclick=install.onclick;actions.append(undoD,inst);});
+  if(info?.applied){apply.disabled=true;apply.textContent='Applied ✓';S2.live=true;}
+  card.addEventListener('applied',()=>{S2.live=true;apply.disabled=true;apply.textContent='Applied ✓';if(info){info.applied=true;keepChat();}});   /* by the queue's Apply finished */
   more.onclick=run(()=>drawDesign(box,job.prompt,job.targets,drawings(),null,job.direction,entry,'',job.inspiration));   // same art direction: the new variants match
   again.onclick=run(()=>{const extra=refine.value.trim();if(!extra)return refine.focus();return drawDesign(box,extra,null,drawings(),[job.id,S2.variant],null,entry);});
   refine.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();again.click();}};

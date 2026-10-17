@@ -733,6 +733,9 @@ def identity(subject):
     gets no words at all, or the model writes the game's name on food and coins."""
     if 'MITOSIS' in subject: return IDENTITY_DIRECTION + 'Keep the word MITOSIS and make its round O the emblem. '
     return IDENTITY_DIRECTION + 'Never mention the game title, MITOSIS, letters or words: this piece has no text. '
+ARENA_DIRECTION = ('This is the floor of the match arena, under the players\' colored cells and the food: describe a very pale, '
+                   'quiet, low-contrast pattern or texture in the requested style, with a few large soft shapes, and nothing small, '
+                   'round or dotted that could look like food or a cell. No text or logos. ')
 SCENE_DIRECTION = ('This is a whole background picture that fills the frame edge to edge and repeats as a tile behind menu buttons: describe '
                    'the scene, its colors and lighting, with a few large shapes rather than tiny detail and nothing that must sit in the '
                    'center. Use the colors the request names. No text or logos. ')
@@ -1612,7 +1615,7 @@ class Themes:
         model = self.preferred([m['name'] for m in available])
         system = ('You are the art director of a 2D mobile game. Rewrite the request as one short paragraph (at most 60 words) that says exactly '
                   'what to draw: materials, colors, lighting, and small details or decorations. Keep the subject, and any text in it, exactly as '
-                  'it is. ' + identity(subject) + (SCENE_DIRECTION if subject == design.SCENE_SUBJECT else 'Do not describe a background, scenery, or a shadow, floor or stand under it (the art is cut out). ') +
+                  'it is. ' + identity(subject) + (SCENE_DIRECTION if subject == design.SCENE_SUBJECT else ARENA_DIRECTION if subject == design.ARENA_SUBJECT else 'Do not describe a background, scenery, or a shadow, floor or stand under it (the art is cut out). ') +
                   'No preamble, no lists, no quotes.')
         # Unloaded at once (the image model needs the graphics card next) unless the player keeps it (Settings: Free the graphics card).
         payload = dict(model=model, stream=False, keep_alive=0 if labsettings.value(self.lab, 'free_gpu') else '10m',
@@ -1636,7 +1639,7 @@ class Themes:
                   'materials, colors, lighting, decorations. Keep the subject recognisable and any text in it exactly as it is. '
                   'When the request names what to draw ("little tires", "a donut"), every concept is exactly that, one of it, '
                   'varying only its style. ' + identity(subject) +
-                  (SCENE_DIRECTION if subject == design.SCENE_SUBJECT else 'Do not describe a background, floor or shadow under it (the art is cut out). ') +
+                  (SCENE_DIRECTION if subject == design.SCENE_SUBJECT else ARENA_DIRECTION if subject == design.ARENA_SUBJECT else 'Do not describe a background, floor or shadow under it (the art is cut out). ') +
                   'Celebrities, musicians, characters and pop '
                   'culture are fine as fan art (the game\'s own skins use them); swimwear is the limit: never nudity or sexual content, '
                   'and never anyone who could be a minor in anything suggestive. '
@@ -1664,7 +1667,8 @@ class Themes:
                     seconds_per_drawing=ready.get('seconds_per_drawing') or design.DEFAULT_SECONDS,   # for the finish time of a big set
                     targets=[dict(key=r['key'], name=r.get('label') or r['name'], file=r['name'], size=[r['width'], r['height']],
                                   sheet=designer.lab.catalog.rows.get(r.get('parent', ''), {}).get('name', ''),   # the queue shows the theme.png copy
-                                  **(food_set(designer, r) if design.is_food(r) else {'set': 'background'} if design.is_menu_background(r) else {'set': 'title'} if r['name'] == 'logo' else {})) for r in rows])
+                                  **(food_set(designer, r) if design.is_food(r) else {'set': 'background'} if design.is_menu_background(r) else
+                                     {'set': 'arena'} if design.is_arena_background(r) else {'set': 'title'} if r['name'] == 'logo' else {})) for r in rows])
 
     def plan_request(self, message, model='', history=None, scope=None, language=''):
         """Turn a request into a shading plan: exactly from tag words, else with the local model, else from keywords.
