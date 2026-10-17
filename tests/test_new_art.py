@@ -197,5 +197,17 @@ class ThemesKeepShapesAndArenas(unittest.TestCase):
         self.assertTrue(design.is_arena_background({'group': 'Backgrounds', 'name': 'worldbg1_w.png'}))
         self.assertFalse(design.is_arena_background({'group': 'Backgrounds', 'name': 'bg2.png'}))
         rules = design.ARENA_RULES.lower()
-        for words in ('very pale', 'food', 'seamless tile'): self.assertIn(words, rules)
+        for words in ('very pale', 'empty floor', 'seamless tile'): self.assertIn(words, rules)
+        for words in ('food', 'virus', 'dot'): self.assertNotIn(words, rules)   # named, they get drawn
         self.assertGreater(design.ARENA_PALE, 0.3)
+
+
+class NoExamplesInPrompts(unittest.TestCase):
+    """What the image model reads names only what was asked: an example in it gets drawn (a rainbow food came out as a tire)."""
+    def test_a_rainbow_food_is_not_told_about_tires(self):
+        import theme
+        job = dict(title=False, scene=False, food=True, food_tier=[1, 3], names=['food2'], frames=[[128, 128]], key='green',
+                   prompt='make the game look like rainbows and unicorns', inspiration='0' * 20 + '.png')
+        d = design.Designer.__new__(design.Designer)
+        text = (d.instruction(job) + design.PICTURES_NOTE + design.RESTYLE_NOTE).lower()
+        for word in ('tire', 'donut', 'burger'): self.assertNotIn(word, text)

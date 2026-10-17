@@ -76,7 +76,7 @@ WHOLE_PART = r'(?:it|them|everything|all|the (?:whole |entire )?(?:game|menus?|u
 
 
 # Told to the art director when a reference board (inspire.pictures) goes with the drawing, so the ideas use the real thing.
-PICTURES_NOTE = ('\nPictures of it go to the image model too: what the request asks for comes first ("little tires" are tires), '
+PICTURES_NOTE = ('\nPictures of it go to the image model too: what the request asks for comes first, '
                  'styled with its real emblem or logo, signature colors and shapes (as fan art), not invented symbols.')
 # The game's foods are different things worth different mass (the bigger, the more): smallest first.
 # The game itself shows the more valuable foods bigger, so each drawing fills its square; worth shows in its detail.
@@ -104,11 +104,11 @@ def is_food(row):
 GAME_BG = (13, 40, 41)          # the menu's base color compiled into Mitosis.exe (#0D2829); bg2.png is an overlay on it
 # The match floor: the cells and the food are drawn on top of it, and the game darkens it in dark mode. Food is the
 # game's own colors on the drawing (see FOOD_TIERS), so the floor stays pale and quiet and never looks like food.
+# Said as what to draw, never as what to avoid: an image model that reads "no food" tends to draw food.
 ARENA_RULES = ('A brand new floor for the arena of a top-down cell game, seen from above, filling the whole image edge to edge so '
-               'it repeats as a seamless tile. Players\' colored cells and small colored food pellets move on top of it, so it must '
-               'stay very pale and quiet: mostly near-white with soft, low-contrast light greys or very pale tints, no dark areas, no '
-               'strong or saturated colors, and no dots, specks, rings, blobs, stars or small shapes that could be mistaken for food, '
-               'cells or viruses. Use a few large, soft shapes or a gentle pattern. No text, no frame, no border.')
+               'it repeats as a seamless tile. Players\' colorful pieces move on top of it, so it is a calm, empty floor: very pale, '
+               'mostly near-white with soft, low-contrast light greys or very pale tints, made only of a few large soft shapes or a '
+               'gentle smooth texture, with open space everywhere. Clean and simple, without any text, frame or border.')
 ARENA_PALE = 0.55   # the Paler slider's start: how far an arena drawing is lifted toward white (the game darkens it for dark mode)
 SCENE_ZOOM, SCENE_CALM = 2.5, 0.5   # defaults: big shapes, half calmed (the game shows the tile at about a quarter size)
 # New wording for the title: "make the title say MITOSIS 2", "change the title text to Cell Wars".
@@ -645,7 +645,7 @@ class Designer:
                     'light or dark, and is never mistaken for part of the background.')
             if (job.get('food_tier') or (0, 1))[1] > 1:
                 keep += (' The game has three foods, each worth a different mass, so this one must look clearly different from the other two '
-                         'and fit its worth (for "tires": a plain little tire, a sturdier tire, a big shiny racing tire), still filling most of the square.')
+                         'and fit its worth: plainer for less mass, richer and more impressive for more, still filling most of the square.')
         elif restyles(job):
             keep = ('Restyle it, do not replace it: it must still clearly be the same thing as in the first reference picture, with the '
                     'same outline, pose and direction, size and position, centered. The look comes in through its colors, materials, '
@@ -655,7 +655,7 @@ class Designer:
         if job.get('inspiration'):   # the reference board (inspire.pictures): emblems and photos of what the theme is about
             small += (' Style it after the second reference picture: its emblem, colors and finish, as fan art'
                       + (' (the round O of MITOSIS can become its emblem).' if job['title'] else
-                         '. Draw what is asked above (the object itself, e.g. a tire), not a copy of the reference picture.'))
+                         '. Draw what is asked above, not a copy of the reference picture.'))
         color = {'green': 'pure green (#00FF00)', 'magenta': 'pure magenta (#FF00FF)', 'blue': 'pure blue (#0040FF)'}[job['key']]
         return (f'{job.get("direction") or job["prompt"]}. Edit {what}. {keep}{small} Crisp, high quality game UI art. '
                 f'The background must stay a perfectly flat solid {color} with nothing else on it: no scenery, no shadow or floor under the art, no frame, no extra text.'
@@ -676,7 +676,10 @@ class Designer:
                 size = (768, round(768 / aspect / 16) * 16) if aspect >= 1 else (round(768 * aspect / 16) * 16, 768)
                 ref = None
             else:
-                source = self.lab.image(job['targets'][0])
+                # A theme restyles the game's own art: the drawing starts from the original sprite, never from an earlier
+                # drawing (redrawing a piece that had become a unicorn must give back the arrow, not another unicorn).
+                # Other requests build on what is there now ("make the crown I drew bigger").
+                source = self.lab.catalog.image(job['targets'][0]) if restyles(job) else self.lab.image(job['targets'][0])
                 size = canvas_size(source.width, source.height)
                 ref = reference(source, job['key'], size)
             if ref is not None: ref.save(folder / 'reference.png')

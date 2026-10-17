@@ -2391,7 +2391,8 @@
   "Paler": "Heller",
   " · drawn": " · gezeichnet",
   " · not drawn": " · nicht gezeichnet",
-  " · applied ✓": " · übernommen ✓"
+  " · applied ✓": " · übernommen ✓",
+  "It keeps the drawing’s colors; the game also tints each pellet, so the colors mix with it. Tick “Keep it white” for the game’s own pellet colors.": "Sie behält die Farben der Zeichnung; das Spiel färbt jedes Kügelchen zusätzlich, daher mischen sich die Farben. Hake „Weiß lassen“ an für die eigenen Farben des Spiels."
  },
  "patterns": {
   "{n} visuals": "{n} Grafiken",

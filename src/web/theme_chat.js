@@ -449,7 +449,7 @@ function zoomPiece(Q,item){
 }
 // What a drawing starts with (also what "Apply all" uses): zoomed and calmed for a background, the outline kept for a
 // stretched button, the frame filled for the title, and kept white where the game colors the art itself.
-function designDefaults(job){return {scale:job.scene&&!job.circular?2.5:1,...(job.arena?{pale:0.55}:job.scene?{calm:0.5}:{}),dx:0,dy:0,tolerance:1,shape:job.stretched?1:0,fill:job.title?1:0,white:job.food||job.spawner||(job.tint||job.tinted)&&setting('keep_white')?1:0};}
+function designDefaults(job){return {scale:job.scene&&!job.circular?2.5:1,...(job.arena?{pale:0.55}:job.scene?{calm:0.5}:{}),dx:0,dy:0,tolerance:1,shape:job.stretched?1:0,fill:job.title?1:0,white:job.spawner||!job.food&&(job.tint||job.tinted)&&setting('keep_white')?1:0};}   /* food keeps the drawing's colors */
 async function drawDesign(box,prompt,keys,count,base,direction,entry,label,inspiration){
   let job=await api('/api/design-start',{prompt,only:keys||null,count,base:base||null,direction:direction||null,inspiration:inspiration||null});
   const info={id:job.id,keys:keys||null,label:label||''};if(entry){(entry.jobs||(entry.jobs=[])).push(info);keepChat();}
@@ -495,7 +495,7 @@ function designCard(box,job,keys,entry,info){
   const card=el('div','design-card');box.append(card);
   // Settings › Theme AI & drawing › Keep game-colored icons white ticks "Keep it white" for icons the game colors.
   const S2={variant:0,settings:designDefaults(job),applied:null};   // food: the game paints every pellet its own color
-  if(job.food)card.append(el('p','theme-note',(job.food_tier?.[1]>1?`This drawing becomes one of the game’s ${job.food_tier[1]} foods (each is worth a different mass), in every size and copy. `:`This drawing becomes every food pellet (${job.targets.length} shapes and sizes). `)+'The game paints each pellet its own color, so “Keep it white” is on: the pellets keep their colors and get the drawing’s detail.'));
+  if(job.food)card.append(el('p','theme-note',(job.food_tier?.[1]>1?`This drawing becomes one of the game’s ${job.food_tier[1]} foods (each is worth a different mass), in every size and copy. `:`This drawing becomes every food pellet (${job.targets.length} shapes and sizes). `)+'It keeps the drawing’s colors; the game also tints each pellet, so the colors mix with it. Tick “Keep it white” for the game’s own pellet colors.'));
   else if(job.spawner)card.append(el('p','theme-note','The spawner (the red virus) can appear in maps, and the game paints it red. “Keep it white” is on, so it stays red with the drawing’s detail. It sits in the item files the game downloads: if your drawing does not show in a match, the game has put its own back.'));
   else if(job.tint)card.append(el('p','theme-note',`The game colors this white icon ${job.tint} in the menu, so “In game” shows each variant the way the game will draw it. Tick “Keep it white” to get the game’s color with the drawing’s detail.`));
   else if(job.tinted)card.append(el('p','theme-note','This icon is plain white because the game colors it (teal in the menu), so a colorful drawing will come out tinted. Light, mostly white designs keep their look.'));

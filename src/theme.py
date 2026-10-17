@@ -1637,7 +1637,7 @@ class Themes:
                   'each one a distinct idea (different materials, props, story or style), not variations of one look. If the request is '
                   'short or vague, be bold and surprising. Each concept is one paragraph of at most 55 words saying exactly what to draw: '
                   'materials, colors, lighting, decorations. Keep the subject recognisable and any text in it exactly as it is. '
-                  'When the request names what to draw ("little tires", "a donut"), every concept is exactly that, one of it, '
+                  'When the request names what to draw, every concept is exactly that thing, one of it, '
                   'varying only its style. ' + identity(subject) +
                   (SCENE_DIRECTION if subject == design.SCENE_SUBJECT else ARENA_DIRECTION if subject == design.ARENA_SUBJECT else 'Do not describe a background, floor or shadow under it (the art is cut out). ') +
                   'Celebrities, musicians, characters and pop '

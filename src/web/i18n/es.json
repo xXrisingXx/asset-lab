@@ -2391,7 +2391,8 @@
   "Paler": "Más pálido",
   " · drawn": " · dibujado",
   " · not drawn": " · no dibujado",
-  " · applied ✓": " · aplicado ✓"
+  " · applied ✓": " · aplicado ✓",
+  "It keeps the drawing’s colors; the game also tints each pellet, so the colors mix with it. Tick “Keep it white” for the game’s own pellet colors.": "Conserva los colores del dibujo; el juego también tiñe cada bolita, así que los colores se mezclan. Marca “Mantenerlo blanco” para los colores propios del juego."
  },
  "patterns": {
   "{n} visuals": "{n} gráficos",
