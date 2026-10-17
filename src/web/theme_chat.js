@@ -41,7 +41,7 @@ scopeAll.onclick=()=>{scopeOff=!scopeOff;showScope();};document.addEventListener
 const log=el('div','theme-log');log.id='themeLog';log.setAttribute('role','log');
 
 // Composer: request, ideas, auto-apply and send.
-const form=el('form','theme-form');const input=el('textarea');input.id='themeInput';input.rows=2;input.placeholder='Describe a look… e.g. “rainbow outline on the buttons with a subtle glow”';input.setAttribute('aria-label','Theme request');
+const form=el('form','theme-form');const input=el('textarea');input.id='themeInput';input.rows=2;const PLACEHOLDER='Describe a look… e.g. “rainbow outline on the buttons with a subtle glow”';input.placeholder=PLACEHOLDER;input.setAttribute('aria-label','Theme request');
 const row=el('div','theme-send');
 const ideas=el('details','theme-ideas');ideas.append(el('summary','', 'Ideas'));const ideaList=el('div','theme-idea-list');ideas.append(ideaList);
 for(const idea of ['Make the menu background solid black','Deep purple to blue gradient background','Starry night sky background','Theme it rainbow with proper glows','Synthwave with a chrome logo and neon outlines','Fire gradient buttons with a strong orange glow','Holographic glass panels','Glossy gold everything','Retro 8-bit pixel look','Deep ocean blues, keep the logo','Hide the main menu pattern','Make the MITOSIS title spooky with dripping blood and bats','Put a party hat on the MITOSIS title','Christmas theme and put a santa hat on the title']){
@@ -85,12 +85,50 @@ for(const [label,start,tip] of [['Colors','Make the buttons and panels ','Recolo
   ['Background','A new menu background of ','Draw a new background picture'],
   ['Redraw something','Turn the coin into ','Draw new art for one part of the game (name it, or check it in the library first)']]){
   const b=el('button','',label);b.type='button';b.title=tip;b.onclick=()=>{input.value=start;input.focus();input.setSelectionRange(start.length,start.length);};starters.append(b);}
-starters.append(fontsButton);
+const pictureButton=el('button','', 'Your picture');pictureButton.id='themePictureButton';pictureButton.type='button';pictureButton.title='Add a picture (or paste or drop one here), then say what to change: “make this dark blue”';
+const presetsButton=el('button','', 'Presets');presetsButton.id='themePresetsButton';presetsButton.type='button';presetsButton.title='Ready-made art you can recolor and put in the game';
+starters.append(fontsButton,pictureButton,presetsButton);
 // More: the extras most requests never need, folded away.
 const more=el('details','theme-more');more.id='themeMore';more.append(el('summary','','More'));const moreBody=el('div','theme-more-body');
 moreBody.append(drawRow,auto,ideas,tags);more.append(moreBody);
 row.append(more,accel,send);
-form.append(starters,input,row);
+// A picture for the next request ("make this dark blue"): pasted, dropped or picked with Your picture.
+const attached=el('div','theme-attached');attached.id='themeAttached';attached.hidden=true;
+const attachedImg=el('img');attachedImg.alt='Your picture';const unattach=el('button','quiet','✕');unattach.type='button';unattach.title='Remove the picture';
+attached.append(attachedImg,el('span','','Your picture: say what to change, like “make this dark blue”.'),unattach);
+const filePick=el('input');filePick.type='file';filePick.accept='image/*';filePick.hidden=true;
+let picture=null;   // {data: data URL, id: once uploaded}
+function attach(file){if(!file||!/^image\//.test(file.type))return;if(file.size>16*1024*1024){message('Use a picture under 16 MB.',true);return;}
+  const reader=new FileReader();reader.onload=()=>{picture={data:reader.result};attachedImg.src=reader.result;attached.hidden=false;
+    if(!input.value.trim())input.placeholder='Say what to change… e.g. “make this dark blue”';input.focus();};reader.readAsDataURL(file);}
+function unattachPicture(){picture=null;attached.hidden=true;attachedImg.removeAttribute('src');filePick.value='';input.placeholder=PLACEHOLDER;}
+unattach.onclick=unattachPicture;pictureButton.onclick=()=>filePick.click();filePick.onchange=()=>attach(filePick.files[0]);
+input.addEventListener('paste',e=>{const item=[...(e.clipboardData?.items||[])].find(i=>i.type.startsWith('image/'));if(item){e.preventDefault();attach(item.getAsFile());}});
+drawer.addEventListener('dragover',e=>{if([...(e.dataTransfer?.items||[])].some(i=>i.type.startsWith('image/'))){e.preventDefault();drawer.classList.add('dropping');}});
+drawer.addEventListener('dragleave',e=>{if(e.target===drawer)drawer.classList.remove('dropping');});
+drawer.addEventListener('drop',e=>{const file=[...(e.dataTransfer?.files||[])].find(f=>f.type.startsWith('image/'));drawer.classList.remove('dropping');if(file){e.preventDefault();attach(file);}});
+// Presets: ready-made art in the chat, by category. A click starts its card; right-click (or ⋯) also offers a whole theme
+// made from it.
+presetsButton.onclick=run(async()=>{const list=(await api('/api/presets')).presets||[];
+  const box=bubble('bot',list.length?'Pick a preset. You can recolor it and put it in the game. Right-click one to make a whole theme from it.':'No presets yet.');
+  const cats=[...new Set(list.map(p=>p.category))],tabs=el('div','preset-tabs'),grid=el('div','preset-grid');let shown='';
+  const filter=c=>{shown=c;tabs.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.cat===c));grid.querySelectorAll('.preset').forEach(b=>{b.hidden=!!c&&b.dataset.cat!==c;});};
+  for(const c of ['',...cats]){const t=el('button','picture-chip',c||'All');t.type='button';t.dataset.cat=c;t.onclick=()=>filter(c);tabs.append(t);}
+  for(const p of list){const b=el('button','preset');b.type='button';b.dataset.cat=p.category;const im=el('img');im.loading='lazy';im.src='/api/picture?small=1&id='+encodeURIComponent(p.id);im.alt=p.name;
+    if(p.kind==='background')im.classList.add('tiled');
+    b.append(im,el('span','',p.name));b.onclick=run(()=>ask(`Use the ${p.name} preset`,{picture:p.id}));
+    b.oncontextmenu=e=>{e.preventDefault();e.stopPropagation();presetMenu(p,e.clientX,e.clientY);};grid.append(b);}
+  if(cats.length>1)box.append(tabs);box.append(grid);filter('');scroll();});
+// Right-click a preset: use it, or make a whole theme from it (backgrounds and viruses).
+const pmenu=el('div','context preset-menu');pmenu.hidden=true;document.body.append(pmenu);
+function presetMenu(p,x,y){pmenu.replaceChildren();
+  const use=el('button','','Use this preset');use.type='button';use.onclick=()=>{pmenu.hidden=true;run(()=>ask(`Use the ${p.name} preset`,{picture:p.id}))();};pmenu.append(use);
+  if(p.kind==='background'||(p.for||[]).some(n=>/virus/.test(n))){const whole=el('button','','Make a whole theme from this');whole.type='button';
+    whole.onclick=()=>{pmenu.hidden=true;run(()=>ask(`Make a whole theme from ${p.name}`,{theme_from:p.id}))();};pmenu.append(whole);}
+  pmenu.hidden=false;pmenu.style.left=Math.min(innerWidth-230,x)+'px';pmenu.style.top=Math.min(innerHeight-100,y)+'px';}
+addEventListener('pointerdown',e=>{if(!pmenu.hidden&&!pmenu.contains(e.target))pmenu.hidden=true;},true);
+addEventListener('keydown',e=>{if(e.key==='Escape')pmenu.hidden=true;});
+form.append(starters,attached,input,row,filePick);
 
 // Dock: what is waiting to be installed, whether Mitosis is open, and the install / restore actions.
 const dock=el('div','theme-dock');
@@ -180,13 +218,17 @@ restore.onclick=run(()=>pass($('restoreButton'),'Restoring the original files'))
 launch.onclick=()=>$('launchButton').click();
 
 // ----- asking and applying -----------------------------------------------------------------------
-async function ask(text,opts={}){   // opts: {only: keys, draw: 'on'} for "Redraw with Image AI" from the right-click menu
-  if(T.busy||!text.trim())return;
-  bubble('user',text);record({t:'user',text});input.value='';setBusy(true);
+async function ask(text,opts={}){   // opts: {only: keys, draw: 'on'} for "Redraw with Image AI" from the right-click menu; {picture: id}
+  if(T.busy||!(text.trim()||picture))return;
+  if(picture&&!opts.picture){   // the attached picture: kept by the lab, then the request is about it
+    try{picture.id=picture.id||(await api('/api/picture',{image:picture.data})).id;}catch(e){message(e.message,true);return;}
+    opts={...opts,picture:picture.id};text=text.trim()||'Recolor this picture';unattachPicture();}
+  const said=bubble('user',text);if(opts.picture)said.prepend(pictureThumb(opts.picture));
+  record({t:'user',text,...(opts.picture?{picture:opts.picture}:{})});input.value='';setBusy(true);
   const wait=bubble('bot','Thinking…');const started=Date.now();const tick=setInterval(()=>{wait.firstChild.textContent=`Thinking… ${Math.round((Date.now()-started)/1000)}s`+(Date.now()-started>12000?' (the first request loads the model)':'');},1000);
   try{
     const keys=opts.only||only();
-    const result=await api('/api/theme-chat',{message:text,model:model.value,history:T.history,only:keys,language:window.LabI18n?.lang||'en',draw:opts.draw||drawMode});   // the model replies in the lab's language
+    const result=await api('/api/theme-chat',{message:text,model:model.value,history:T.history,only:keys,language:window.LabI18n?.lang||'en',draw:opts.draw||drawMode,picture:opts.picture||'',theme_from:opts.theme_from||''});   // the model replies in the lab's language
     clearInterval(tick);wait.firstChild.textContent=result.plan.reply||'Here is the plan.';
     if(result.plan.operations.length||Object.keys(result.plan.ui_colors||{}).length||result.plan.hide?.length){T.history.push({role:'user',content:text},{role:'assistant',content:JSON.stringify(result.plan)});T.history=T.history.slice(-8);}
     const entry=record({t:'bot',text:wait.firstChild.textContent,result,prompt:text,keys});
@@ -202,6 +244,9 @@ async function ask(text,opts={}){   // opts: {only: keys, draw: 'on'} for "Redra
 function renderResult(wait,entry,restoring){
   const {result,prompt:text,keys}=entry;
   const planned=result.plan.operations.length||Object.keys(result.plan.ui_colors||{}).length||result.plan.hide?.length;
+  if(result.picture){showPicture(wait,result.picture,result.note);
+    if(result.design){const offer=el('div','design-offer');offer.append(el('p',''));wait.append(offer);showDesign(offer,result.design,keys,null,true,entry,restoring);}   // a whole theme from a preset
+    return;}
   if(result.font&&!planned&&!result.design){showFont(wait,result.font,result.note);return;}
   const addFont=()=>{if(!result.font)return;const offer=el('div','design-offer');
     offer.append(el('p','',result.font.offer?`Want the player names to match? Here they are in the ${result.font.look} look; flip through the others below.`:`Text · ${result.font.label}`));
@@ -453,6 +498,40 @@ async function resumeDesign(box,info,entry){
   catch(e){part.append(el('p','theme-note','This drawing is no longer available because the lab was restarted since it was made. Ask again to redraw it.'));return;}
   return watchDesign(part,job,info.keys,entry,info);
 }
+function pictureThumb(id){const im=el('img','theme-thumb');im.src='/api/picture?small=1&id='+encodeURIComponent(id);im.alt='Your picture';return im;}
+// A picture card: the picture in its color, color chips (or any color in words), where it goes, and Use this one.
+const CHIPS=[['Dark blue','#1e3a8a'],['Blue','#3b82f6'],['Red','#e53935'],['Gold','#f5c542'],['Green','#2ecc71'],['Pink','#ff6fb5'],['Purple','#9b5de5'],['Black','#101216'],['White','#ffffff']];
+function showPicture(box,pic,note){
+  if(note)box.append(el('p','theme-note',note));
+  const card=el('div','picture-card');const img=el('img','picture-view');img.alt='The picture';
+  const show=()=>{img.src=`/api/picture?id=${encodeURIComponent(pic.id)}${pic.color?'&color='+encodeURIComponent(pic.color):''}`;
+    chips.querySelectorAll('button').forEach(b=>b.classList.toggle('active',(b.dataset.color||'')===(pic.color||'')));apply.disabled=false;apply.textContent='Use this one';};
+  const chips=el('div','picture-chips');
+  for(const [label,color] of [['Original',''],...CHIPS]){const b=el('button','picture-chip');b.type='button';b.dataset.color=color;b.title=label;
+    if(color){const dot=el('i');dot.style.background=color;b.append(dot);}b.append(el('span','',label));b.onclick=()=>{pic.color=color;keepChat();show();};chips.append(b);}
+  const words=el('input','picture-words');words.placeholder='Or type any color… e.g. “dark purple”, “darker”';
+  const go=el('button','','Change it');go.type='button';
+  go.onclick=run(async()=>{const said=words.value.trim();if(!said)return words.focus();const r=await api('/api/picture-color',{id:pic.id,words:said});
+    if(!r.color){message('Say a color, like “dark blue”, “gold” or “darker”.',true);return;}pic.color=r.color;keepChat();show();});
+  words.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();go.click();}};
+  const wordsRow=el('div','design-refine-row');wordsRow.append(words,go);
+  const where=el('select','picture-target');where.setAttribute('aria-label','Where it goes');
+  for(const t of pic.targets||[]){const o=el('option','',`${t.name}${t.file&&t.name!==t.file?' · '+t.file:''}`);o.value=t.key;where.append(o);}
+  const whereRow=el('label','picture-where');whereRow.append(el('span','','Put it on:'),where);
+  /* A background: how strongly it covers the game's own color (less lets the game's base color and dark mode mix in). */
+  const strengthRow=el('label','picture-where');const strength=el('input');strength.type='range';strength.min=0.2;strength.max=1;strength.step=0.05;strength.value=pic.strength??1;
+  strength.oninput=()=>{pic.strength=+strength.value;keepChat();apply.disabled=false;apply.textContent='Use this one';};
+  strengthRow.append(el('span','','Strength'),strength);strengthRow.title='How strongly the picture covers the game’s own color: lower lets it show through';
+  const isSet=()=>where.value.startsWith('set:');strengthRow.hidden=!isSet();where.onchange=()=>{strengthRow.hidden=!isSet();apply.disabled=false;apply.textContent='Use this one';};
+  const actions=el('div','theme-actions');const apply=el('button','primary','Use this one');
+  apply.onclick=run(async()=>{if(!where.value){message('Check the picture it goes on in the library first.',true);return;}
+    apply.disabled=true;try{const r=await api('/api/picture-apply',{id:pic.id,key:where.value,color:pic.color||'',strength:isSet()?+strength.value:1});apply.textContent='Applied ✓';
+      message(`${r.name} changed. Install in Mitosis to see it.`);}catch(e){apply.disabled=false;throw e;}
+    S.build=null;await status();await library();if(S.asset&&!S.dirty)await select(S.asset.key,true);});
+  if(!where.options.length)apply.disabled=true;
+  actions.append(apply);card.append(img,el('p','design-how','Pick a color, then Use this one.'),chips,wordsRow,whereRow,strengthRow,actions);box.append(card);show();
+  if(!where.options.length)apply.disabled=true;scroll();
+}
 function showFont(box,font,note){
   // A text style, asked for or offered with a whole-game theme: the game font in that look, previewed. The looks menu
   // switches the preview instantly; Apply puts the look shown in the mod (never by itself), Fine-tune opens every setting.
@@ -603,7 +682,7 @@ button.onclick=()=>toggle(!T.open);close.onclick=()=>toggle(false);model.addEven
 function restoreChat(saved){
   log.replaceChildren();J.entries=saved?.entries||[];T.history=saved?.history||[];bubble('bot',WELCOME);if(!J.entries.length)return;
   J.entries.forEach((entry,i)=>{
-    if(entry.t==='user'){bubble('user',entry.text);if(J.entries[i+1]?.t!=='bot')bubble('bot','This request was interrupted by a reload. Send it again if you still want it.').classList.add('error');return;}
+    if(entry.t==='user'){const said=bubble('user',entry.text);if(entry.picture)said.prepend(pictureThumb(entry.picture));if(J.entries[i+1]?.t!=='bot')bubble('bot','This request was interrupted by a reload. Send it again if you still want it.').classList.add('error');return;}
     const b=bubble('bot',entry.error||entry.text);if(entry.error){b.classList.add('error');return;}
     if(entry.result)try{renderResult(b,entry,true);}catch(e){b.append(el('p','theme-note','This part of the chat could not be shown again.'));}});
   scroll();}

@@ -6,6 +6,7 @@ before any theme, so a follow-up request replaces the previous theme instead of 
 Without Ollama a keyword parser produces the same kind of plan for simple requests.
 """
 import base64
+import hashlib
 import colorsys
 import fnmatch
 import io
@@ -23,6 +24,7 @@ import design
 import exe_palette
 import fonts
 import inspire
+import pictures
 import runtime
 import settings as labsettings
 
@@ -828,9 +830,9 @@ def identity(subject):
 ARENA_DIRECTION = ('This is the floor of the match arena, under the players\' colored cells and the food: describe a very pale, '
                    'quiet, low-contrast pattern or texture in the requested style, with a few large soft shapes, and nothing small, '
                    'round or dotted that could look like food or a cell. No text or logos. ')
-SCENE_DIRECTION = ('This is a whole background picture that fills the frame edge to edge and repeats as a tile behind menu buttons: describe '
+SCENE_DIRECTION = ('This is a whole background picture that fills the frame edge to edge and repeats as a tile, like wallpaper: describe '
                    'the scene, its colors and lighting, with a few large shapes rather than tiny detail and nothing that must sit in the '
-                   'center. Use the colors the request names. No text or logos. ')
+                   'center. Use the colors the request names. Never mention text, logos, buttons or any interface. ')
 
 
 def opaque_tile(pixels, op):
@@ -1214,6 +1216,7 @@ def thumb(pixels, size=84):
 class Themes:
     def __init__(self, lab):
         self.lab, self.lock, self.jobs = lab, threading.RLock(), {}
+        self.pictures = pictures.Pictures(lab)   # pictures players add to the chat, and the presets
         self.file = lab.root / 'themes.json'
         self.reindex()
 
@@ -1588,11 +1591,14 @@ class Themes:
 
     _turn = threading.local()   # what one chat request learns on the way (parts it could not find), per server thread
 
-    def chat(self, message, model='', history=None, only=None, language='', draw='auto'):
+    def chat(self, message, model='', history=None, only=None, language='', draw='auto', picture='', theme_from=''):
         """The reply to a request, with a word about server-only art when the request names some (see ServerArt), and
         inspiration from Wikipedia when it names someone or something ("a Post Malone theme"; Settings can turn it off).
         draw: the Image AI switch in the chat. 'auto' draws when the request needs it, 'on' always draws new art (the
-        main pieces of the game when nothing is named), 'off' only recolors and shades."""
+        main pieces of the game when nothing is named), 'off' only recolors and shades. picture: a picture the player
+        added (pasted, dropped or a preset): the request is about it ("make this dark blue")."""
+        if theme_from: return self.preset_theme(theme_from, only)   # right-click a preset › Make a whole theme from this
+        if picture: return self.picture_request(str(message or ''), picture, only)
         draw = draw if draw in ('auto', 'on', 'off') else 'auto'
         self.inspiration = None
         if labsettings.value(self.lab, 'web_inspiration') and inspire.candidates(str(message or '')[:2000]):
@@ -1615,6 +1621,51 @@ class Themes:
             if not (plan.get('operations') or plan.get('ui_colors') or plan.get('hide') or drawing or result.get('font')):
                 plan['reply'] = SERVER_NOTE
             else: result['note'] = ((result.get('note') or '') + ' ' + SERVER_NOTE).strip()
+        return result
+
+    def picture_request(self, message, pid, only=None):
+        """A picture the player added, recolored as asked ("make this dark blue", "gold", "darker"), with the game art it
+        most likely belongs on (checked pictures first). Nothing changes in the game until they pick where it goes and
+        click Use this one. "Use the Purple virus preset" opens a preset in its own colors."""
+        image = self.pictures.image(pid)
+        preset = re.fullmatch(r'(?i)use the .* preset', message.strip())
+        color = '' if preset else pictures.wanted_color(message, image)
+        targets = self.pictures.targets(pid, only=only)
+        if color: reply = 'Here it is in the new color. Check where it goes and click Use this one.'
+        elif message.strip() and not preset:
+            reply = ('I can change this picture’s colors: pick one below or say one (“dark blue”, “gold”, “darker”). '
+                     'Then check where it goes and click Use this one.')
+        else: reply = 'Pick a color (or keep it as it is), check where it goes, then click Use this one.'
+        note = '' if targets else 'Pick where it goes by checking that picture in the library first.'
+        return dict(plan=dict(reply=reply, operations=[], ui_colors={}, hide=[]), source='picture', note=note, preview=None,
+                    picture=dict(id=pid, color=color, targets=targets, name=next((p['name'] for p in pictures.presets() if p['id'] == pid), '')))
+
+    def preset_theme(self, pid, only=None):
+        """A whole theme from a preset (a background or a virus): the preset itself, ready to put on, and the rest of the
+        whole-game redesign drawn after it, with the preset as the reference picture and its colors as the theme's colors."""
+        preset = next((p for p in pictures.presets() if p['id'] == pid), None)
+        if not preset: raise ValueError('Unknown preset.')
+        name, kind = preset['name'], preset['kind']
+        result = self.picture_request(f'Use the {name} preset', pid, only)
+        designer = getattr(self, 'designer', None)
+        if not designer or not designer.status()['available']:
+            result['plan']['reply'] = f'Put {name} on with Use this one. To draw the rest of the game in its style, install the image model (Settings › Theme AI & drawing).'
+            return result
+        own = (lambda r: design.is_menu_background(r) or design.is_arena_background(r)) if kind == 'background' else (lambda r: r['name'] in design.VIRUSES)
+        rows = [r for r in self.showcase_rows(designer) if not own(r)]
+        image = self.pictures.image(pid)
+        # The preset is the reference picture of every drawing, and its colors are the theme's.
+        board = hashlib.sha256(pid.encode()).hexdigest()[:20] + '.png'
+        if not (self.lab.root / 'inspiration' / board).is_file():
+            (self.lab.root / 'inspiration').mkdir(parents=True, exist_ok=True)
+            image.convert('RGB').save(self.lab.root / 'inspiration' / board)
+        prompt = f'a whole game theme in the style and colors of the reference picture ({kind}: {name})'
+        designer.seed_palette(design.palette_key(prompt), design.learn_colors(image))
+        offer = self.design_offer(designer, prompt, rows)
+        offer.update(inspiration=board, inspiration_title=name)
+        result['plan']['reply'] = (f'A whole theme from {name}: put {name} on with Use this one, then Draw it to redraw the rest of the game '
+                                   'in its colors and style.')
+        result['design'] = offer
         return result
 
     def showcase_rows(self, designer, only=None):

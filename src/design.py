@@ -200,6 +200,12 @@ ARENA_RULES = ('A brand new floor for the arena of a top-down cell game, seen fr
                'it repeats as a seamless tile. Players\' colorful pieces move on top of it, so it is a calm, empty floor: very pale, '
                'mostly near-white with soft, low-contrast light greys or very pale tints, made only of a few large soft shapes or a '
                'gentle smooth texture, with open space everywhere. Clean and simple, without any text, frame or border.')
+# A background: a pattern only. Words about what sits on top of it ("behind buttons and text") made the model draw
+# buttons and gibberish text into the picture, so the rules never name interface parts except to rule them out.
+SCENE_RULES = ('A seamless repeating background pattern that fills the whole image edge to edge, like wallpaper, made of a few '
+               'large, bold, simple shapes rather than many tiny details, with moderate contrast. Only the picture itself: no user '
+               'interface, no buttons, no panels, no bars, no text, no letters, no numbers, no labels, no logos, no frame, no border, '
+               'no single big object in the middle. Clean, high quality game art.')
 ARENA_PALE = 0.55   # the Paler slider's start: how far an arena drawing is lifted toward white (the game darkens it for dark mode)
 SCENE_ZOOM, SCENE_CALM = 2.5, 0.5   # defaults: big shapes, half calmed (the game shows the tile at about a quarter size)
 # New wording for the title: "make the title say MITOSIS 2", "change the title text to Cell Wars".
@@ -769,6 +775,13 @@ class Designer:
         learned = self.palettes().get(job.get('palette_key', ''))
         return learned['colors'] if learned and learned.get('job') != job['id'] and learned.get('colors') else []
 
+    def seed_palette(self, key, colors):
+        """A theme's colors given up front (a whole theme from a preset takes the preset's): every piece is matched to them."""
+        if not key or not colors: return
+        self.palettes()[key] = dict(colors=list(colors), job='', at=time.time())
+        self.folder.mkdir(parents=True, exist_ok=True)
+        (self.folder / 'palettes.json').write_text(json.dumps(self._palettes), encoding='utf-8')
+
     def learn_palette(self, job, image):
         """The first piece applied of a theme that named no colors sets them for the rest of it."""
         key = job.get('palette_key', '')
@@ -790,11 +803,8 @@ class Designer:
             return (f'{job.get("direction") or job["prompt"]}. {ARENA_RULES}'
                     + (' Take the look from the reference picture: its colors and patterns, kept very pale.' if job.get('inspiration') else ''))
         if job.get('scene'):
-            return (f'{job.get("direction") or job["prompt"]}. A brand new full-frame background picture for a 2D game menu, '
-                    'filling the whole image edge to edge so it can repeat as a seamless tile. It is shown small and repeated behind '
-                    'buttons and text, so use a few large, bold, simple shapes instead of many tiny details, and moderate contrast so '
-                    'what is on top stays readable. Use the colors the request names; if it names none, rich colors that are not too '
-                    'bright. No text, no frame, no border, no single big object in the middle. Clean, high quality game art.'
+            return (f'{job.get("direction") or job["prompt"]}. {SCENE_RULES} Use the colors the request names; if it names none, rich '
+                    'colors that are not too bright.'
                     + (' Take the look from the reference picture: its emblem, colors, patterns and style, repeated as a background motif.' if job.get('inspiration') else ''))
         what = self.subject(job)
         if job.get('text'): keep = f'Change the word MITOSIS so it reads exactly "{job["text"]}", in the same lettering style, on one line, centered.'

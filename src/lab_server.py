@@ -27,6 +27,7 @@ import preview
 import audio as soundlab
 import settings as labsettings
 import suggest
+import pictures
 AUDIO_REQUEST = 210 * 1024 * 1024   # a 150 MB sound file, even sent as base64 in JSON (only /api/audio-source)
 DESIGN_SETTINGS = ('scale', 'dx', 'dy', 'tolerance', 'shape', 'fill', 'white', 'calm', 'pale', 'paint', 'match')
 from PIL import Image
@@ -63,6 +64,7 @@ def server_for(lab, port):
     designer = Designer(lab, themes)
     themes.designer = designer
     designer.director = themes.art_direction
+    themes.pictures.sets = {'menu': designer.menu_backgrounds, 'arena': designer.arena_backgrounds}   # where a background preset goes
     designer.concepts = themes.art_concepts   # and a different idea for each variant   # the planner model writes the art direction for each redraw
 
     def quiet():
@@ -174,6 +176,11 @@ def server_for(lab, port):
                     name = q.get('name', '')
                     if not re.fullmatch(r'[0-9a-f]{20}\.png', name) or not (lab.root / 'inspiration' / name).is_file(): raise ValueError('No such inspiration picture.')
                     return self.send((lab.root / 'inspiration' / name).read_bytes(), 'image/png')
+                if path == '/api/picture':   # a pasted picture or a preset, recolored when a color is given
+                    image = themes.pictures.render(q.get('id', ''), q.get('color', ''))
+                    if q.get('small'): image.thumbnail((256, 256), Image.Resampling.LANCZOS)
+                    return self.send(png(image), 'image/png')
+                if path == '/api/presets': return self.send({'presets': pictures.presets()})
                 if path == '/api/ai-activity': return self.send(activity.snapshot(designer, themes))   # the activity strip in Theme AI
                 if path == '/api/builds': return self.send(builds.listing())
                 if path == '/api/chats': return self.send(builds.chats())
@@ -336,7 +343,14 @@ def server_for(lab, port):
                     return self.send({'png': 'data:image/png;base64,' + base64.b64encode(image).decode()})
                 if path == '/api/font-apply': return self.send(lab.font_apply(str(data.get('font', '')), data.get('style') or {}))
                 if path == '/api/font-remove': return self.send(lab.font_remove(str(data.get('font', ''))))
-                if path == '/api/theme-chat': return self.send(themes.chat(data.get('message'), data.get('model', ''), data.get('history'), only, language=str(data.get('language') or ''), draw=str(data.get('draw') or 'auto')))
+                if path == '/api/theme-chat': return self.send(themes.chat(data.get('message'), data.get('model', ''), data.get('history'), only, language=str(data.get('language') or ''), draw=str(data.get('draw') or 'auto'),
+                                                                     picture=str(data.get('picture') or ''), theme_from=str(data.get('theme_from') or '')))
+                if path == '/api/picture': return self.send({'id': themes.pictures.save(data.get('image', ''))})
+                if path == '/api/picture-color':   # "dark blue", "darker", "#ff8800" for a picture -> the color
+                    return self.send({'color': pictures.wanted_color(str(data.get('words', ''))[:200], themes.pictures.image(str(data.get('id', ''))))})
+                if path == '/api/picture-apply':
+                    return self.send(themes.pictures.apply(str(data.get('id', '')), str(data.get('key', '')), str(data.get('color', '') or ''),
+                                                           float(data.get('strength', 1) or 1)))
                 if path == '/api/theme-preview': return self.send(themes.preview(clean_plan(data.get('plan')), themes.scope(only)))
                 if path == '/api/theme-apply': return self.send(themes.apply(data.get('plan'), data.get('prompt', ''), only))
                 if path == '/api/theme-undo': return self.send(themes.undo())

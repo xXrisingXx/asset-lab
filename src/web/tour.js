@@ -9,6 +9,9 @@ const KEY='lab-tour-done',ASKED='lab-suggest-asked';
 const EXAMPLES=['gold buttons with a glow','a spooky halloween theme','turn the coin into a diamond','change the font to comic sans','make the player names out of lava'];
 const RIGHT_CLICK={at:'#assetList .asset-card',menu:['Redraw with Image AI…','Change this font…','Add to favorites'],title:'Right-click for more',
   text:'Right-click any picture for quick actions: redraw it with Image AI, change a font (on the letter pictures), or add it to your favorites.'};
+// Pictures: any picture a player pastes or drops, and the presets, recolored in one request.
+const PICTURES={at:'#themePictureButton,#themePresetsButton',theme:true,title:'Bring your own picture',
+  text:'Paste or drop a picture into Theme AI (or click Your picture) and say what to change, like “make this dark blue”. Presets has ready-made art to recolor and put in the game.'};
 const STEPS=[
   {title:'Welcome to Asset Lab',text:'Asset Lab lets you restyle Mitos.is: recolor or redraw its art, change its text and sounds, and install it all as a mod. Your game files are backed up first, and Restore original always puts them back. This quick tour shows you around.'},
   {at:'.library',title:'1. Find the art',text:'The library holds every picture in the game. Search by name (“play button”, “coin”), pick a category, or drop an image here to find art that looks like it. Click a card to open it; double-click to check it.'},
@@ -17,6 +20,7 @@ const STEPS=[
   {at:'#viewport',title:'3. Edit on the canvas',text:'The open asset shows here. Paint with the tools on the left, zoom with the wheel, and drag with the right mouse button to move around. The menus above (File, Edit, Layer…) work like an image editor’s.'},
   {at:'.inspector',title:'4. Layers and saving',text:'Here you find the layers, the color controls and the history. When you like your edit, click Save edit: it is stored in your workspace, never straight in the game.'},
   {at:'#themeStarters,#themeButton',theme:true,examples:true,title:'5. Theme AI',text:'Describe a look in your own words (“spooky halloween”, “gold buttons with a glow”, “make the player names neon”) and Theme AI changes many assets at once. You see a preview before anything is saved.'},
+  PICTURES,
   {at:'.mod-tray',title:'6. Test it in the game',text:'Close Mitosis, then click Install (or Update Mitosis) to put your saved edits in the game. Restore original takes the mod back out and returns every file exactly as it was.'},
   {at:'#launchButton',title:'7. Play',text:'Open Mitosis starts the game through Steam so you can see your mod.'},
   {at:'#settingsButton',title:'8. Settings',text:'Change the language, the look of the lab, the AI and much more. You can open this tour again with the ? button next to it.'},
@@ -27,6 +31,7 @@ const SIMPLE_STEPS=[STEPS[0],
   {at:'.library',title:'Pick what to change',text:'Click the pictures you want to change (click again to unpick). Pick nothing and Theme AI changes the whole game. Search by name: “play button”, “coin”, “virus”.'},
   RIGHT_CLICK,
   {at:'#themeStarters,#themeInput',examples:true,title:'Describe it',text:'Type what you want (“gold buttons with a glow”, “a spooky halloween theme”, “change the font to comic sans”) or click a button above the box to start. You see it before anything is saved.'},
+  PICTURES,
   {at:'#themeInstall',title:'Put it in the game',text:'Close Mitosis, then click Install in Mitosis. Restore original takes your changes back out and puts every file back exactly as it was.'},
   {at:'#viewSwitch',title:'Want more control?',text:'Advanced opens the full image editor: layers, brushes, filters and more. You can switch back any time.'},
   STEPS[STEPS.length-1]];

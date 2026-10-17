@@ -1,0 +1,686 @@
+{
+ "presets": [
+  {
+   "id": "purple-virus",
+   "name": "Purple virus",
+   "file": "purple-virus.png",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ],
+   "category": "Viruses",
+   "kind": "virus"
+  },
+  {
+   "id": "bg-solid-black",
+   "name": "Solid black",
+   "category": "Black & solid",
+   "kind": "background",
+   "file": "backgrounds/solid-black.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-solid-navy",
+   "name": "Solid dark navy",
+   "category": "Black & solid",
+   "kind": "background",
+   "file": "backgrounds/solid-navy.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-solid-charcoal",
+   "name": "Solid charcoal",
+   "category": "Black & solid",
+   "kind": "background",
+   "file": "backgrounds/solid-charcoal.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-solid-white",
+   "name": "Solid white",
+   "category": "Black & solid",
+   "kind": "background",
+   "file": "backgrounds/solid-white.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-nebula",
+   "name": "Nebula",
+   "category": "Space",
+   "kind": "background",
+   "file": "backgrounds/nebula.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-starfield",
+   "name": "Starfield",
+   "category": "Space",
+   "kind": "background",
+   "file": "backgrounds/starfield.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-galaxy-swirl",
+   "name": "Galaxy swirl",
+   "category": "Space",
+   "kind": "background",
+   "file": "backgrounds/galaxy-swirl.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-planets",
+   "name": "Little planets",
+   "category": "Space",
+   "kind": "background",
+   "file": "backgrounds/planets.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-aurora",
+   "name": "Aurora",
+   "category": "Space",
+   "kind": "background",
+   "file": "backgrounds/aurora.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-leaves",
+   "name": "Leaves",
+   "category": "Nature",
+   "kind": "background",
+   "file": "backgrounds/leaves.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-ocean-waves",
+   "name": "Ocean waves",
+   "category": "Nature",
+   "kind": "background",
+   "file": "backgrounds/ocean-waves.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-sand-dunes",
+   "name": "Sand dunes",
+   "category": "Nature",
+   "kind": "background",
+   "file": "backgrounds/sand-dunes.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-meadow",
+   "name": "Flower meadow",
+   "category": "Nature",
+   "kind": "background",
+   "file": "backgrounds/meadow.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-forest",
+   "name": "Forest canopy",
+   "category": "Nature",
+   "kind": "background",
+   "file": "backgrounds/forest.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-triangles",
+   "name": "Triangles",
+   "category": "Abstract",
+   "kind": "background",
+   "file": "backgrounds/triangles.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-paint-swirl",
+   "name": "Paint swirl",
+   "category": "Abstract",
+   "kind": "background",
+   "file": "backgrounds/paint-swirl.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-bokeh",
+   "name": "Bokeh",
+   "category": "Abstract",
+   "kind": "background",
+   "file": "backgrounds/bokeh.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-marble",
+   "name": "Marble",
+   "category": "Abstract",
+   "kind": "background",
+   "file": "backgrounds/marble.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-liquid",
+   "name": "Liquid gradient",
+   "category": "Abstract",
+   "kind": "background",
+   "file": "backgrounds/liquid.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-circuit",
+   "name": "Circuit board",
+   "category": "Neon & tech",
+   "kind": "background",
+   "file": "backgrounds/circuit.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-synthwave-grid",
+   "name": "Synthwave grid",
+   "category": "Neon & tech",
+   "kind": "background",
+   "file": "backgrounds/synthwave-grid.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-neon-hex",
+   "name": "Neon hexagons",
+   "category": "Neon & tech",
+   "kind": "background",
+   "file": "backgrounds/neon-hex.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-matrix",
+   "name": "Digital rain",
+   "category": "Neon & tech",
+   "kind": "background",
+   "file": "backgrounds/matrix.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-hologram",
+   "name": "Hologram",
+   "category": "Neon & tech",
+   "kind": "background",
+   "file": "backgrounds/hologram.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-halloween",
+   "name": "Halloween",
+   "category": "Holidays",
+   "kind": "background",
+   "file": "backgrounds/halloween.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-christmas",
+   "name": "Christmas",
+   "category": "Holidays",
+   "kind": "background",
+   "file": "backgrounds/christmas.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-hearts",
+   "name": "Hearts",
+   "category": "Holidays",
+   "kind": "background",
+   "file": "backgrounds/hearts.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-easter",
+   "name": "Spring eggs",
+   "category": "Holidays",
+   "kind": "background",
+   "file": "backgrounds/easter.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-fireworks",
+   "name": "Fireworks",
+   "category": "Holidays",
+   "kind": "background",
+   "file": "backgrounds/fireworks.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-candy",
+   "name": "Candy",
+   "category": "Cute & fun",
+   "kind": "background",
+   "file": "backgrounds/candy.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-clouds",
+   "name": "Pastel clouds",
+   "category": "Cute & fun",
+   "kind": "background",
+   "file": "backgrounds/clouds.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-polka",
+   "name": "Polka dots",
+   "category": "Cute & fun",
+   "kind": "background",
+   "file": "backgrounds/polka.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-doodles",
+   "name": "Doodles",
+   "category": "Cute & fun",
+   "kind": "background",
+   "file": "backgrounds/doodles.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-kawaii-stars",
+   "name": "Kawaii stars",
+   "category": "Cute & fun",
+   "kind": "background",
+   "file": "backgrounds/kawaii-stars.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-lava",
+   "name": "Lava",
+   "category": "Elements",
+   "kind": "background",
+   "file": "backgrounds/lava.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-ice",
+   "name": "Ice",
+   "category": "Elements",
+   "kind": "background",
+   "file": "backgrounds/ice.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-water",
+   "name": "Pool water",
+   "category": "Elements",
+   "kind": "background",
+   "file": "backgrounds/water.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-fire",
+   "name": "Flames",
+   "category": "Elements",
+   "kind": "background",
+   "file": "backgrounds/fire.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-storm",
+   "name": "Lightning storm",
+   "category": "Elements",
+   "kind": "background",
+   "file": "backgrounds/storm.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-carbon",
+   "name": "Carbon fiber",
+   "category": "Materials",
+   "kind": "background",
+   "file": "backgrounds/carbon.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-wood",
+   "name": "Wood planks",
+   "category": "Materials",
+   "kind": "background",
+   "file": "backgrounds/wood.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-bricks",
+   "name": "Bricks",
+   "category": "Materials",
+   "kind": "background",
+   "file": "backgrounds/bricks.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-metal",
+   "name": "Metal plates",
+   "category": "Materials",
+   "kind": "background",
+   "file": "backgrounds/metal.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-camo",
+   "name": "Camouflage",
+   "category": "Materials",
+   "kind": "background",
+   "file": "backgrounds/camo.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-peacock",
+   "name": "Peacock",
+   "category": "Colorful & exotic",
+   "kind": "background",
+   "file": "backgrounds/peacock.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-coral-reef",
+   "name": "Coral reef",
+   "category": "Colorful & exotic",
+   "kind": "background",
+   "file": "backgrounds/coral-reef.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-orchids",
+   "name": "Exotic flowers",
+   "category": "Colorful & exotic",
+   "kind": "background",
+   "file": "backgrounds/orchids.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-kaleidoscope",
+   "name": "Kaleidoscope",
+   "category": "Colorful & exotic",
+   "kind": "background",
+   "file": "backgrounds/kaleidoscope.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-psychedelic",
+   "name": "Psychedelic",
+   "category": "Colorful & exotic",
+   "kind": "background",
+   "file": "backgrounds/psychedelic.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-parrot",
+   "name": "Parrot plumage",
+   "category": "Colorful & exotic",
+   "kind": "background",
+   "file": "backgrounds/parrot.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-charcoal",
+   "name": "Charcoal",
+   "category": "Dark & subtle",
+   "kind": "background",
+   "file": "backgrounds/charcoal.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-midnight-waves",
+   "name": "Midnight waves",
+   "category": "Dark & subtle",
+   "kind": "background",
+   "file": "backgrounds/midnight-waves.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-dark-hex",
+   "name": "Dark hexagons",
+   "category": "Dark & subtle",
+   "kind": "background",
+   "file": "backgrounds/dark-hex.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-smoke",
+   "name": "Dark smoke",
+   "category": "Dark & subtle",
+   "kind": "background",
+   "file": "backgrounds/smoke.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-velvet",
+   "name": "Night velvet",
+   "category": "Dark & subtle",
+   "kind": "background",
+   "file": "backgrounds/velvet.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-dark-lines",
+   "name": "Faint lines",
+   "category": "Dark & subtle",
+   "kind": "background",
+   "file": "backgrounds/dark-lines.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-black-stars",
+   "name": "Black with stars",
+   "category": "Black & solid",
+   "kind": "background",
+   "file": "backgrounds/black-stars.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-black-color-stars",
+   "name": "Black with color stars",
+   "category": "Black & solid",
+   "kind": "background",
+   "file": "backgrounds/black-color-stars.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-black-glitter",
+   "name": "Black glitter",
+   "category": "Black & solid",
+   "kind": "background",
+   "file": "backgrounds/black-glitter.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-black-dots",
+   "name": "Black with dots",
+   "category": "Black & solid",
+   "kind": "background",
+   "file": "backgrounds/black-dots.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-black-stardust",
+   "name": "Black stardust",
+   "category": "Black & solid",
+   "kind": "background",
+   "file": "backgrounds/black-stardust.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  }
+ ]
+}

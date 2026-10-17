@@ -8,7 +8,7 @@ class Tour(EditorTestCase):
         b = self.browser
         b.eval("localStorage.removeItem('lab-tour-done'); LabTour.start()")
         titles = []
-        for i in range(12):
+        for i in range(16):
             if not b.eval("!!document.querySelector('.tour-box')"): break
             titles.append(b.eval("document.querySelector('.tour-box h3').textContent"))
             b.screenshot(f'tour-{i}.png')
