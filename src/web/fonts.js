@@ -81,12 +81,12 @@ window.LabFonts={catalog:()=>load(),reload:()=>load(true),preview,picker};
 async function open(font,style,text){
   /* Opens at once: the font list can take a moment the first time (it reads every font on this PC), so the window shows
      that it is loading instead of the button seeming to do nothing. */
-  let waited=null;   // the loading window, closed by the player before the fonts came: then it stays closed
+  let waited=false;   // the loading window was shown: if the player closed it before the fonts came, it stays closed
   if(!F.data&&!dlg.open){const head=el('div','fonts-head'),x=btn('✕','quiet','Close');x.onclick=()=>dlg.close();head.append(el('h2','','Text & fonts'),x);
-    dlg.replaceChildren(head,el('p','fonts-sub fonts-loading','Loading fonts…'));dlg.showModal();waited={closed:false};
-    dlg.addEventListener('close',()=>{if(waited)waited.closed=true;},{once:true});}
+    dlg.replaceChildren(head,el('p','fonts-sub fonts-loading','Loading fonts…'));dlg.showModal();waited=true;}
   try{await load();}catch(e){if(!F.data&&dlg.open)dlg.close();throw e;}
-  if(waited?.closed)return;waited=null;
+  /* Asked of the dialog itself: its close event comes a moment after it closes, too late to tell. */
+  if(waited&&!dlg.open)return;
   F.font=font||F.font;if(!F.data.game.some(g=>g.id===F.font)&&F.data.game.length)F.font=F.data.game[0].id;
   const saved=F.data.game.find(g=>g.id===F.font);
   setStyle(style||(saved&&saved.style)||{});

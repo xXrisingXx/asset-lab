@@ -14,3 +14,10 @@ class ConfirmDialog(EditorTestCase):
             const a=await first;await new Promise(r=>setTimeout(r,60));
             const stillAsking=d.open;d.close('ok');const c=await second;return [a,stillAsking,c];})()""")
         self.assertEqual(got, [False, True, True])
+
+    def test_fonts_closed_while_loading_stays_closed(self):
+        b = self.browser
+        # Fonts opens at once with "Loading fonts…"; closed before the list arrives, it must not open again by itself.
+        got = b.eval("""(async()=>{const d=document.getElementById('fontsDialog');const opening=openFonts();
+            const shown=d.open;d.close();await opening;await new Promise(r=>setTimeout(r,300));return [shown,d.open];})()""")
+        self.assertEqual(got, [True, False])
