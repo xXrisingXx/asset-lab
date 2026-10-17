@@ -28,6 +28,17 @@
 .theme-form textarea{width:100%;resize:none;min-height:44px;max-height:120px;background:#101720;border:1px solid var(--line);color:var(--text);border-radius:7px;padding:8px 9px;font:inherit;line-height:1.4}
 .theme-form textarea:focus{outline:2px solid var(--cyan);outline-offset:1px}
 .theme-send{display:flex;align-items:center;gap:8px;margin-top:6px}.theme-send .compact{margin-left:auto}.theme-send .primary{padding:7px 16px}
+.theme-send .accelerate{margin-left:auto;padding:5px 10px;font-size:11px}.theme-send .accelerate.active{background:#3a2a17;border-color:var(--orange);color:var(--orange);font-weight:600}
+.theme-starters{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px}
+.theme-starters button{padding:5px 10px;font-size:11px;border-radius:14px;background:#1d2f3d;border-color:#405264}
+.theme-starters button:hover{border-color:var(--cyan);color:var(--cyan)}
+.theme-more{border:0;margin:0;padding:0;position:relative}
+.theme-more>summary{margin:0;font-weight:500;font-size:11px;color:var(--muted);list-style:none;padding:5px 9px;border:1px solid var(--line);border-radius:6px}
+.theme-more>summary::-webkit-details-marker{display:none}.theme-more>summary::after{content:' ▾'}.theme-more[open]>summary{color:var(--cyan);border-color:var(--cyan)}
+.theme-more-body{position:absolute;left:0;bottom:calc(100% + 6px);z-index:5;width:min(380px,86vw);max-height:60vh;overflow:auto;background:var(--panel2);border:1px solid #46586b;border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:9px;box-shadow:0 10px 40px #0009}
+.theme-more-body .theme-ideas{border:0;margin:0;padding:0}.theme-more-body .theme-ideas>summary{margin-bottom:6px;display:inline-block}
+.theme-more-body .theme-idea-list{position:static;width:auto;max-height:220px;box-shadow:none}
+.theme-more-body .theme-drawmode{margin:0}.theme-more-body .compact{margin:0}
 .theme-ideas{position:relative}.theme-ideas summary{list-style:none;cursor:pointer;font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:5px 9px;margin:0}
 .theme-ideas summary::-webkit-details-marker{display:none}.theme-ideas[open] summary{color:var(--cyan);border-color:var(--cyan)}
 .theme-idea-list{position:absolute;bottom:calc(100% + 6px);left:0;width:340px;max-height:300px;overflow:auto;z-index:2;background:#1d2733;border:1px solid #51687b;border-radius:8px;padding:6px;box-shadow:0 10px 40px #0009;display:flex;flex-direction:column;gap:2px;scrollbar-width:thin}
@@ -48,6 +59,17 @@
 .theme-game-row small{color:var(--muted);font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .theme-game-row button{flex:none;font-size:13px;padding:0 4px}
 @media(min-width:1500px){body.theme-on main{margin-right:420px}}
+/* Simple (simple.js): the library and Theme AI only. Theme AI fills the space the editor had, with its column centered. */
+.view-switch button{padding:6px 11px;font-size:11px}
+.simple-hint{display:none;font-size:11px;color:var(--cyan);line-height:1.5;margin:8px 0 0}
+body.lab-simple .simple-hint{display:block}
+body.lab-simple main,body.lab-simple.theme-on main{grid-template-columns:var(--lib) 1fr!important;margin-right:0}
+body.lab-simple .studio,body.lab-simple .inspector,body.lab-simple #themeButton,body.lab-simple #themeClose{display:none!important}
+body.lab-simple .theme-drawer{left:var(--lib);width:auto;border-left:1px solid var(--line);box-shadow:none;padding-left:max(16px,calc((100vw - var(--lib) - 820px) / 2));padding-right:max(16px,calc((100vw - var(--lib) - 820px) / 2))}
+body.lab-simple .theme-starters button{padding:7px 13px;font-size:12px}
+body.lab-simple .asset-card{cursor:pointer}
+body.lab-simple #contextMenu button[data-action]:not([data-action="redraw-ai"]):not([data-action="favorite-toggle"]){display:none}
+@media(max-width:920px){body.lab-simple .theme-drawer{left:0;top:76px}body.lab-simple main{grid-template-columns:1fr!important}}
 @media(max-width:920px){.theme-drawer{top:0}}
 
 .theme-ideas:not([open]) .theme-idea-list{display:none}
@@ -67,6 +89,8 @@
 .design-offer{margin-top:10px;padding-top:9px;border-top:1px dashed #3c4b5c}.design-offer>p{margin:0 0 6px;font-size:12px}
 .design-direction{margin:0;font-size:10.5px;line-height:1.45;color:var(--muted);background:#141c26;border-radius:6px;padding:6px 8px}.design-direction b{color:var(--text);font-weight:600}
 .design-shape{display:flex!important;align-items:center;gap:6px;font-size:10px;color:var(--muted);grid-template-columns:none!important}
+.design-swatches{display:inline-flex;gap:2px;margin-left:2px}
+.design-swatches i{width:10px;height:10px;border-radius:2px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)}
 .design-refine-row{display:flex;gap:6px}.design-refine{flex:1;min-width:0;background:#101720;border:1px solid var(--line);color:var(--text);border-radius:6px;padding:6px 8px;font:inherit;font-size:11px}
 .design-refine-row button{font-size:11px;padding:6px 10px}
 
@@ -233,3 +257,21 @@ details.design-part>summary::-webkit-details-marker{display:none}
 details.design-part>summary::before{content:'▸';color:var(--muted);font-size:10px;width:12px}
 details.design-part[open]>summary::before{content:'▾'}
 .design-part-state{color:var(--muted);font-weight:400}
+/* A new font from Theme AI: the drawn textures its letters can be filled with. */
+.font-textures{margin:8px 0}.font-textures.error .hint{color:var(--orange)}
+.font-texture-tiles{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;align-items:center}
+.font-texture{padding:0;width:64px;height:64px;border-radius:7px;overflow:hidden;border:2px solid var(--line)}
+.font-texture img{width:100%;height:100%;object-fit:cover;display:block}.font-texture.active{border-color:var(--cyan)}
+.fonts-texture{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+/* The drawing card, simple first: what to do in one line, the variants, Use this one; the fine controls folded away. */
+.design-how{font-size:12px;color:var(--cyan);margin:2px 0 6px}
+.design-adjust{border:0;margin:6px 0 0;padding:0}
+.design-adjust>summary{margin:0 0 6px;font-size:11px;font-weight:500;color:var(--muted)}
+.design-adjust[open]>summary{color:var(--cyan)}
+/* Picked pictures are unmistakable: a thick cyan frame and a big check, in both layouts. */
+.asset-card.picked{box-shadow:0 0 0 2px var(--cyan) inset;background:#18323a}
+body.lab-simple .asset-card .pick{width:22px;height:22px;opacity:.8}
+body.lab-simple .asset-card.picked .pick{opacity:1}
+body.lab-simple .asset-card .pick[aria-checked=true]::after{left:7px;top:3px;width:5px;height:10px}
+/* Simple: no model picker or memory meters, only what Theme AI is doing. */
+body.lab-simple #themeModel,body.lab-simple .theme-state,body.lab-simple #themeActivity>:not(.act-dot):not(.act-text){display:none!important}

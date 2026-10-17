@@ -10,3 +10,11 @@
 .tour-help{padding:6px 11px;font-weight:600}
 .tour-shade+.tour-ring[hidden]{display:block;width:0;height:0;left:50%;top:50%;border:0}
 @media(prefers-reduced-motion:reduce){.tour-ring{transition:none}}
+
+/* Examples a click puts in Theme AI's box, and the right-click menu shown beside a picture. */
+.tour-examples{display:flex;flex-wrap:wrap;gap:5px;margin:-4px 0 14px}.tour-examples small{width:100%;color:var(--cyan);font-size:11px}
+.tour-examples button{padding:5px 10px;font-size:11px;border-radius:14px;background:#1d2f3d;border-color:#405264}
+.tour-examples button.active,.tour-examples button:hover{border-color:var(--cyan);color:var(--cyan)}
+.tour-demo-menu{position:fixed;z-index:903;min-width:190px;background:#22303e;border:1px solid #51687b;padding:5px;border-radius:8px;box-shadow:0 10px 40px #0009;pointer-events:none}
+.tour-demo-menu div{padding:7px 10px;font-size:12px;border-radius:4px}.tour-demo-menu div:first-of-type{background:#3d535f}
+.tour-demo-pointer{position:absolute;left:-16px;top:-12px;font-size:16px;color:#fff;transform:rotate(-135deg);text-shadow:0 1px 3px #000}

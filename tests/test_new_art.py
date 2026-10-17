@@ -223,3 +223,50 @@ class PaintTheOriginal(unittest.TestCase):
         self.assertTrue((np.asarray(out)[..., 3] == np.asarray(ring)[..., 3]).all())        # exactly the original outline
         edge = np.asarray(out)[20, 3, :3]
         self.assertGreater(int(edge[0]), 80)                                                # the ring got the drawing's color, not black
+
+
+class ThemeColorsStayTheSame(unittest.TestCase):
+    """A theme's colors are the same in every piece and every time: "rainbow" is one rainbow, "red" one red."""
+
+    def test_plans_use_the_named_colors_exactly(self):
+        import theme
+        drifted = dict(gradient=['#ff0000', '#ffa500', '#ffff00', '#00ff00', '#0000ff', '#8b00ff'], rim_gradient=[], color='', glow_color='#ff1a1a', outline_color='', rim_color='gradient')
+        fixed = theme.same_colors(drifted, 'rainbow outlines with a red glow')
+        self.assertEqual((fixed['gradient'], fixed['glow_color']), (theme.GRADIENTS['rainbow'], theme.COLORS['red']))
+        self.assertEqual(theme.same_colors(dict(color='#c62828', gradient=[], rim_gradient=[]), 'red buttons')['color'], theme.COLORS['red'])
+        self.assertEqual(theme.same_colors(dict(color='#5a0000', gradient=[], rim_gradient=[]), 'red buttons, dark inside')['color'], '#5a0000')   # a dark shade asked for
+
+    def test_drawings_are_matched_to_the_palette(self):
+        rainbow = design.theme_colors('make the game look like rainbows')
+        self.assertEqual(rainbow[:3], ['#ff2d55', '#ff9500', '#ffe600'])
+        drawn = ['#ff5040', '#20b0e0', '#101010', '#ffffff']
+        im = Image.new('RGBA', (40 * len(drawn), 8))
+        for i, c in enumerate(drawn): im.paste(c, (i * 40, 0, (i + 1) * 40, 8))
+        out = np.asarray(design.harmonize(im, rainbow)).astype(int)
+        hue = lambda px: __import__('colorsys').rgb_to_hsv(*(px[:3] / 255))[0]
+        target = lambda c: __import__('colorsys').rgb_to_hsv(*(int(c[i:i + 2], 16) / 255 for i in (1, 3, 5)))[0]
+        gap = lambda a, b: min(abs(a - b), 1 - abs(a - b))
+        self.assertLess(gap(hue(out[4, 5]), target('#ff2d55')), gap(target('#ff5040'), target('#ff2d55')) / 2)   # the red moved to the theme's red
+        self.assertLess(gap(hue(out[4, 45]), target('#00c7ff')), gap(target('#20b0e0'), target('#00c7ff')) / 2)
+        self.assertEqual((list(out[4, 85]), list(out[4, 125])), ([16, 16, 16, 255], [255, 255, 255, 255]))   # black and white stay
+
+    def test_a_theme_without_named_colors_takes_the_first_applied_pieces(self):
+        import tempfile
+        from pathlib import Path
+        with tempfile.TemporaryDirectory() as folder:
+            d = design.Designer.__new__(design.Designer)
+            d.folder, d.jobs = Path(folder), {}
+            first = dict(id='a' * 32, prompt='a bmw theme', palette_key=design.palette_key('a bmw theme'))
+            second = dict(id='b' * 32, prompt='A BMW theme!', palette_key=design.palette_key('A BMW theme!'))
+            d.jobs = {first['id']: first, second['id']: second}
+            piece = Image.new('RGBA', (60, 20), '#1c69d4'); piece.paste('#ffffff', (40, 0, 60, 20))
+            d.learn_palette(first, piece)
+            self.assertEqual(d.theme_palette(first), [])                        # the first piece is the palette
+            self.assertEqual(d.theme_palette(second), ['#1c69d4'])              # the rest are matched to it
+            self.assertEqual(second['learned'], ['#1c69d4'])
+            again = design.Designer.__new__(design.Designer)
+            again.folder, again.jobs = Path(folder), {}
+            self.assertEqual(again.theme_palette(dict(second, id='c' * 32)), ['#1c69d4'])   # kept across restarts
+            named = dict(id='d' * 32, prompt='rainbow theme', colors=design.theme_colors('rainbow theme'), palette_key=design.palette_key('rainbow theme'))
+            d.learn_palette(named, piece)
+            self.assertNotIn(named['palette_key'], d.palettes())                 # named colors are never replaced

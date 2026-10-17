@@ -6,6 +6,7 @@ before any theme, so a follow-up request replaces the previous theme instead of 
 Without Ollama a keyword parser produces the same kind of plan for simple requests.
 """
 import base64
+import colorsys
 import fnmatch
 import io
 import json
@@ -324,9 +325,56 @@ GAME_THEME = r'\b(?:theme[ds]?|reskin|makeover|overhaul)\b'
 THEMED = r'\b(?:theme[ds]?|style|aesthetic|vibes?|reskin|edition|version|makeover)\b'
 CLAUSES = r'[.;\n]+|,?\s+(?:and then|then|also|plus)\s+|,?\s+and\s+(?=(?:make|give|put|add|draw|turn|theme|redesign|redraw|paint|stick|change|set)\b)'
 # Text: requests about the game's fonts become a font style with a preview ("player names black with a white glow").
-FONT_WORDS = r'\b(?:fonts?|typefaces?|lettering|player names?|nick ?names?|usernames?|names|name text|menu text)\b'
-TEXT_TARGETS = [('geosans_stroke_80', r'\boutlined (?:menu )?text'), ('geosans_80', r'\b(?:menu|ui|button|hud) (?:text|font|letters)'),
-                ('expinfo', r'\b(?:xp|small) numbers?\b'), ('nicktext', r'.')]
+FONT_WORDS = (r'\b(?:fonts?|typefaces?|typography|lettering|player names?|(?:my|your|our|their|his|her) (?:user ?)?names?|nick ?names?|nick ?text\w*|usernames?|names|name text|name tags?|'
+              r'menu text|text (?:style|font|look|colou?rs?)|geosans\w*|expinfo\w*)\b')
+# "Make the text red", "rainbow letters": the game's text too, when the same words name no other part ("the buttons with
+# white text" is about the buttons).
+TEXT_ALONE = r'\b(?:text|texts|writing|letters|words|wording)\b'
+OTHER_PARTS = rf"\b(?:{'|'.join(v for k, v in WORDS.items() if k != 'fonts')})\b"
+TEXT_TARGETS = [('geosans_stroke_80', r'\boutlined (?:menu )?text|\bgeosans_?stroke'), ('geosans_80', r'\b(?:menu|ui|button|hud) (?:text|font|letters|writing)|\bgeosans'),
+                ('expinfo', r'\b(?:xp|exp|small) numbers?\b|\bexpinfo'), ('nicktext', r'.')]
+# "Make the names say Novu": what text says is not in a font. Player names are typed by players, menu words are in the game.
+TEXT_WORDING = r'\b(?:to say|says?|saying|to read|reads?|spell(?:s|ed|ing)?|rename|different words?|other words?)\b'
+# A request that names no look ("change the font", "use a different font"): a first look to start from, a different one
+# each time, and every other look a click away.
+STARTER_LOOKS = ['Gold', 'Neon blue', 'Fire', 'Comic', 'Chrome', 'Galaxy', 'Bold outline', 'Ice', 'Graffiti', 'Rainbow', 'Sports jersey', 'Toxic']
+
+
+# A new font: what its letters are made of ("a font made of lava", "letters covered in sprinkles", "a carbon fiber texture
+# font"). Image AI draws it as a tile and the letters of a real typeface are filled with it (design.start_texture).
+TEXTURE_ASK = (r"\b(?:made (?:out )?of|made from|out of|built (?:out )?of|carved (?:out )?(?:of|from)|covered (?:in|with)|filled with|"
+               r"textured (?:like|with)|based on|inspired by|in the style of)\s+(?P<what>[^.,;!?]{2,60})")
+TEXTURE_WORD = r"\b(?P<what>[a-z][\w' -]{1,40}?\s+(?:texture[sd]?|pattern(?:ed)?|print))\b"
+NEW_FONT = (r'\b(?:new|own|custom|unique|original|brand[- ]new|different|fresh)\s+(?:\w+\s+){0,2}(?:fonts?|typefaces?|lettering)\b|'
+            r'\b(?:create|design|invent|generate|draw|make)\s+(?:me\s+|us\s+)?(?:a|an|my|our)\s+(?:\w+\s+){0,3}(?:fonts?|typefaces?|lettering)\b')
+# Typefaces a new font can start from: shipped with Windows 10 and 11, so it works on every player's PC.
+FONT_FAMILIES = ['Arial', 'Arial Black', 'Bahnschrift', 'Segoe UI', 'Segoe UI Black', 'Segoe Print', 'Segoe Script', 'Ink Free', 'Impact', 'Georgia',
+                 'Consolas', 'Comic Sans MS', 'Gabriola', 'Franklin Gothic Medium', 'Palatino Linotype', 'Trebuchet MS', 'Verdana', 'MV Boli',
+                 'Courier New', 'Chiller', 'Sitka']
+# Under a texture the letters need an edge to read on any background: a heavy typeface, a dark outline and a soft shadow.
+TEXTURE_BASE = dict(font=fonts.HEAVY, outline='#101216', outline_width=3, shadow='#000000', shadow_x=0, shadow_y=3, shadow_blur=3, shadow_opacity=0.7)
+
+
+def texture_subject(text):
+    """What a request says a font's letters are made of ("lava", "chocolate with sprinkles"), or ''."""
+    low = re.sub(TEXT_REFERENCE, ' ', str(text).lower())
+    found = re.search(TEXTURE_ASK, low) or re.search(TEXTURE_WORD, low)
+    if not found: return ''
+    what = re.sub(r"\b(?:textures?|textured|fonts?|typefaces?|letters?|lettering|text|names?|for|the|player|players|my|our|please|pls|thanks?|on|in|it|them)\b", ' ', found.group('what'))
+    what = re.sub(r'^\W*(?:an?|some|with)\s+|\s+(?:and|or|with)\s*$', '', re.sub(r'\s+', ' ', what).strip())
+    return what if 2 <= len(what) <= 60 and re.search(r'[a-z]{3}', what) else ''
+
+
+def texty(low):
+    """Whether these (lowercase) words are about the game's text."""
+    return bool(re.search(FONT_WORDS, low) or (re.search(TEXT_ALONE, low) and not re.search(OTHER_PARTS, low)))
+
+
+def font_of(row):
+    """The game font a library asset belongs to ('nicktext' for nicktext_0.png and each of its letters), or ''."""
+    if not row or not (row.get('kind') == 'glyph' or row.get('group') == 'Fonts'): return ''
+    found = re.fullmatch(r'(.+?)(?:_\d+)?\.(?:png|fnt)', str(row.get('source') or row.get('name') or '').rsplit('/', 1)[-1], re.I)
+    return found.group(1).lower() if found else ''
 FACE_WORDS = [(r'\b(?:condensed|tall)\b', 'Bahnschrift|Bold Condensed'), (r'\bcomic\b', 'Comic Sans MS|Bold'),
               (r'\b(?:spooky|horror|creepy|halloween|scary)\b', 'Chiller|Regular, Ink Free|Regular'), (r'\b(?:mono|monospace|typewriter|code)\b', 'Consolas|Bold, Cascadia Code|Bold'),
               (r'\b(?:handwritten|handwriting|script|cursive|signature)\b', 'Segoe Script|Bold, Segoe Print|Bold'), (r'\b(?:blocky|heavy|chunky)\b', 'Arial|Black')]
@@ -515,7 +563,7 @@ def about_text(clause, only=None):
     """Whether a clause asks to change the game's text (not just mentions it as an example). With assets checked, a clause
     about "this"/"it" is about those assets, whatever text it mentions."""
     low = re.sub(TEXT_REFERENCE, ' ', clause.lower())
-    if not re.search(FONT_WORDS, low): return False
+    if not texty(low): return False
     return not (only and re.search(THIS, low))
 
 
@@ -524,7 +572,7 @@ def text_split(clause):
     theme and a text style. Returns (the text request, [the other requests]); "names in red, white and blue" stays whole."""
     parts = [p.strip() for p in re.split(r'\s*,\s*|\s+and\s+', clause) if p.strip()]
     elsewhere = rf"\b(?:{'|'.join(v for k, v in WORDS.items() if k != 'fonts')})\b|{WHOLE_GAME}"
-    others = [p for p in parts if not re.search(FONT_WORDS, p.lower()) and re.search(elsewhere, p.lower())]
+    others = [p for p in parts if not texty(p.lower()) and re.search(elsewhere, p.lower())]
     text = ', '.join(p for p in parts if p not in others) if others else clause
     return (clause if font_style(text, []) == {'font': ''} else text), others   # "names and buttons gold": the gold is for both
 
@@ -598,6 +646,49 @@ RISKY = {'invert': r'invert|negative|opposite|flip the colou?rs', 'pixelate': r'
          'grain': r'grain|nois[ey]|gritty|film|dust|rough|vintage|glitch|static'}
 
 
+def named_colors(said):
+    """The colors a request names, in order: its gradients' own stops ("rainbow") and plain colors ("red and gold")."""
+    low, out = str(said).lower(), []
+    for name in sorted(GRADIENTS, key=lambda n: low.find(n) if re.search(rf'\b{re.escape(n)}s?\b', low) else 10 ** 6):
+        if re.search(rf'\b{re.escape(name)}s?\b', low): out += [c for c in GRADIENTS[name] if c not in out]
+    for found in re.finditer(rf"\b({'|'.join(sorted(COLORS, key=len, reverse=True))})\b", low):
+        if COLORS[found.group(1)] not in out: out.append(COLORS[found.group(1)])
+    return out
+
+
+def nearest_named(color, palette):
+    """The named color a planned one is a shade of (same hue family, similar lightness), or ''."""
+    if not color or not palette: return ''
+    h, s, v = colorsys.rgb_to_hsv(*rgb_of(color))
+    best, gap = '', 1.0
+    for c in palette:
+        ph, ps, pv = colorsys.rgb_to_hsv(*rgb_of(c))
+        if min(s, ps) < 0.25 or abs(v - pv) > 0.35: continue
+        d = min(abs(h - ph), 1 - abs(h - ph))
+        if d < gap: best, gap = c, d
+    return best if gap <= 0.05 else ''
+
+
+def same_colors(op, said):
+    """The exact colors the request names, every time: "rainbow" is always the same rainbow and "red" the same red, so a
+    theme made in pieces (or asked again) does not come out in a different shade each time. A preset gradient a request
+    names replaces the model's own version of it; a planned color that is a shade of a named one becomes that color."""
+    low = str(said).lower()
+    presets = [n for n in GRADIENTS if re.search(rf'\b{re.escape(n)}s?\b', low)]
+    palette = named_colors(said)
+    if not palette: return op
+    op = dict(op)
+    for field in ('gradient', 'rim_gradient'):
+        ramp = op.get(field) or []
+        if len(ramp) >= 2 and len(presets) == 1 and ramp not in GRADIENTS.values():
+            op[field] = list(GRADIENTS[presets[0]])
+        elif ramp: op[field] = [nearest_named(c, palette) or c for c in ramp]
+    for field in ('color', 'glow_color', 'outline_color', 'rim_color'):
+        value = op.get(field)
+        if isinstance(value, str) and value.startswith('#'): op[field] = nearest_named(value, palette) or value
+    return op
+
+
 def tame(plan, said, bold=False):
     """Small models tend to switch on every field a schema offers. Effects that wreck art are kept only
     when the conversation asked for something like them, and exact repeats of an operation are dropped.
@@ -616,6 +707,7 @@ def tame(plan, said, bold=False):
         painted = op['rim_color'] or (op['color_mode'] in ('tint', 'colorize') and op['targets'] != ['menu_background'])
         if wants_glow and painted and not op['glow_color']: op.update(glow_color='auto', glow_size=12.0, glow_strength=1.6)
         if op['glow_color'] and re.search(rf'\b(?:{QUIET_WORDS})\s+(?:\w+\s+)?glow', said): op.update(glow_size=min(op['glow_size'], 8.0), glow_strength=min(op['glow_strength'], 0.9))
+        op = same_colors(op, said)
         fingerprint = json.dumps({k: v for k, v in op.items() if k not in ('targets', 'match', 'exclude')}, sort_keys=True)
         whole = json.dumps(op, sort_keys=True)
         if (whole, 'same') in seen: continue   # the very same step again (small models repeat themselves)
@@ -1125,24 +1217,118 @@ class Themes:
         self.file = lab.root / 'themes.json'
         self.reindex()
 
-    def font_request(self, message):
-        """A request about the game's text: a font style for one of its fonts, with a preview of example text."""
+    def font_request(self, message, fid=None):
+        """A request about the game's text: a font style for one of its fonts, with a preview of example text. fid: the
+        font the request is about (a checked font sheet or letter); else it is read from the words (player names by default)."""
         low = message.lower()
-        if not re.search(FONT_WORDS, low): return None
+        if not fid and not texty(low): return None
         try:
             faces = self.lab.typefaces()
             game = fonts.game_fonts(self.lab.game)
-        except (OSError, ValueError, AttributeError): return None
-        fid = next((f for f, pattern in TEXT_TARGETS if f in game and re.search(pattern, low)), None)
-        if not fid: return None
+        except (OSError, ValueError, AttributeError): faces, game = [], {}
+        if not game:
+            # Text is restyled from the game's own font files; without them it must not fall through to recoloring or
+            # drawing the font sheets (which turns the letters into a block).
+            reply = ("I couldn't find the game's font files (assets/*.fnt in the Mitos.is folder), so I can't restyle text right now. "
+                     'In Steam, right-click Mitos.is › Properties › Installed Files › Verify integrity of game files, then restart Asset Lab.')
+            return dict(plan=dict(reply=reply, operations=[], ui_colors={}, hide=[]), source='font', note='', preview=None)
+        if fid not in game: fid = next((f for f, pattern in TEXT_TARGETS if f in game and re.search(pattern, low)), next(iter(game)))
         quoted = re.search(r'["“]([^"”]{1,24})["”]', message)
         sample = quoted.group(1) if quoted else (self.sample() if fid == 'nicktext' else 'Settings' if fid.startswith('geosans') else '12345')
         raw = font_style(message, faces)
-        card = self.font_card(fid, raw, sample)
-        reply = (f"{card['label']}: {describe_text(card['style'], card['face'], card['look'], raw.get('look', ''))}. "
-                 'Flip through more looks below; Apply puts it in your mod and Fine-tune has every setting.')
-        note = '' if fid == 'nicktext' else game[fid]['note']
+        material = texture_subject(message)
+        plain = not raw.get('look') and fonts.clean_style(raw, faces) == fonts.clean_style({}, faces)
+        if plain and (material or re.search(NEW_FONT, low)):
+            # A new font that the words alone do not describe ("a font made of chocolate", "make me a new font that feels
+            # like a horror movie"): the local model picks the typeface and effects for it.
+            designed = self.font_design(message, faces)
+            if designed: raw, plain = designed, False
+        if material:
+            return self.texture_font(fid, game, raw, sample, material, plain)
+        if plain:
+            # Nothing about the look was said ("change the font", "a different font"): a first look to start from.
+            self._starter = (getattr(self, '_starter', -1) + 1) % len(STARTER_LOOKS)
+            look = STARTER_LOOKS[self._starter]
+            raw = dict(fonts.PRESETS[look], look=look)
+            card = self.font_card(fid, raw, sample)
+            reply = (f'{card["label"]}: here is the {look} look to start from. Flip through more looks below, or tell me what you want: '
+                     'a font ("arial black", "comic sans"), colors ("red to gold"), an outline, a glow or a mood ("spooky"). '
+                     'Apply puts it in your mod.')
+        else:
+            card = self.font_card(fid, raw, sample)
+            reply = (f"{card['label']}: {describe_text(card['style'], card['face'], card['look'], raw.get('look', ''))}. "
+                     'Flip through more looks below; Apply puts it in your mod and Fine-tune has every setting.')
+        notes = [] if fid == 'nicktext' else [game[fid]['note']]
+        if re.search(TEXT_WORDING, low):
+            notes.append("I can change how text looks (font, colors, outline, glow), not what it says: player names are what each "
+                         'player types, and the menu words are written in the game itself.')
+        return dict(plan=dict(reply=reply, operations=[], ui_colors={}, hide=[]), source='font', note=' '.join(notes), preview=None, font=card)
+
+    def texture_font(self, fid, game, raw, sample, material, plain):
+        """A new font whose letters are made of something: the style now (a heavy, outlined typeface unless the words or
+        the model chose one), and the card asks Image AI to draw the material as a tile to fill the letters with."""
+        style = dict(TEXTURE_BASE, **{k: v for k, v in raw.items() if k != 'look'}) if not plain else dict(TEXTURE_BASE)
+        if not style.get('font'): style['font'] = TEXTURE_BASE['font']
+        card = self.font_card(fid, style, sample)
+        designer = getattr(self, 'designer', None)
+        ready = designer.status() if designer else dict(available=False, missing=['the image model'])
+        if ready['available']:
+            card.update(texture_prompt=material, seconds=round(ready.get('seconds_per_drawing') or design.DEFAULT_SECONDS))
+            reply = (f'{card["label"]}: a new font made of {material}. Image AI is drawing what the letters are made of; pick the one you '
+                     'like below, flip through looks for the shape and edges, then Apply.')
+            note = ''
+        else:
+            reply = f'{card["label"]}: {describe_text(card["style"], card["face"], card["look"], "")}.'
+            note = (f'To fill the letters with {material}, install the image model (Settings › Theme AI & drawing). '
+                    'Until then this is the closest look in colors and effects.')
+        if fid != 'nicktext': note = (note + ' ' + game[fid]['note']).strip()
         return dict(plan=dict(reply=reply, operations=[], ui_colors={}, hide=[]), source='font', note=note, preview=None, font=card)
+
+    def font_design(self, message, faces):
+        """A font style the local model makes up for a request the words do not describe, or None (no model, or no usable
+        answer). The typeface is one every Windows PC has; colors are checked by fonts.clean_style."""
+        available = models()
+        if not available: return None
+        model = self.preferred([m['name'] for m in available])
+        installed = {f['family'] for f in faces} if faces else set(FONT_FAMILIES)
+        families = [f for f in FONT_FAMILIES if f in installed] or FONT_FAMILIES
+        system = ('You design the lettering of player names in a 2D game. Answer with one JSON object only: '
+                  '{"font": one of [' + ', '.join(families) + '], "fill": "#rrggbb", "gradient": [2 to 5 "#rrggbb", top to bottom, or []], '
+                  '"outline": "#rrggbb" or "", "outline_width": 0-6, "glow": "#rrggbb" or "", "glow_size": 0-16, "shadow": "#rrggbb" or "", '
+                  '"caps": true or false, "italic": -0.3 to 0.3}. The names must stay easy to read on dark and light backgrounds, '
+                  'so light letters get a dark outline or shadow and dark letters a light one.')
+        payload = dict(model=model, stream=False, format='json', keep_alive='10m',
+                       messages=[dict(role='system', content=system), dict(role='user', content=message[:400])],
+                       options=dict(temperature=0.5, num_predict=220, num_ctx=2048, **MODEL_OPTIONS.get(model, {})))
+        if next(m for m in available if m['name'] == model)['thinking']: payload['think'] = False
+        self.activity = f'Designing the font with {model}…'
+        try:
+            answer = ollama('/api/chat', payload, timeout=120)
+            found = re.search(r'\{.*\}', re.sub(r'<think>.*?</think>', '', answer.get('message', {}).get('content', ''), flags=re.S), re.S)
+            got = json.loads(found.group(0)) if found else {}
+        except (OSError, ValueError, AttributeError): return None
+        finally: self.activity = None
+        if not isinstance(got, dict): return None
+        family = got.get('font') if got.get('font') in families else 'Arial Black'
+        style = dict(font=family.replace('Arial Black', 'Arial|Black').replace('Segoe UI Black', 'Segoe UI|Black'))
+        hexes = lambda v: [c for c in (v if isinstance(v, list) else []) if isinstance(c, str) and re.fullmatch(r'#[0-9a-fA-F]{6}', c)]
+        ramp = hexes(got.get('gradient'))[:5]
+        if len(ramp) >= 2: style['stops'] = fonts.even(*ramp)
+        for key in ('fill', 'outline', 'glow', 'shadow'):
+            if isinstance(got.get(key), str) and re.fullmatch(r'#[0-9a-fA-F]{6}', got[key]): style[key] = got[key]
+        number = lambda v, lo, hi: max(lo, min(hi, float(v))) if isinstance(v, (int, float)) and not isinstance(v, bool) else None
+        if style.get('outline'): style['outline_width'] = number(got.get('outline_width'), 1, 6) or 3
+        if style.get('glow'): style.update(glow_size=number(got.get('glow_size'), 2, 16) or 8, glow_strength=1.3)
+        if style.get('shadow'): style.update(shadow_y=3, shadow_blur=3, shadow_opacity=0.7)
+        if got.get('caps') is True: style['caps'] = True
+        if number(got.get('italic'), -0.3, 0.3): style['italic'] = number(got.get('italic'), -0.3, 0.3)
+        return style if len(style) > 1 else None
+
+    def checked_font(self, only):
+        """The game font the checked assets are, when every one of them is a font sheet or one of its letters."""
+        rows = [self.lab.catalog.rows.get(k) for k in only or []]
+        found = {font_of(r) for r in rows if r}
+        return next(iter(found)) if rows and all(rows) and len(found) == 1 and '' not in found else ''
 
     def font_card(self, fid, style, sample):
         """A text style ready for the chat: the cleaned style, the look it is (if it is one), and a preview of example text."""
@@ -1433,7 +1619,7 @@ class Themes:
 
     def showcase_rows(self, designer, only=None):
         """What "draw the whole game" redraws: the checked assets, or everything players look at in game (see
-        Designer.whole_game_rows: the title, the viruses, all of theme.png and the food)."""
+        Designer.whole_game_rows: the backgrounds, the viruses, the menu and in-game buttons and the food)."""
         if only: return [r for r in (self.lab.row(k) for k in only if k in self.lab.catalog.rows) if r['editable']][:24]
         # A game without those (another Mitosis version, a test game) draws a few of its buttons and icons instead.
         return designer.whole_game_rows() or designer.family_rows('buttons icons logo cells')
@@ -1491,6 +1677,10 @@ class Themes:
             if draw == 'auto': draw = 'on'
             message = re.sub(DRAW_ASK, ' ', message, flags=re.I)
             message = re.sub(r'\s+([.,!?])', r'\1', re.sub(r'\s{2,}', ' ', message)).strip(' .,') or 'give the game a bold new look'
+        # A checked font sheet (or its letters) is restyled by the fonts tool, whatever the words: drawn by the image model
+        # or recolored as a picture, its letters would be lost.
+        checked = self.checked_font(only) if only else ''
+        if checked: return self.font_request(message, checked)
         pieces = [p.strip(' ,') for p in re.split(CLAUSES, message) if p and p.strip(' ,')]
         pieces = with_verbs(pieces)
         split = [text_split(p) for p in pieces if about_text(p, only)]   # "christmas theme and red names": both

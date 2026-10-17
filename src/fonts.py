@@ -14,6 +14,7 @@ import json
 import math
 import os
 import re
+import struct
 import threading
 from pathlib import Path
 import numpy as np
@@ -33,11 +34,18 @@ GAME_FONTS = {
 DEFAULT = dict(font='', size=1.0, stretch=1.0, spacing=0.0, bold=0.0, italic=0.0, caps=False, edge=True,
                fill='#ffffff', fill_opacity=1.0, stops=[], angle=90.0,
                outline='', outline_width=0.0, outline2='', outline2_width=0.0,
-               glow='', glow_size=0.0, glow_strength=1.0, shadow='', shadow_x=0.0, shadow_y=0.0, shadow_blur=0.0, shadow_opacity=0.6)
+               glow='', glow_size=0.0, glow_strength=1.0, shadow='', shadow_x=0.0, shadow_y=0.0, shadow_blur=0.0, shadow_opacity=0.6,
+               texture='', texture_scale=1.0)
 LIMITS = dict(size=(0.5, 2.0), stretch=(0.5, 2.0), spacing=(-20, 40), bold=(0, 8), italic=(-0.4, 0.4), fill_opacity=(0, 1),
               outline_width=(0, 16), outline2_width=(0, 16), glow_size=(0, 32), glow_strength=(0, 4),
-              shadow_x=(-24, 24), shadow_y=(-24, 24), shadow_blur=(0, 24), shadow_opacity=(0, 1))
+              shadow_x=(-24, 24), shadow_y=(-24, 24), shadow_blur=(0, 24), shadow_opacity=(0, 1), texture_scale=(0.25, 4))
 MAX_STOPS = 8
+# texture: a picture that fills the letters instead of the fill color or gradient (Theme AI draws one for "a font made
+# of lava"): the name of a seamless tile, '<design job>-<variant>', found by TEXTURES (set by the lab). texture_scale: how
+# big the pattern is, 1 = the tile is twice the height of the capitals.
+TEXTURE = re.compile(r'[0-9a-f]{32}-\d{1,2}')
+TEXTURES = None   # name -> path of the tile, or None
+TEXTURE_DARK = 0.32   # the least average brightness a texture fills letters with
 COLOR = re.compile(r'#[0-9a-fA-F]{6}')
 SUPER = 4          # letters drawn wider or narrower are rendered this many times larger, then scaled down: crisp edges
 LOCK = threading.RLock()
@@ -234,10 +242,100 @@ def font_dirs():
     return [Path(os.environ.get('WINDIR', r'C:\Windows')) / 'Fonts', Path(os.environ.get('LOCALAPPDATA', '')) / 'Microsoft' / 'Windows' / 'Fonts']
 
 
+SFNT = (b'\x00\x01\x00\x00', b'OTTO', b'true', b'typ1')
+NAME_TABLE_MAX = 1 << 20   # a name table is a few KB; more than this is a broken file
+NAME_IDS = {1, 2, 16, 17, 21, 22}   # family and style: legacy, typographic, WWS
+
+
+def _u16(b, at): return int.from_bytes(b[at:at + 2], 'big')
+
+
+def _u32(b, at): return int.from_bytes(b[at:at + 4], 'big')
+
+
+def _pick_name(records, data, wanted):
+    """The text of one name ID the way FreeType picks it: a Windows Unicode record, English if there is one; else a Mac
+    record (English, else Roman); else a Unicode-platform record. A Windows name that is not English loses to a Mac one."""
+    win = win_english = apple_english = apple_roman = uni = None
+    for rec in records:
+        platform, encoding, language, nid, length, at = rec
+        if nid != wanted or length <= 0: continue
+        if platform in (0, 2): uni = rec
+        elif platform == 1:
+            if language == 0: apple_english = rec
+            elif encoding == 0: apple_roman = rec
+        elif platform == 3 and encoding in (0, 1, 10) and (win is None or (language & 0x3FF) == 0x009) and not (win and win[2] == 0x409):
+            win, win_english = rec, (language & 0x3FF) == 0x009   # US English (0x409) is kept once found: every Windows font has it
+    apple = apple_english or apple_roman
+    rec, utf16 = (win, True) if win and not (apple and not win_english) else (apple, False) if apple else (uni, True)
+    if rec is None: return ''
+    raw = data[rec[5]:rec[5] + rec[4]]
+    text = raw.decode('utf-16-be', 'replace') if utf16 else raw.decode('mac_roman', 'replace')
+    return text.split('\x00', 1)[0].strip()
+
+
+def font_names(path):
+    """(family, style, variable) of a font file (the first face of a .ttc collection), read straight from its OpenType
+    'name' table, or None when it is not a font this can read. A handful of small, bounded reads with every offset
+    checked against the file, so a broken or hostile file costs nothing and can never hang the scan (FreeType can).
+    variable: the face has an 'fvar' table, so its named instances (Bold, Light...) are styles of their own."""
+    with open(path, 'rb') as f:
+        size = os.fstat(f.fileno()).st_size
+        head = f.read(12)
+        if len(head) < 12: return None
+        if head[:4] == b'ttcf':
+            if _u32(head, 8) < 1: return None
+            first = f.read(4)
+            if len(first) < 4: return None
+            start = _u32(first, 0)
+            if start + 12 > size: return None
+            f.seek(start); head = f.read(12)
+            if len(head) < 12: return None
+        if head[:4] not in SFNT: return None
+        count = _u16(head, 4)
+        if not 0 < count <= 512: return None
+        listing = f.read(16 * count)
+        if len(listing) < 16 * count: return None
+        tables = {tag: (at, length) for tag, _, at, length in struct.iter_unpack('>4sIII', listing) if at + length <= size}
+        if b'name' not in tables or b'cmap' not in tables or not (b'glyf' in tables or b'CFF ' in tables or b'CFF2' in tables): return None
+        wws_only = False   # OS/2 fsSelection bit 8: the typographic names are the font's own, there are no WWS names to prefer
+        if b'OS/2' in tables and tables[b'OS/2'][1] >= 64:
+            f.seek(tables[b'OS/2'][0] + 62); sel = f.read(2)
+            wws_only = len(sel) == 2 and bool(_u16(sel, 0) & 256)
+        at, length = tables[b'name']
+        if length < 6: return None
+        f.seek(at); data = f.read(min(length, NAME_TABLE_MAX))
+    n, strings = _u16(data, 2), _u16(data, 4)
+    if 6 + 12 * n > len(data): return None
+    records = [(platform, encoding, language, nid, length, strings + at) for platform, encoding, language, nid, length, at
+               in struct.iter_unpack('>6H', data[6:6 + 12 * n]) if nid in NAME_IDS and strings + at + length <= len(data)]
+    # FreeType's order (what PIL's getname() gives): WWS names unless the font says it has none, then the typographic
+    # family (16/17), then the legacy one (1/2).
+    order = ((16, 17), (1, 2)) if wws_only else ((21, 22), (16, 17), (1, 2))
+    family = next((name for name in (_pick_name(records, data, fam) for fam, _ in order) if name), '')
+    style = next((name for name in (_pick_name(records, data, sub) for _, sub in order) if name), '')
+    return family, style, b'fvar' in tables
+
+
+def _variable_faces(p):
+    """A variable font's named instances, through FreeType: (family, style, [instance names]) or None."""
+    try: f = ImageFont.truetype(str(p), 24)
+    except (OSError, ValueError): return None
+    family, style = f.getname()
+    try: instances = [n.decode('utf-8', 'replace') if isinstance(n, bytes) else n for n in f.get_variation_names()]
+    except (OSError, ValueError, AttributeError): instances = []
+    return family, style, instances
+
+
 def system_fonts(cache_file=None):
-    """Installed typefaces as [dict(id, family, style)]; id is 'path' or 'path#named instance' for variable fonts."""
+    """Installed typefaces as [dict(id, family, style)]; id is 'path' or 'path#named instance' for variable fonts.
+    Names come from each file's name table (font_names), which takes a few milliseconds for a whole Windows install;
+    only variable fonts are opened with FreeType, for their named instances."""
     files = sorted(p for d in font_dirs() if d.is_dir() for p in d.iterdir() if p.suffix.lower() in ('.ttf', '.otf', '.ttc'))
-    signature = f'{len(files)}|' + '|'.join(f'{p.name}:{int(p.stat().st_mtime)}' for p in files)
+    def stamp(p):
+        try: return int(p.stat().st_mtime)
+        except OSError: return 0
+    signature = f'names2|{len(files)}|' + '|'.join(f'{p.name}:{stamp(p)}' for p in files)
     if cache_file:
         try:
             saved = json.loads(Path(cache_file).read_text(encoding='utf-8'))
@@ -245,12 +343,16 @@ def system_fonts(cache_file=None):
         except (OSError, ValueError, KeyError): pass
     fonts = []
     for p in files:
-        try: f = ImageFont.truetype(str(p), 24)
-        except (OSError, ValueError): continue
-        family, style = f.getname()
+        try: names = font_names(p)
+        except (OSError, ValueError, OverflowError): names = None
+        if not names: continue
+        family, style, variable = names
+        instances = []
+        if variable:
+            found = _variable_faces(p)
+            if not found: continue
+            family, style, instances = found
         if not family: continue
-        try: instances = [n.decode('utf-8', 'replace') if isinstance(n, bytes) else n for n in f.get_variation_names()]
-        except (OSError, ValueError, AttributeError): instances = []
         if instances: fonts += [dict(id=f'{p}#{name}', family=family, style=name) for name in instances]
         else: fonts.append(dict(id=str(p), family=family, style=style or 'Regular'))
     seen, unique = set(), []
@@ -258,8 +360,10 @@ def system_fonts(cache_file=None):
         if (f['family'], f['style']) in seen: continue
         seen.add((f['family'], f['style'])); unique.append(f)
     if cache_file:
-        Path(cache_file).parent.mkdir(parents=True, exist_ok=True)
-        Path(cache_file).write_text(json.dumps(dict(signature=signature, fonts=unique)), encoding='utf-8')
+        try:
+            Path(cache_file).parent.mkdir(parents=True, exist_ok=True)
+            Path(cache_file).write_text(json.dumps(dict(signature=signature, fonts=unique)), encoding='utf-8')
+        except OSError: pass   # only a cache: the list is still good
     return unique
 
 
@@ -335,7 +439,18 @@ def clean_style(raw, fonts=None):
     s['stops'] = stops[:MAX_STOPS] if len(stops) >= 2 else []
     font = raw.get('font') if isinstance(raw.get('font'), str) else ''
     s['font'] = (pick_font(fonts, font) or {}).get('id', '') if fonts is not None and font else font[:300]
+    s['texture'] = raw['texture'] if isinstance(raw.get('texture'), str) and TEXTURE.fullmatch(raw['texture']) else ''
     return s
+
+
+def texture_tile(name):
+    """The texture picture (RGB) for a style's texture name, or None when there is none (or it is gone)."""
+    if not name or not TEXTURE.fullmatch(name) or TEXTURES is None: return None
+    try:
+        path = TEXTURES(name)
+        if not path: return None
+        with Image.open(path) as im: return im.convert('RGB')
+    except (OSError, ValueError): return None
 
 
 def style_key(style): return json.dumps(style, sort_keys=True)
@@ -408,6 +523,17 @@ class Renderer:
         self.edge = edge_color(self.page) if style['edge'] else None
         self.cap = self.cap_height()
         self.missing, self.cache = 0, ({} if keep else None)
+        # A texture fills the letters: the tile, scaled so it is texture_scale x twice the capitals' height.
+        self.texture = None
+        tile = texture_tile(style.get('texture', ''))
+        if tile is not None:
+            h = max(8, int(round(self.cap * 2 * style.get('texture_scale', 1.0))))
+            w = max(8, int(round(tile.width * h / max(1, tile.height))))
+            self.texture = np.asarray(tile.resize((w, h), Image.Resampling.LANCZOS), np.float32) / 255
+            # A very dark material (black rock with thin glowing cracks) would vanish on the dark menu: lifted until the
+            # letters read, keeping its own colors and the bright details brightest.
+            mean = float((self.texture @ LUMA).mean())
+            if 0.01 < mean < TEXTURE_DARK: self.texture = np.power(self.texture, max(0.45, math.log(TEXTURE_DARK) / math.log(mean)))
 
     def cap_height(self):
         """How far the capitals reach above the baseline: the height a gradient runs over, the same for every letter."""
@@ -490,6 +616,13 @@ class Renderer:
         height down to the baseline, in the style's direction. Every letter is its own picture in the game's font, so an
         up-and-down gradient lines up along a whole name and a left-to-right one runs across each letter."""
         s = self.s
+        if self.texture is not None:
+            # The tile repeats from each letter's pen position at the baseline, so a name reads as one material; every
+            # letter takes a different part of it (seamless, so the repeats never show a line).
+            th, tw = self.texture.shape[:2]
+            ys, xs = np.mgrid[0:H, 0:W]
+            if slant: xs = np.round(xs + slant * (ys - y0)).astype(int)
+            return self.texture[(ys - int(round(y0))) % th, (xs - int(round(x0))) % tw]
         if not s['stops']: return rgb(s['fill'])
         a = math.radians(s['angle'])
         dx, dy = math.cos(a), math.sin(a)

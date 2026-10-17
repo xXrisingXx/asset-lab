@@ -58,7 +58,7 @@ function picker(o){
   row.append(prev,sel,next);
   let gen=0;
   const choose=()=>{
-    const look=F.data.looks.find(l=>l.name===sel.value),style=look?clean(look.style):o.style,g=++gen;
+    const look=F.data.looks.find(l=>l.name===sel.value),style=(o.wrap||(s=>s))(look?clean(look.style):o.style),g=++gen;   // wrap: a new font keeps its texture under every look
     o.onPick(style,look?look.name:'');
     preview(o.font,style,o.text).then(url=>{if(g===gen)o.img.src=url;}).catch(e=>message(e.message,true));
   };
@@ -78,15 +78,42 @@ function picker(o){
 window.LabFonts={catalog:()=>load(),reload:()=>load(true),preview,picker};
 
 // ----- the dialog -------------------------------------------------------------------------------------------------
+/* The window while the font list loads. The first time, the lab reads every font on this PC, which can take a while on
+   a PC with very many fonts: after a few seconds the window says so, and a list that fails or does not come at all
+   offers Retry instead of loading forever. Resolves true when the list is in and the window still open, false when the
+   player closed it (it then stays closed). */
+const SLOW_FONTS=8000,GIVE_UP_FONTS=90000;
+function waitForFonts(){
+  return new Promise(resolve=>{
+    const head=el('div','fonts-head'),x=btn('✕','quiet','Close');x.onclick=()=>dlg.close();head.append(el('h2','','Text & fonts'),x);
+    const note=el('p','fonts-sub fonts-loading'),more=el('div','fonts-sub fonts-retry');
+    dlg.replaceChildren(head,note,more);if(!dlg.open)dlg.showModal();
+    let done=false,timers=[],tries=0;
+    const stop=()=>{timers.forEach(clearTimeout);timers=[];};
+    const finish=ok=>{if(done)return;done=true;stop();dlg.removeEventListener('close',closed);resolve(ok);};
+    const closed=()=>finish(false);
+    dlg.addEventListener('close',closed);
+    const fail=(text,detail)=>{
+      if(done)return;stop();note.textContent=text;
+      const retry=btn('Retry','primary');retry.onclick=()=>attempt(true);
+      more.replaceChildren(...(detail?[el('p','hint',detail)]:[]),retry);
+    };
+    const attempt=fresh=>{
+      const mine=++tries;note.textContent='Loading fonts…';more.replaceChildren();
+      timers=[setTimeout(()=>{note.textContent='Reading the fonts installed on this PC for the first time. This can take a minute.';},SLOW_FONTS),
+        setTimeout(()=>fail('The fonts on this PC are taking too long to read.'),GIVE_UP_FONTS)];
+      /* Asked of the dialog itself: its close event comes a moment after it closes, too late to tell. A list that comes
+         after the window gave up on it is still taken. */
+      load(fresh).then(()=>finish(dlg.open),e=>{if(mine===tries)fail('The fonts on this PC could not be read.',e&&e.message);});
+    };
+    attempt(false);
+  });
+}
 async function open(font,style,text){
   /* Opens at once: the font list can take a moment the first time (it reads every font on this PC), so the window shows
-     that it is loading instead of the button seeming to do nothing. */
-  let waited=false;   // the loading window was shown: if the player closed it before the fonts came, it stays closed
-  if(!F.data&&!dlg.open){const head=el('div','fonts-head'),x=btn('✕','quiet','Close');x.onclick=()=>dlg.close();head.append(el('h2','','Text & fonts'),x);
-    dlg.replaceChildren(head,el('p','fonts-sub fonts-loading','Loading fonts…'));dlg.showModal();waited=true;}
-  try{await load();}catch(e){if(!F.data&&dlg.open)dlg.close();throw e;}
-  /* Asked of the dialog itself: its close event comes a moment after it closes, too late to tell. */
-  if(waited&&!dlg.open)return;
+     that it is loading instead of the button seeming to do nothing. Closed before the fonts came, it stays closed. */
+  if(!F.data&&!dlg.open){if(!await waitForFonts())return;}
+  else await load();
   F.font=font||F.font;if(!F.data.game.some(g=>g.id===F.font)&&F.data.game.length)F.font=F.data.game[0].id;
   const saved=F.data.game.find(g=>g.id===F.font);
   setStyle(style||(saved&&saved.style)||{});
@@ -104,7 +131,9 @@ function after(){   // what depends on several settings at once
     U.meta.textContent='On the menu, on a red cell and on a light cell, at the size the game stores it.'+(grad?' Drag across it to point the gradient.':'');}
 }
 function edited(){F.look='';if(U.look)U.look.value='';after();show();}
-function useLook(i){const n=F.data.looks.length;F.last=((i%n)+n)%n;const l=F.data.looks[F.last];F.look=l.name;F.style=clean(l.style);sync();show();ahead();}
+function useLook(i){const n=F.data.looks.length;F.last=((i%n)+n)%n;const l=F.data.looks[F.last];F.look=l.name;
+  const kept=F.style?.texture?{texture:F.style.texture,texture_scale:F.style.texture_scale}:{};   // a new font keeps its texture under every look
+  F.style=clean({...l.style,...kept});sync();show();ahead();}
 function ahead(){if(dlg.open&&F.data)prefetch(F.font,F.text,ring(F.data.looks.length,F.last).map(j=>clean(F.data.looks[j].style)));}
 
 // Previews the player asked for: at most one on its way, the newest wanted one next, a cached one at once.
@@ -248,7 +277,12 @@ function fillBox(){
   grad.onchange=()=>{if(grad.checked)F.style.stops=memory||[[0,F.style.fill],[1,F.style.fill==='#ff8a1a'?'#7a2cff':'#ff8a1a']];else{memory=F.style.stops;F.style.stops=[];}
     color.hidden=grad.checked;what.textContent=grad.checked?'Colors':'Color';U.gradient();edited();};
   U.syncs.push(()=>{color.value=F.style.fill;grad.checked=F.style.stops.length>0;color.hidden=grad.checked;what.textContent=grad.checked?'Colors':'Color';});
-  box.append(head,editor,solid,U.warn);return box;
+  /* A new font from Theme AI: its letters are filled with a drawn texture (it replaces the color and gradient). */
+  const tex=el('div','fonts-texture');const texHead=el('div','fonts-effect-head');const drop=btn('Remove texture','quiet','Fill the letters with the color or gradient again');
+  drop.onclick=()=>{F.style.texture='';sync();edited();};texHead.append(el('span','','Texture'),drop);
+  tex.append(texHead,slider('Texture size','texture_scale',0.25,4,0.05,v=>Math.round(v*100)+'%','How big the pattern is in the letters'));
+  U.syncs.push(()=>{tex.hidden=!F.style.texture;});
+  box.append(head,editor,solid,tex,U.warn);return box;
 }
 
 function render(){

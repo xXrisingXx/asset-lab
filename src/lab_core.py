@@ -223,6 +223,8 @@ class Lab:
         # The server passes <data home>/settings.json (the file the launcher reads); a lab made elsewhere keeps its own.
         self.settings = labsettings.Settings(settings_file or self.root.parent / 'settings.json')
         self.lock = threading.RLock()
+        self._typefaces_lock = threading.Lock()   # one reading of this PC's fonts at a time (typefaces)
+        fontlab.TEXTURES = self.font_texture   # where a font's texture fill is (Theme AI draws them)
         self.cache = Path(cache).resolve() if cache else None
         if cache is None:
             try:
@@ -297,8 +299,20 @@ class Lab:
 
     # ----- fonts: the game's text re-rendered in any installed typeface ---------------------------------------------
     def typefaces(self):
-        if getattr(self, '_typefaces', None) is None: self._typefaces = fontlab.system_fonts(self.root.parent / 'typefaces.json')
-        return self._typefaces
+        """This PC's typefaces, read once (fonts.system_fonts, kept in typefaces.json). One reading at a time: whoever asks
+        while it runs (the Fonts window, Theme AI, the warm-up at start) waits for that reading instead of starting another."""
+        faces = getattr(self, '_typefaces', None)
+        if faces is not None: return faces
+        with self._typefaces_lock:
+            faces = getattr(self, '_typefaces', None)
+            if faces is None: faces = self._typefaces = fontlab.system_fonts(self.root.parent / 'typefaces.json')
+            return faces
+
+    def warm_typefaces(self):
+        """Reads the typefaces ahead (the server runs this in the background at start), so the Fonts window opens at once.
+        A failure here is only a missed head start: the window asks again and reports it."""
+        try: self.typefaces()
+        except Exception: pass
 
     def font_source(self, fid):
         """(font info, original .fnt text, original page image) of one of the game's fonts, read once."""
@@ -319,10 +333,14 @@ class Lab:
 
     def font_catalog(self):
         faces = self.typefaces()
-        with self.lock:
-            saved = self.state.get('fonts') or {}
-            game = [dict(f, style=fontlab.clean_style(saved[fid]['style'], faces) if (saved.get(fid) or {}).get('style') else None,
-                         staged=bool((saved.get(fid) or {}).get('staged'))) for fid, f in fontlab.game_fonts(self.game).items()]
+        # Only a quick read of the saved styles: an install, a build or a drawing being applied holds the lab's lock for a
+        # while, and the Fonts window must not wait for them (it sat on "Loading fonts…").
+        locked = self.lock.acquire(timeout=1.5)
+        try: saved = json.loads(json.dumps(self.state.get('fonts') or {}))
+        finally:
+            if locked: self.lock.release()
+        game = [dict(f, style=fontlab.clean_style(saved[fid]['style'], faces) if (saved.get(fid) or {}).get('style') else None,
+                     staged=bool((saved.get(fid) or {}).get('staged'))) for fid, f in fontlab.game_fonts(self.game).items()]
         # Every look with its font list resolved to a typeface installed on this PC, so the menu and the previews agree.
         presets = [dict(group=group, items=[dict(name=name, style=fontlab.clean_style(p, faces)) for name, p in items.items()])
                    for group, items in fontlab.PRESET_GROUPS.items()]
@@ -348,12 +366,27 @@ class Lab:
             while len(kept) > 300: kept.pop(next(iter(kept)))
         return data
 
+    def font_texture(self, name):
+        """The picture of a font texture: kept in the workspace once a font uses it, else the drawing it came from."""
+        if not fontlab.TEXTURE.fullmatch(str(name or '')): return None
+        kept = self.root / 'font-textures' / f'{name}.png'
+        if kept.is_file(): return kept
+        job, index = name.split('-')
+        drawn = self.root / 'designs' / job / f'variant-{int(index)}.png'
+        return drawn if drawn.is_file() else None
+
     def font_apply(self, fid, style):
         """Render the whole font in a style, keep it in the workspace and put it in the mod."""
         with self.lock:
             f, fnt, page = self.font_source(fid)
             faces = self.typefaces()
             style = fontlab.clean_style(style, faces)
+            if style['texture']:
+                # The drawing it came from can be cleared away with old designs: the font keeps its own copy.
+                source = self.font_texture(style['texture'])
+                if source is None: raise ValueError('The texture for these letters is gone. Pick another one or draw it again.')
+                kept = self.root / 'font-textures' / f'{style["texture"]}.png'
+                if source != kept: atomic_bytes(kept, source.read_bytes())
             sheet, text, info = fontlab.build(fnt, page, style, faces)
             version = uuid.uuid4().hex
             atomic_bytes(self.root / 'fonts' / version / 'page.png', png(sheet))

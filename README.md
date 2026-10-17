@@ -16,14 +16,16 @@ Asset Lab is a Windows desktop editor for the artwork and sounds in **Mitos.is: 
 
 | Feature | What you can do |
 | --- | --- |
+| **Simple and Advanced** | **Simple** is just the pictures and Theme AI: click what you want to change, say how, install. **Advanced** adds the full image editor. New players start in Simple; switch any time in the top bar. |
 | **Asset library** | Search sprites, textures, backgrounds, fonts and sounds. Use categories, favorites, custom names and image similarity search to find what you need. |
 | **Layered editor** | Paint, erase, select, fill, add text and shapes, transform artwork, adjust colors, apply filters and layer effects, and export PNGs. |
 | **Theme AI** | Describe a look in your own words: colors, gradients, outlines, glow, a mood or a whole theme. Preview the plan before applying it to one asset, a checked selection or the whole game. |
 | **Themes from real pictures** | Name something (“a BMW theme”, “a Post Malone theme”) and Theme AI looks up pictures of it, so the art uses its real emblem, colors and style instead of guessing from words. |
 | **AI image generation** | Redraw any art: “turn the coin into a diamond”, “make the food little tires”, “give the virus a santa hat”, or right-click a picture › **Redraw with Image AI**. Compare variants, adjust the fit and apply the one you like. Requires the optional local AI download. |
-| **Whole-game redraw** | One request can redraw everything players see: the title, menu backgrounds, the viruses, buttons, coins, icons and the three foods. A queue shows every piece large, lets you leave pieces out, pick how many variants each gets and the order, and shows the finish time. |
+| **Whole-game redraw** | One request redraws what players care about: the menu and arena backgrounds, the viruses, the menu buttons, the in-game buttons and the three foods (anything else, like the title or the coin, by name). A queue shows every piece large, lets you leave pieces out, pick how many variants each gets and the order, and shows the finish time. |
 | **Accelerate** | One click uses the whole graphics card and every processor core for faster drawings (the PC is slower while it draws). |
-| **Fonts and sounds** | Style game text and replace or edit sounds, with trimming, fades, looping and volume controls. |
+| **Fonts and new fonts** | Restyle the game's text in any font with gradients, outlines, glow and shadow, or ask Theme AI for a brand-new one: “a font made of lava”, “letters covered in sprinkles”, “a new font for a pirate ship”. Image AI draws what the letters are made of and the letters stay readable. |
+| **Sounds** | Replace or edit sounds, with trimming, fades, looping and volume controls. |
 | **Game preview** | See the menu and a match with your mod, in light and dark mode, with the game's controls. |
 | **Flexible workspace** | Collapse either sidebar or widen the canvas. Preview artwork as a texture, tile, cell or button. |
 | **Builds and saved work** | Keep different mod builds and switch between them. Each build keeps its own Theme AI chats, which you can search, rename and reopen. |
@@ -31,6 +33,13 @@ Asset Lab is a Windows desktop editor for the artwork and sounds in **Mitos.is: 
 | **Suggestions** | Send ideas and bug reports straight to the creator from **Settings › About**. |
 
 ## What's new
+
+- **Simple mode.** New players get just the pictures and Theme AI: click what to change, describe it, install. Starter buttons (Colors, Whole theme, Background, Redraw something, Text & fonts) mean nobody has to know what to type, and the tour shows examples and the right-click menu.
+- **AI-made fonts.** “A font made of lava” draws the material with Image AI and fills the letters of a real typeface with it; Theme AI also understands every way of asking about text (“change the nicktext font”, “make my name glow”, “use a different font”).
+- **The same colors everywhere.** A theme's colors (“rainbow”, “red and gold”, or the colors of the first piece you apply) are the exact same shades in every drawing.
+- **Fixes:** a font sheet is never redrawn as a picture any more (it came out as a block), and the Fonts window no longer waits forever while the PC's fonts load or an install runs.
+
+### Earlier
 
 - **Themes from real pictures.** Named themes look up pictures of the thing named, and every drawing takes its look from them (the BMW roundel becomes the O of MITOSIS).
 - **About 5× faster drawings.** The same picture in about 25 seconds instead of 1½ minutes or more on an 8 GB laptop graphics card, plus the new **Accelerate** button.
@@ -110,7 +119,7 @@ You need a **64-bit Windows PC** and an installed copy of **Mitos.is: The Game**
    - “Deep ocean blues, keep the logo.”
    - “Redraw the MITOSIS title as a futuristic chrome logo with cyan lighting.”
 3. For color and effect changes, inspect the plan and preview, then click **Apply**.
-4. For new artwork, click **Draw it**, compare the variants, adjust the fit and click **Apply to the game art**.
+4. For new artwork, click **Draw it**, click the variant you like and **Use this one** (**Adjust size and fit** has the fine controls).
 5. Continue with another request or use the available undo controls if you want to try a different direction.
 
 Be specific about the asset, colors and effect you want. Generated lettering and small details can vary, so inspect the preview before applying a design.

@@ -46,7 +46,10 @@ SCENE_GROUPS = ('Backgrounds',)
 DEFAULT_SECONDS = 45.0   # one drawing on an 8 GB card, until this PC's own time is known (Designer.learn_time)
 THEME_SHEETS = ('theme.png', 'theme4.png')   # the sheets the game shows all the time: every copy of a sprite gets the drawing
 VIRUSES = ('virus.png', 'light_virus.png', 'spawner.png')
-HERO = ('icon-play', 'icon-coin', 'icon-ingame-potion', 'icon-crown', 'button-split', 'button-eject')   # drawn first in a whole-game set
+# A whole-game redesign: the menu buttons (named on the game's screens: "Play button (Main menu)", "Back arrow (Menus)"), the
+# in-game buttons ("Split button (in a match, phones)") and the phone joystick; the title and the coin are not among them.
+WHOLE_GAME_BUTTONS = r'\((?:Main menu|Menus)\)$|\(in a match\b'
+INGAME_CONTROLS = {'joystick', 'joystick-bg'}
 SPAWNER_RED = '#e0262f'   # the game paints the spawner red in maps (so players call it the red virus)
 # Store badges and sign-in buttons show other companies' logos: never redrawn with the rest of the game.
 KEEP_AS_IS = {'icon-iphone', 'icon-android', 'icon-facebook', 'icon-gamecenter'}
@@ -84,6 +87,94 @@ FOOD_TIERS = (('least mass', 'the first of the three foods, worth the least mass
               ('more mass', 'the second of the three foods, worth more mass: a richer, more detailed one'),
               ('most mass', 'the third of the three foods, worth the most mass: the most impressive, valuable-looking one'))
 FOOD_MAX = 40   # every food sprite the game uses fits in one set (about 19 today)
+
+
+def theme_colors(prompt):
+    """The exact colors a request names ("rainbow", "red and gold"), as hex: every piece of a theme is told the same ones."""
+    import theme as shading   # imported here: theme imports this module
+    return list(dict.fromkeys(shading.named_colors(own_words(prompt))))[:10]
+
+
+def _hsv(rgb):
+    """RGB in 0..1 (..., 3) -> hue, saturation, value, each (...)."""
+    mx, mn = rgb.max(-1), rgb.min(-1)
+    delta = mx - mn
+    safe = np.where(delta > 1e-6, delta, 1.0)
+    r, g, b = rgb[..., 0], rgb[..., 1], rgb[..., 2]
+    h = np.where(mx == r, ((g - b) / safe) % 6, np.where(mx == g, (b - r) / safe + 2, (r - g) / safe + 4)) / 6
+    return np.where(delta > 1e-6, h, 0.0), np.where(mx > 1e-6, delta / np.maximum(mx, 1e-6), 0.0), mx
+
+
+def _rgb(h, s, v):
+    i = np.floor(h * 6) % 6
+    f = h * 6 - np.floor(h * 6)
+    p, q, t = v * (1 - s), v * (1 - s * f), v * (1 - s * (1 - f))
+    choose = lambda *parts: np.select([i == k for k in range(6)], parts)
+    return np.stack([choose(v, q, p, p, t, v), choose(t, v, v, q, p, p), choose(p, p, t, v, v, q)], -1)
+
+
+def harmonize(image, palette, strength=0.85):
+    """Every color that is a shade of one of the palette's colors becomes that color (its hue, and most of its
+    saturation), keeping its light and shade: the red of one drawing is the red of the next, a rainbow has the same seven
+    bands everywhere. Colors far from all of them (a tire's black, a skin tone in a blue theme) are left as they are."""
+    import colorsys
+    chroma = [colorsys.rgb_to_hsv(*(int(c[i:i + 2], 16) / 255 for i in (1, 3, 5))) for c in palette]
+    chroma = [c for c in chroma if c[1] >= 0.25 and c[2] >= 0.2]
+    if not chroma: return image
+    a = np.asarray(image.convert('RGBA'), np.float32) / 255
+    h, s, v = _hsv(a[..., :3])
+    ph, ps = np.array([c[0] for c in chroma], np.float32), np.array([c[1] for c in chroma], np.float32)
+    gap = (h[..., None] - ph + 0.5) % 1 - 0.5                       # signed hue distance to each palette color
+    near = np.abs(gap).argmin(-1)
+    d = np.take_along_axis(gap, near[..., None], -1)[..., 0]
+    # Fully that color within about 11 degrees, fading out by about 54; grays and near-grays keep their own.
+    w = strength * np.clip(1 - (np.abs(d) - 0.03) / 0.12, 0, 1) * np.clip((s - 0.12) / 0.2, 0, 1)
+    vivid = w * 0.6 * np.clip((s - 0.35) / 0.3, 0, 1)                # only strong colors take the palette's strength
+    a[..., :3] = np.where(w[..., None] > 0, _rgb((h - w * d) % 1, np.clip(s + vivid * (ps[near] - s), 0, 1), v), a[..., :3])
+    return Image.fromarray(np.clip(a * 255 + 0.5, 0, 255).astype(np.uint8), 'RGBA')
+
+
+def learn_colors(image, most=6):
+    """The main colors of a finished piece (hue families that cover a fair share of it), as hex: the colors the rest
+    of its theme is matched to when the request named none ("a bmw theme")."""
+    a = np.asarray(image.convert('RGBA'), np.float32) / 255
+    h, s, v = _hsv(a[..., :3])
+    keep = (a[..., 3] > 0.5) & (s > 0.3) & (v > 0.25)
+    if keep.sum() < 50: return []
+    h, s, v = h[keep], s[keep], v[keep]
+    bins = 24
+    weight = np.bincount((h * bins).astype(int) % bins, weights=s, minlength=bins)
+    smooth = weight + 0.5 * (np.roll(weight, 1) + np.roll(weight, -1))
+    colors = []
+    for b in np.argsort(-smooth):
+        if len(colors) >= most or smooth[b] < 0.08 * smooth.sum(): break
+        if smooth[b] < max(smooth[(b - 1) % bins], smooth[(b + 1) % bins]): continue   # peaks only
+        near = np.abs((h - (b + 0.5) / bins + 0.5) % 1 - 0.5) <= 1.5 / bins
+        if near.sum() < 20: continue
+        angle = np.angle(np.exp(2j * np.pi * h[near]).mean()) / (2 * np.pi) % 1
+        rgb = _rgb(np.float32(angle), np.median(s[near]), np.median(v[near]))
+        colors.append('#' + ''.join(f'{int(round(float(c) * 255)):02x}' for c in rgb))
+    return colors
+
+
+def palette_key(prompt):
+    """Pieces of one theme share their colors: the request's own words, ignoring case and punctuation."""
+    return re.sub(r'\W+', ' ', own_words(prompt).lower()).strip()[:200]
+
+
+# A new font (theme.font_request): Image AI draws what the letters are made of as a seamless tile, and the fonts tool fills
+# the letters of a real typeface with it.
+TEXTURE_SIZE = 512
+TEXTURE_SUBJECT = 'a seamless texture that fills the letters of a game font'
+TEXTURE_RULES = ('A seamless tileable close-up texture of that material or pattern, filling the whole square edge to edge and evenly '
+                 'detailed everywhere, with no single object in the middle and no empty background. It fills the letters of player '
+                 'names in a game, so use bold, clear detail, rich color and strong light and shade that read at a small size. '
+                 'No text, no letters, no frame, no border, no vignette.')
+
+
+def is_font(row):
+    """A font sheet or one of its letters: restyled by the fonts tool (theme.font_request), never drawn as a picture."""
+    return row.get('kind') == 'glyph' or row.get('group') == 'Fonts'
 
 
 def is_arena_background(row):
@@ -477,35 +568,20 @@ class Designer:
         return [r for r in self.lab.catalog.rows.values() if is_arena_background(r) and r['editable'] and not r.get('removed') and not r.get('legacy')]
 
     def whole_game_rows(self):
-        """Everything players look at all the time, for "make the whole game look cool" with drawing: the MITOSIS title,
-        the viruses, every sprite on theme.png (the coin, the in-game potion, buttons, icons, panels...) with all its copies,
-        and the food as one set. One drawing per sprite; store badges and specks are left as they are."""
+        """What a whole-game redesign redraws ("make the whole game look cool" with drawing): only what players care about,
+        the backgrounds (menu and arena), the viruses, the menu buttons, the in-game buttons and the food, with all their
+        copies. One drawing per sprite. The title, the coin, icons and the rest stay as they are (ask for them by name)."""
         rows = self.lab.catalog.rows
         sheet_of = lambda r: rows.get(r.get('parent', ''), {}).get('name', '')
         live = lambda r: r['editable'] and not r.get('legacy') and not r.get('removed') and not r.get('server_only')
-        badge = lambda r: r['name'] in KEEP_AS_IS or re.search(r'discord|app store|google play|facebook|game ?center', r.get('label') or '', re.I)
         main = [r for r in rows.values() if live(r) and sheet_of(r) == 'theme.png']
-        def inside_another(r):
-            """A region mostly inside a bigger sprite's spot on the sheet ("rounded-bg-shadow" sits on the loading spinner):
-            drawing it would paint over that sprite, so it is left out."""
-            x, y, w, h = r['rect']
-            for o in main:
-                if o is r or o['width'] * o['height'] <= w * h: continue
-                ox, oy, ow, oh = o['rect']
-                shared = max(0, min(x + w, ox + ow) - max(x, ox)) * max(0, min(y + h, oy + oh) - max(y, oy))
-                if shared >= 0.6 * w * h: return True
-            return False
-        names = {r['name'] for r in main if not badge(r) and not r['name'].startswith('logo') and not r['name'].startswith('food')
-                 and min(r['width'], r['height']) >= 16 and not inside_another(r)}
-        sprites = sorted((r for r in rows.values() if live(r) and r['name'] in names and sheet_of(r) in THEME_SHEETS), key=lambda r: (r['name'], r['source']))
-        # The three viruses: light mode, dark mode, and the spawner ("the red virus") that can appear in maps.
+        names = {r['name'] for r in main if re.search(WHOLE_GAME_BUTTONS, r.get('label') or '') or r['name'] in INGAME_CONTROLS}
+        names = {n for n in names - KEEP_AS_IS - {'icon-coin'} if not n.startswith('logo')}   # not the title, the coin or store badges
+        buttons = sorted((r for r in rows.values() if live(r) and r['name'] in names and sheet_of(r) in THEME_SHEETS),
+                         # play first, then the rest of the menu, then what is pressed in a match
+                         key=lambda r: (r['name'] != 'icon-play', bool(re.search(r'in a match', r.get('label') or '')) or r['name'] in INGAME_CONTROLS, r['name'], r['source']))
         viruses = [r for r in rows.values() if live(r) and r['name'] in VIRUSES]
-        # What players look at most comes first in the queue: the title, the background, the viruses, play and the coin,
-        # the food; then the rest of theme.png.
-        hero = [r for r in sprites if r['name'] in HERO]
-        # Then the parts players see on the game's screens (named after them: "Battle Pass button icon (Main menu)"), then the rest.
-        rest = sorted((r for r in sprites if r['name'] not in HERO), key=lambda r: (not r.get('label'), r['name'], r['source']))
-        return self.title_rows() + self.menu_backgrounds() + self.arena_backgrounds() + viruses + sorted(hero, key=lambda r: HERO.index(r['name'])) + self.food_rows() + rest
+        return self.menu_backgrounds() + self.arena_backgrounds() + viruses + buttons + self.food_rows()
 
     def food_kinds(self):
         """The game's different foods, each worth a different mass, smallest first: one list of sprites per food (its big
@@ -541,7 +617,7 @@ class Designer:
 
     def targets(self, prompt, only=None):
         if only:
-            rows = [r for r in (self.lab.row(k) for k in only if k in self.lab.catalog.rows) if r['editable']]
+            rows = [r for r in (self.lab.row(k) for k in only if k in self.lab.catalog.rows) if r['editable'] and not is_font(r)]
             if any(is_arena_background(r) for r in rows):   # the floor of every match, light and dark mode: together
                 rows += [r for r in self.arena_backgrounds() if r['key'] not in {x['key'] for x in rows}]
             if any(is_menu_background(r) for r in rows):
@@ -562,7 +638,7 @@ class Designer:
             rows = self.family_rows(subject)
             # "Turn the food into crowns": every pellet the game shows, so none keeps the old look.
             return self.food_rows() if rows and any(is_food(r) for r in rows) and all(r['name'].startswith('food') for r in rows) else rows
-        rows = [r for r in self.lab.catalog.rows.values() if r['name'] in names and r['editable'] and r.get('primary', True) and not r.get('legacy')]
+        rows = [r for r in self.lab.catalog.rows.values() if r['name'] in names and r['editable'] and r.get('primary', True) and not r.get('legacy') and not is_font(r)]
         seen, out = set(), []
         for r in rows:
             if r.get('dup') in seen: continue
@@ -577,7 +653,7 @@ class Designer:
         if not wanted: return []
         rows, seen = [], set()
         for r in self.lab.catalog.rows.values():
-            if not r['editable'] or not r.get('primary', True) or r.get('legacy') or r.get('removed') or r.get('dup') in seen: continue
+            if not r['editable'] or not r.get('primary', True) or r.get('legacy') or r.get('removed') or r.get('dup') in seen or is_font(r): continue
             if r['width'] < 24 or r['height'] < 24 or self.lab.catalog.children.get(r['key']): continue   # whole sheets and specks are not drawn
             if shading.families_of(r, self.lab.catalog.rows.get(r.get('parent', ''), {}).get('name', '')) in wanted:
                 seen.add(r.get('dup')); rows.append(r)
@@ -628,12 +704,38 @@ class Designer:
                 job['inspiration'] = str(inspiration)
             if job['title'] and wording(request): job['text'] = wording(request)
             if restyles(job): job['restyle'] = True   # a theme on the game's own sprite: its outline is kept (render)
+            # One theme, one set of colors: the ones the request names, or else those of the first piece applied (render).
+            job['palette_key'] = parent.get('palette_key', '') if base else palette_key(prompt)
+            colors = parent.get('colors', []) if base else theme_colors(request)
+            if colors: job['colors'] = colors
+            else:
+                learned = self.palettes().get(job['palette_key'])
+                if learned and learned.get('colors'): job['learned'] = learned['colors']
+            self.jobs[job['id']] = job
+        threading.Thread(target=self._run, args=(job,), daemon=True).start()
+        return dict(job)
+
+    def start_texture(self, prompt, count=2):
+        """A new font: a seamless texture its letters are filled with ("a font made of lava", "letters of candy"), drawn
+        from the words alone as a tile. The letters keep a real font's shapes (fonts.py), so names stay readable."""
+        prompt = re.sub(r'\s+', ' ', str(prompt or '')).strip()[:400]
+        if not prompt: raise ValueError('Say what the letters are made of.')
+        lacking = self.status()['missing']
+        if lacking: raise ValueError('The image model is not installed: ' + ', '.join(lacking))
+        with self.lock:
+            if any(j['state'] == 'running' for j in self.jobs.values()): raise ValueError('A design is already being drawn.')
+            job = dict(id=uuid.uuid4().hex, state='running', prompt=prompt, targets=[], names=['Letter texture'], frames=[[TEXTURE_SIZE, TEXTURE_SIZE]],
+                       variants=[], message='Preparing…', progress=0, total=max(1, min(4, int(count))), key='green', base=None, at=time.time(),
+                       title=False, stretched=False, tinted=False, tint='', spawner=False, scene=True, circular=True, texture=True, food=False, palette_key='')
+            colors = theme_colors(prompt)
+            if colors: job['colors'] = colors
             self.jobs[job['id']] = job
         threading.Thread(target=self._run, args=(job,), daemon=True).start()
         return dict(job)
 
     @staticmethod
     def subject(job):
+        if job.get('texture'): return TEXTURE_SUBJECT
         if job['title']: return 'the game title logo that reads MITOSIS (the O is a round dot)'
         if job.get('food'):
             which, of = job.get('food_tier') or (0, 1)
@@ -646,6 +748,44 @@ class Designer:
         return f'a game sprite: {name}'
 
     def instruction(self, job):
+        text = self._instruction(job)
+        if job.get('colors'):   # the same exact colors in every piece of the theme ("rainbow" is always these seven)
+            text += ' Use exactly these colors: ' + ', '.join(job['colors']) + '.'
+        return text
+
+    # ----- one set of colors per theme -------------------------------------------------------------------------------
+    def palettes(self):
+        """palette key -> dict(colors, job): the colors of each theme whose request named none, from its first applied piece."""
+        if getattr(self, '_palettes', None) is None:
+            if getattr(self, 'folder', None) is None: return {}   # no designs folder (a bare Designer): nothing learned yet
+            try: self._palettes = json.loads((self.folder / 'palettes.json').read_text(encoding='utf-8'))
+            except (OSError, ValueError): self._palettes = {}
+            if not isinstance(self._palettes, dict): self._palettes = {}
+        return self._palettes
+
+    def theme_palette(self, job):
+        """The colors this piece is matched to: the ones its request names, or the ones learned from another piece."""
+        if job.get('colors'): return job['colors']
+        learned = self.palettes().get(job.get('palette_key', ''))
+        return learned['colors'] if learned and learned.get('job') != job['id'] and learned.get('colors') else []
+
+    def learn_palette(self, job, image):
+        """The first piece applied of a theme that named no colors sets them for the rest of it."""
+        key = job.get('palette_key', '')
+        if not key or job.get('colors') or key in self.palettes(): return
+        colors = learn_colors(image)
+        if not colors: return
+        self.palettes()[key] = dict(colors=colors, job=job['id'], at=time.time())
+        if len(self._palettes) > 200:   # the newest themes only
+            for old in sorted(self._palettes, key=lambda k: self._palettes[k].get('at', 0))[:-200]: self._palettes.pop(old)
+        self.folder.mkdir(parents=True, exist_ok=True)
+        (self.folder / 'palettes.json').write_text(json.dumps(self._palettes), encoding='utf-8')
+        for other in list(self.jobs.values()):
+            if other.get('palette_key') == key and other['id'] != job['id']: other['learned'] = colors
+
+    def _instruction(self, job):
+        if job.get('texture'):
+            return (f'{job.get("direction") or job["prompt"]}. {TEXTURE_RULES}')
         if job.get('arena'):
             return (f'{job.get("direction") or job["prompt"]}. {ARENA_RULES}'
                     + (' Take the look from the reference picture: its colors and patterns, kept very pale.' if job.get('inspiration') else ''))
@@ -689,6 +829,8 @@ class Designer:
                 # Refining: the chosen variant, exactly as drawn (same canvas and background), is the new starting point.
                 ref = Image.open(self.folder / job['base'][0] / f'raw-{int(job["base"][1])}.png').convert('RGB')
                 size = ref.size
+            elif job.get('texture'):   # a font's texture: a square tile, from the words alone
+                size, ref = (TEXTURE_SIZE, TEXTURE_SIZE), None
             elif job.get('scene'):
                 # A new background is drawn from the words alone, at about the model's 0.6 megapixels, in the art's shape.
                 source = self.lab.image(job['targets'][0])
@@ -831,6 +973,7 @@ class Designer:
                 out = tile_resize(wrap_shift(raw, float(s['dx']), float(s['dy'])), frame)
             else:   # zoomed in (or drawn before tiles were): a crop, blended so its edges meet again
                 out = seamless(cover(raw, frame, float(s['scale']), float(s['dx']), float(s['dy']))).resize(frame, Image.Resampling.LANCZOS)
+            out = self.matched(job, out, s)
             if job.get('arena'):
                 pale = max(0.0, min(0.95, float(s.get('pale', ARENA_PALE))))
                 a = np.asarray(out, np.float32)[..., :3]
@@ -846,9 +989,14 @@ class Designer:
             return whiten(out) if float(s['white']) >= 0.5 else out
         art = unkey(Image.open(folder / f'raw-{int(index)}.png'), job['key'], float(s['tolerance'])) if float(s['tolerance']) != 1.0 else \
             Image.open(folder / f'variant-{int(index)}.png').convert('RGBA')
-        out = self._place(job, art, s, int(target))
+        out = self.matched(job, self._place(job, art, s, int(target)), s)
         if max(out.size) <= 96: out = crisp(out)                   # a big drawing shrunk into a small frame goes soft
         return whiten(out) if float(s['white']) >= 0.5 else out   # last, so the brightest pixel of the final art is white
+
+    def matched(self, job, image, s):
+        """"Same colors as the theme" (on unless unticked): the piece in its theme's exact colors (theme_palette)."""
+        colors = self.theme_palette(job) if float(s.get('match', 1)) >= 0.5 else []
+        return harmonize(image, colors) if colors else image
 
     def _place(self, job, art, s, target):
         frame = tuple(job['frames'][int(target)])
@@ -870,13 +1018,19 @@ class Designer:
     def apply(self, job_id, index, settings=None):
         job = self.job(job_id)
         if job['state'] != 'complete': raise ValueError('This design is not finished.')
-        items = []
+        if job.get('texture'): raise ValueError('This is a texture for letters: pick it in the font card instead.')
+        items, first = [], None
         with self.lab.lock:
             for target, key in enumerate(job['targets']):
                 before = self.lab.revision(key)
-                self.lab.commit(key, self.render(job_id, index, target, settings), dict(design=job['id'], prompt=job['prompt'], variant=int(index), settings=settings or {}), persist=False)
+                image = self.render(job_id, index, target, settings)
+                first = first or image
+                self.lab.commit(key, image, dict(design=job['id'], prompt=job['prompt'], variant=int(index), settings=settings or {}), persist=False)
                 items.append(dict(key=key, before=before, after=self.lab.revision(key)))
             self.lab.persist()
+        if first is not None and float((settings or {}).get('match', 1)) >= 0.5:
+            try: self.learn_palette(job, first)
+            except (OSError, ValueError): pass
         job['applied'] = dict(index=int(index), items=items, at=time.time())
         (self.folder / job['id'] / 'job.json').write_text(json.dumps(job, indent=1), encoding='utf-8')
         return dict(job=job['id'], items=items, names=job['names'])

@@ -641,6 +641,7 @@ class ThemeAiTests(SettingsCase):
         self.assertTrue(b.eval("document.getElementById('themeAuto').checked"))   # the drawer's Auto-apply box follows
         self.close_settings()
         self.open_drawer()
+        b.eval("document.getElementById('themeMore').open = true; true")         # Auto-apply sits under More
         b.click_selector('#themeAuto')                                          # and the setting follows the box
         until(lambda: self.saved('auto_apply') is False)
         self.close_drawer()
@@ -706,6 +707,44 @@ class ThemeAiTests(SettingsCase):
         b.eval("[...document.querySelectorAll('#themeLog .theme-actions button')].find(x=>x.textContent==='Draw it').click(); true")
         b.wait_for("!!document.querySelector('#themeLog .design-card')")
         self.assertFalse(b.eval(white))
+        self.close_drawer()
+
+    def test_the_drawing_card_is_simple_first(self):
+        b = self.browser
+        self.ask_for_a_drawing()
+        b.eval("[...document.querySelectorAll('#themeLog .theme-actions button')].find(x=>x.textContent==='Draw it').click(); true")
+        b.wait_for("!!document.querySelector('#themeLog .design-card')")
+        card = "document.querySelector('#themeLog .design-card')"
+        self.assertEqual(b.eval(f"{card}.querySelector('.design-how').textContent"), 'Click the one you like, then Use this one.')
+        self.assertEqual(b.eval(f"{card}.querySelector('.theme-actions .primary').textContent"), 'Use this one')
+        self.assertFalse(b.eval(f"{card}.querySelector('.design-adjust').open"))                    # size and fit folded away
+        self.assertFalse(b.eval(f"{card}.querySelector('.design-sliders').checkVisibility()"))
+        b.eval(f"{card}.querySelector('.design-adjust summary').click(); true")
+        self.assertTrue(b.eval(f"{card}.querySelector('.design-sliders').checkVisibility()"))
+        self.close_drawer()
+
+    def test_a_new_font_is_drawn_once_and_its_texture_picked(self):
+        b = self.browser
+        pixel = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
+        job = {'id': 'e' * 32, 'state': 'complete', 'message': '2 variants ready.', 'prompt': 'lava', 'targets': [], 'names': ['Letter texture'], 'frames': [[512, 512]],
+               'variants': [{'index': 0, 'warning': ''}, {'index': 1, 'warning': ''}], 'texture': True, 'scene': True, 'circular': True, 'total': 2}
+        font = {'id': 'nicktext', 'label': 'Player names', 'style': {'font': '', 'fill': '#ffffff', 'outline': '#101216', 'outline_width': 3}, 'image': pixel,
+                'text': 'Cellmate', 'look': '', 'face': '', 'texture_prompt': 'lava', 'seconds': 30}
+        chat = {'plan': {'reply': 'Player names: a new font made of lava.', 'operations': [], 'ui_colors': {}, 'hide': []}, 'source': 'font', 'note': '', 'preview': None, 'font': font}
+        self.stub({'/api/theme-status': MODELS, '/api/theme-chat': chat, '/api/font-texture': dict(job, state='running', message='Preparing…'),
+                   '/api/design-job': job, '/api/font-preview': {'png': pixel}})
+        self.open_drawer()
+        b.click_selector('#themeInput')
+        b.type_text('create a new font made of lava')
+        b.key('Enter')
+        b.wait_for("document.querySelectorAll('#themeLog .font-texture').length === 2", message='the textures were not shown')
+        self.assertEqual(len(self.bodies('/api/font-texture')), 1)
+        self.assertEqual(self.bodies('/api/font-texture')[0]['prompt'], 'lava')
+        b.wait_for("(window.__bodies['/api/font-preview']||[]).some(x => x.style.texture === '" + 'e' * 32 + "-0')")   # the first is shown at once
+        b.eval("document.querySelectorAll('#themeLog .font-texture')[1].click(); true")
+        b.wait_for("(window.__bodies['/api/font-preview']||[]).at(-1).style.texture === '" + 'e' * 32 + "-1'")
+        self.assertEqual(b.eval("[...document.querySelectorAll('#themeLog .font-texture')].map(x => x.classList.contains('active'))"), [False, True])
+        b.eval("LabThemeChat.reset(); true")
         self.close_drawer()
 
     def test_the_inspiration_pictures_are_shown_and_sent_with_the_drawing(self):

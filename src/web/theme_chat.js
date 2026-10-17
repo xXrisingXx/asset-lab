@@ -45,7 +45,7 @@ const form=el('form','theme-form');const input=el('textarea');input.id='themeInp
 const row=el('div','theme-send');
 const ideas=el('details','theme-ideas');ideas.append(el('summary','', 'Ideas'));const ideaList=el('div','theme-idea-list');ideas.append(ideaList);
 for(const idea of ['Make the menu background solid black','Deep purple to blue gradient background','Starry night sky background','Theme it rainbow with proper glows','Synthwave with a chrome logo and neon outlines','Fire gradient buttons with a strong orange glow','Holographic glass panels','Glossy gold everything','Retro 8-bit pixel look','Deep ocean blues, keep the logo','Hide the main menu pattern','Make the MITOSIS title spooky with dripping blood and bats','Put a party hat on the MITOSIS title','Christmas theme and put a santa hat on the title']){
-  const b=el('button','', idea);b.type='button';b.onclick=()=>{input.value=idea;ideas.open=false;input.focus();};ideaList.append(b);}
+  const b=el('button','', idea);b.type='button';b.onclick=()=>{input.value=idea;ideas.open=false;document.getElementById('themeMore').open=false;input.focus();};ideaList.append(b);}
 const tags=el('details','theme-ideas');tags.append(el('summary','', 'Words'));const tagList=el('div','theme-idea-list theme-tags');tags.append(tagList);
 for(const [label,words] of [['Parts','buttons · panels · icons · logo · cells · food · effects · fonts · menu background · arena — or a sprite or your own name for it: “the white virus”, “the speed potion”'],
   ['Edge','outline · border · rim · ring (thin / thick)'],['Inside','inside · fill · body — recolor, gradient, darker, brighter'],
@@ -56,7 +56,7 @@ for(const [label,words] of [['Parts','buttons · panels · icons · logo · cell
   ['Text','player names · menu text — a look (gold · neon sign · candy cane · galaxy…) · a font (“in impact”) · “red, orange and yellow gradient” · left to right · diagonal · 45 degrees · hollow · wide / narrow · white glow · black outline'],
   ['Styles','neon · glass · pastel · greyscale · retro 8-bit · cartoon · scanlines · grainy · hide · more / less transparent']]){const p=el('p');p.append(el('b','',label+' '),document.createTextNode(words));tagList.append(p);}
 const auto=el('label','compact');const autoBox=el('input');autoBox.type='checkbox';autoBox.id='themeAuto';auto.title='Apply the plan as soon as it is ready';auto.append(autoBox,document.createTextNode(' Auto-apply'));
-const send=el('button','primary','Plan');send.id='themeSend';send.type='submit';row.append(ideas,tags,auto,send);
+const send=el('button','primary','Plan');send.id='themeSend';send.type='submit';
 // Image AI: Auto draws when a request needs new art ("put a hat on the title"), On always draws new art (the main
 // pieces of the game when nothing is named), Off only recolors and shades. Remembered between visits.
 const drawRow=el('div','theme-drawmode');drawRow.id='themeDraw';const drawSeg=el('div','segmented');
@@ -74,8 +74,23 @@ accel.onclick=run(async()=>{const on=!(window.LabSettings&&LabSettings.get('acce
   const res=await api('/api/settings',{values:{accelerate:on}});window.LabSettings?.merge?.(res);showAccel();
   message(on?'Accelerate is on: drawings use the full graphics card and processor.':'Accelerate is off: drawings leave room for other apps.');});
 window.LabSettings?.ready?.then?.(showAccel);document.addEventListener('lab-setting',e=>{if(e.detail==='accelerate')showAccel();});
-drawRow.append(el('span','section-label','IMAGE AI'),drawSeg,accel);showDraw();showAccel();
-form.append(drawRow,input,row);
+drawRow.append(el('span','section-label','IMAGE AI'),drawSeg);showDraw();showAccel();
+// Start here: one click per kind of change, so nobody has to know what to type. Each fills in the start of a request
+// (the cursor waits at the end); Text & fonts opens the fonts window, where every look is one click.
+const starters=el('div','theme-starters');starters.id='themeStarters';
+const fontsButton=el('button','', 'Text & fonts');fontsButton.id='fontsButton';fontsButton.type='button';fontsButton.title='Draw the game’s text (player names, menu text) in any font, with outline, glow and shadow';
+fontsButton.onclick=()=>window.openFonts&&window.openFonts();
+for(const [label,start,tip] of [['Colors','Make the buttons and panels ','Recolor parts of the game: say which parts and the colors or effect'],
+  ['Whole theme','Give the whole game a theme: ','One look for everything: a mood, a holiday, a brand, a game…'],
+  ['Background','A new menu background of ','Draw a new background picture'],
+  ['Redraw something','Turn the coin into ','Draw new art for one part of the game (name it, or check it in the library first)']]){
+  const b=el('button','',label);b.type='button';b.title=tip;b.onclick=()=>{input.value=start;input.focus();input.setSelectionRange(start.length,start.length);};starters.append(b);}
+starters.append(fontsButton);
+// More: the extras most requests never need, folded away.
+const more=el('details','theme-more');more.id='themeMore';more.append(el('summary','','More'));const moreBody=el('div','theme-more-body');
+moreBody.append(drawRow,auto,ideas,tags);more.append(moreBody);
+row.append(more,accel,send);
+form.append(starters,input,row);
 
 // Dock: what is waiting to be installed, whether Mitosis is open, and the install / restore actions.
 const dock=el('div','theme-dock');
@@ -85,44 +100,9 @@ const review=el('button','', 'Review');review.title='List the game files the ins
 const install=el('button','primary','Install in Mitosis');install.id='themeInstall';
 const restore=el('button','', 'Restore original');const launch=el('button','', 'Open Mitosis');
 const undo=el('button','quiet','Undo theme');undo.id='themeUndo';undo.title='Take the last theme back off';
-const gameButton=el('button','', 'Game colors…');gameButton.id='gameColorsButton';
-const fontsButton=el('button','', 'Fonts…');fontsButton.id='fontsButton';fontsButton.title='Draw the game’s text (player names, menu text) in any font, with outline, glow and shadow';
-fontsButton.onclick=()=>window.openFonts&&window.openFonts();
-actions.append(review,install,restore,launch,gameButton,fontsButton,undo);dock.append(modLine,actions);
+actions.append(review,install,restore,launch,undo);dock.append(modLine,actions);
 
-// Game colors & menu: the colors Mitosis.exe sets in code, by hand, and the main-menu promos it can leave out.
-const game=el('div','theme-game');game.id='gamePanel';game.hidden=true;
-drawer.append(head,scopeLine,log,game,form,dock);document.body.append(drawer);
-const hex=v=>String(v||'').toUpperCase();
-function renderGame(){
-  const info=T.info?.game;if(game.hidden)return;
-  const palette=S.status?.palette||{},hidden=new Set(S.status?.hidden||[]),locked=false;
-  game.replaceChildren();
-  const blocked=S.status?.game_colors?.blocked;
-  if(blocked){game.append(el('b','','Game colors & menu'),el('p','hint',blocked),el('p','hint','Recolor the menu through its art instead: ask Theme AI for “menu background navy” (the pattern) or redesign art with the image model.'),el('p','hint','To hide the App Store, Google Play or Discord badges or the OG tag, ask Theme AI: “hide the discord button”. It makes their art transparent; the empty spot can still be clicked. Worm.is and Strike.is are not drawn from editable art.'));return;}
-  if(!info)return;
-  const top=el('div','theme-game-head');top.append(el('b','','Game colors & menu'));
-  const reset=el('button','quiet','Reset all');reset.disabled=locked||!(Object.keys(palette).length||hidden.size);
-  reset.onclick=run(async()=>{await api('/api/palette',{colors:{}});await api('/api/hide',{groups:[]});await status();renderGame();});top.append(reset);
-  game.append(top,el('p','hint',locked?'Restore the installed mod to change these.':'Set in Mitosis.exe and installed with your mod. One color replaces the game’s teal, purple and gray palettes. Theme AI can set these too: “header bars purple”, “hide the discord button”.'));
-  const colors=el('div','theme-game-list');
-  for(const c of info.colors){
-    const rowEl=el('label','theme-game-row');const pick=el('input');pick.type='color';pick.value=(palette[c.field]||c.was).toLowerCase();pick.disabled=locked;
-    const changed=!!palette[c.field]&&hex(palette[c.field])!==hex(c.was);rowEl.classList.toggle('changed',changed);
-    const text=el('span');text.append(el('b','',c.name.replace(/_/g,' ')),el('small','',c.what));
-    const back=el('button','link','↺');back.type='button';back.title=`Back to the game's ${c.was}`;back.hidden=!changed;back.disabled=locked;
-    const save=async value=>{const next={...palette};if(!value||hex(value)===hex(c.was))delete next[c.field];else next[c.field]=hex(value);await api('/api/palette',{colors:next});await status();renderGame();};
-    pick.onchange=run(()=>save(pick.value));back.onclick=run(e=>{e.preventDefault();return save('');});
-    rowEl.title=c.field;rowEl.append(pick,text,back);colors.append(rowEl);}
-  game.append(colors,el('div','section-label','HIDE IN THE MAIN MENU'));
-  const list=el('div','theme-game-list');
-  for(const h of info.hide){const rowEl=el('label','theme-game-row');const box=el('input');box.type='checkbox';box.checked=hidden.has(h.id);box.disabled=locked;
-    box.onchange=run(async()=>{const next=new Set(hidden);box.checked?next.add(h.id):next.delete(h.id);await api('/api/hide',{groups:[...next]});await status();renderGame();});
-    rowEl.append(box,el('span','',h.label));list.append(rowEl);}
-  game.append(list,el('p','hint','Hiding skips creating these controls and their links. Byte-verified against your Mitosis.exe; restore puts the original back.'));
-}
-function showGame(open){game.hidden=!open;log.hidden=open;form.hidden=open;gameButton.textContent=open?'Back to chat':'Game colors…';gameButton.classList.toggle('active',open);if(open)renderGame();}
-gameButton.onclick=run(async()=>{showGame(game.hidden);if(!game.hidden&&!T.info)await refresh();});
+drawer.append(head,scopeLine,log,form,dock);document.body.append(drawer);
 
 function scroll(){log.scrollTop=log.scrollHeight;}
 function bubble(kind,text){const b=el('div','theme-bubble '+kind);if(text)b.append(el('p','',text));log.append(b);scroll();return b;}
@@ -162,7 +142,7 @@ async function refresh(){
   state.classList.toggle('offline',!T.info.ollama);
   undo.disabled=!T.info.last||T.busy;undo.title=T.info.last?`Take “${T.info.last.prompt.slice(0,60)}” back off (${T.info.last.sheets} sheets)`:'No theme applied yet';
   if(T.info.job&&!T.job)follow(T.info.job.id,bubble('bot','A theme is being applied…'));
-  dockState();renderGame();
+  dockState();
 }
 function setBusy(value){T.busy=value;send.disabled=value;input.disabled=value;undo.disabled=value||!T.info?.last;send.textContent=value?'Working…':'Plan';dockState();}
 
@@ -171,7 +151,6 @@ function dockState(){
   const st=S.status||{},edits=(st.staged||[]).length,colors=Object.keys(st.palette||{}).length+(st.hidden||[]).length,active=st.active;
   const broken=active&&active.state!=='installed',pending=!!st.pending;
   modText.textContent=broken?'An install was interrupted':active?(pending?'Changes since your install · Update Mitosis to see them':'Your mod is installed in Mitosis'):edits||colors?`${edits} saved sheet${edits===1?'':'s'}${colors?' + game colors/menu':''} ready to install`:'Nothing to install yet';
-  gameButton.title='Set game colors by hand and hide menu promos';
   gameText.textContent=T.game===null?'':T.game?' · Mitosis is open':' · Mitosis is closed';gameText.classList.toggle('warn',!!T.game);
   install.textContent=active?'Update Mitosis':'Install in Mitosis';install.hidden=!!broken;restore.hidden=!active;launch.hidden=!active||!!T.game;
   install.disabled=T.busy||(active?!pending:!(edits||colors));review.disabled=T.busy||!(edits||colors||active);
@@ -449,7 +428,7 @@ function zoomPiece(Q,item){
 }
 // What a drawing starts with (also what "Apply all" uses): zoomed and calmed for a background, the outline kept for a
 // stretched button, the frame filled for the title, and kept white where the game colors the art itself.
-function designDefaults(job){return {scale:job.scene&&!job.circular?2.5:1,...(job.arena?{pale:0.55}:job.scene?{calm:0.5}:{}),dx:0,dy:0,tolerance:1,shape:job.stretched||job.restyle?1:0,fill:job.title?1:0,white:job.spawner||!job.food&&(job.tint||job.tinted)&&setting('keep_white')?1:0};}   /* food keeps the drawing's colors */
+function designDefaults(job){return {scale:job.scene&&!job.circular?2.5:1,...(job.arena?{pale:0.55}:job.scene?{calm:0.5}:{}),dx:0,dy:0,tolerance:1,shape:job.stretched||job.restyle?1:0,fill:job.title?1:0,match:1,white:job.spawner||!job.food&&(job.tint||job.tinted)&&setting('keep_white')?1:0};}   /* food keeps the drawing's colors */
 async function drawDesign(box,prompt,keys,count,base,direction,entry,label,inspiration){
   let job=await api('/api/design-start',{prompt,only:keys||null,count,base:base||null,direction:direction||null,inspiration:inspiration||null});
   const info={id:job.id,keys:keys||null,label:label||''};if(entry){(entry.jobs||(entry.jobs=[])).push(info);keepChat();}
@@ -481,15 +460,41 @@ function showFont(box,font,note){
   const img=el('img','font-offer');img.src=font.image;img.alt=font.label+' preview';
   let style=font.style;
   const actions=el('div','theme-actions');const apply=el('button','primary','Apply');const tune=el('button','','Fine-tune…');
+  let texture=font.texture||'',textures=null;   // a new font: the drawn tile its letters are filled with ('<job>-<variant>')
+  const withTexture=s=>texture?{...s,texture}:s;
   const pick=window.LabFonts&&window.LabFonts.picker({font:font.id,text:font.text,style:font.style,img,first:font.offer?undefined:'Your request',
-    onPick:s=>{style=s;apply.disabled=false;apply.textContent='Apply';}});
+    wrap:s=>withTexture(s),onPick:s=>{style=s;apply.disabled=false;apply.textContent='Apply';}});
+  let shown=0;
+  function showStyle(){const n=++shown;window.LabFonts?.preview(font.id,style,font.text).then(url=>{if(n===shown)img.src=url;}).catch(e=>message(e.message,true));}
+  if(font.texture_prompt){
+    /* A new font made of something: Image AI draws the material as seamless tiles (once: the job is kept with the chat,
+       so a reload reconnects to it), each one is shown filling the letters, and a click picks it. */
+    const part=el('div','font-textures');const line=el('small','hint','Drawing what the letters are made of…');const tiles=el('div','font-texture-tiles');part.append(line,tiles);
+    const choose=(job,i)=>{texture=`${job.id}-${i}`;font.texture=texture;keepChat();style=withTexture(style);apply.disabled=false;apply.textContent='Apply';
+      tiles.querySelectorAll('button').forEach((b,j)=>b.classList.toggle('active',j===i));showStyle();};
+    const show=job=>{tiles.replaceChildren();if(job.state!=='complete'){line.textContent=job.message||'The texture could not be drawn.';part.classList.add('error');return;}
+      line.textContent='Pick what the letters are made of:';
+      job.variants.forEach((v,i)=>{const b=el('button','font-texture');b.type='button';b.title=`Texture ${i+1}`;const t=el('img');t.alt=`Texture ${i+1}`;
+        t.src=`/api/design-image?job=${job.id}&variant=${i}&small=1`;b.append(t);b.onclick=()=>choose(job,i);tiles.append(b);});
+      const again=el('button','quiet','Draw new ones');again.type='button';again.onclick=run(async()=>{font.texture_job='';font.texture='';texture='';keepChat();await draw();});tiles.append(again);
+      const i=texture.startsWith(job.id+'-')?+texture.split('-')[1]:0;if(job.variants.length)choose(job,Math.min(i,job.variants.length-1));};
+    const watch=async job=>{const started=Date.now();
+      while(job.state==='running'){line.textContent=`${job.message} · ${Math.round((Date.now()-started)/1000)} s`;await new Promise(r=>setTimeout(r,1000));job=await api('/api/design-job?job='+job.id);}
+      show(job);};
+    const draw=async()=>{line.textContent='Drawing what the letters are made of…';part.classList.remove('error');tiles.replaceChildren();
+      let job;try{job=await api('/api/font-texture',{prompt:font.texture_prompt,count:drawings()});}
+      catch(e){line.textContent=e.message;part.classList.add('error');
+        const retry=el('button','quiet','Try again');retry.type='button';retry.onclick=run(draw);tiles.append(retry);return;}
+      font.texture_job=job.id;keepChat();await watch(job);};
+    setTimeout(run(async()=>{if(font.texture_job){try{await watch(await api('/api/design-job?job='+font.texture_job));return;}catch(e){}}await draw();}),0);
+    textures=part;}
   apply.onclick=run(async()=>{apply.disabled=true;
     try{const r=await api('/api/font-apply',{font:font.id,style});apply.textContent='Applied ✓';message(`${r.label} saved in ${r.face}. Install in Mitosis to see it.`);}
     catch(e){apply.disabled=false;throw e;}
     window.LabFonts&&window.LabFonts.reload().catch(()=>{});S.build=null;await status();await refresh();});
   tune.onclick=()=>window.openFonts&&window.openFonts(font.id,style,font.text);
   actions.append(apply,tune);if(font.offer)actions.append(el('small','hint','Nothing changes until you click Apply.'));
-  box.append(img);if(pick)box.append(pick);box.append(actions);
+  box.append(img);if(textures)box.append(textures);if(pick)box.append(pick);box.append(actions);
 }
 function designCard(box,job,keys,entry,info){
   const card=el('div','design-card');box.append(card);
@@ -537,16 +542,22 @@ function designCard(box,job,keys,entry,info){
   const fillRow=el('label','design-shape');const fill=el('input');fill.type='checkbox';fill.checked=!!S2.settings.fill;
   fill.onchange=()=>{S2.settings.fill=fill.checked?1:0;refresh();};fillRow.title='Size the drawing by its main shape so it fills the frame like the original; sparse extras at the edges may be trimmed';
   fillRow.append(fill,document.createTextNode(' Fill the frame'));if(!job.scene)sliders.append(fillRow);
+  /* One theme, one set of colors: the ones the request named, or those of the first piece applied. */
+  const palette=job.colors||job.learned;
+  if(palette?.length){const matchRow=el('label','design-shape design-match');const match=el('input');match.type='checkbox';match.checked=S2.settings.match!==0;
+    match.onchange=()=>{S2.settings.match=match.checked?1:0;refresh();};matchRow.title='Every piece of this theme uses exactly the same shades of its colors';
+    const chips=el('span','design-swatches');for(const c of palette.slice(0,8)){const chip=el('i');chip.style.background=c;chip.title=c;chips.append(chip);}
+    matchRow.append(match,document.createTextNode('Same colors as the theme'),chips);sliders.append(matchRow);}
   if(job.tint||job.tinted){const whiteRow=el('label','design-shape');const white=el('input');white.type='checkbox';white.checked=!!S2.settings.white;
     white.onchange=()=>{S2.settings.white=white.checked?1:0;refresh();};whiteRow.title='Turn the drawing into white and gray: the game then colors it like the original, and the detail shows as shades of that color';
     whiteRow.append(white,document.createTextNode(' Keep it white (the game colors it)'));sliders.append(whiteRow);}
-  const actions=el('div','theme-actions');const apply=el('button','primary','Apply to the game art');const more=el('button','','More variants');
-  const refine=el('input');refine.placeholder='Refine this one… e.g. “bigger bats, less blood”';refine.className='design-refine';const again=el('button','','Refine');
+  const actions=el('div','theme-actions');const apply=el('button','primary','Use this one');const more=el('button','','Draw more');
+  const refine=el('input');refine.placeholder='Change something… e.g. “bigger bats, less blood”';refine.className='design-refine';const again=el('button','','Change it');
   /* Applying (again): the picked variant, with its settings, becomes the game art. */
   async function applyNow(){apply.disabled=true;const r=await api('/api/design-apply',{job:job.id,variant:S2.variant,settings:S2.settings});S2.applied=r;S2.live=true;apply.textContent='Applied ✓';
     if(info){info.applied=true;info.variant=S2.variant;keepChat();}S.build=null;await status();await library();if(S.asset&&!S.dirty)await select(S.asset.key,true);return r;}
   apply.onclick=run(async()=>{await applyNow();
-    const undoD=el('button','quiet','Undo design');undoD.onclick=run(async()=>{await api('/api/design-undo',{job:job.id});undoD.remove();S2.live=false;apply.disabled=false;apply.textContent='Apply to the game art';if(info){info.applied=false;keepChat();}S.build=null;await status();await library();});
+    const undoD=el('button','quiet','Undo design');undoD.onclick=run(async()=>{await api('/api/design-undo',{job:job.id});undoD.remove();S2.live=false;apply.disabled=false;apply.textContent='Use this one';if(info){info.applied=false;keepChat();}S.build=null;await status();await library();});
     const inst=el('button','primary',S.status?.active?'Update Mitosis':'Install in Mitosis');inst.onclick=install.onclick;actions.append(undoD,inst);});
   if(info?.applied){apply.disabled=true;apply.textContent='Applied ✓';S2.live=true;}
   card.addEventListener('applied',()=>{S2.live=true;apply.disabled=true;apply.textContent='Applied ✓';if(info){info.applied=true;keepChat();}});   /* by the queue's Apply finished */
@@ -554,7 +565,10 @@ function designCard(box,job,keys,entry,info){
   again.onclick=run(()=>{const extra=refine.value.trim();if(!extra)return refine.focus();return drawDesign(box,extra,null,drawings(),[job.id,S2.variant],null,entry);});
   refine.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();again.click();}};
   const refineRow=el('div','design-refine-row');refineRow.append(refine,again);
-  actions.append(apply,more);card.append(picks,views,sliders,refineRow,actions);refresh();
+  /* Simple first: pick one, use it, or say what to change. Size, position and fit fold away under Adjust. */
+  const adjust=el('details','design-adjust');adjust.append(el('summary','','Adjust size and fit'),sliders);
+  const how=el('p','design-how',job.variants.length>1?'Click the one you like, then Use this one.':'Like it? Click Use this one.');
+  actions.append(apply,more);card.append(how,picks,views,actions,refineRow,adjust);refresh();
 }
 function follow(id,box,control){
   T.job=id;setBusy(true);const bar=el('div','theme-progress');const fill=el('span');bar.append(fill);const text=el('small','hint','Starting…');box.append(bar,text);scroll();
@@ -695,8 +709,11 @@ J.id=newId();showChats();
 // Right-click → Redraw with Image AI: the asset (or the checked assets, when it is one of them) drawn anew by the image
 // model, by the same rules as Theme AI (a menu background becomes one seamless picture for every game theme).
 {const menu=$('contextMenu'),item=el('button','', 'Redraw with Image AI…');item.dataset.action='redraw-ai';item.type='button';menu.prepend(item);
- new MutationObserver(()=>{if(!menu.hidden)item.hidden=!S.asset?.editable;}).observe(menu,{attributes:true,attributeFilter:['hidden']});
+ // A font sheet or one of its letters opens the fonts tool instead: drawn as a picture, its letters would be lost.
+ const fontOf=a=>a&&(a.kind==='glyph'||a.group==='Fonts')?(/([^/]+?)(?:_\d+)?\.(?:png|fnt)$/i.exec(a.source||a.name||'')||[])[1]?.toLowerCase()||'':'';
+ new MutationObserver(()=>{if(menu.hidden)return;item.hidden=!S.asset?.editable;item.textContent=fontOf(S.asset)?'Change this font…':'Redraw with Image AI…';}).observe(menu,{attributes:true,attributeFilter:['hidden']});
  item.onclick=run(async()=>{menu.hidden=true;if(!S.asset?.editable)return;
+   const font=fontOf(S.asset);if(font){window.openFonts&&window.openFonts(font);return;}
    const picked=window.LabSelection?.size()?window.LabSelection.keys():[],keys=picked.includes(S.asset.key)?picked:[S.asset.key];
    const name=keys.length>1?`${keys.length} checked assets`:(S.asset.label||S.asset.name);
    const look=prompt((window.LabI18n?LabI18n.t:x=>x)(`Describe the new look for “${name}” (for example “a neon city at night”, “made of gold”):`),'');

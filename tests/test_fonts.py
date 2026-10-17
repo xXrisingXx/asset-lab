@@ -1,10 +1,15 @@
 import os
+import struct
+import tempfile
 import threading
+import time
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
-from PIL import Image
+from PIL import Image, ImageFont
 import numpy as np
+import design
 import fonts
 import lab_core
 import theme
@@ -264,6 +269,137 @@ class FontRenderTests(unittest.TestCase):
         self.assertEqual(errors, [])
 
 
+def sfnt(names, tables=(b'cmap', b'glyf'), extra=b''):
+    """A minimal TrueType file: a table directory and a name table with Windows US English names ({name ID: text})
+    plus a Mac Roman family name; the other tables are empty. Enough for fonts.font_names, not for FreeType."""
+    strings, records = b'', []
+    for nid, text in sorted(names.items()):
+        raw = text.encode('utf-16-be')
+        records.append(struct.pack('>6H', 3, 1, 0x409, nid, len(raw), len(strings))); strings += raw
+    mac = b'Mac Family'
+    records.insert(0, struct.pack('>6H', 1, 0, 0, 1, len(mac), len(strings))); strings += mac
+    name = struct.pack('>3H', 0, len(records), 6 + 12 * len(records)) + b''.join(records) + strings
+    tags = sorted([b'name', *tables])
+    offset, body, directory = 12 + 16 * len(tags), b'', b''
+    for tag in tags:
+        data = name if tag == b'name' else b'\0' * 4
+        directory += struct.pack('>4sIII', tag, 0, offset + len(body), len(data)); body += data
+    return b'\x00\x01\x00\x00' + struct.pack('>4H', len(tags), 0, 0, 0) + directory + body + extra
+
+
+def collection(face):
+    """A .ttc holding one face: the face's table offsets moved past the collection header."""
+    shift = 16
+    count = struct.unpack('>H', face[4:6])[0]
+    moved = bytearray(face)
+    for i in range(count):
+        at = 12 + 16 * i + 8
+        moved[at:at + 4] = struct.pack('>I', struct.unpack('>I', face[at:at + 4])[0] + shift)
+    return b'ttcf' + struct.pack('>HHII', 1, 0, 1, shift) + bytes(moved)
+
+
+class FontNameTests(unittest.TestCase):
+    """fonts.font_names reads a font's family and style straight from its name table, without FreeType."""
+
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.dir = Path(self.temp.name)
+
+    def tearDown(self): self.temp.cleanup()
+
+    def write(self, name, data):
+        (self.dir / name).write_bytes(data)
+        return self.dir / name
+
+    def test_names_prefer_the_typographic_family(self):
+        legacy = self.write('legacy.ttf', sfnt({1: 'Test Sans Light', 2: 'Regular'}))
+        typographic = self.write('typo.ttf', sfnt({1: 'Test Sans Light', 2: 'Regular', 16: 'Test Sans', 17: 'Light'}))
+        cff = self.write('cff.otf', sfnt({1: 'Test Serif', 2: 'Bold Italic'}, tables=(b'cmap', b'CFF ')).replace(b'\x00\x01\x00\x00', b'OTTO', 1))
+        self.assertEqual(fonts.font_names(legacy), ('Test Sans Light', 'Regular', False))
+        self.assertEqual(fonts.font_names(typographic), ('Test Sans', 'Light', False))
+        self.assertEqual(fonts.font_names(cff), ('Test Serif', 'Bold Italic', False))
+        self.assertTrue(fonts.font_names(self.write('var.ttf', sfnt({1: 'Flex', 2: 'Regular'}, tables=(b'cmap', b'glyf', b'fvar'))))[2])
+
+    def test_a_collection_gives_its_first_face(self):
+        ttc = self.write('pair.ttc', collection(sfnt({1: 'Test Mono', 2: 'Bold'})))
+        self.assertEqual(fonts.font_names(ttc), ('Test Mono', 'Bold', False))
+
+    def test_broken_files_are_skipped_quickly(self):
+        good = sfnt({1: 'Test Sans', 2: 'Regular'})
+        broken = {
+            'empty.ttf': b'', 'text.ttf': b'not a font at all, just some text' * 10, 'cut.ttf': good[:40],
+            'random.otf': bytes(np.random.default_rng(1).integers(0, 256, 5000, dtype=np.uint8)),
+            'huge_count.ttf': b'\x00\x01\x00\x00' + struct.pack('>4H', 65535, 0, 0, 0),
+            'bad_offsets.ttf': good[:12] + b''.join(struct.pack('>4sIII', good[12 + 16 * i:16 + 16 * i], 0, 0xFFFFFF00, 0xFF) for i in range(3)),
+            'bad_names.ttf': good.replace(struct.pack('>3H', 0, 3, 42), struct.pack('>3H', 0, 60000, 42)),
+            'bad_collection.ttc': b'ttcf' + struct.pack('>HHII', 1, 0, 1, 0x7FFFFFF0),
+            'no_glyphs.ttf': sfnt({1: 'Test Sans', 2: 'Regular'}, tables=(b'cmap',)),
+        }
+        for name, data in broken.items():
+            with self.subTest(name):
+                self.assertIsNone(fonts.font_names(self.write(name, data)))
+        self.write('good.ttf', good)
+        with patch.object(fonts, 'font_dirs', return_value=[self.dir]), patch.object(fonts.ImageFont, 'truetype', side_effect=AssertionError('FreeType used')):
+            started = time.perf_counter()
+            found = fonts.system_fonts()
+        self.assertEqual(found, [dict(id=str(self.dir / 'good.ttf'), family='Test Sans', style='Regular')])
+        self.assertLess(time.perf_counter() - started, 2)
+
+    def test_only_variable_fonts_are_opened_for_their_named_styles(self):
+        self.write('flex.ttf', sfnt({1: 'Flex', 2: 'Regular'}, tables=(b'cmap', b'glyf', b'fvar')))
+        self.write('plain.ttf', sfnt({1: 'Plain', 2: 'Bold'}))
+        opened = []
+        def faces(p): opened.append(p.name); return 'Flex', 'Regular', ['Light', 'Bold']
+        cache = self.dir / 'cache' / 'typefaces.json'
+        with patch.object(fonts, 'font_dirs', return_value=[self.dir]), patch.object(fonts, '_variable_faces', side_effect=faces):
+            found = fonts.system_fonts(cache)
+            again = fonts.system_fonts(cache)                                           # unchanged fonts: read from the cache
+        self.assertEqual(opened, ['flex.ttf'])
+        self.assertEqual([(f['id'].replace(str(self.dir), ''), f['family'], f['style']) for f in found],
+                         [('\\flex.ttf#Bold', 'Flex', 'Bold'), ('\\flex.ttf#Light', 'Flex', 'Light'), ('\\plain.ttf', 'Plain', 'Bold')])
+        self.assertEqual(again, found)
+
+    def test_real_windows_fonts_read_like_freetype(self):
+        if not WINDOWS.is_dir(): self.skipTest('no Windows fonts folder')
+        checked = 0
+        for name in ('arial.ttf', 'arialbd.ttf', 'georgia.ttf', 'segoeui.ttf', 'seguibl.ttf', 'comic.ttf', 'impact.ttf', 'cambria.ttc', 'msgothic.ttc'):
+            source = WINDOWS / name
+            if not source.is_file(): continue
+            copy = self.write(name, source.read_bytes())
+            mine = fonts.font_names(copy)
+            if mine is None or mine[2]: continue
+            with self.subTest(name):
+                self.assertEqual(mine[:2], ImageFont.truetype(str(copy), 24).getname())
+                checked += 1
+        if not checked: self.skipTest('none of the usual Windows fonts is installed')
+
+
+class TypefaceReadingTests(Base):
+    def test_one_reading_of_the_fonts_at_a_time(self):
+        calls, gate = [], threading.Event()
+        def slow(cache_file):
+            calls.append(cache_file); gate.wait(5)
+            return [dict(id='a.ttf', family='A', style='Regular')]
+        self.lab._typefaces = None
+        results = []
+        with patch.object(lab_core.fontlab, 'system_fonts', side_effect=slow):
+            threads = [threading.Thread(target=lambda: results.append(self.lab.typefaces())) for _ in range(4)]
+            warm = threading.Thread(target=self.lab.warm_typefaces)
+            for t in threads + [warm]: t.start()
+            time.sleep(0.2); gate.set()
+            for t in threads + [warm]: t.join(5)
+        self.assertEqual(len(calls), 1)                                                 # the others waited for that reading
+        self.assertEqual(len(results), 4)
+        self.assertTrue(all(r is results[0] for r in results))
+
+    def test_a_failed_warm_up_is_quiet_and_the_next_ask_reads_again(self):
+        self.lab._typefaces = None
+        with patch.object(lab_core.fontlab, 'system_fonts', side_effect=OSError('disk gone')):
+            self.lab.warm_typefaces()                                                   # no exception
+        with patch.object(lab_core.fontlab, 'system_fonts', return_value=[]):
+            self.assertEqual(self.lab.typefaces(), [])
+
+
 class FontLabTests(Base):
     maker = staticmethod(font_game)
 
@@ -411,3 +547,132 @@ class FontLabTests(Base):
                            ('winter', 'Frost'), ('fire', 'Fire'), ('neon', 'Neon pink'), ('ice', 'Ice')):
             self.assertEqual(next(name for pattern, name in theme.MOOD_TEXT if theme.re.search(rf'\b(?:{pattern})\b', f'{mood} theme')), look, mood)
             self.assertIn(look, fonts.PRESETS)
+
+
+class TextRequestsReachTheFontsTool(Base):
+    """Every way of asking about the game's text gets the fonts tool, never the image model or a recolor of the font sheet
+    (drawn as a picture, the letters become a block)."""
+    maker = staticmethod(font_game)
+
+    def chat(self, text, **kw):
+        with patch.object(self.lab, 'typefaces', return_value=[]), patch.object(theme, 'models', return_value=[]):
+            return self.themes.chat(text, **kw)
+
+    def test_file_names_and_plain_words_about_text(self):
+        for text in ('change me the nicktext file in other text', 'change the nicktext font', 'change nicktext_0.png', 'make the letters spooky',
+                     'make the text red', 'rainbow text', 'make the writing gold', 'use a different font', 'change the font', 'new font for the names',
+                     'change the text style', 'give me a cool font', 'make my name glow', 'change the font to comic sans'):
+            result = self.chat(text)
+            self.assertEqual((result['source'], result.get('font', {}).get('id')), ('font', 'nicktext'), text)
+        self.assertNotEqual(self.chat('make the buttons red with white text').get('source'), 'font')   # about the buttons
+
+    def test_a_request_that_names_no_look_starts_from_one(self):
+        first, second = self.chat('change the font'), self.chat('use a different font')
+        self.assertIn(first['font']['look'], theme.STARTER_LOOKS)
+        self.assertNotEqual(first['font']['look'], second['font']['look'])                  # a different one each time
+        self.assertIn('Flip through more looks', first['plan']['reply'])
+
+    def test_what_text_says_is_explained(self):
+        self.assertIn('not what it says', self.chat('make the names say Novu')['note'])
+
+    def test_a_checked_font_sheet_or_letter_is_restyled_not_drawn(self):
+        page = next(r for r in self.lab.catalog.rows.values() if r['name'] == 'nicktext_0.png')
+        letter = next(r for r in self.lab.catalog.rows.values() if r['kind'] == 'glyph' and r.get('parent') == page['key'])
+        self.assertEqual((theme.font_of(page), theme.font_of(letter)), ('nicktext', 'nicktext'))
+        for only in ([page['key']], [letter['key']]):
+            result = self.chat('can you change it in a arial text?', only=only, draw='on')
+            self.assertEqual((result['source'], result['font']['id']), ('font', 'nicktext'))
+        designer = design.Designer.__new__(design.Designer)
+        designer.lab, designer.themes = self.lab, self.themes
+        self.assertEqual(designer.targets('redraw it', [page['key'], letter['key']]), [])     # the image model never gets a font
+
+    def test_without_the_game_fonts_it_says_so(self):
+        with patch.object(fonts, 'game_fonts', return_value={}):
+            result = self.chat('change the font')
+        self.assertEqual((result['source'], result.get('font')), ('font', None))
+        self.assertIn('Verify integrity of game files', result['plan']['reply'])
+
+
+class NewFontsFromTheAI(Base):
+    """"A font made of lava": Image AI draws the material as a seamless tile and the letters of a real typeface are filled
+    with it, so the font is new but every name stays readable."""
+    maker = staticmethod(font_game)
+    JOB = 'ab' * 16
+
+    def texture(self, job=JOB, index=0):
+        tile = Image.new('RGB', (64, 64), RED)
+        tile.paste(BLUE, (0, 32, 64, 64))                                   # red above, blue below: both show in a letter
+        path = self.lab.root / 'designs' / job / f'variant-{index}.png'
+        path.parent.mkdir(parents=True, exist_ok=True); tile.save(path)
+        return f'{job}-{index}'
+
+    def colors(self, png):
+        px = np.asarray(Image.open(__import__('io').BytesIO(png)).convert('RGBA')).reshape(-1, 4).astype(int)
+        return px
+
+    def test_the_letters_are_filled_with_the_texture(self):
+        name = self.texture()
+        flat = self.colors(self.lab.font_preview('nicktext', dict(fill='#ffffff', edge=False), 'AB'))
+        filled = self.colors(self.lab.font_preview('nicktext', dict(fill='#ffffff', edge=False, texture=name), 'AB'))
+        reddish = ((filled[:, 0] > 200) & (filled[:, 1] < 60) & (filled[:, 2] < 60)).sum()
+        bluish = ((filled[:, 2] > 200) & (filled[:, 0] < 60) & (filled[:, 1] < 60)).sum()
+        self.assertGreater(reddish, 20); self.assertGreater(bluish, 20)
+        self.assertEqual(((flat[:, 0] > 200) & (flat[:, 1] < 60) & (flat[:, 2] < 60)).sum(), 0)
+        self.assertEqual(fonts.clean_style(dict(texture='../../evil'))['texture'], '')   # only the lab's own tiles
+        self.assertEqual(fonts.clean_style(dict(texture_scale=99))['texture_scale'], 4.0)
+
+    def test_an_applied_font_keeps_its_own_copy_of_the_texture(self):
+        name = self.texture()
+        with patch.object(self.lab, 'typefaces', return_value=[]):
+            self.lab.font_apply('nicktext', dict(texture=name))
+        kept = self.lab.root / 'font-textures' / f'{name}.png'
+        self.assertTrue(kept.is_file())
+        import shutil
+        shutil.rmtree(self.lab.root / 'designs')                            # old drawings cleared away
+        self.assertEqual(self.lab.font_texture(name), kept)
+        self.assertEqual(self.lab.font_catalog()['game'][0]['style']['texture'], name)
+        with self.assertRaises(ValueError):                                  # a texture that is gone is said, not dropped silently
+            self.lab.font_apply('nicktext', dict(texture=('cd' * 16) + '-0'))
+
+    def chat(self, text, designer=None, planner=None):
+        self.themes.designer = designer
+        with patch.object(self.lab, 'typefaces', return_value=[]), patch.object(theme, 'models', return_value=planner or []):
+            return self.themes.chat(text)
+
+    def test_a_font_made_of_something_asks_image_ai_for_the_texture(self):
+        ready = SimpleNamespace(status=lambda: dict(available=True, missing=[], seconds_per_drawing=30))
+        for text, what in (('create a new font made of lava', 'lava'), ('make the names out of chocolate with sprinkles', 'chocolate with sprinkles'),
+                           ('player names in a leopard print', 'leopard print'), ('a carbon fiber texture font', 'carbon fiber')):
+            result = self.chat(text, ready)
+            self.assertEqual((result['source'], result['font']['texture_prompt']), ('font', what), text)
+            self.assertTrue(result['font']['style']['outline'])                 # an edge, so a texture reads on any background
+        missing = self.chat('create a new font made of lava', SimpleNamespace(status=lambda: dict(available=False, missing=['flux'])))
+        self.assertNotIn('texture_prompt', missing['font'])
+        self.assertIn('install the image model', missing['note'])
+        self.assertNotIn('texture_prompt', self.chat('make the names red', ready)['font'])    # a plain style needs no drawing
+
+    def test_the_planner_designs_a_font_the_words_do_not_describe(self):
+        answer = dict(message=dict(content='{"font": "Impact", "fill": "#ffcc00", "gradient": ["#ff0000", "#ffcc00"], "outline": "#000000", '
+                                           '"outline_width": 4, "glow": "#ff6600", "glow_size": 9, "caps": true}'))
+        planner = [dict(name='qwen3:latest', thinking=False)]
+        with patch.object(theme, 'ollama', return_value=answer):
+            result = self.chat('make me a new font for a pirate ship', planner=planner)
+        style = result['font']['style']
+        self.assertEqual((style['outline'], style['outline_width'], style['glow'], style['caps']), ('#000000', 4.0, '#ff6600', True))
+        self.assertEqual([c for _, c in style['stops']], ['#ff0000', '#ffcc00'])
+        with patch.object(theme, 'ollama', return_value=dict(message=dict(content='no idea'))):
+            fallback = self.chat('make me a new font', planner=planner)
+        self.assertIn(fallback['font']['look'], theme.STARTER_LOOKS)            # a bad answer still gives a font to start from
+
+    def test_image_ai_draws_the_texture_as_a_seamless_tile(self):
+        d = design.Designer(self.lab, self.themes)
+        with patch.object(d, 'status', return_value=dict(missing=[])), patch('threading.Thread'):
+            job = d.start_texture('lava with glowing cracks', count=2)
+        self.assertTrue(job['texture'] and job['scene'] and job['circular'])
+        self.assertEqual((job['targets'], job['frames'], job['total']), ([], [[512, 512]], 2))
+        text = d.instruction(job)
+        self.assertIn('seamless tileable', text); self.assertIn('No text, no letters', text); self.assertNotIn('Edit ', text)
+        d.jobs[job['id']]['state'] = 'complete'
+        with self.assertRaises(ValueError): d.apply(job['id'], 0)                 # a texture is picked in the font card, never applied as art
+        with self.assertRaises(ValueError), patch.object(d, 'status', return_value=dict(missing=[])):
+            d.start_texture('   ')

@@ -28,3 +28,17 @@ class RedrawMenu(EditorTestCase):
         self.assertTrue(b.eval("document.getElementById('contextMenu').hidden"))
         b.eval("window.fetch=window.__realFetch; true")
         self.assertNoBrowserErrors()
+
+    def test_a_font_picture_opens_the_fonts_tool_instead(self):
+        b = self.browser
+        b.select_asset('font_0.png')                                       # a font sheet: drawn as a picture its letters would be lost
+        x, y = b.center_of('#viewport')[:2]
+        b.click(x, y, button='right')
+        b.wait_for("!document.getElementById('contextMenu').hidden")
+        item = "document.querySelector('#contextMenu [data-action=redraw-ai]')"
+        self.assertEqual(b.eval(f"{item}.textContent"), 'Change this font…')
+        b.eval(f"window.__asked=0;window.prompt=()=>{{window.__asked++;return '';}};{item}.click(); true")
+        b.wait_for("document.getElementById('fontsDialog').open", timeout=20)
+        self.assertEqual(b.eval("window.__asked"), 0)                      # no look asked for: the fonts tool opened
+        b.eval("document.getElementById('fontsDialog').close(); true")
+        self.assertNoBrowserErrors()

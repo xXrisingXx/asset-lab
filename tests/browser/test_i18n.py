@@ -142,11 +142,11 @@ class Translated(EditorTestCase):
         reply = b.eval("[...document.querySelectorAll('#themeLog .theme-bubble.bot')].at(-1).innerText.trim()")
         self.assertEqual(reply, self.tr(next(k for k in self.words['strings'] if k.startswith('I change how Mitosis looks.'))))
         self.assertEqual(b.eval("document.querySelector('#themeLog .theme-bubble.user').innerText.trim()"), 'help')   # what the player typed stays
-        b.click_selector('#gameColorsButton')
-        b.wait_for("!document.getElementById('gamePanel').hidden")
-        self.assertTranslated("document.getElementById('themeDrawer')", 'Game colors & menu')
-        self.shot('game-colors')
-        b.click_selector('#gameColorsButton')
+        b.click_selector('#themeMore summary')                                        # the folded extras: Image AI, auto-apply, ideas
+        b.wait_for("document.getElementById('themeMore').open")
+        self.assertTranslated("document.getElementById('themeDrawer')", 'Theme AI · More')
+        self.shot('theme-more')
+        b.click_selector('#themeMore summary')
         b.click_selector('#themeClose')
 
     def test_4_review(self):

@@ -28,7 +28,7 @@ import audio as soundlab
 import settings as labsettings
 import suggest
 AUDIO_REQUEST = 210 * 1024 * 1024   # a 150 MB sound file, even sent as base64 in JSON (only /api/audio-source)
-DESIGN_SETTINGS = ('scale', 'dx', 'dy', 'tolerance', 'shape', 'fill', 'white', 'calm', 'pale', 'paint')
+DESIGN_SETTINGS = ('scale', 'dx', 'dy', 'tolerance', 'shape', 'fill', 'white', 'calm', 'pale', 'paint', 'match')
 from PIL import Image
 
 
@@ -324,6 +324,8 @@ def server_for(lab, port):
                     base = data.get('base') if isinstance(data.get('base'), list) and len(data['base']) == 2 else None
                     return self.send(designer.start(data.get('prompt', ''), only, int(data.get('count') or labsettings.value(lab, 'drawings')), base, data.get('direction') or None,
                                                     data.get('inspiration') or None))
+                if path == '/api/font-texture':   # a new font: Image AI draws what its letters are made of
+                    return self.send(designer.start_texture(data.get('prompt', ''), int(data.get('count') or labsettings.value(lab, 'drawings'))))
                 if path == '/api/design-apply':
                     result = designer.apply(data.get('job', ''), int(data.get('variant', 0)), {k: float(v) for k, v in (data.get('settings') or {}).items() if k in DESIGN_SETTINGS})
                     return self.send(result)
@@ -471,6 +473,8 @@ def main():
     if lab.settings.damaged: print('Settings: settings.json could not be read; using the defaults (the file is kept as settings.json.bad).', flush=True)
     open_page(lab, address, args.no_browser)
     threading.Thread(target=lab.similar.build, daemon=True).start()  # warm the image-search index
+    try: threading.Thread(target=lab.warm_typefaces, daemon=True).start()   # this PC's fonts, read before the Fonts window asks
+    except Exception: pass
     try: server.serve_forever()
     except KeyboardInterrupt: pass
     finally:
