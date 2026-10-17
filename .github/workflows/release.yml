@@ -9,6 +9,8 @@ on:
 
 permissions:
   contents: write
+  id-token: write       # build attestations: proof that GitHub built these files from this repository's code
+  attestations: write
 
 concurrency:
   group: release
@@ -17,6 +19,8 @@ concurrency:
 jobs:
   release:
     runs-on: windows-latest
+    env:
+      VT_API_KEY: ${{ secrets.VT_API_KEY }}   # optional; a step's own env is not visible to its if, so it lives here
     steps:
       - uses: actions/checkout@v5
 
@@ -82,13 +86,38 @@ jobs:
 
       # The notes are the commit message without any attribution trailers (Co-Authored-By, "Generated with …").
       # It is read from the environment, never pasted into the script, so its text can't run as code.
+      # Anyone can check that AssetLab.exe was built here, by GitHub, from the public code (not on someone's PC):
+      # the release's Attestations, or `gh attestation verify AssetLab.exe -R <this repo>`.
+      - name: Prove where the files came from
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: |
+            dist/AssetLab.exe
+            dist/asset-lab-app.zip
+
+      # Optional: with a free VirusTotal API key saved as the VT_API_KEY secret, every build is scanned there, so the
+      # link in the notes shows the result at once. Without the secret this step does nothing.
+      - name: Scan on VirusTotal
+        if: ${{ env.VT_API_KEY != '' }}
+        shell: pwsh
+        run: |
+          curl.exe -s --fail -H "x-apikey: $env:VT_API_KEY" -F "file=@dist/AssetLab.exe" https://www.virustotal.com/api/v3/files | Out-Null
+          if ($LASTEXITCODE -ne 0) { Write-Host '::warning::VirusTotal did not take the file this time; the link still works once it is scanned.' }
+
       - name: Release notes
         shell: pwsh
         env:
           MESSAGE: ${{ github.event.head_commit.message }}
+          REPO: ${{ github.repository }}
         run: |
           $lines = $env:MESSAGE -split "`r?`n" | Where-Object { $_ -notmatch '^\s*(co-authored-by:|signed-off-by:.*noreply@anthropic|.*generated with \[?claude)' }
-          ($lines -join "`n").Trim() | Out-File release-notes.md -Encoding utf8
+          $sha = (Get-FileHash dist/AssetLab.exe -Algorithm SHA256).Hash.ToLower()
+          $safe = @(
+            '', '---', '### Is it safe?',
+            "- **Built by GitHub from the public code.** This file was built on GitHub's servers from [this repository's source](https://github.com/$env:REPO), not on anyone's PC. [Check the build attestation](https://github.com/$env:REPO/attestations).",
+            "- **Same file as here:** SHA-256 ``$sha``. [VirusTotal scan of this exact file](https://www.virustotal.com/gui/file/$sha).",
+            '- **Why Windows warns:** the app is new and not code-signed yet, so SmartScreen shows "Windows protected your PC" (More info > Run anyway). It does not need administrator rights, backs up every game file before changing it, and Restore original puts them back.')
+          (($lines -join "`n").Trim() + "`n" + ($safe -join "`n")) | Out-File release-notes.md -Encoding utf8
 
       - name: Publish
         uses: softprops/action-gh-release@v2

@@ -8,6 +8,10 @@ Asset Lab is a Windows desktop editor for the artwork and sounds in **Mitos.is: 
 
 [**Download Asset Lab**](https://github.com/xXrisingXx/asset-lab/releases/latest)
 
+> **Is it safe?** Asset Lab is open source: every line is in this repository. `AssetLab.exe` is built on GitHub's servers from this code, never on anyone's PC, and each release carries a [build attestation](https://github.com/xXrisingXx/asset-lab/attestations) that proves it. Each release's notes also give the file's SHA-256 and a VirusTotal link for that exact file.
+>
+> Windows shows **"Windows protected your PC"** because the app is new and not code-signed yet. Click **More info › Run anyway**. Asset Lab does not need administrator rights, installs into your own user folder, backs up every game file before changing it, and **Restore original** puts them back exactly. See [Privacy](#privacy) for everything it connects to.
+
 ## Features
 
 | Feature | What you can do |
