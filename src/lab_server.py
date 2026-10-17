@@ -28,7 +28,7 @@ import audio as soundlab
 import settings as labsettings
 import suggest
 AUDIO_REQUEST = 210 * 1024 * 1024   # a 150 MB sound file, even sent as base64 in JSON (only /api/audio-source)
-DESIGN_SETTINGS = ('scale', 'dx', 'dy', 'tolerance', 'shape', 'fill', 'white', 'calm')
+DESIGN_SETTINGS = ('scale', 'dx', 'dy', 'tolerance', 'shape', 'fill', 'white', 'calm', 'pale', 'paint')
 from PIL import Image
 
 

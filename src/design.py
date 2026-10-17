@@ -134,6 +134,25 @@ def seamless(img):
     return Image.fromarray(np.clip(a * m + b * (1 - m), 0, 255).astype(np.uint8)).convert('RGBA')
 
 
+def paint_original(original, art):
+    """The original sprite's own shape and shading, colored by the drawing behind it: each pixel takes the drawing's color
+    there (softened, so thin lines get a clear color, not noise), lit by the original's own brightness."""
+    from PIL import ImageFilter
+    o = np.asarray(original, np.float32)
+    # Colors spread from where the drawing has some into where it is see-through (a blur weighted by its alpha), so the
+    # parts of the outline outside the drawing get its nearby colors, not black.
+    rgba = art.convert('RGBA'); a = np.asarray(rgba, np.float32)[..., 3:] / 255
+    weighted = Image.fromarray((np.asarray(rgba, np.float32)[..., :3] * a).astype(np.uint8))
+    radius = max(2, min(art.size) / 12)
+    num = np.asarray(weighted.filter(ImageFilter.GaussianBlur(radius)), np.float32)
+    den = np.asarray(Image.fromarray((a[..., 0] * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(radius)), np.float32)[..., None] / 255
+    mean = (np.asarray(rgba, np.float32)[..., :3] * a).sum((0, 1)) / max(1e-3, a.sum())
+    colors = np.where(den > 0.05, num / np.maximum(den, 1e-3), mean)
+    light = (o[..., :3].mean(-1, keepdims=True) / 255) * 0.45 + 0.55   # the original's highlights and shades, kept gently
+    rgb = np.clip(colors * light + (255 - colors) * 0.12 * (light > 0.97), 0, 255)
+    return Image.fromarray(np.dstack([rgb, o[..., 3]]).astype(np.uint8), 'RGBA')
+
+
 def wrap_shift(img, dx=0.0, dy=0.0):
     """Move a tile by up to half its size (dx/dy -1..1), wrapping around: what leaves one edge comes in at the other."""
     a = np.asarray(img.convert('RGBA'))
@@ -608,6 +627,7 @@ class Designer:
             if inspiration and re.fullmatch(r'[0-9a-f]{20}\.png', str(inspiration)) and (self.lab.root / 'inspiration' / inspiration).is_file():
                 job['inspiration'] = str(inspiration)
             if job['title'] and wording(request): job['text'] = wording(request)
+            if restyles(job): job['restyle'] = True   # a theme on the game's own sprite: its outline is kept (render)
             self.jobs[job['id']] = job
         threading.Thread(target=self._run, args=(job,), daemon=True).start()
         return dict(job)
@@ -796,7 +816,8 @@ class Designer:
         job = self.job(job_id)
         folder = self.folder / job['id']
         if raw: return Image.open(folder / f'raw-{int(index)}.png').convert('RGBA')
-        s = {'scale': 1.0, 'dx': 0.0, 'dy': 0.0, 'tolerance': 1.0, 'shape': 1.0 if job.get('stretched') else 0.0, 'fill': 1.0 if job['title'] else 0.0, 'white': 0.0, **(settings or {})}
+        # A restyle keeps the sprite's outline by default (the drawing is trimmed to it): the shape is the game's, the look is new.
+        s = {'scale': 1.0, 'dx': 0.0, 'dy': 0.0, 'tolerance': 1.0, 'shape': 1.0 if job.get('stretched') or job.get('restyle') else 0.0, 'fill': 1.0 if job['title'] else 0.0, 'white': 0.0, **(settings or {})}
         if job.get('scene'):
             # A background fills its frame. Zoom picks a part of the drawing (the game shows the tile small and repeated, so
             # zooming in keeps shapes big enough to read), which is then made to tile again; Calmer softens and darkens the
@@ -831,6 +852,11 @@ class Designer:
 
     def _place(self, job, art, s, target):
         frame = tuple(job['frames'][int(target)])
+        if float(s.get('paint', 0)) >= 0.5:
+            # Paint the original: the game's sprite exactly (outline and alpha), in the drawing's colors. For thin outline
+            # icons (an empty box, a ring) that a drawing does not hold on to.
+            original = self.lab.catalog.image(job['targets'][int(target)]).convert('RGBA')
+            if original.size == frame: return paint_original(original, fit(art, frame, float(s['scale']), float(s['dx']), float(s['dy']), fill=True))
         if float(s['shape']) >= 0.5:
             # Keep the original outline: line the drawing up with the original's content box, then trim gently to its shape.
             original = self.lab.catalog.image(job['targets'][int(target)]).convert('RGBA')

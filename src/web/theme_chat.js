@@ -449,7 +449,7 @@ function zoomPiece(Q,item){
 }
 // What a drawing starts with (also what "Apply all" uses): zoomed and calmed for a background, the outline kept for a
 // stretched button, the frame filled for the title, and kept white where the game colors the art itself.
-function designDefaults(job){return {scale:job.scene&&!job.circular?2.5:1,...(job.arena?{pale:0.55}:job.scene?{calm:0.5}:{}),dx:0,dy:0,tolerance:1,shape:job.stretched?1:0,fill:job.title?1:0,white:job.spawner||!job.food&&(job.tint||job.tinted)&&setting('keep_white')?1:0};}   /* food keeps the drawing's colors */
+function designDefaults(job){return {scale:job.scene&&!job.circular?2.5:1,...(job.arena?{pale:0.55}:job.scene?{calm:0.5}:{}),dx:0,dy:0,tolerance:1,shape:job.stretched||job.restyle?1:0,fill:job.title?1:0,white:job.spawner||!job.food&&(job.tint||job.tinted)&&setting('keep_white')?1:0};}   /* food keeps the drawing's colors */
 async function drawDesign(box,prompt,keys,count,base,direction,entry,label,inspiration){
   let job=await api('/api/design-start',{prompt,only:keys||null,count,base:base||null,direction:direction||null,inspiration:inspiration||null});
   const info={id:job.id,keys:keys||null,label:label||''};if(entry){(entry.jobs||(entry.jobs=[])).push(info);keepChat();}
@@ -530,6 +530,10 @@ function designCard(box,job,keys,entry,info){
   const shapeRow=el('label','design-shape');const shape=el('input');shape.type='checkbox';shape.checked=!!S2.settings.shape;
   shape.onchange=()=>{S2.settings.shape=shape.checked?1:0;refresh();};shapeRow.title='Trim the drawing to the original outline, so the game places and stretches it the same way';
   shapeRow.append(shape,document.createTextNode(' Keep the original shape'));if(!job.scene)sliders.append(shapeRow);
+  /* For thin outline icons a drawing does not hold on to: the game's own sprite, exactly, in the drawing's colors. */
+  const paintRow=el('label','design-shape');const paint=el('input');paint.type='checkbox';paint.checked=!!S2.settings.paint;
+  paint.onchange=()=>{S2.settings.paint=paint.checked?1:0;refresh();};paintRow.title='Use the game’s own sprite, exactly, colored like the drawing (for thin outlines a drawing does not keep)';
+  paintRow.append(paint,document.createTextNode(' Paint the original shape'));if(!job.scene&&!job.title&&!job.food)sliders.append(paintRow);
   const fillRow=el('label','design-shape');const fill=el('input');fill.type='checkbox';fill.checked=!!S2.settings.fill;
   fill.onchange=()=>{S2.settings.fill=fill.checked?1:0;refresh();};fillRow.title='Size the drawing by its main shape so it fills the frame like the original; sparse extras at the edges may be trimmed';
   fillRow.append(fill,document.createTextNode(' Fill the frame'));if(!job.scene)sliders.append(fillRow);

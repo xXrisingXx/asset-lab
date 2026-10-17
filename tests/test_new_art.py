@@ -211,3 +211,15 @@ class NoExamplesInPrompts(unittest.TestCase):
         d = design.Designer.__new__(design.Designer)
         text = (d.instruction(job) + design.PICTURES_NOTE + design.RESTYLE_NOTE).lower()
         for word in ('tire', 'donut', 'burger'): self.assertNotIn(word, text)
+
+
+class PaintTheOriginal(unittest.TestCase):
+    def test_the_original_shape_in_the_drawings_colors(self):
+        ring = Image.new('RGBA', (40, 40), (0, 0, 0, 0))
+        from PIL import ImageDraw
+        ImageDraw.Draw(ring).ellipse((2, 2, 37, 37), outline=(255, 255, 255, 255), width=3)
+        art = Image.new('RGBA', (40, 40), (0, 0, 0, 0)); art.paste((220, 40, 200, 255), (10, 10, 30, 30))   # only the middle is drawn
+        out = design.paint_original(ring, art)
+        self.assertTrue((np.asarray(out)[..., 3] == np.asarray(ring)[..., 3]).all())        # exactly the original outline
+        edge = np.asarray(out)[20, 3, :3]
+        self.assertGreater(int(edge[0]), 80)                                                # the ring got the drawing's color, not black

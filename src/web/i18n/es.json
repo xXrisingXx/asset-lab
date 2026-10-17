@@ -2392,7 +2392,10 @@
   " · drawn": " · dibujado",
   " · not drawn": " · no dibujado",
   " · applied ✓": " · aplicado ✓",
-  "It keeps the drawing’s colors; the game also tints each pellet, so the colors mix with it. Tick “Keep it white” for the game’s own pellet colors.": "Conserva los colores del dibujo; el juego también tiñe cada bolita, así que los colores se mezclan. Marca “Mantenerlo blanco” para los colores propios del juego."
+  "It keeps the drawing’s colors; the game also tints each pellet, so the colors mix with it. Tick “Keep it white” for the game’s own pellet colors.": "Conserva los colores del dibujo; el juego también tiñe cada bolita, así que los colores se mezclan. Marca “Mantenerlo blanco” para los colores propios del juego.",
+  " Paint the original shape": " Pintar la forma original",
+  "Paint the original shape": "Pintar la forma original",
+  "Use the game’s own sprite, exactly, colored like the drawing (for thin outlines a drawing does not keep)": "El sprite propio del juego, exacto, con los colores del dibujo (para contornos finos que un dibujo no mantiene)"
  },
  "patterns": {
   "{n} visuals": "{n} gráficos",
