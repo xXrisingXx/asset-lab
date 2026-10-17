@@ -79,13 +79,20 @@ window.LabFonts={catalog:()=>load(),reload:()=>load(true),preview,picker};
 
 // ----- the dialog -------------------------------------------------------------------------------------------------
 async function open(font,style,text){
-  await load();
+  /* Opens at once: the font list can take a moment the first time (it reads every font on this PC), so the window shows
+     that it is loading instead of the button seeming to do nothing. */
+  let waited=null;   // the loading window, closed by the player before the fonts came: then it stays closed
+  if(!F.data&&!dlg.open){const head=el('div','fonts-head'),x=btn('✕','quiet','Close');x.onclick=()=>dlg.close();head.append(el('h2','','Text & fonts'),x);
+    dlg.replaceChildren(head,el('p','fonts-sub fonts-loading','Loading fonts…'));dlg.showModal();waited={closed:false};
+    dlg.addEventListener('close',()=>{if(waited)waited.closed=true;},{once:true});}
+  try{await load();}catch(e){if(!F.data&&dlg.open)dlg.close();throw e;}
+  if(waited?.closed)return;waited=null;
   F.font=font||F.font;if(!F.data.game.some(g=>g.id===F.font)&&F.data.game.length)F.font=F.data.game[0].id;
   const saved=F.data.game.find(g=>g.id===F.font);
   setStyle(style||(saved&&saved.style)||{});
   // The example text: what was asked for, else what the player typed here, else Settings › Text & fonts › Example text.
   if(text)F.text=text;else if(!F.typed&&window.LabSettings&&LabSettings.get('font_sample'))F.text=LabSettings.get('font_sample');
-  render();dlg.showModal();show();ahead();
+  render();if(!dlg.open)dlg.showModal();show();ahead();
 }
 window.openFonts=run(open);
 dlg.addEventListener('close',()=>{P.gen++;});

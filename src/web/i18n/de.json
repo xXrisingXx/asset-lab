@@ -2395,7 +2395,8 @@
   "It keeps the drawing’s colors; the game also tints each pellet, so the colors mix with it. Tick “Keep it white” for the game’s own pellet colors.": "Sie behält die Farben der Zeichnung; das Spiel färbt jedes Kügelchen zusätzlich, daher mischen sich die Farben. Hake „Weiß lassen“ an für die eigenen Farben des Spiels.",
   " Paint the original shape": " Original-Form bemalen",
   "Paint the original shape": "Original-Form bemalen",
-  "Use the game’s own sprite, exactly, colored like the drawing (for thin outlines a drawing does not keep)": "Das eigene Sprite des Spiels, genau, in den Farben der Zeichnung (für dünne Umrisse, die eine Zeichnung nicht hält)"
+  "Use the game’s own sprite, exactly, colored like the drawing (for thin outlines a drawing does not keep)": "Das eigene Sprite des Spiels, genau, in den Farben der Zeichnung (für dünne Umrisse, die eine Zeichnung nicht hält)",
+  "Loading fonts…": "Schriftarten werden geladen…"
  },
  "patterns": {
   "{n} visuals": "{n} Grafiken",
