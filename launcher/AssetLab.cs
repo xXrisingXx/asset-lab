@@ -26,6 +26,9 @@ using System.Windows.Forms;
 [assembly: AssemblyTitle("Asset Lab")]
 [assembly: AssemblyDescription("Asset Lab for Mitos.is")]
 [assembly: AssemblyProduct("Asset Lab")]
+// Who made it, in the file's own details: antivirus scanners weigh an exe with no publisher as more suspicious.
+[assembly: AssemblyCompany("Asset Lab authors")]
+[assembly: AssemblyCopyright("Copyright (c) 2026 Asset Lab authors. MIT License. https://github.com/xXrisingXx/asset-lab")]
 [assembly: AssemblyVersion("1.0.0.0")]
 
 internal static class Program {
