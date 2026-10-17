@@ -1075,8 +1075,8 @@ class EditorCoreVerify(EditorTestCase):
     def test_41_theme_ai_review_and_fonts_open_without_errors(self):
         b = self.fresh('edit-photo.png')
         b.click_selector('#themeButton')
-        b.wait_for("!document.getElementById('themeDrawer').hidden")
-        b.settle(3)
+        b.wait_for("!document.getElementById('themeDrawer').hidden && document.getElementById('themeModel').options.length > 0")   # settled: buttons in place
+        b.settle(4)
         b.click_selector('#fontsButton')
         b.wait_for("document.getElementById('fontsDialog').open", timeout=20)
         b.settle(10)

@@ -839,7 +839,10 @@ class TextTests(SettingsCase):
         b = self.browser
         self.stub({}, record=['/api/font-preview'])
         b.click_selector('#themeButton')
-        b.wait_for("!document.getElementById('themeDrawer').hidden")
+        # Theme AI settled first: its model list and install line arrive just after it opens and move the buttons under
+        # the box, so a click before then can land where the button was.
+        b.wait_for("!document.getElementById('themeDrawer').hidden && document.getElementById('themeModel').options.length > 0")
+        b.settle(4)
         b.click_selector('#fontsButton')
         b.wait_for("document.getElementById('fontsDialog').open", 20)
         b.wait_for("(window.__calls||{})['/api/font-preview'] >= 1", 20)

@@ -585,7 +585,8 @@ class EditorCore(EditorTestCase):
         self.assertTrue(b.eval("document.getElementById('contextMenu').hidden"))
         # Theme AI, Fonts and Review.
         b.click_selector('#themeButton')
-        b.wait_for("!document.getElementById('themeDrawer').hidden")
+        b.wait_for("!document.getElementById('themeDrawer').hidden && document.getElementById('themeModel').options.length > 0")   # settled: buttons in place
+        b.settle(4)
         b.click_selector('#fontsButton')
         b.wait_for("document.getElementById('fontsDialog').open", timeout=20)
         b.eval("document.getElementById('fontsDialog').close()")
