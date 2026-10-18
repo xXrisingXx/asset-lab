@@ -817,7 +817,10 @@ internal sealed partial class Loader : Form {
         }
         if (desktop != null) { MessageBox.Show(this, message, Program.Name, MessageBoxButtons.OK, MessageBoxIcon.Error); return; }
         status.Text = L.T("Something went wrong"); status.ForeColor = Bad; detail.Text = message; bar.Visible = false; bar.Busy = false;
-        log.Visible = true; primary.Text = L.T("Try again"); primary.Visible = true; secondary.Visible = false; ai.Visible = false;
+        // The cause is the last line of an error: show the end, with a scroll bar for the rest, and keep it all in a
+        // file a player can send (screenshots showed only the first lines).
+        log.ScrollBars = ScrollBars.Vertical; log.Visible = true; log.SelectionStart = log.TextLength; log.ScrollToCaret();
+        try { File.WriteAllText(Path.Combine(Program.Home, "last-error.txt"), message + Environment.NewLine + log.Text); } catch (Exception) { } primary.Text = L.T("Try again"); primary.Visible = true; secondary.Visible = false; ai.Visible = false;
         EventHandler retry = null; retry = delegate { primary.Click -= retry; primary.Visible = false; log.Visible = false; Run(); };
         primary.Click += retry;
         if (WindowState == FormWindowState.Minimized) WindowState = FormWindowState.Normal;

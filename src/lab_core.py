@@ -72,11 +72,37 @@ def atomic_bytes(path, data):
         if temp.exists(): temp.unlink()
 
 
-def atomic_json(path, data): atomic_bytes(path, json.dumps(data, indent=2, ensure_ascii=False).encode('utf-8'))
+def atomic_json(path, data, keep=False):
+    """keep: the last good version stays beside it (<name>.bak), for read_json to fall back on if this one is damaged."""
+    path = Path(path)
+    if keep and path.is_file():
+        try:
+            old = path.read_bytes(); json.loads(old)
+            atomic_bytes(path.with_name(path.name + '.bak'), old)
+        except (OSError, ValueError): pass   # a damaged one is not kept as the good one
+    atomic_bytes(path, json.dumps(data, indent=2, ensure_ascii=False).encode('utf-8'))
 
 
-def read_json(path, fallback=None):
-    return json.loads(Path(path).read_text(encoding='utf-8')) if Path(path).is_file() else fallback
+def read_json(path, fallback=None, notes=None, what=''):
+    """notes: a list to recover into instead of failing: a damaged file (antivirus, OneDrive, a failing disk) gives way
+    to its last good version (<name>.bak), else it is set aside and the fallback is used, with a note saying so."""
+    path = Path(path)
+    if not path.is_file(): return fallback
+    try: return json.loads(path.read_text(encoding='utf-8'))
+    except (ValueError, UnicodeDecodeError):
+        if notes is None: raise
+    aside = path.with_name(f'{path.name}.damaged-{int(time.time())}')
+    try: path.replace(aside)
+    except OSError: pass
+    backup = path.with_name(path.name + '.bak')
+    try:
+        data = json.loads(backup.read_text(encoding='utf-8'))
+        atomic_bytes(path, backup.read_bytes())
+        notes.append(f'{what or path.name} was damaged; its last good copy was used (the damaged file is kept as {aside.name}).')
+        return data
+    except (OSError, ValueError, UnicodeDecodeError):
+        notes.append(f'{what or path.name} was damaged and had no good copy; it was set aside as {aside.name}.')
+        return fallback
 
 
 def png(image):
@@ -217,7 +243,24 @@ class Lab:
         self.game = Path(game).resolve() if game else find_game()
         if not (self.game / 'Mitosis.exe').is_file() or not (self.game / 'assets').is_dir():
             raise ValueError('Select the Mitos.is installation containing Mitosis.exe and assets.')
+        self.game_id = digest(str(self.game).casefold().encode())[:24]
+        self.ledger_dir = Path(ledger_dir or data_home() / 'install-ledgers').resolve()
+        self.ledger_dir.mkdir(parents=True, exist_ok=True)
+        self.ledger = self.ledger_dir / (self.game_id + '.json')
         self.root = Path(workspace or data_home() / 'workspace').resolve()
+        # A mod in the game installed from another workspace on this PC: that workspace opens instead (only it knows the
+        # game's real originals; a new one here would take the modded files for them). When it is gone, this one opens
+        # with Restore original only, so the game can still be put back. Never a lab that cannot start.
+        notes, self.foreign = [], None
+        other = (self.active() or {}).get('workspace')
+        if other and Path(other).resolve() != self.root:   # the same folder written differently is the same folder
+            if (Path(other) / 'state.json').is_file():
+                notes.append(f'Opened the workspace your installed mod came from ({other}), so Restore original and updates work.')
+                self.root = Path(other).resolve()
+            else:
+                self.foreign = other
+                notes.append('The mod in the game was installed from a workspace that is no longer on this PC. '
+                             'Use Restore original before installing anything new.')
         if self.root.is_relative_to(self.game) or self.game.is_relative_to(self.root):
             raise ValueError('Keep the editing workspace separate from the game installation.')
         self.root.mkdir(parents=True, exist_ok=True)
@@ -235,17 +278,15 @@ class Lab:
             except (ValueError, OSError): pass
         self.process_check = process_check or (lambda: game_processes(None if self.cache else self.game))
         self.session = secrets.token_urlsafe(32)
-        self.game_id = digest(str(self.game).casefold().encode())[:24]
-        self.ledger_dir = Path(ledger_dir or data_home() / 'install-ledgers').resolve()
-        self.ledger_dir.mkdir(parents=True, exist_ok=True)
-        self.ledger = self.ledger_dir / (self.game_id + '.json')
         self.state_path = self.root / 'state.json'
-        self.state = read_json(self.state_path, {'game': str(self.game), 'baseline': {}, 'edits': {}, 'staged': []})
+        self.state = read_json(self.state_path, {'game': str(self.game), 'baseline': {}, 'edits': {}, 'staged': []}, notes,
+                               'Your workspace record (state.json)')
         if Path(self.state['game']).resolve() != self.game:
             raise ValueError('This workspace belongs to another game installation.')
-        if self.active() and self.active().get('workspace') != str(self.root):
-            raise ValueError('A test is installed from another workspace. Open that workspace to restore it first.')
         self.catalog = Catalog(self.game, self.source_path, self.cache)
+        self.catalog.warnings.extend(notes + self.__dict__.pop('early_notes', []))
+        # The installed mod's files are not the game's originals: their baseline is the original the mod replaced.
+        modded = {f['path']: f for f in (self.active() or {}).get('files', [])} if self.foreign else {}
         try: real = self.game == find_game()   # the Steam install, whose item sheet the game's server keeps restoring
         except (ValueError, OSError): real = False
         for row in self.catalog.rows.values():
@@ -255,7 +296,9 @@ class Lab:
             source = row['source']
             if source not in self.state['baseline']:
                 f = self.game_file(source)
-                self.state['baseline'][source] = {'sha256': file_hash(f), 'size': f.stat().st_size}
+                original = modded.get(source)
+                self.state['baseline'][source] = ({'sha256': original['original_sha256'], 'size': original.get('original_bytes') or f.stat().st_size}
+                                                  if original else {'sha256': file_hash(f), 'size': f.stat().st_size})
         if exe_palette.BLOCKED and any([self.state.pop('palette', None), self.state.pop('hide', None)]):
             self.catalog.warnings.append('Saved game colors and hidden menu buttons were cleared: ' + exe_palette.BLOCKED)
         self.persist()
@@ -296,7 +339,7 @@ class Lab:
     def persist(self):
         if getattr(self, '_build_recovery_required', False):
             raise ValueError('Build recovery could not finish. Restart Asset Lab after checking free disk space and file access.')
-        atomic_json(self.state_path, self.state)
+        atomic_json(self.state_path, self.state, keep=True)
 
     # ----- fonts: the game's text re-rendered in any installed typeface ---------------------------------------------
     def typefaces(self):
@@ -694,7 +737,13 @@ class Lab:
             return self._notes.export_all()
 
     def active(self):
-        entry = read_json(self.ledger)
+        notes = []
+        entry = read_json(self.ledger, None, notes, 'The record of the mod installed in the game')
+        if notes:   # damaged with no good copy: what Asset Lab installed is unknown, Steam can put the game back
+            if entry is None: notes.append('If the game still looks modded, verify its files in Steam (right-click Mitos.is > '
+                                           'Properties > Installed Files > Verify integrity of game files).')
+            warnings = getattr(getattr(self, 'catalog', None), 'warnings', None)
+            (warnings if warnings is not None else self.__dict__.setdefault('early_notes', [])).extend(notes)
         return entry if entry and entry.get('state') != 'restored' else None
 
     @contextmanager
@@ -1271,6 +1320,7 @@ class Lab:
         with self.lock, self.install_lock():
             self.ensure_closed()
             old = self.active()
+            if old and self.foreign: raise ValueError('The mod in the game came from a workspace that is no longer on this PC. Use Restore original first.')
             if old and old['state'] != 'installed': raise ValueError('An install was interrupted. Restore it before installing another.')
             if old and self.drift(): raise ValueError('Something outside the lab replaced an installed file. Clear the stale install first.')
             build = self._build(build_id)
@@ -1288,7 +1338,7 @@ class Lab:
             # Restore can therefore always put the originals back, even if the update is interrupted.
             files = [dict(f, previous_sha256=before[f['path']]['edited_sha256']) if f['path'] in before else f for f in build['files']]
             journal = dict(build, files=files + dropped, state='installing', workspace=str(self.root), installed=[], updated_from=old and old['id'])
-            atomic_json(self.ledger, journal)  # Persist recovery information before the first game write.
+            atomic_json(self.ledger, journal, keep=True)  # Persist recovery information before the first game write.
             try:
                 for f in build['files']:
                     self.ensure_closed()
@@ -1296,18 +1346,18 @@ class Lab:
                     atomic_bytes(self.game_file(f['path']), (self.root / 'builds' / build_id / 'files' / f['path']).read_bytes())
                     if file_hash(self.game_file(f['path'])) != f['edited_sha256']: raise ValueError('Installed file failed verification')
                     journal['installed'].append(f['path'])
-                    atomic_json(self.ledger, journal)
+                    atomic_json(self.ledger, journal, keep=True)
                 for f in dropped:
                     self.ensure_closed()
                     atomic_bytes(self.game_file(f['path']), Path(f['backup']).read_bytes())
                     if file_hash(self.game_file(f['path'])) != f['original_sha256']: raise ValueError('Restore verification failed')
                 journal.update(files=build['files'], state='installed' if build['files'] else 'restored', restored_files=[f['path'] for f in dropped])
-                atomic_json(self.ledger, journal)
+                atomic_json(self.ledger, journal, keep=True)
                 return journal
             except Exception:
                 # Leave a recoverable ledger, even if an external updater interfered.
                 journal['state'] = 'needs_restore'
-                atomic_json(self.ledger, journal)
+                atomic_json(self.ledger, journal, keep=True)
                 raise
 
     def restore(self):
@@ -1315,11 +1365,19 @@ class Lab:
             self.ensure_closed()
             journal = self.active()
             if not journal: return {'state': 'restored', 'files': []}
+            if all(file_hash(self.game_file(f['path'])) == f['original_sha256'] for f in journal['files']):
+                # Already the originals (Steam put them back): nothing to copy, the mod is just marked as gone.
+                journal.update(state='restored', restored_at=time.time())
+                atomic_json(self.ledger, journal, keep=True)
+                return journal
             ours = lambda f: (f['original_sha256'], f['edited_sha256'], f.get('previous_sha256') or f['original_sha256'])
             for f in journal['files']:
                 live = file_hash(self.game_file(f['path']))
                 if live not in ours(f):
                     raise ValueError('An external change was detected; restore will not overwrite it: ' + f['path'])
+                if not Path(f['backup']).is_file():
+                    raise ValueError('The backup of the original game files is gone, so Asset Lab cannot put them back. In Steam, right-click '
+                                     'Mitos.is > Properties > Installed Files > Verify integrity of game files, then open Asset Lab again.')
                 if file_hash(f['backup']) != f['original_sha256']: raise ValueError('Original backup failed verification')
             for f in journal['files']:
                 self.ensure_closed()
@@ -1328,7 +1386,7 @@ class Lab:
                 if file_hash(self.game_file(f['path'])) != f['original_sha256']: raise ValueError('Restore verification failed')
             journal['state'] = 'restored'
             journal['restored_at'] = time.time()
-            atomic_json(self.ledger, journal)
+            atomic_json(self.ledger, journal, keep=True)
             return journal
 
     def drift(self):
@@ -1359,7 +1417,7 @@ class Lab:
                 atomic_bytes(self.game_file(f['path']), Path(f['backup']).read_bytes())
                 if file_hash(self.game_file(f['path'])) != f['original_sha256']: raise ValueError('Restore verification failed')
             journal.update(state='restored', restored_at=time.time(), abandoned=changed)
-            atomic_json(self.ledger, journal)
+            atomic_json(self.ledger, journal, keep=True)
             # The rewritten files are the new starting point for this workspace.
             for path in changed:
                 live = self.game_file(path)

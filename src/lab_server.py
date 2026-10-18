@@ -455,8 +455,11 @@ def server_for(lab, port):
             self.previews.start()
 
         def server_close(self):
-            self.previews_stop.set()
-            self.previews.join(10)
+            # Also called by the server's own __init__ when the port is still taken (a restart, an update): the
+            # previews have not started then, and the port is simply tried again.
+            if getattr(self, 'previews', None) is not None:
+                self.previews_stop.set()
+                self.previews.join(10)
             super().server_close()
 
         def end_idle_connections(self):

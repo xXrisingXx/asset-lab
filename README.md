@@ -48,6 +48,10 @@ You need a 64-bit Windows PC with **Mitos.is: The Game** installed from Steam.
 
 ## What's new
 
+- **Starts every time.** Asset Lab no longer stops at start when the game has a mod from another workspace (it opens that workspace, or lets you restore), when a record file was damaged (it uses its last good copy), or when the same folder was written differently. Restore original also works after Steam put the files back. If something does go wrong, the launcher now shows the actual cause and saves it to last-error.txt.
+
+### Before that
+
 - **Whole new menu buttons.** 100 looks, each with its own exotic button (a jeweled medallion, a jagged lava rock, an ice crystal, a pumpkin, a planet…) carrying the game's symbols, and the in-game buttons to match. 20 sets are fully redrawn, symbols and all: an arrow stays an arrow and points the way the game's does.
 - **113 MITOSIS titles.** 60 fully redrawn by Image AI (spooky, frozen, molten, graffiti, pirate, space…), 40 in a look with that look's button as the O, and 13 classic ones that glow like the classic viruses.
 - **Classic everything.** 13 classic button sets and titles to go with the 13 classic viruses, 13 more classic viruses in two-tone glows, and 13 classic foods in the same style.

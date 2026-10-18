@@ -207,9 +207,29 @@ class Case(unittest.TestCase):
         self.lab.stage_many([self.key('item-a')],False);self.assertFalse(self.lab.pending())
         self.assertEqual(self.lab.thumbnail(self.key('bg2.png'),original=True)[:4],b'\x89PNG')
 
-    def test_cross_workspace_cannot_stack(self):
+    def test_the_workspace_that_installed_the_mod_opens(self):
+        # A mod from another workspace: that one opens (it knows the real originals), so nothing stacks and Restore works.
         self.edit('bg2.png');b=self.lab.build();self.lab.install(b['id'])
-        with self.assertRaisesRegex(ValueError,'another workspace'):Lab(self.game,self.root/'another',self.root/'ledgers')
+        other=Lab(self.game,self.root/'another',self.root/'ledgers',process_check=lambda:[])
+        self.assertEqual(other.root,(self.root/'workspace').resolve())
+        self.assertTrue(any('installed mod came from' in w for w in other.catalog.warnings))
+        written=Lab(self.game,str(self.root/'workspace').upper() if sys.platform=='win32' else self.root/'workspace',self.root/'ledgers',process_check=lambda:[])
+        self.assertFalse(any('installed mod came from' in w for w in written.catalog.warnings))   # the same folder, written in capitals
+        other.restore();self.assertIsNone(other.active())
+
+    def test_a_mod_from_a_workspace_that_is_gone_can_still_be_restored(self):
+        self.edit('bg2.png');b=self.lab.build();self.lab.install(b['id'])
+        import shutil;shutil.rmtree(self.root/'workspace')                       # the workspace (and its backups) deleted
+        lab=Lab(self.game,self.root/'fresh',self.root/'ledgers',process_check=lambda:[])   # starts, never refuses
+        self.assertTrue(lab.foreign)
+        self.assertTrue(any('no longer on this PC' in w for w in lab.catalog.warnings))
+        with self.assertRaisesRegex(ValueError,'Restore original first'):lab.install(b['id'])
+        with self.assertRaisesRegex(ValueError,'Verify integrity'):lab.restore()
+        source=next(f for f in lab.active()['files'])
+        self.assertEqual(lab.state['baseline'][source['path']]['sha256'],source['original_sha256'])   # the real original, not the mod
+        (self.game/source['path']).write_bytes((make_game(self.root/'pristine')/source['path']).read_bytes())   # Steam's verify put the original back
+        self.assertEqual(lab.restore()['state'],'restored')
+        self.assertIsNone(lab.active())
 
     def test_source_change_blocks_save(self):
         p=self.game/'assets/bg2.png';p.write_bytes(png(Image.new('RGBA',(64,64),'blue')))
@@ -303,6 +323,15 @@ class HTTPTests(unittest.TestCase):
         start=time.monotonic();server.end_idle_connections();server.server_close()
         self.assertLess(time.monotonic()-start,3,'the idle kept-alive connection held the server open')
         page.close()
+
+    def test_a_port_still_taken_is_tried_again(self):
+        # After an update the lab restarts while the old one may still hold the port for a moment: wait for it, never stop.
+        import socket
+        busy = socket.socket(); busy.bind(('127.0.0.1', 0)); busy.listen(); port = busy.getsockname()[1]
+        threading.Timer(1.0, busy.close).start()
+        server = server_for(self.lab, port)
+        try: self.assertEqual(server.server_port, port)
+        finally: server.server_close()
 
     def test_server_read_write_origin_and_shutdown(self):
         server=server_for(self.lab,0);t=threading.Thread(target=server.serve_forever);t.start()
