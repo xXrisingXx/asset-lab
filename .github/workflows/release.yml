@@ -100,9 +100,16 @@ jobs:
       - name: Scan on VirusTotal
         if: ${{ env.VT_API_KEY != '' }}
         shell: pwsh
+        # A file over 32 MB (the presets ride in the app) goes to the upload address VirusTotal hands out for big files.
+        # A scan that fails only warns: it never holds a release back.
         run: |
-          curl.exe -s --fail -H "x-apikey: $env:VT_API_KEY" -F "file=@dist/AssetLab.exe" https://www.virustotal.com/api/v3/files | Out-Null
-          if ($LASTEXITCODE -ne 0) { Write-Host '::warning::VirusTotal did not take the file this time; the link still works once it is scanned.' }
+          $url = 'https://www.virustotal.com/api/v3/files'
+          if ((Get-Item dist/AssetLab.exe).Length -gt 32MB) {
+            try { $url = (curl.exe -s --fail -H "x-apikey: $env:VT_API_KEY" https://www.virustotal.com/api/v3/files/upload_url | ConvertFrom-Json).data } catch { $url = '' }
+          }
+          if ($url) { curl.exe -s --fail -H "x-apikey: $env:VT_API_KEY" -F "file=@dist/AssetLab.exe" $url | Out-Null }
+          if (-not $url -or $LASTEXITCODE -ne 0) { Write-Host '::warning::VirusTotal did not take the file this time; the link still works once it is scanned.' }
+          exit 0
 
       - name: Release notes
         shell: pwsh
