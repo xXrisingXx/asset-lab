@@ -160,9 +160,10 @@ class VirusAndFoodPresets(Base):
         self.assertEqual(foods, [])                                                        # no viruses in this test game
         food = next((p for p in pictures.presets() if p['kind'] == 'food'), None)
         if food is None: self.skipTest('no food presets drawn yet')
-        self.assertEqual([t['key'] for t in pics.targets(food['id'])][:2], ['set:food:0', 'set:food:1'])
+        self.assertEqual([t['key'] for t in pics.targets(food['id'])][:3], ['set:food:all', 'set:food:0', 'set:food:1'])   # all foods first
         result = pics.apply(food['id'], 'set:food:1', '#e53935')
         self.assertEqual(result['count'], 2)
+        self.assertEqual(pics.apply(food['id'], 'set:food:all')['count'], 3)                 # every food and its small copy
         for r in rows[1:]: self.assertEqual(self.lab.image(r['key']).size, (r['width'], r['height']))   # fitted to each size
         self.assertEqual(food['group'], 'Food')
 
@@ -207,8 +208,12 @@ class ButtonSets(unittest.TestCase):
         sets = [p for p in pictures.presets() if p['kind'] == 'menu']
         if not sets: self.skipTest('no button sets drawn yet')
         self.assertTrue(all(p['group'] == 'Menu buttons' and p['look'] for p in sets))
-        self.assertEqual(len([p for p in pictures.presets() if p['kind'] == 'ingame']), len(sets))   # every look: menu and in game
+        # every look: menu and in game (fully redrawn sets are for the menu's buttons only)
+        self.assertEqual(len([p for p in pictures.presets() if p['kind'] == 'ingame']), len([p for p in sets if p['category'] != 'Fully redrawn']))
+        import tempfile
+        from pathlib import Path
         lab = unittest.mock.MagicMock()
+        lab.root = Path(self.enterContext(tempfile.TemporaryDirectory()))   # where previews are kept
         pics = pictures.Pictures(lab)
         rows = [dict(key='a', name='icon-play', width=128, height=128), dict(key='b', name='back-icon', width=128, height=128)]
         lab.catalog.image.return_value = self.play()
@@ -220,6 +225,9 @@ class ButtonSets(unittest.TestCase):
             self.assertEqual(lab.commit.call_args_list[0].args[1].size, (128, 128))
             sheet = pics.render(sets[0]['id'], small=True)
             self.assertGreater(sheet.width, 64)
+            self.assertEqual(len(list((lab.root / 'preset-previews').glob('*.png'))), 1)   # kept for the next run
+            pics._sheets.clear()
+            self.assertEqual(pics.render(sets[0]['id'], small=True).size, sheet.size)       # read back, not drawn again
             data = pics.export([sets[0]['id']])
         import zipfile
         names = zipfile.ZipFile(io.BytesIO(data)).namelist()
@@ -255,3 +263,75 @@ class ButtonSets(unittest.TestCase):
         self.assertEqual(sorted(n.split('/')[-1] for n in both.namelist() if '/' in n), ['bg2.png', 'bg2.png'])
         self.assertEqual(len({n.split('/')[0] for n in both.namelist() if '/' in n}), 2)                 # a folder for each
         with self.assertRaises(ValueError): pics.export([bgs[0]['id']], 'set:nowhere')
+
+
+class WholeNewButtons(unittest.TestCase):
+    """Exotic sets: the set's own drawn button with the game's symbol on it; fully redrawn sets; the title; Clean up."""
+
+    def test_the_symbol_goes_on_the_sets_own_button(self):
+        import button_sets
+        base = Image.new('RGBA', (200, 200), (0, 0, 0, 0))
+        from PIL import ImageDraw
+        ImageDraw.Draw(base).ellipse((10, 10, 190, 190), fill=(200, 40, 40, 255))   # a red round button
+        out = np.asarray(button_sets.compose(base, ButtonSets.play(), dict(ink='#ffffff', outline='#000000'), (128, 128))).astype(int)
+        self.assertEqual(out.shape, (128, 128, 4))
+        self.assertGreater(out[64, 62, :3].min(), 200)                       # the play triangle, in the set's white ink
+        self.assertGreater(out[20, 64, 0], out[20, 64, 2] + 80)              # on the set's red button, not the game's pink
+        knob = np.asarray(button_sets.button('joystick', Image.new('RGBA', (96, 96)), {}, Image.new('RGB', (8, 8)), base))
+        self.assertEqual(knob.shape, (96, 96, 4))                             # the joystick's knob: the button alone
+
+    def test_an_in_game_symbol_leaves_the_games_ring_out(self):
+        import button_sets
+        from PIL import ImageDraw
+        im = Image.new('RGBA', (188, 188), (0, 0, 0, 0)); d = ImageDraw.Draw(im)
+        d.ellipse((4, 4, 184, 184), outline='white', width=10)                 # the game's ring
+        d.rectangle((84, 70, 104, 118), fill='white')                          # its symbol
+        g = button_sets.glyph(im, inner=True)
+        self.assertLess(g.width, 40)                                          # only the symbol, cut to it
+        self.assertGreater(button_sets.glyph(im).width, 170)                  # (with the ring, as the menu would take it)
+
+    def test_a_fully_redrawn_button_replaces_the_games(self):
+        import button_sets
+        drawn = Image.new('RGBA', (256, 256), (30, 200, 90, 255))
+        out = button_sets.button('back-icon', Image.new('RGBA', (128, 128)), {}, Image.new('RGB', (8, 8)), drawn=drawn)
+        px = np.asarray(out).astype(int)
+        self.assertEqual(out.size, (128, 128))
+        self.assertTrue(abs(px[64, 64, 0] - px[64, 64, 2]) < 3)              # back-icon is tinted by the game: kept gray
+
+    def test_the_title_and_clean_up_go_on_the_menu(self):
+        listed = pictures.presets()
+        logo = next((p for p in listed if p['kind'] == 'logo'), None)
+        hide = next((p for p in listed if p['kind'] == 'hide' and p['id'] == 'preset:hide-all'), None)
+        if not (logo and hide): self.skipTest('titles not made yet')
+        lab = unittest.mock.MagicMock()
+        rows = {'l1': dict(key='l1', name='logo', width=500, height=110, editable=True, kind='sprite'),
+                'd': dict(key='d', name='icon-discord', width=231, height=80, editable=True, kind='sprite'),
+                'v': dict(key='v', name='virus.png', width=64, height=64, editable=True, kind='image')}
+        lab.catalog.rows = rows
+        pics = pictures.Pictures(lab)
+        self.assertEqual([t['key'] for t in pics.targets(logo['id'])], ['set:logo'])
+        self.assertEqual(pics.apply(logo['id'], 'set:logo')['count'], 1)
+        self.assertEqual(lab.commit.call_args.args[1].size, (500, 110))
+        self.assertEqual(pics.apply(hide['id'], 'set:cleanup')['count'], 1)
+        gone = lab.commit.call_args.args
+        self.assertEqual((gone[0], gone[1].getchannel('A').getbbox()), ('d', None))   # fully transparent
+
+    def test_a_redrawn_arrow_points_the_way_the_games_does(self):
+        import button_sets
+        from PIL import ImageDraw
+        up = Image.new('RGBA', (100, 100), (0, 0, 0, 0)); ImageDraw.Draw(up).polygon([(50, 5), (95, 95), (5, 95)], fill='white')
+        right = Image.new('RGBA', (128, 128), (0, 0, 0, 0)); ImageDraw.Draw(right).polygon([(10, 10), (120, 64), (10, 118)], fill='white')
+        turned = button_sets.shape(button_sets.orient(up, right))
+        self.assertGreater(turned[:, 30:].sum(), 0)
+        self.assertGreater(turned[24, :12].sum(), turned[24, -12:].sum())    # wide at the left, the point at the right
+
+    def test_the_coin_potion_and_chat_are_in_the_sets(self):
+        import button_sets
+        self.assertIn('icon-coin', button_sets.MENU)
+        for key in ('set:ingame-buttons', 'set:ingame-phone', 'set:ingame-pc'):
+            self.assertTrue({'power-container', 'icon-ingame-potion', 'icon-chat'} <= set(button_sets.SETS[key][1]))
+        base = Image.new('RGBA', (200, 200), (20, 20, 160, 255))
+        coin = np.asarray(button_sets.button('icon-coin', Image.new('RGBA', (128, 128), (240, 190, 40, 255)), dict(ink='#ffffff', outline='#000000'),
+                                             Image.new('RGB', (8, 8)), base)).astype(int)
+        self.assertGreater(coin[64, 64, :3].min(), 180)                      # a white $ in the middle of the set's button
+        self.assertGreater(coin[10, 64, 2], coin[10, 64, 0] + 80)            # on the set's blue, not the game's gold

@@ -27,9 +27,10 @@
 .theme-progress span{display:block;height:100%;width:4%;background:var(--cyan);transition:width .3s}.theme-progress.done span{background:var(--yellow)}
 .theme-form textarea{width:100%;resize:none;min-height:44px;max-height:120px;background:#101720;border:1px solid var(--line);color:var(--text);border-radius:7px;padding:8px 9px;font:inherit;line-height:1.4}
 .theme-form textarea:focus{outline:2px solid var(--cyan);outline-offset:1px}
-.theme-send{display:flex;align-items:center;gap:8px;margin-top:6px}.theme-send .compact{margin-left:auto}.theme-send .primary{padding:7px 16px}
+.theme-send{display:flex;align-items:center;gap:8px;margin:0 0 6px}.theme-send .compact{margin-left:auto}.theme-send .primary{padding:7px 16px}
 .theme-send .accelerate{margin-left:auto;padding:5px 10px;font-size:11px}.theme-send .accelerate.active{background:#3a2a17;border-color:var(--orange);color:var(--orange);font-weight:600}
 .theme-starters{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px}
+.theme-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:6px}.theme-toolbar .theme-starters{flex:1;min-width:0;margin:0}.theme-toolbar .theme-send{margin:0;flex-shrink:0}.theme-toolbar .theme-more-body{left:auto;right:0}   /* at the right edge: opens leftward */
 .theme-starters button{padding:5px 10px;font-size:11px;border-radius:14px;background:#1d2f3d;border-color:#405264}
 .theme-starters button:hover{border-color:var(--cyan);color:var(--cyan)}
 .theme-more{border:0;margin:0;padding:0;position:relative}

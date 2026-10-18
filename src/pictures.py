@@ -12,6 +12,7 @@ import io
 import json
 import os
 import re
+import zlib
 from pathlib import Path
 import numpy as np
 from PIL import Image
@@ -116,20 +117,50 @@ BACKGROUND_SETS = ['set:everywhere', 'set:menu', 'set:arena', 'set:arena-light',
 SETS = {'set:everywhere': 'Everywhere: main menu and in game (light and dark mode)', 'set:menu': 'Main menu',
         'set:arena': 'In game, light and dark mode', 'set:arena-light': 'In game, light mode only', 'set:arena-dark': 'In game, dark mode only',
         'set:viruses': 'Both viruses (light and dark mode)',
+        'set:food:all': 'All foods (every size, at once)',
         'set:food:0': 'The smallest food (least mass)', 'set:food:1': 'The middle food', 'set:food:2': 'The biggest food (most mass)',
         **{k: name for k, (name, _) in button_sets.SETS.items()}}
-GROUPS = {'background': 'Backgrounds', 'virus': 'Viruses', 'food': 'Food', 'menu': 'Menu buttons', 'ingame': 'In-game buttons'}   # the Presets window's top level
+GROUPS = {'background': 'Backgrounds', 'virus': 'Viruses', 'food': 'Food', 'menu': 'Menu buttons', 'ingame': 'In-game buttons', 'logo': 'Title',
+          'hide': 'Menu buttons'}   # the Presets window's top level
+# The title (the MITOSIS logo, every copy of it) and the menu clutter a Clean up preset hides (its art made fully
+# transparent: Mitosis.exe is never touched, and the empty spot can still be clicked).
+SETS['set:logo'] = 'The MITOSIS title on the main menu'
+SETS['set:cleanup'] = 'The main menu'
 BUTTON_KINDS = {'menu': ['set:menu-buttons'], 'ingame': ['set:ingame-buttons', 'set:ingame-phone', 'set:ingame-pc']}
+
+
+_LISTED = {'stamp': None, 'raw': {}, 'list': []}   # presets.json read once (again only when it changes): it is long
+
+
+def listed():
+    """presets.json as it is on disk: (its entries by id, the presets), read again only when the file changed."""
+    path = PRESETS / 'presets.json'
+    try: stamp = path.stat().st_mtime_ns
+    except OSError: return {}, []
+    if _LISTED['stamp'] != stamp:
+        try: data = json.loads(path.read_text(encoding='utf-8')).get('presets') or []
+        except (OSError, ValueError): data = []
+        _LISTED.update(stamp=stamp, raw={p['id']: p for p in data if isinstance(p, dict) and 'id' in p}, list=_presets(data))
+    return _LISTED['raw'], _LISTED['list']
+
+
+def version():
+    """Changes whenever the presets do: the Presets window asks for pictures with it, so the browser may keep them."""
+    listed()
+    return f"{_LISTED['stamp'] or 0:x}-{button_sets.VERSION}"
 
 
 def presets():
     """The ready-made pictures: [dict(id, name, category, kind, for)] (for: the game art each is made for; a background's
     is its sets, 'menu' and 'arena')."""
-    try: data = json.loads((PRESETS / 'presets.json').read_text(encoding='utf-8')).get('presets') or []
-    except (OSError, ValueError): return []
+    return [dict(p) for p in listed()[1]]
+
+
+def _presets(data):
     return [dict(id='preset:' + p['id'], name=p['name'], category=p.get('category') or 'Other', kind=p.get('kind') or 'sprite',
                  group=p.get('group') or GROUPS.get(p.get('kind'), 'Other'), **{'for': list(p.get('for') or [])},
-                 **({'look': dict(p.get('look') or {})} if p.get('kind') in BUTTON_KINDS else {})) for p in data
+                 **({'look': dict(p.get('look') or {}), 'base': str(p.get('base') or ''), 'redrawn': str(p.get('redrawn') or '')} if p.get('kind') in BUTTON_KINDS else {}),
+                 **({'hide': [str(n) for n in p.get('hide') or []]} if p.get('kind') == 'hide' else {})) for p in data
             if isinstance(p, dict) and re.fullmatch(r'[a-z0-9-]{1,40}', str(p.get('id', ''))) and (PRESETS / str(p.get('file', ''))).is_file()]
 
 
@@ -168,6 +199,8 @@ class Pictures:
         self.lab, self.folder = lab, lab.root / 'pictures'
         self.sets = {}   # 'menu' / 'arena' -> a function giving those rows (the lab server hands in the Designer's)
         self._sheets = {}   # a button set's preview, by (id, color, small): drawn from the game's own buttons
+        self._buttons = {}  # kind -> the game's own buttons (name -> picture)
+        self.previews = lab.root / 'preset-previews'   # drawn previews kept between runs: the window opens at once
 
     def save(self, data):
         """A pasted or dropped picture (bytes or a data URL) -> its id. The same picture twice is kept once."""
@@ -190,7 +223,7 @@ class Pictures:
     def image(self, pid):
         if not PICTURE_ID.fullmatch(str(pid or '')): raise ValueError('Unknown picture.')
         if pid.startswith('preset:'):
-            entry = next((p for p in json.loads((PRESETS / 'presets.json').read_text(encoding='utf-8'))['presets'] if p['id'] == pid[7:]), None)
+            entry = listed()[0].get(pid[7:])
             path = PRESETS / entry['file'] if entry else None
         else: path = self.folder / f'{pid}.png'
         if not path or not path.is_file(): raise ValueError('That picture is no longer here. Paste it again.')
@@ -204,19 +237,112 @@ class Pictures:
             key = (pid, color, bool(small))
             if key not in self._sheets:
                 with self.lab.lock: buttons = self.buttons(preset['kind'])
-                self._sheets[key] = button_sets.sheet(buttons, preset['look'], self.material(pid, color), preset['kind'], small=small)
-                while len(self._sheets) > 200: self._sheets.pop(next(iter(self._sheets)))
+                stamp = zlib.crc32(json.dumps([listed()[0].get(pid[7:]), sorted((n, b.size) for n, b in buttons.items()), button_sets.VERSION]).encode())
+                kept = self.previews / f"{pid[7:]}-{color[1:] or 'own'}-{'small' if small else 'big'}-{stamp:08x}.png"
+                if kept.is_file():
+                    with Image.open(kept) as im: sheet = im.convert('RGBA')
+                else:
+                    sheet = button_sets.sheet(buttons, preset['look'], self.material(pid, color), preset['kind'], small=small,
+                                              base=self.base(pid, color), drawn=self.drawn(pid, color))
+                    try:
+                        self.previews.mkdir(parents=True, exist_ok=True)
+                        sheet.save(kept, format='PNG')
+                    except OSError: pass
+                self._sheets[key] = sheet
+                while len(self._sheets) > 400: self._sheets.pop(next(iter(self._sheets)))
             return self._sheets[key].copy()
+
+        hide = next((p for p in presets() if p['id'] == pid and p['kind'] == 'hide'), None)
+        if hide: return self.hide_preview(pid, small)
         image = self.image(pid)
         return recolor(image, color) if color else image
+
+    def prewarm(self, stop=None):
+        """Draw every button set's small preview ahead (in the background when the lab starts), so switching
+        categories in the Presets window never waits for them. stop: an Event that ends it (the lab closing)."""
+        import time
+        for p in presets():
+            if stop is not None and stop.is_set(): return
+            if p['kind'] not in BUTTON_KINDS: continue
+            try: self.render(p['id'], small=True)
+            except Exception: pass   # a game without these buttons, a preset still being drawn: shown when asked
+            time.sleep(0.02)   # leave room for what the player is doing
+
+    def hide_preview(self, pid, small=False):
+        """What a Clean up preset takes away: the game's own pictures of it, faded and crossed out."""
+        from PIL import ImageDraw
+        with self.lab.lock:
+            pics = []
+            for row in self.hide_rows(pid):
+                if row['name'] in {n for n, _ in pics}: continue
+                try: pics.append((row['name'], self.lab.catalog.image(row['key']).convert('RGBA')))
+                except (OSError, ValueError, KeyError): pass
+        if not pics: return self.image(pid)
+        h = 120 if small else 200
+        tiles = []
+        for _, im in pics:
+            im = im.copy(); im.thumbnail((h * 3, h), Image.Resampling.LANCZOS)
+            im.putalpha(im.getchannel('A').point(lambda v: v * 45 // 100))
+            tiles.append(im)
+        out = Image.new('RGBA', (sum(t.width for t in tiles) + 24 * (len(tiles) + 1), h + 48), (0, 0, 0, 0))
+        x = 24
+        d = ImageDraw.Draw(out)
+        for t in tiles:
+            y = (out.height - t.height) // 2
+            out.alpha_composite(t, (x, y))
+            w = max(6, h // 14)
+            d.line((x, y, x + t.width, y + t.height), fill=(255, 70, 90, 255), width=w)
+            d.line((x, y + t.height, x + t.width, y), fill=(255, 70, 90, 255), width=w)
+            x += t.width + 24
+        return out
 
     def button_set(self, pid):
         return next((p for p in presets() if p['id'] == pid and p['kind'] in BUTTON_KINDS), None)
 
     def material(self, pid, color=''):
-        """A button set's material (its texture), recolored when a color is given."""
+        """A button set's material (its texture), recolored when a color is given. A classic set's: the middle of its
+        classic virus (the white glow out to its color)."""
         texture = self.image(pid)
+        preset = self.button_set(pid) or {}
+        if preset.get('look', {}).get('classic'): texture = button_sets.classic_texture(texture)
+        if preset.get('redrawn') and (PRESETS / preset['redrawn'] / 'icon-star.webp').is_file():
+            # a fully redrawn set's material: the middle of its own star (solid, in the set's look)
+            with Image.open(PRESETS / preset['redrawn'] / 'icon-star.webp') as im: star = im.convert('RGB')
+            w, h = star.size
+            texture = star.crop((w * 2 // 5, h * 2 // 5, w * 3 // 5, h * 3 // 5))
         return recolor(texture, color) if color else texture
+
+    def drawn(self, pid, color=''):
+        """A fully redrawn set's own drawing of each button (name -> picture), recolored when a color is given; None else."""
+        preset = self.button_set(pid)
+        folder = PRESETS / preset['redrawn'] if preset and preset.get('redrawn') else None
+        if not folder or not folder.is_dir(): return None
+        out = {}
+        for path in folder.glob('*.webp'):
+            if path.stem in button_sets.KEEP_GAME_SYMBOL: continue
+            with Image.open(path) as im: art = im.convert('RGBA')
+            out[path.stem] = recolor(art, color) if color else art
+        return out
+
+    def base(self, pid, color=''):
+        """A button set's own drawn button (an exotic shape the symbols go on), recolored when a color is given; None for a
+        set that restyles the game's own shapes."""
+        preset = self.button_set(pid)
+        path = PRESETS / preset['base'] if preset and preset.get('base') else None
+        if not path or not path.is_file(): return None
+        with Image.open(path) as im: art = im.convert('RGBA')
+        return recolor(art, color) if color else art
+
+    def logo_rows(self):
+        """The MITOSIS title, every copy (the game draws one of them, depending on its version)."""
+        return [r for r in self.lab.catalog.rows.values() if r['name'] == 'logo' and r['editable'] and r['kind'] in ('image', 'sprite')
+                and not r.get('legacy') and not r.get('removed')]
+
+    def hide_rows(self, pid):
+        """The art a Clean up preset hides (the Discord button, the store badges, the OG tag)."""
+        names = set(next((p.get('hide') or [] for p in presets() if p['id'] == pid), []))
+        return [r for r in self.lab.catalog.rows.values() if r['name'] in names and r['editable'] and r['kind'] in ('image', 'sprite')
+                and not r.get('legacy') and not r.get('removed')]
 
     def button_rows(self, key):
         """The game's buttons a button set covers (every copy of each, so whichever the game draws gets the look)."""
@@ -226,8 +352,10 @@ class Pictures:
                 and not r.get('legacy') and not r.get('removed') and r['name'] not in LOCKED]
 
     def buttons(self, kind):
-        """name -> the game's own picture of each button in a set (the biggest copy), for the preview."""
-        out = {}
+        """name -> the game's own picture of each button in a set (the biggest copy), for the preview. Read once: the
+        game's own pictures don't change while the lab runs."""
+        if kind in self._buttons: return self._buttons[kind]
+        out = self._buttons[kind] = {}
         for row in sorted(self.button_rows(BUTTON_KINDS[kind][0]), key=lambda r: -r['width'] * r['height']):
             if row['name'] not in out:
                 try: out[row['name']] = self.lab.catalog.image(row['key']).convert('RGBA')
@@ -243,6 +371,8 @@ class Pictures:
             and not r.get('legacy') and r.get('primary', True) and not r.get('removed')
         out = [rows[k] for k in only or [] if usable(rows.get(k)) and rows[k]['name'] not in LOCKED]
         preset = next((p for p in presets() if p['id'] == pid), None)
+        if preset and preset['kind'] == 'logo': return [dict(key='set:logo', name=SETS['set:logo'], file='', size=[])] if self.logo_rows() else []
+        if preset and preset['kind'] == 'hide': return [dict(key='set:cleanup', name=SETS['set:cleanup'], file='', size=[])] if self.hide_rows(pid) else []
         if preset and preset['kind'] in BUTTON_KINDS:   # a button set: the whole menu, or the in-game buttons (all, phone, PC)
             return [dict(key=k, name=SETS[k], file='', size=[]) for k in BUTTON_KINDS[preset['kind']] if self.button_rows(k)]
         if preset and preset['kind'] in ('background', 'virus', 'food'):
@@ -252,7 +382,9 @@ class Pictures:
                 sets = [k for k in BACKGROUND_SETS if self.background_rows(k)]
                 if sets == ['set:everywhere', 'set:menu']: sets = ['set:menu']   # no in-game floor here: just the menu
             elif preset['kind'] == 'virus': sets = ['set:viruses'] if self.set_rows('set:viruses') else []
-            else: sets = [f'set:food:{i}' for i in range(3) if self.set_rows(f'set:food:{i}')]
+            else:   # all the game's foods at once first (what most players want), then each one
+                sets = [f'set:food:{i}' for i in range(3) if self.set_rows(f'set:food:{i}')]
+                if len(sets) > 1: sets.insert(0, 'set:food:all')
             own = [r for name in preset['for'] for r in rows.values() if r['name'] == name and usable(r) and name not in LOCKED and r not in out] if preset['kind'] == 'virus' else []
             return [dict(key=k, name=SETS[k], file='', size=[]) for k in sets] + \
                 [dict(key=r['key'], name=r.get('label') or r['name'], file=r['name'], size=[r['width'], r['height']]) for r in out + own][:limit]
@@ -338,11 +470,11 @@ class Pictures:
                 if not p: continue
                 folder = f"{safe(p['group'])}/{safe(p['category'])}"
                 if p['kind'] in BUTTON_KINDS:
-                    texture = self.material(pid)
+                    texture, base, drawn = self.material(pid), self.base(pid), self.drawn(pid) or {}
                     z.writestr(f"{folder}/{safe(p['name'])}/preview.png", png_bytes(self.render(pid)))
                     with self.lab.lock: buttons = self.buttons(p['kind'])
                     for name, art in buttons.items():
-                        z.writestr(f"{folder}/{safe(p['name'])}/{name}.png", png_bytes(button_sets.style(art, p['look'], texture, tinted=name in button_sets.TINTS)))
+                        z.writestr(f"{folder}/{safe(p['name'])}/{name}.png", png_bytes(button_sets.button(name, art, p['look'], texture, base, drawn.get(name))))
                 else: z.writestr(f"{folder}/{safe(p['name'])}.png", png_bytes(self.image(pid)))
         return out.getvalue()
 
@@ -377,6 +509,7 @@ class Pictures:
                     and not r.get('legacy') and not r.get('removed')]
         if key.startswith('set:food:') and 'food' in self.sets:
             kinds = list(self.sets['food']())
+            if key == 'set:food:all': return [r for kind in kinds for r in kind]
             i = int(key.rsplit(':', 1)[1])
             return list(kinds[i]) if i < len(kinds) else []
         return []
@@ -385,15 +518,31 @@ class Pictures:
         """Put the picture (recolored) on a game sprite: fitted to its frame, centered, its shape kept. On a set of
         backgrounds (BACKGROUND_SETS): tiled to every one of them, so the copies the game lays side by side meet."""
         import design
+        if key == 'set:logo':   # every copy of the title, the new one fitted to each, centered
+            rows = self.logo_rows()
+            if not rows: raise ValueError('This game has no title to change.')
+            picture = self.render(pid, color)
+            with self.lab.lock:
+                for row in rows: self.lab.commit(row['key'], design.fit(picture, (row['width'], row['height']), 1.0, 0.0, 0.0), dict(picture=pid, color=color or ''), persist=False)
+                self.lab.persist()
+            return dict(key=key, name=SETS[key], count=len(rows))
+        if key == 'set:cleanup':   # gone from the menu: the art made fully transparent
+            rows = self.hide_rows(pid)
+            if not rows: raise ValueError('This game has none of these buttons.')
+            with self.lab.lock:
+                for row in rows: self.lab.commit(row['key'], Image.new('RGBA', (row['width'], row['height']), (0, 0, 0, 0)), dict(picture=pid, hidden=True), persist=False)
+                self.lab.persist()
+            return dict(key=key, name=SETS[key], count=len(rows))
         if key in button_sets.SETS:   # every button of the set restyled from the game's own, in the set's look
             preset = self.button_set(pid)
             if not preset: raise ValueError('Pick a button set from Presets for the buttons.')
             rows = self.button_rows(key)
             if not rows: raise ValueError('This game has no such buttons.')
-            texture = self.material(pid, str(color or '').lower() if re.fullmatch(r'#[0-9a-f]{6}', str(color or '').lower()) else '')
+            color = str(color or '').lower() if re.fullmatch(r'#[0-9a-f]{6}', str(color or '').lower()) else ''
+            texture, base, drawn = self.material(pid, color), self.base(pid, color), self.drawn(pid, color) or {}
             with self.lab.lock:
                 for row in rows:
-                    art = button_sets.style(self.lab.catalog.image(row['key']), preset['look'], texture, tinted=row['name'] in button_sets.TINTS)
+                    art = button_sets.button(row['name'], self.lab.catalog.image(row['key']).convert('RGBA'), preset['look'], texture, base, drawn.get(row['name']))
                     self.lab.commit(row['key'], art, dict(picture=pid, color=color or ''), persist=False)
                 self.lab.persist()
             return dict(key=key, name=SETS[key], count=len(rows))

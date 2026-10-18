@@ -143,7 +143,8 @@ class PicturesAndPresets(EditorTestCase):
             b.wait_for("!document.querySelector('.preset-menu').hidden")
             self.assertEqual(b.eval("document.querySelector('.preset-menu').parentNode.id"), 'presetsDialog')   # not behind the window
             b.eval("[...document.querySelectorAll('.preset-menu button')].find(x => x.textContent === 'Export picture (PNG)').click(); true")
-            self.assertEqual(b.eval("__saved.at(-1)"), ['/api/picture?id=preset%3Apurple-virus', 'Purple-virus.png'])
+            href, name = b.eval("__saved.at(-1)")
+            self.assertEqual((href.split('&v=')[0], name), ('/api/picture?id=preset%3Apurple-virus', 'Purple-virus.png'))
             b.eval("[...document.querySelectorAll('#presetsDialog .pv-card')].find(x => x.textContent === 'Purple virus').click(); true")
             b.wait_for("!!document.getElementById('presetUse')")
             b.click_selector('#presetUse')
@@ -235,7 +236,7 @@ class PicturesAndPresets(EditorTestCase):
                 self.assertIn('Export', b.eval("document.querySelector('#presetsTour .pv-coach-menu').textContent"))
             b.eval("[...document.querySelectorAll('#presetsTour .pv-coach-actions button')].at(-1).click(); true")
             steps += 1
-        self.assertEqual(steps, 7)
+        self.assertEqual(steps, 8)
         self.assertEqual(b.eval("localStorage.getItem('lab-presets-tour-done')"), '1')
         b.eval("document.getElementById('presetsDialog').close(); true")
         b.click_selector('#themePresetsButton')

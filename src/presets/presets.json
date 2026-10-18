@@ -57,6 +57,17 @@
    ]
   },
   {
+   "id": "bg-solid-purple",
+   "name": "Solid deep purple",
+   "category": "Black & solid",
+   "kind": "background",
+   "file": "backgrounds/solid-purple.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
    "id": "bg-nebula",
    "name": "Nebula",
    "category": "Space",
@@ -684,1204 +695,422 @@
    ]
   },
   {
-   "id": "m-gold",
-   "name": "Gold",
-   "group": "Menu buttons",
-   "category": "Metals",
-   "kind": "menu",
-   "file": "materials/gold.webp",
-   "look": {
-    "outline": "#5c3d00",
-    "glow": "",
-    "ink": "#fff6d8",
-    "bevel": 1.0
-   },
-   "for": []
-  },
-  {
-   "id": "m-chrome",
-   "name": "Chrome",
-   "group": "Menu buttons",
-   "category": "Metals",
-   "kind": "menu",
-   "file": "materials/chrome.webp",
-   "look": {
-    "outline": "#2a2f38",
-    "glow": "",
-    "ink": "#ffffff",
-    "bevel": 1.0
-   },
-   "for": []
-  },
-  {
-   "id": "m-rose-gold",
-   "name": "Rose gold",
-   "group": "Menu buttons",
-   "category": "Metals",
-   "kind": "menu",
-   "file": "materials/rose-gold.webp",
-   "look": {
-    "outline": "#5a2e2a",
-    "glow": "",
-    "ink": "#fff0ea",
-    "bevel": 1.0
-   },
-   "for": []
-  },
-  {
-   "id": "m-bronze",
-   "name": "Bronze",
-   "group": "Menu buttons",
-   "category": "Metals",
-   "kind": "menu",
-   "file": "materials/bronze.webp",
-   "look": {
-    "outline": "#3a2410",
-    "glow": "",
-    "ink": "#ffe2b8",
-    "bevel": 1.0
-   },
-   "for": []
-  },
-  {
-   "id": "m-copper",
-   "name": "Copper",
-   "group": "Menu buttons",
-   "category": "Metals",
-   "kind": "menu",
-   "file": "materials/copper.webp",
-   "look": {
-    "outline": "#3d1f12",
-    "glow": "",
-    "ink": "#ffe7d6",
-    "bevel": 1.0
-   },
-   "for": []
-  },
-  {
-   "id": "m-ruby",
-   "name": "Ruby",
-   "group": "Menu buttons",
-   "category": "Gems",
-   "kind": "menu",
-   "file": "materials/ruby.webp",
-   "look": {
-    "outline": "#4a0010",
-    "glow": "#ff3355",
-    "ink": "#fff0f3",
-    "bevel": 0.9
-   },
-   "for": []
-  },
-  {
-   "id": "m-sapphire",
-   "name": "Sapphire",
-   "group": "Menu buttons",
-   "category": "Gems",
-   "kind": "menu",
-   "file": "materials/sapphire.webp",
-   "look": {
-    "outline": "#001a4d",
-    "glow": "#3d7bff",
-    "ink": "#eef4ff",
-    "bevel": 0.9
-   },
-   "for": []
-  },
-  {
-   "id": "m-emerald",
-   "name": "Emerald",
-   "group": "Menu buttons",
-   "category": "Gems",
-   "kind": "menu",
-   "file": "materials/emerald.webp",
-   "look": {
-    "outline": "#00331a",
-    "glow": "#2bff88",
-    "ink": "#ecfff4",
-    "bevel": 0.9
-   },
-   "for": []
-  },
-  {
-   "id": "m-amethyst",
-   "name": "Amethyst",
-   "group": "Menu buttons",
-   "category": "Gems",
-   "kind": "menu",
-   "file": "materials/amethyst.webp",
-   "look": {
-    "outline": "#2a0a4a",
-    "glow": "#b46bff",
-    "ink": "#f6eeff",
-    "bevel": 0.9
-   },
-   "for": []
-  },
-  {
-   "id": "m-diamond",
-   "name": "Diamond",
-   "group": "Menu buttons",
-   "category": "Gems",
-   "kind": "menu",
-   "file": "materials/diamond.webp",
-   "look": {
-    "outline": "#3b5a78",
-    "glow": "#bfe9ff",
-    "ink": "#ffffff",
-    "bevel": 0.9
-   },
-   "for": []
-  },
-  {
-   "id": "m-opal",
-   "name": "Opal",
-   "group": "Menu buttons",
-   "category": "Gems",
-   "kind": "menu",
-   "file": "materials/opal.webp",
-   "look": {
-    "outline": "#4a4a66",
-    "glow": "",
-    "ink": "#ffffff",
-    "bevel": 0.8
-   },
-   "for": []
-  },
-  {
-   "id": "m-lava",
-   "name": "Lava",
-   "group": "Menu buttons",
-   "category": "Elements",
-   "kind": "menu",
-   "file": "materials/lava.webp",
-   "look": {
-    "outline": "#1a0500",
-    "glow": "#ff5a00",
-    "ink": "#ffe2b0",
-    "bevel": 0.9
-   },
-   "for": []
-  },
-  {
-   "id": "m-ice",
-   "name": "Ice",
-   "group": "Menu buttons",
-   "category": "Elements",
-   "kind": "menu",
-   "file": "materials/ice.webp",
-   "look": {
-    "outline": "#1e4a6e",
-    "glow": "#9fe3ff",
-    "ink": "#ffffff",
-    "bevel": 0.8
-   },
-   "for": []
-  },
-  {
-   "id": "m-ocean",
-   "name": "Ocean",
-   "group": "Menu buttons",
-   "category": "Elements",
-   "kind": "menu",
-   "file": "materials/ocean.webp",
-   "look": {
-    "outline": "#00264d",
-    "glow": "",
-    "ink": "#e8fbff",
-    "bevel": 0.8
-   },
-   "for": []
-  },
-  {
-   "id": "m-fire",
-   "name": "Fire",
-   "group": "Menu buttons",
-   "category": "Elements",
-   "kind": "menu",
-   "file": "materials/fire.webp",
-   "look": {
-    "outline": "#4a0e00",
-    "glow": "#ff8a00",
-    "ink": "#fff4c2",
-    "bevel": 0.7
-   },
-   "for": []
-  },
-  {
-   "id": "m-toxic",
-   "name": "Toxic",
-   "group": "Menu buttons",
-   "category": "Elements",
-   "kind": "menu",
-   "file": "materials/toxic.webp",
-   "look": {
-    "outline": "#103300",
-    "glow": "#7dff2a",
-    "ink": "#f2ffe0",
-    "bevel": 0.8
-   },
-   "for": []
-  },
-  {
-   "id": "m-storm",
-   "name": "Storm",
-   "group": "Menu buttons",
-   "category": "Elements",
-   "kind": "menu",
-   "file": "materials/storm.webp",
-   "look": {
-    "outline": "#0d1426",
-    "glow": "#6ab8ff",
-    "ink": "#eaf4ff",
-    "bevel": 0.8
-   },
-   "for": []
-  },
-  {
-   "id": "m-wood",
-   "name": "Wood",
-   "group": "Menu buttons",
-   "category": "Nature",
-   "kind": "menu",
-   "file": "materials/wood.webp",
-   "look": {
-    "outline": "#2b1708",
-    "glow": "",
-    "ink": "#fff1dc",
-    "bevel": 0.9
-   },
-   "for": []
-  },
-  {
-   "id": "m-marble",
-   "name": "Marble",
-   "group": "Menu buttons",
-   "category": "Nature",
-   "kind": "menu",
-   "file": "materials/marble.webp",
-   "look": {
-    "outline": "#4a4a4a",
-    "glow": "",
-    "ink": "#2b2b2b",
-    "bevel": 0.8
-   },
-   "for": []
-  },
-  {
-   "id": "m-jungle",
-   "name": "Jungle",
-   "group": "Menu buttons",
-   "category": "Nature",
-   "kind": "menu",
-   "file": "materials/jungle.webp",
-   "look": {
-    "outline": "#0d2a0d",
-    "glow": "",
-    "ink": "#f0ffe8",
-    "bevel": 0.8
-   },
-   "for": []
-  },
-  {
-   "id": "m-stone",
-   "name": "Stone",
-   "group": "Menu buttons",
-   "category": "Nature",
-   "kind": "menu",
-   "file": "materials/stone.webp",
-   "look": {
-    "outline": "#1f2226",
-    "glow": "",
-    "ink": "#f2f2ea",
-    "bevel": 1.0
-   },
-   "for": []
-  },
-  {
-   "id": "m-coral",
-   "name": "Coral",
-   "group": "Menu buttons",
-   "category": "Nature",
-   "kind": "menu",
-   "file": "materials/coral.webp",
-   "look": {
-    "outline": "#4a1a1a",
-    "glow": "",
-    "ink": "#fff4ee",
-    "bevel": 0.8
-   },
-   "for": []
-  },
-  {
-   "id": "m-galaxy",
-   "name": "Galaxy",
-   "group": "Menu buttons",
-   "category": "Space",
-   "kind": "menu",
-   "file": "materials/galaxy.webp",
-   "look": {
-    "outline": "#120a2a",
-    "glow": "#a070ff",
-    "ink": "#ffffff",
-    "bevel": 0.8
-   },
-   "for": []
-  },
-  {
-   "id": "m-nebula",
-   "name": "Nebula",
-   "group": "Menu buttons",
-   "category": "Space",
-   "kind": "menu",
-   "file": "materials/nebula.webp",
-   "look": {
-    "outline": "#1a0a26",
-    "glow": "#ff6ad5",
-    "ink": "#ffffff",
-    "bevel": 0.8
-   },
-   "for": []
-  },
-  {
-   "id": "m-starry",
-   "name": "Starry night",
-   "group": "Menu buttons",
-   "category": "Space",
-   "kind": "menu",
-   "file": "materials/starry.webp",
-   "look": {
-    "outline": "#000814",
-    "glow": "#8fb8ff",
-    "ink": "#ffe9a8",
-    "bevel": 0.8
-   },
-   "for": []
-  },
-  {
-   "id": "m-aurora",
-   "name": "Aurora",
-   "group": "Menu buttons",
-   "category": "Space",
-   "kind": "menu",
-   "file": "materials/aurora.webp",
-   "look": {
-    "outline": "#06201c",
-    "glow": "#5fffc8",
-    "ink": "#ffffff",
-    "bevel": 0.8
-   },
-   "for": []
-  },
-  {
-   "id": "m-candy-cane",
-   "name": "Candy cane",
-   "group": "Menu buttons",
-   "category": "Sweet",
-   "kind": "menu",
-   "file": "materials/candy-cane.webp",
-   "look": {
-    "outline": "#5a0010",
-    "glow": "",
-    "ink": "#ffffff",
-    "bevel": 0.9
-   },
-   "for": []
-  },
-  {
-   "id": "m-bubblegum",
-   "name": "Bubblegum",
-   "group": "Menu buttons",
-   "category": "Sweet",
-   "kind": "menu",
-   "file": "materials/bubblegum.webp",
-   "look": {
-    "outline": "#6a1040",
-    "glow": "",
-    "ink": "#ffffff",
-    "bevel": 0.9
-   },
-   "for": []
-  },
-  {
-   "id": "m-chocolate",
-   "name": "Chocolate",
-   "group": "Menu buttons",
-   "category": "Sweet",
-   "kind": "menu",
-   "file": "materials/chocolate.webp",
-   "look": {
-    "outline": "#1e0e05",
-    "glow": "",
-    "ink": "#fff1dc",
-    "bevel": 0.9
-   },
-   "for": []
-  },
-  {
-   "id": "m-cotton-candy",
-   "name": "Cotton candy",
-   "group": "Menu buttons",
-   "category": "Sweet",
-   "kind": "menu",
-   "file": "materials/cotton-candy.webp",
-   "look": {
-    "outline": "#5a3a6e",
-    "glow": "",
-    "ink": "#ffffff",
-    "bevel": 0.7
-   },
-   "for": []
-  },
-  {
-   "id": "m-sherbet",
-   "name": "Sherbet",
-   "group": "Menu buttons",
-   "category": "Sweet",
-   "kind": "menu",
-   "file": "materials/sherbet.webp",
-   "look": {
-    "outline": "#6a3a2a",
-    "glow": "",
-    "ink": "#ffffff",
-    "bevel": 0.8
-   },
-   "for": []
-  },
-  {
-   "id": "m-neon-cyan",
-   "name": "Neon cyan",
-   "group": "Menu buttons",
-   "category": "Neon & tech",
-   "kind": "menu",
-   "file": "materials/neon-cyan.webp",
-   "look": {
-    "outline": "#002a2e",
-    "glow": "#00f0ff",
-    "ink": "#e6fdff",
-    "bevel": 0.6
-   },
-   "for": []
-  },
-  {
-   "id": "m-neon-pink",
-   "name": "Neon pink",
-   "group": "Menu buttons",
-   "category": "Neon & tech",
-   "kind": "menu",
-   "file": "materials/neon-pink.webp",
-   "look": {
-    "outline": "#2e0020",
-    "glow": "#ff2fd0",
-    "ink": "#ffe6f8",
-    "bevel": 0.6
-   },
-   "for": []
-  },
-  {
-   "id": "m-circuit",
-   "name": "Circuit",
-   "group": "Menu buttons",
-   "category": "Neon & tech",
-   "kind": "menu",
-   "file": "materials/circuit.webp",
-   "look": {
-    "outline": "#001a0a",
-    "glow": "#2bff9a",
-    "ink": "#e8fff2",
-    "bevel": 0.7
-   },
-   "for": []
-  },
-  {
-   "id": "m-carbon",
-   "name": "Carbon fiber",
-   "group": "Menu buttons",
-   "category": "Neon & tech",
-   "kind": "menu",
-   "file": "materials/carbon.webp",
-   "look": {
-    "outline": "#000000",
-    "glow": "",
-    "ink": "#e8e8e8",
-    "bevel": 1.0
-   },
-   "for": []
-  },
-  {
-   "id": "m-holographic",
-   "name": "Holographic",
-   "group": "Menu buttons",
-   "category": "Neon & tech",
-   "kind": "menu",
-   "file": "materials/holographic.webp",
-   "look": {
-    "outline": "#3a3a5a",
-    "glow": "",
-    "ink": "#ffffff",
-    "bevel": 0.9
-   },
-   "for": []
-  },
-  {
-   "id": "m-synthwave",
-   "name": "Synthwave",
-   "group": "Menu buttons",
-   "category": "Neon & tech",
-   "kind": "menu",
-   "file": "materials/synthwave.webp",
-   "look": {
-    "outline": "#1a0026",
-    "glow": "#ff4fd8",
-    "ink": "#fff0ff",
-    "bevel": 0.7
-   },
-   "for": []
-  },
-  {
-   "id": "m-obsidian",
-   "name": "Obsidian",
-   "group": "Menu buttons",
-   "category": "Dark & sleek",
-   "kind": "menu",
-   "file": "materials/obsidian.webp",
-   "look": {
-    "outline": "#000000",
-    "glow": "#7a4dff",
-    "ink": "#e9e0ff",
-    "bevel": 1.0
-   },
-   "for": []
-  },
-  {
-   "id": "m-midnight",
-   "name": "Midnight",
-   "group": "Menu buttons",
-   "category": "Dark & sleek",
-   "kind": "menu",
-   "file": "materials/midnight.webp",
-   "look": {
-    "outline": "#000000",
-    "glow": "",
-    "ink": "#cfd8ff",
-    "bevel": 0.9
-   },
-   "for": []
-  },
-  {
-   "id": "m-shadow",
-   "name": "Shadow",
-   "group": "Menu buttons",
-   "category": "Dark & sleek",
-   "kind": "menu",
-   "file": "materials/shadow.webp",
-   "look": {
-    "outline": "#000000",
-    "glow": "#ff3030",
-    "ink": "#f0e0e0",
-    "bevel": 0.9
-   },
-   "for": []
-  },
-  {
-   "id": "i-gold",
-   "name": "Gold",
-   "group": "In-game buttons",
-   "category": "Metals",
-   "kind": "ingame",
-   "file": "materials/gold.webp",
-   "look": {
-    "outline": "#5c3d00",
-    "glow": "",
-    "ink": "#fff6d8",
-    "bevel": 1.0
-   },
-   "for": []
-  },
-  {
-   "id": "i-chrome",
-   "name": "Chrome",
-   "group": "In-game buttons",
-   "category": "Metals",
-   "kind": "ingame",
-   "file": "materials/chrome.webp",
-   "look": {
-    "outline": "#2a2f38",
-    "glow": "",
-    "ink": "#ffffff",
-    "bevel": 1.0
-   },
-   "for": []
-  },
-  {
-   "id": "i-rose-gold",
-   "name": "Rose gold",
-   "group": "In-game buttons",
-   "category": "Metals",
-   "kind": "ingame",
-   "file": "materials/rose-gold.webp",
-   "look": {
-    "outline": "#5a2e2a",
-    "glow": "",
-    "ink": "#fff0ea",
-    "bevel": 1.0
-   },
-   "for": []
-  },
-  {
-   "id": "i-bronze",
-   "name": "Bronze",
-   "group": "In-game buttons",
-   "category": "Metals",
-   "kind": "ingame",
-   "file": "materials/bronze.webp",
-   "look": {
-    "outline": "#3a2410",
-    "glow": "",
-    "ink": "#ffe2b8",
-    "bevel": 1.0
-   },
-   "for": []
-  },
-  {
-   "id": "i-copper",
-   "name": "Copper",
-   "group": "In-game buttons",
-   "category": "Metals",
-   "kind": "ingame",
-   "file": "materials/copper.webp",
-   "look": {
-    "outline": "#3d1f12",
-    "glow": "",
-    "ink": "#ffe7d6",
-    "bevel": 1.0
-   },
-   "for": []
-  },
-  {
-   "id": "i-ruby",
-   "name": "Ruby",
-   "group": "In-game buttons",
-   "category": "Gems",
-   "kind": "ingame",
-   "file": "materials/ruby.webp",
-   "look": {
-    "outline": "#4a0010",
-    "glow": "#ff3355",
-    "ink": "#fff0f3",
-    "bevel": 0.9
-   },
-   "for": []
-  },
-  {
-   "id": "i-sapphire",
-   "name": "Sapphire",
-   "group": "In-game buttons",
-   "category": "Gems",
-   "kind": "ingame",
-   "file": "materials/sapphire.webp",
-   "look": {
-    "outline": "#001a4d",
-    "glow": "#3d7bff",
-    "ink": "#eef4ff",
-    "bevel": 0.9
-   },
-   "for": []
-  },
-  {
-   "id": "i-emerald",
-   "name": "Emerald",
-   "group": "In-game buttons",
-   "category": "Gems",
-   "kind": "ingame",
-   "file": "materials/emerald.webp",
-   "look": {
-    "outline": "#00331a",
-    "glow": "#2bff88",
-    "ink": "#ecfff4",
-    "bevel": 0.9
-   },
-   "for": []
-  },
-  {
-   "id": "i-amethyst",
-   "name": "Amethyst",
-   "group": "In-game buttons",
-   "category": "Gems",
-   "kind": "ingame",
-   "file": "materials/amethyst.webp",
-   "look": {
-    "outline": "#2a0a4a",
-    "glow": "#b46bff",
-    "ink": "#f6eeff",
-    "bevel": 0.9
-   },
-   "for": []
-  },
-  {
-   "id": "i-diamond",
-   "name": "Diamond",
-   "group": "In-game buttons",
-   "category": "Gems",
-   "kind": "ingame",
-   "file": "materials/diamond.webp",
-   "look": {
-    "outline": "#3b5a78",
-    "glow": "#bfe9ff",
-    "ink": "#ffffff",
-    "bevel": 0.9
-   },
-   "for": []
-  },
-  {
-   "id": "i-opal",
-   "name": "Opal",
-   "group": "In-game buttons",
-   "category": "Gems",
-   "kind": "ingame",
-   "file": "materials/opal.webp",
-   "look": {
-    "outline": "#4a4a66",
-    "glow": "",
-    "ink": "#ffffff",
-    "bevel": 0.8
-   },
-   "for": []
-  },
-  {
-   "id": "i-lava",
-   "name": "Lava",
-   "group": "In-game buttons",
-   "category": "Elements",
-   "kind": "ingame",
-   "file": "materials/lava.webp",
-   "look": {
-    "outline": "#1a0500",
-    "glow": "#ff5a00",
-    "ink": "#ffe2b0",
-    "bevel": 0.9
-   },
-   "for": []
-  },
-  {
-   "id": "i-ice",
-   "name": "Ice",
-   "group": "In-game buttons",
-   "category": "Elements",
-   "kind": "ingame",
-   "file": "materials/ice.webp",
-   "look": {
-    "outline": "#1e4a6e",
-    "glow": "#9fe3ff",
-    "ink": "#ffffff",
-    "bevel": 0.8
-   },
-   "for": []
-  },
-  {
-   "id": "i-ocean",
-   "name": "Ocean",
-   "group": "In-game buttons",
-   "category": "Elements",
-   "kind": "ingame",
-   "file": "materials/ocean.webp",
-   "look": {
-    "outline": "#00264d",
-    "glow": "",
-    "ink": "#e8fbff",
-    "bevel": 0.8
-   },
-   "for": []
-  },
-  {
-   "id": "i-fire",
-   "name": "Fire",
-   "group": "In-game buttons",
-   "category": "Elements",
-   "kind": "ingame",
-   "file": "materials/fire.webp",
-   "look": {
-    "outline": "#4a0e00",
-    "glow": "#ff8a00",
-    "ink": "#fff4c2",
-    "bevel": 0.7
-   },
-   "for": []
-  },
-  {
-   "id": "i-toxic",
-   "name": "Toxic",
-   "group": "In-game buttons",
-   "category": "Elements",
-   "kind": "ingame",
-   "file": "materials/toxic.webp",
-   "look": {
-    "outline": "#103300",
-    "glow": "#7dff2a",
-    "ink": "#f2ffe0",
-    "bevel": 0.8
-   },
-   "for": []
-  },
-  {
-   "id": "i-storm",
-   "name": "Storm",
-   "group": "In-game buttons",
-   "category": "Elements",
-   "kind": "ingame",
-   "file": "materials/storm.webp",
-   "look": {
-    "outline": "#0d1426",
-    "glow": "#6ab8ff",
-    "ink": "#eaf4ff",
-    "bevel": 0.8
-   },
-   "for": []
-  },
-  {
-   "id": "i-wood",
-   "name": "Wood",
-   "group": "In-game buttons",
-   "category": "Nature",
-   "kind": "ingame",
-   "file": "materials/wood.webp",
-   "look": {
-    "outline": "#2b1708",
-    "glow": "",
-    "ink": "#fff1dc",
-    "bevel": 0.9
-   },
-   "for": []
-  },
-  {
-   "id": "i-marble",
-   "name": "Marble",
-   "group": "In-game buttons",
-   "category": "Nature",
-   "kind": "ingame",
-   "file": "materials/marble.webp",
-   "look": {
-    "outline": "#4a4a4a",
-    "glow": "",
-    "ink": "#2b2b2b",
-    "bevel": 0.8
-   },
-   "for": []
-  },
-  {
-   "id": "i-jungle",
-   "name": "Jungle",
-   "group": "In-game buttons",
-   "category": "Nature",
-   "kind": "ingame",
-   "file": "materials/jungle.webp",
-   "look": {
-    "outline": "#0d2a0d",
-    "glow": "",
-    "ink": "#f0ffe8",
-    "bevel": 0.8
-   },
-   "for": []
-  },
-  {
-   "id": "i-stone",
-   "name": "Stone",
-   "group": "In-game buttons",
-   "category": "Nature",
-   "kind": "ingame",
-   "file": "materials/stone.webp",
-   "look": {
-    "outline": "#1f2226",
-    "glow": "",
-    "ink": "#f2f2ea",
-    "bevel": 1.0
-   },
-   "for": []
-  },
-  {
-   "id": "i-coral",
-   "name": "Coral",
-   "group": "In-game buttons",
-   "category": "Nature",
-   "kind": "ingame",
-   "file": "materials/coral.webp",
-   "look": {
-    "outline": "#4a1a1a",
-    "glow": "",
-    "ink": "#fff4ee",
-    "bevel": 0.8
-   },
-   "for": []
-  },
-  {
-   "id": "i-galaxy",
-   "name": "Galaxy",
-   "group": "In-game buttons",
-   "category": "Space",
-   "kind": "ingame",
-   "file": "materials/galaxy.webp",
-   "look": {
-    "outline": "#120a2a",
-    "glow": "#a070ff",
-    "ink": "#ffffff",
-    "bevel": 0.8
-   },
-   "for": []
-  },
-  {
-   "id": "i-nebula",
-   "name": "Nebula",
-   "group": "In-game buttons",
-   "category": "Space",
-   "kind": "ingame",
-   "file": "materials/nebula.webp",
-   "look": {
-    "outline": "#1a0a26",
-    "glow": "#ff6ad5",
-    "ink": "#ffffff",
-    "bevel": 0.8
-   },
-   "for": []
-  },
-  {
-   "id": "i-starry",
-   "name": "Starry night",
-   "group": "In-game buttons",
-   "category": "Space",
-   "kind": "ingame",
-   "file": "materials/starry.webp",
-   "look": {
-    "outline": "#000814",
-    "glow": "#8fb8ff",
-    "ink": "#ffe9a8",
-    "bevel": 0.8
-   },
-   "for": []
-  },
-  {
-   "id": "i-aurora",
-   "name": "Aurora",
-   "group": "In-game buttons",
-   "category": "Space",
-   "kind": "ingame",
-   "file": "materials/aurora.webp",
-   "look": {
-    "outline": "#06201c",
-    "glow": "#5fffc8",
-    "ink": "#ffffff",
-    "bevel": 0.8
-   },
-   "for": []
-  },
-  {
-   "id": "i-candy-cane",
-   "name": "Candy cane",
-   "group": "In-game buttons",
-   "category": "Sweet",
-   "kind": "ingame",
-   "file": "materials/candy-cane.webp",
-   "look": {
-    "outline": "#5a0010",
-    "glow": "",
-    "ink": "#ffffff",
-    "bevel": 0.9
-   },
-   "for": []
-  },
-  {
-   "id": "i-bubblegum",
-   "name": "Bubblegum",
-   "group": "In-game buttons",
-   "category": "Sweet",
-   "kind": "ingame",
-   "file": "materials/bubblegum.webp",
-   "look": {
-    "outline": "#6a1040",
-    "glow": "",
-    "ink": "#ffffff",
-    "bevel": 0.9
-   },
-   "for": []
-  },
-  {
-   "id": "i-chocolate",
-   "name": "Chocolate",
-   "group": "In-game buttons",
-   "category": "Sweet",
-   "kind": "ingame",
-   "file": "materials/chocolate.webp",
-   "look": {
-    "outline": "#1e0e05",
-    "glow": "",
-    "ink": "#fff1dc",
-    "bevel": 0.9
-   },
-   "for": []
-  },
-  {
-   "id": "i-cotton-candy",
-   "name": "Cotton candy",
-   "group": "In-game buttons",
-   "category": "Sweet",
-   "kind": "ingame",
-   "file": "materials/cotton-candy.webp",
-   "look": {
-    "outline": "#5a3a6e",
-    "glow": "",
-    "ink": "#ffffff",
-    "bevel": 0.7
-   },
-   "for": []
-  },
-  {
-   "id": "i-sherbet",
-   "name": "Sherbet",
-   "group": "In-game buttons",
-   "category": "Sweet",
-   "kind": "ingame",
-   "file": "materials/sherbet.webp",
-   "look": {
-    "outline": "#6a3a2a",
-    "glow": "",
-    "ink": "#ffffff",
-    "bevel": 0.8
-   },
-   "for": []
-  },
-  {
-   "id": "i-neon-cyan",
-   "name": "Neon cyan",
-   "group": "In-game buttons",
-   "category": "Neon & tech",
-   "kind": "ingame",
-   "file": "materials/neon-cyan.webp",
-   "look": {
-    "outline": "#002a2e",
-    "glow": "#00f0ff",
-    "ink": "#e6fdff",
-    "bevel": 0.6
-   },
-   "for": []
-  },
-  {
-   "id": "i-neon-pink",
-   "name": "Neon pink",
-   "group": "In-game buttons",
-   "category": "Neon & tech",
-   "kind": "ingame",
-   "file": "materials/neon-pink.webp",
-   "look": {
-    "outline": "#2e0020",
-    "glow": "#ff2fd0",
-    "ink": "#ffe6f8",
-    "bevel": 0.6
-   },
-   "for": []
-  },
-  {
-   "id": "i-circuit",
-   "name": "Circuit",
-   "group": "In-game buttons",
-   "category": "Neon & tech",
-   "kind": "ingame",
-   "file": "materials/circuit.webp",
-   "look": {
-    "outline": "#001a0a",
-    "glow": "#2bff9a",
-    "ink": "#e8fff2",
-    "bevel": 0.7
-   },
-   "for": []
-  },
-  {
-   "id": "i-carbon",
-   "name": "Carbon fiber",
-   "group": "In-game buttons",
-   "category": "Neon & tech",
-   "kind": "ingame",
-   "file": "materials/carbon.webp",
-   "look": {
-    "outline": "#000000",
-    "glow": "",
-    "ink": "#e8e8e8",
-    "bevel": 1.0
-   },
-   "for": []
-  },
-  {
-   "id": "i-holographic",
-   "name": "Holographic",
-   "group": "In-game buttons",
-   "category": "Neon & tech",
-   "kind": "ingame",
-   "file": "materials/holographic.webp",
-   "look": {
-    "outline": "#3a3a5a",
-    "glow": "",
-    "ink": "#ffffff",
-    "bevel": 0.9
-   },
-   "for": []
-  },
-  {
-   "id": "i-synthwave",
-   "name": "Synthwave",
-   "group": "In-game buttons",
-   "category": "Neon & tech",
-   "kind": "ingame",
-   "file": "materials/synthwave.webp",
-   "look": {
-    "outline": "#1a0026",
-    "glow": "#ff4fd8",
-    "ink": "#fff0ff",
-    "bevel": 0.7
-   },
-   "for": []
-  },
-  {
-   "id": "i-obsidian",
-   "name": "Obsidian",
-   "group": "In-game buttons",
-   "category": "Dark & sleek",
-   "kind": "ingame",
-   "file": "materials/obsidian.webp",
-   "look": {
-    "outline": "#000000",
-    "glow": "#7a4dff",
-    "ink": "#e9e0ff",
-    "bevel": 1.0
-   },
-   "for": []
-  },
-  {
-   "id": "i-midnight",
-   "name": "Midnight",
-   "group": "In-game buttons",
-   "category": "Dark & sleek",
-   "kind": "ingame",
-   "file": "materials/midnight.webp",
-   "look": {
-    "outline": "#000000",
-    "glow": "",
-    "ink": "#cfd8ff",
-    "bevel": 0.9
-   },
-   "for": []
-  },
-  {
-   "id": "i-shadow",
-   "name": "Shadow",
-   "group": "In-game buttons",
-   "category": "Dark & sleek",
-   "kind": "ingame",
-   "file": "materials/shadow.webp",
-   "look": {
-    "outline": "#000000",
-    "glow": "#ff3030",
-    "ink": "#f0e0e0",
-    "bevel": 0.9
-   },
-   "for": []
+   "id": "bg-petri-dish",
+   "name": "Petri dish",
+   "category": "Mitosis cells",
+   "kind": "background",
+   "file": "backgrounds/petri-dish.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-blood-cells",
+   "name": "Blood cells",
+   "category": "Mitosis cells",
+   "kind": "background",
+   "file": "backgrounds/blood-cells.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-bacteria",
+   "name": "Bacteria",
+   "category": "Mitosis cells",
+   "kind": "background",
+   "file": "backgrounds/bacteria.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-cell-tissue",
+   "name": "Cell tissue",
+   "category": "Mitosis cells",
+   "kind": "background",
+   "file": "backgrounds/cell-tissue.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-dna",
+   "name": "DNA",
+   "category": "Mitosis cells",
+   "kind": "background",
+   "file": "backgrounds/dna.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-pixel-sky",
+   "name": "Pixel sky",
+   "category": "Gaming",
+   "kind": "background",
+   "file": "backgrounds/pixel-sky.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-pixel-grass",
+   "name": "Pixel grass",
+   "category": "Gaming",
+   "kind": "background",
+   "file": "backgrounds/pixel-grass.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-arcade-carpet",
+   "name": "Arcade carpet",
+   "category": "Gaming",
+   "kind": "background",
+   "file": "backgrounds/arcade-carpet.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-game-buttons",
+   "name": "Game buttons",
+   "category": "Gaming",
+   "kind": "background",
+   "file": "backgrounds/game-buttons.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-voxel-blocks",
+   "name": "Voxel blocks",
+   "category": "Gaming",
+   "kind": "background",
+   "file": "backgrounds/voxel-blocks.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-chevron",
+   "name": "Chevron",
+   "category": "Patterns",
+   "kind": "background",
+   "file": "backgrounds/chevron.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-seigaiha",
+   "name": "Wave pattern",
+   "category": "Patterns",
+   "kind": "background",
+   "file": "backgrounds/seigaiha.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-terrazzo",
+   "name": "Terrazzo",
+   "category": "Patterns",
+   "kind": "background",
+   "file": "backgrounds/terrazzo.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-memphis",
+   "name": "Memphis",
+   "category": "Patterns",
+   "kind": "background",
+   "file": "backgrounds/memphis.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-plaid",
+   "name": "Plaid",
+   "category": "Patterns",
+   "kind": "background",
+   "file": "backgrounds/plaid.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-retro-70s",
+   "name": "Retro 70s",
+   "category": "Patterns",
+   "kind": "background",
+   "file": "backgrounds/retro-70s.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-enchanted-forest",
+   "name": "Enchanted forest",
+   "category": "Fantasy",
+   "kind": "background",
+   "file": "backgrounds/enchanted-forest.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-dragon-scales",
+   "name": "Dragon scales",
+   "category": "Fantasy",
+   "kind": "background",
+   "file": "backgrounds/dragon-scales.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-crystal-cave",
+   "name": "Crystal cave",
+   "category": "Fantasy",
+   "kind": "background",
+   "file": "backgrounds/crystal-cave.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-dungeon-floor",
+   "name": "Dungeon floor",
+   "category": "Fantasy",
+   "kind": "background",
+   "file": "backgrounds/dungeon-floor.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-fairy-sparkles",
+   "name": "Fairy sparkles",
+   "category": "Fantasy",
+   "kind": "background",
+   "file": "backgrounds/fairy-sparkles.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-deep-sea",
+   "name": "Deep sea",
+   "category": "Underwater",
+   "kind": "background",
+   "file": "backgrounds/deep-sea.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-bubbles",
+   "name": "Bubbles",
+   "category": "Underwater",
+   "kind": "background",
+   "file": "backgrounds/bubbles.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-seafloor",
+   "name": "Sea floor",
+   "category": "Underwater",
+   "kind": "background",
+   "file": "backgrounds/seafloor.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-kelp",
+   "name": "Kelp forest",
+   "category": "Underwater",
+   "kind": "background",
+   "file": "backgrounds/kelp.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-sunset-clouds",
+   "name": "Sunset clouds",
+   "category": "Sky & weather",
+   "kind": "background",
+   "file": "backgrounds/sunset-clouds.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-rain",
+   "name": "Rain on glass",
+   "category": "Sky & weather",
+   "kind": "background",
+   "file": "backgrounds/rain.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-snowfall",
+   "name": "Snowfall",
+   "category": "Sky & weather",
+   "kind": "background",
+   "file": "backgrounds/snowfall.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-rainbow-sky",
+   "name": "Rainbow sky",
+   "category": "Sky & weather",
+   "kind": "background",
+   "file": "backgrounds/rainbow-sky.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-tie-dye",
+   "name": "Tie-dye",
+   "category": "Colorful & exotic",
+   "kind": "background",
+   "file": "backgrounds/tie-dye.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-stained-glass",
+   "name": "Stained glass",
+   "category": "Colorful & exotic",
+   "kind": "background",
+   "file": "backgrounds/stained-glass.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-butterfly-wing",
+   "name": "Butterfly wing",
+   "category": "Colorful & exotic",
+   "kind": "background",
+   "file": "backgrounds/butterfly-wing.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-dark-marble",
+   "name": "Dark marble",
+   "category": "Dark & subtle",
+   "kind": "background",
+   "file": "backgrounds/dark-marble.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-dark-leaves",
+   "name": "Dark leaves",
+   "category": "Dark & subtle",
+   "kind": "background",
+   "file": "backgrounds/dark-leaves.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-dark-topography",
+   "name": "Dark contours",
+   "category": "Dark & subtle",
+   "kind": "background",
+   "file": "backgrounds/dark-topography.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-dark-galaxy",
+   "name": "Dim galaxy",
+   "category": "Dark & subtle",
+   "kind": "background",
+   "file": "backgrounds/dark-galaxy.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-black-neon-lines",
+   "name": "Black with neon lines",
+   "category": "Black & solid",
+   "kind": "background",
+   "file": "backgrounds/black-neon-lines.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
+  },
+  {
+   "id": "bg-black-fireflies",
+   "name": "Black with fireflies",
+   "category": "Black & solid",
+   "kind": "background",
+   "file": "backgrounds/black-fireflies.webp",
+   "for": [
+    "menu",
+    "arena"
+   ]
   },
   {
    "id": "v-classic-crimson",
@@ -2022,6 +1251,162 @@
    "category": "Classic",
    "kind": "virus",
    "file": "viruses/classic-rainbow.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-classic-sunset",
+   "name": "Sunset",
+   "group": "Viruses",
+   "category": "Classic",
+   "kind": "virus",
+   "file": "viruses/classic-sunset.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-classic-aqua",
+   "name": "Aqua",
+   "group": "Viruses",
+   "category": "Classic",
+   "kind": "virus",
+   "file": "viruses/classic-aqua.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-classic-lime",
+   "name": "Lime",
+   "group": "Viruses",
+   "category": "Classic",
+   "kind": "virus",
+   "file": "viruses/classic-lime.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-classic-coral",
+   "name": "Coral",
+   "group": "Viruses",
+   "category": "Classic",
+   "kind": "virus",
+   "file": "viruses/classic-coral.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-classic-lavender",
+   "name": "Lavender",
+   "group": "Viruses",
+   "category": "Classic",
+   "kind": "virus",
+   "file": "viruses/classic-lavender.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-classic-magenta",
+   "name": "Magenta",
+   "group": "Viruses",
+   "category": "Classic",
+   "kind": "virus",
+   "file": "viruses/classic-magenta.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-classic-midnight",
+   "name": "Midnight",
+   "group": "Viruses",
+   "category": "Classic",
+   "kind": "virus",
+   "file": "viruses/classic-midnight.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-classic-silver",
+   "name": "Silver",
+   "group": "Viruses",
+   "category": "Classic",
+   "kind": "virus",
+   "file": "viruses/classic-silver.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-classic-bronze",
+   "name": "Bronze",
+   "group": "Viruses",
+   "category": "Classic",
+   "kind": "virus",
+   "file": "viruses/classic-bronze.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-classic-inferno",
+   "name": "Inferno",
+   "group": "Viruses",
+   "category": "Classic",
+   "kind": "virus",
+   "file": "viruses/classic-inferno.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-classic-galaxy",
+   "name": "Galaxy",
+   "group": "Viruses",
+   "category": "Classic",
+   "kind": "virus",
+   "file": "viruses/classic-galaxy.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-classic-emerald",
+   "name": "Emerald",
+   "group": "Viruses",
+   "category": "Classic",
+   "kind": "virus",
+   "file": "viruses/classic-emerald.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-classic-bubblegum",
+   "name": "Bubblegum",
+   "group": "Viruses",
+   "category": "Classic",
+   "kind": "virus",
+   "file": "viruses/classic-bubblegum.webp",
    "for": [
     "virus.png",
     "light_virus.png"
@@ -2916,6 +2301,149 @@
    ]
   },
   {
+   "id": "f-classic-cell",
+   "name": "Cell",
+   "group": "Food",
+   "category": "Classic",
+   "kind": "food",
+   "file": "food/classic-cell.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-classic-spore",
+   "name": "Spore",
+   "group": "Food",
+   "category": "Classic",
+   "kind": "food",
+   "file": "food/classic-spore.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-classic-twin",
+   "name": "Twin cell",
+   "group": "Food",
+   "category": "Classic",
+   "kind": "food",
+   "file": "food/classic-twin.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-classic-cluster",
+   "name": "Cluster",
+   "group": "Food",
+   "category": "Classic",
+   "kind": "food",
+   "file": "food/classic-cluster.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-classic-capsule",
+   "name": "Capsule",
+   "group": "Food",
+   "category": "Classic",
+   "kind": "food",
+   "file": "food/classic-capsule.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-classic-hexa",
+   "name": "Hexa cell",
+   "group": "Food",
+   "category": "Classic",
+   "kind": "food",
+   "file": "food/classic-hexa.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-classic-ring",
+   "name": "Ring cell",
+   "group": "Food",
+   "category": "Classic",
+   "kind": "food",
+   "file": "food/classic-ring.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-classic-star",
+   "name": "Star cell",
+   "group": "Food",
+   "category": "Classic",
+   "kind": "food",
+   "file": "food/classic-star.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-classic-heart",
+   "name": "Heart cell",
+   "group": "Food",
+   "category": "Classic",
+   "kind": "food",
+   "file": "food/classic-heart.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-classic-amoeba",
+   "name": "Amoeba",
+   "group": "Food",
+   "category": "Classic",
+   "kind": "food",
+   "file": "food/classic-amoeba.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-classic-mini",
+   "name": "Mini virus",
+   "group": "Food",
+   "category": "Classic",
+   "kind": "food",
+   "file": "food/classic-mini.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-classic-diamond",
+   "name": "Diamond cell",
+   "group": "Food",
+   "category": "Classic",
+   "kind": "food",
+   "file": "food/classic-diamond.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-classic-bubbles",
+   "name": "Bubbles",
+   "group": "Food",
+   "category": "Classic",
+   "kind": "food",
+   "file": "food/classic-bubbles.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
    "id": "f-donut",
    "name": "Donut",
    "group": "Food",
@@ -3794,6 +3322,6860 @@
    "for": [
     "food"
    ]
+  },
+  {
+   "id": "f-tiny-jellyfish",
+   "name": "Tiny jellyfish",
+   "group": "Food",
+   "category": "Under the sea",
+   "kind": "food",
+   "file": "food/tiny-jellyfish.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-oyster-pearl",
+   "name": "Oyster pearl",
+   "group": "Food",
+   "category": "Under the sea",
+   "kind": "food",
+   "file": "food/oyster-pearl.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-starfish",
+   "name": "Starfish",
+   "group": "Food",
+   "category": "Under the sea",
+   "kind": "food",
+   "file": "food/starfish.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-seashell",
+   "name": "Seashell",
+   "group": "Food",
+   "category": "Under the sea",
+   "kind": "food",
+   "file": "food/seashell.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-baby-puffer",
+   "name": "Baby pufferfish",
+   "group": "Food",
+   "category": "Under the sea",
+   "kind": "food",
+   "file": "food/baby-puffer.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-baby-slime",
+   "name": "Baby slime",
+   "group": "Food",
+   "category": "Tiny creatures",
+   "kind": "food",
+   "file": "food/baby-slime.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-ladybug",
+   "name": "Ladybug",
+   "group": "Food",
+   "category": "Tiny creatures",
+   "kind": "food",
+   "file": "food/ladybug.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-dragon-hatchling",
+   "name": "Dragon hatchling",
+   "group": "Food",
+   "category": "Tiny creatures",
+   "kind": "food",
+   "file": "food/dragon-hatchling.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-firefly",
+   "name": "Firefly",
+   "group": "Food",
+   "category": "Tiny creatures",
+   "kind": "food",
+   "file": "food/firefly.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-crystal-snail",
+   "name": "Crystal snail",
+   "group": "Food",
+   "category": "Tiny creatures",
+   "kind": "food",
+   "file": "food/crystal-snail.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-rune-stone",
+   "name": "Rune stone",
+   "group": "Food",
+   "category": "Magic items",
+   "kind": "food",
+   "file": "food/rune-stone.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-spell-book",
+   "name": "Spell book",
+   "group": "Food",
+   "category": "Magic items",
+   "kind": "food",
+   "file": "food/spell-book.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-star-wand",
+   "name": "Star wand",
+   "group": "Food",
+   "category": "Magic items",
+   "kind": "food",
+   "file": "food/star-wand.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-fairy-lantern",
+   "name": "Fairy lantern",
+   "group": "Food",
+   "category": "Magic items",
+   "kind": "food",
+   "file": "food/fairy-lantern.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-magic-ring",
+   "name": "Magic ring",
+   "group": "Food",
+   "category": "Magic items",
+   "kind": "food",
+   "file": "food/magic-ring.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-rubber-duck",
+   "name": "Rubber duck",
+   "group": "Food",
+   "category": "Toys & games",
+   "kind": "food",
+   "file": "food/rubber-duck.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-dice",
+   "name": "Dice",
+   "group": "Food",
+   "category": "Toys & games",
+   "kind": "food",
+   "file": "food/dice.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-yo-yo",
+   "name": "Yo-yo",
+   "group": "Food",
+   "category": "Toys & games",
+   "kind": "food",
+   "file": "food/yo-yo.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-toy-rocket",
+   "name": "Toy rocket",
+   "group": "Food",
+   "category": "Toys & games",
+   "kind": "food",
+   "file": "food/toy-rocket.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-gold-bar",
+   "name": "Gold bar",
+   "group": "Food",
+   "category": "Treasure",
+   "kind": "food",
+   "file": "food/gold-bar.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-ruby-ring",
+   "name": "Ruby ring",
+   "group": "Food",
+   "category": "Treasure",
+   "kind": "food",
+   "file": "food/ruby-ring.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-treasure-pouch",
+   "name": "Treasure pouch",
+   "group": "Food",
+   "category": "Treasure",
+   "kind": "food",
+   "file": "food/treasure-pouch.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-jeweled-key",
+   "name": "Jeweled key",
+   "group": "Food",
+   "category": "Treasure",
+   "kind": "food",
+   "file": "food/jeweled-key.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-gingerbread",
+   "name": "Gingerbread man",
+   "group": "Food",
+   "category": "Holiday fun",
+   "kind": "food",
+   "file": "food/gingerbread.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-easter-egg",
+   "name": "Easter egg",
+   "group": "Food",
+   "category": "Holiday fun",
+   "kind": "food",
+   "file": "food/easter-egg.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-candy-corn",
+   "name": "Candy corn",
+   "group": "Food",
+   "category": "Holiday fun",
+   "kind": "food",
+   "file": "food/candy-corn.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-present",
+   "name": "Present",
+   "group": "Food",
+   "category": "Holiday fun",
+   "kind": "food",
+   "file": "food/present.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "l-art-spooky",
+   "name": "Spooky",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-spooky.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-candy",
+   "name": "Candy",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-candy.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-frozen",
+   "name": "Frozen",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-frozen.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-molten",
+   "name": "Molten",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-molten.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-royal",
+   "name": "Royal",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-royal.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-graffiti",
+   "name": "Graffiti",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-graffiti.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-neon",
+   "name": "Neon",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-neon.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-jungle",
+   "name": "Jungle",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-jungle.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-underwater",
+   "name": "Underwater",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-underwater.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-space",
+   "name": "Space",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-space.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-pixel",
+   "name": "Pixel",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-pixel.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-steampunk",
+   "name": "Steampunk",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-steampunk.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-christmas",
+   "name": "Christmas",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-christmas.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-easter",
+   "name": "Easter",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-easter.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-valentine",
+   "name": "Valentine",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-valentine.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-birthday",
+   "name": "Birthday",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-birthday.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-chocolate",
+   "name": "Chocolate",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-chocolate.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-slime",
+   "name": "Slime",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-slime.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-cyberpunk",
+   "name": "Cyberpunk",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-cyberpunk.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-samurai",
+   "name": "Samurai",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-samurai.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-viking",
+   "name": "Viking",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-viking.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-pirate",
+   "name": "Pirate",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-pirate.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-western",
+   "name": "Wild west",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-western.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-egyptian",
+   "name": "Egyptian",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-egyptian.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-greek",
+   "name": "Greek",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-greek.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-dragon",
+   "name": "Dragon",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-dragon.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-unicorn",
+   "name": "Unicorn",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-unicorn.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-fairy",
+   "name": "Fairy",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-fairy.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-crystal",
+   "name": "Crystal",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-crystal.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-clouds",
+   "name": "Clouds",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-clouds.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-lightning",
+   "name": "Lightning",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-lightning.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-toxic",
+   "name": "Toxic",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-toxic.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-zombie",
+   "name": "Zombie",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-zombie.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-vampire",
+   "name": "Vampire",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-vampire.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-robot",
+   "name": "Robot",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-robot.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-racing",
+   "name": "Racing",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-racing.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-sports",
+   "name": "Sports",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-sports.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-music",
+   "name": "Music",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-music.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-sakura",
+   "name": "Sakura",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-sakura.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-autumn",
+   "name": "Autumn",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-autumn.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-desert",
+   "name": "Desert",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-desert.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-surf",
+   "name": "Surf",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-surf.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-comic",
+   "name": "Comic",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-comic.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-sketch",
+   "name": "Sketch",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-sketch.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-chalk",
+   "name": "Chalkboard",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-chalk.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-toy-bricks",
+   "name": "Toy bricks",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-toy-bricks.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-cake",
+   "name": "Cake",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-cake.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-galaxy",
+   "name": "Galaxy",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-galaxy.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-castle",
+   "name": "Castle",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-castle.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-haunted",
+   "name": "Haunted",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-haunted.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-bubblegum",
+   "name": "Bubblegum",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-bubblegum.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-pizza",
+   "name": "Pizza",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-pizza.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-voxel",
+   "name": "Voxel",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-voxel.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-rainbow",
+   "name": "Rainbow",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-rainbow.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-aurora",
+   "name": "Aurora",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-aurora.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-glitch",
+   "name": "Glitch",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-glitch.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-ninja",
+   "name": "Ninja",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-ninja.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-treasure",
+   "name": "Treasure",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-treasure.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-volcano",
+   "name": "Volcano",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-volcano.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-art-winter",
+   "name": "Winter",
+   "group": "Title",
+   "category": "Creative",
+   "kind": "logo",
+   "file": "logos/art-winter.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-classic-purple",
+   "name": "Purple",
+   "group": "Title",
+   "category": "Classic",
+   "kind": "logo",
+   "file": "logos/classic-purple.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-classic-crimson",
+   "name": "Crimson",
+   "group": "Title",
+   "category": "Classic",
+   "kind": "logo",
+   "file": "logos/classic-crimson.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-classic-orange",
+   "name": "Orange",
+   "group": "Title",
+   "category": "Classic",
+   "kind": "logo",
+   "file": "logos/classic-orange.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-classic-golden",
+   "name": "Golden",
+   "group": "Title",
+   "category": "Classic",
+   "kind": "logo",
+   "file": "logos/classic-golden.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-classic-toxic",
+   "name": "Toxic",
+   "group": "Title",
+   "category": "Classic",
+   "kind": "logo",
+   "file": "logos/classic-toxic.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-classic-teal",
+   "name": "Teal",
+   "group": "Title",
+   "category": "Classic",
+   "kind": "logo",
+   "file": "logos/classic-teal.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-classic-ocean",
+   "name": "Ocean",
+   "group": "Title",
+   "category": "Classic",
+   "kind": "logo",
+   "file": "logos/classic-ocean.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-classic-frost",
+   "name": "Frost",
+   "group": "Title",
+   "category": "Classic",
+   "kind": "logo",
+   "file": "logos/classic-frost.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-classic-pink",
+   "name": "Pink",
+   "group": "Title",
+   "category": "Classic",
+   "kind": "logo",
+   "file": "logos/classic-pink.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-classic-shadow",
+   "name": "Shadow",
+   "group": "Title",
+   "category": "Classic",
+   "kind": "logo",
+   "file": "logos/classic-shadow.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-classic-white",
+   "name": "White",
+   "group": "Title",
+   "category": "Classic",
+   "kind": "logo",
+   "file": "logos/classic-white.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-classic-dark-blue",
+   "name": "Dark blue",
+   "group": "Title",
+   "category": "Classic",
+   "kind": "logo",
+   "file": "logos/classic-dark-blue.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-classic-rainbow",
+   "name": "Rainbow",
+   "group": "Title",
+   "category": "Classic",
+   "kind": "logo",
+   "file": "logos/classic-rainbow.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-gold",
+   "name": "Gold",
+   "group": "Title",
+   "category": "Metals",
+   "kind": "logo",
+   "file": "logos/gold.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-chrome",
+   "name": "Chrome",
+   "group": "Title",
+   "category": "Metals",
+   "kind": "logo",
+   "file": "logos/chrome.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-rose-gold",
+   "name": "Rose gold",
+   "group": "Title",
+   "category": "Metals",
+   "kind": "logo",
+   "file": "logos/rose-gold.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-ruby",
+   "name": "Ruby",
+   "group": "Title",
+   "category": "Gems",
+   "kind": "logo",
+   "file": "logos/ruby.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-sapphire",
+   "name": "Sapphire",
+   "group": "Title",
+   "category": "Gems",
+   "kind": "logo",
+   "file": "logos/sapphire.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-emerald",
+   "name": "Emerald",
+   "group": "Title",
+   "category": "Gems",
+   "kind": "logo",
+   "file": "logos/emerald.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-amethyst",
+   "name": "Amethyst",
+   "group": "Title",
+   "category": "Gems",
+   "kind": "logo",
+   "file": "logos/amethyst.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-diamond",
+   "name": "Diamond",
+   "group": "Title",
+   "category": "Gems",
+   "kind": "logo",
+   "file": "logos/diamond.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-lava",
+   "name": "Lava",
+   "group": "Title",
+   "category": "Elements",
+   "kind": "logo",
+   "file": "logos/lava.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-ice",
+   "name": "Ice",
+   "group": "Title",
+   "category": "Elements",
+   "kind": "logo",
+   "file": "logos/ice.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-fire",
+   "name": "Fire",
+   "group": "Title",
+   "category": "Elements",
+   "kind": "logo",
+   "file": "logos/fire.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-toxic",
+   "name": "Toxic",
+   "group": "Title",
+   "category": "Elements",
+   "kind": "logo",
+   "file": "logos/toxic.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-storm",
+   "name": "Storm",
+   "group": "Title",
+   "category": "Elements",
+   "kind": "logo",
+   "file": "logos/storm.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-wood",
+   "name": "Wood",
+   "group": "Title",
+   "category": "Nature",
+   "kind": "logo",
+   "file": "logos/wood.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-marble",
+   "name": "Marble",
+   "group": "Title",
+   "category": "Nature",
+   "kind": "logo",
+   "file": "logos/marble.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-jungle",
+   "name": "Jungle",
+   "group": "Title",
+   "category": "Nature",
+   "kind": "logo",
+   "file": "logos/jungle.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-stone",
+   "name": "Stone",
+   "group": "Title",
+   "category": "Nature",
+   "kind": "logo",
+   "file": "logos/stone.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-galaxy",
+   "name": "Galaxy",
+   "group": "Title",
+   "category": "Space",
+   "kind": "logo",
+   "file": "logos/galaxy.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-nebula",
+   "name": "Nebula",
+   "group": "Title",
+   "category": "Space",
+   "kind": "logo",
+   "file": "logos/nebula.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-aurora",
+   "name": "Aurora",
+   "group": "Title",
+   "category": "Space",
+   "kind": "logo",
+   "file": "logos/aurora.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-candy-cane",
+   "name": "Candy cane",
+   "group": "Title",
+   "category": "Sweet",
+   "kind": "logo",
+   "file": "logos/candy-cane.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-bubblegum",
+   "name": "Bubblegum",
+   "group": "Title",
+   "category": "Sweet",
+   "kind": "logo",
+   "file": "logos/bubblegum.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-chocolate",
+   "name": "Chocolate",
+   "group": "Title",
+   "category": "Sweet",
+   "kind": "logo",
+   "file": "logos/chocolate.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-cotton-candy",
+   "name": "Cotton candy",
+   "group": "Title",
+   "category": "Sweet",
+   "kind": "logo",
+   "file": "logos/cotton-candy.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-neon-cyan",
+   "name": "Neon cyan",
+   "group": "Title",
+   "category": "Neon & tech",
+   "kind": "logo",
+   "file": "logos/neon-cyan.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-neon-pink",
+   "name": "Neon pink",
+   "group": "Title",
+   "category": "Neon & tech",
+   "kind": "logo",
+   "file": "logos/neon-pink.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-circuit",
+   "name": "Circuit",
+   "group": "Title",
+   "category": "Neon & tech",
+   "kind": "logo",
+   "file": "logos/circuit.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-obsidian",
+   "name": "Obsidian",
+   "group": "Title",
+   "category": "Dark & sleek",
+   "kind": "logo",
+   "file": "logos/obsidian.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-enchanted",
+   "name": "Enchanted",
+   "group": "Title",
+   "category": "Fantasy",
+   "kind": "logo",
+   "file": "logos/enchanted.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-dragon",
+   "name": "Dragon",
+   "group": "Title",
+   "category": "Fantasy",
+   "kind": "logo",
+   "file": "logos/dragon.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-arcane",
+   "name": "Arcane",
+   "group": "Title",
+   "category": "Fantasy",
+   "kind": "logo",
+   "file": "logos/arcane.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-phoenix",
+   "name": "Phoenix",
+   "group": "Title",
+   "category": "Fantasy",
+   "kind": "logo",
+   "file": "logos/phoenix.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-unicorn",
+   "name": "Unicorn",
+   "group": "Title",
+   "category": "Fantasy",
+   "kind": "logo",
+   "file": "logos/unicorn.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-kitty",
+   "name": "Kitty",
+   "group": "Title",
+   "category": "Creatures",
+   "kind": "logo",
+   "file": "logos/kitty.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-pumpkin",
+   "name": "Pumpkin",
+   "group": "Title",
+   "category": "Spooky",
+   "kind": "logo",
+   "file": "logos/pumpkin.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-ghost",
+   "name": "Ghost",
+   "group": "Title",
+   "category": "Spooky",
+   "kind": "logo",
+   "file": "logos/ghost.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-pixel",
+   "name": "Pixel",
+   "group": "Title",
+   "category": "Toys & arcade",
+   "kind": "logo",
+   "file": "logos/pixel.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-ornament",
+   "name": "Ornament",
+   "group": "Title",
+   "category": "Holiday",
+   "kind": "logo",
+   "file": "logos/ornament.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-black-hole",
+   "name": "Black hole",
+   "group": "Title",
+   "category": "Cosmic",
+   "kind": "logo",
+   "file": "logos/black-hole.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "l-hologram",
+   "name": "Hologram",
+   "group": "Title",
+   "category": "Futuristic",
+   "kind": "logo",
+   "file": "logos/hologram.webp",
+   "for": [
+    "logo"
+   ]
+  },
+  {
+   "id": "hide-all",
+   "name": "Clean top bar",
+   "group": "Menu buttons",
+   "category": "Clean up",
+   "kind": "hide",
+   "file": "cleanup.webp",
+   "hide": [
+    "icon-discord",
+    "icon-iphone",
+    "icon-android",
+    "icon-og"
+   ],
+   "for": []
+  },
+  {
+   "id": "hide-discord",
+   "name": "No Discord button",
+   "group": "Menu buttons",
+   "category": "Clean up",
+   "kind": "hide",
+   "file": "cleanup.webp",
+   "hide": [
+    "icon-discord"
+   ],
+   "for": []
+  },
+  {
+   "id": "hide-badges",
+   "name": "No store badges",
+   "group": "Menu buttons",
+   "category": "Clean up",
+   "kind": "hide",
+   "file": "cleanup.webp",
+   "hide": [
+    "icon-iphone",
+    "icon-android"
+   ],
+   "for": []
+  },
+  {
+   "id": "hide-og",
+   "name": "No OG tag",
+   "group": "Menu buttons",
+   "category": "Clean up",
+   "kind": "hide",
+   "file": "cleanup.webp",
+   "hide": [
+    "icon-og"
+   ],
+   "for": []
+  },
+  {
+   "id": "mc-purple",
+   "name": "Purple",
+   "group": "Menu buttons",
+   "category": "Classic",
+   "kind": "menu",
+   "file": "purple-virus.png",
+   "base": "purple-virus.png",
+   "look": {
+    "classic": "#b300ff",
+    "outline": "#51008e",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "mc-crimson",
+   "name": "Crimson",
+   "group": "Menu buttons",
+   "category": "Classic",
+   "kind": "menu",
+   "file": "viruses/classic-crimson.webp",
+   "base": "viruses/classic-crimson.webp",
+   "look": {
+    "classic": "#c8102e",
+    "outline": "#600000",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "mc-orange",
+   "name": "Orange",
+   "group": "Menu buttons",
+   "category": "Classic",
+   "kind": "menu",
+   "file": "viruses/classic-orange.webp",
+   "base": "viruses/classic-orange.webp",
+   "look": {
+    "classic": "#ff7a1a",
+    "outline": "#750000",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "mc-golden",
+   "name": "Golden",
+   "group": "Menu buttons",
+   "category": "Classic",
+   "kind": "menu",
+   "file": "viruses/classic-golden.webp",
+   "base": "viruses/classic-golden.webp",
+   "look": {
+    "classic": "#f5c542",
+    "outline": "#633800",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "mc-toxic",
+   "name": "Toxic",
+   "group": "Menu buttons",
+   "category": "Classic",
+   "kind": "menu",
+   "file": "viruses/classic-toxic.webp",
+   "base": "viruses/classic-toxic.webp",
+   "look": {
+    "classic": "#5fd61a",
+    "outline": "#004f00",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "mc-teal",
+   "name": "Teal",
+   "group": "Menu buttons",
+   "category": "Classic",
+   "kind": "menu",
+   "file": "viruses/classic-teal.webp",
+   "base": "viruses/classic-teal.webp",
+   "look": {
+    "classic": "#14b8a6",
+    "outline": "#004337",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "mc-ocean",
+   "name": "Ocean",
+   "group": "Menu buttons",
+   "category": "Classic",
+   "kind": "menu",
+   "file": "viruses/classic-ocean.webp",
+   "base": "viruses/classic-ocean.webp",
+   "look": {
+    "classic": "#1e6bd6",
+    "outline": "#000073",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "mc-frost",
+   "name": "Frost",
+   "group": "Menu buttons",
+   "category": "Classic",
+   "kind": "menu",
+   "file": "viruses/classic-frost.webp",
+   "base": "viruses/classic-frost.webp",
+   "look": {
+    "classic": "#9fdcff",
+    "outline": "#064b68",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "mc-pink",
+   "name": "Pink",
+   "group": "Menu buttons",
+   "category": "Classic",
+   "kind": "menu",
+   "file": "viruses/classic-pink.webp",
+   "base": "viruses/classic-pink.webp",
+   "look": {
+    "classic": "#ff5fb0",
+    "outline": "#74003d",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "mc-shadow",
+   "name": "Shadow",
+   "group": "Menu buttons",
+   "category": "Classic",
+   "kind": "menu",
+   "file": "viruses/classic-shadow.webp",
+   "base": "viruses/classic-shadow.webp",
+   "look": {
+    "classic": "#20202a",
+    "outline": "#04040a",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "mc-white",
+   "name": "White",
+   "group": "Menu buttons",
+   "category": "Classic",
+   "kind": "menu",
+   "file": "viruses/classic-white.webp",
+   "base": "viruses/classic-white.webp",
+   "look": {
+    "classic": "#f4f4f8",
+    "outline": "#515154",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "mc-dark-blue",
+   "name": "Dark blue",
+   "group": "Menu buttons",
+   "category": "Classic",
+   "kind": "menu",
+   "file": "viruses/classic-dark-blue.webp",
+   "base": "viruses/classic-dark-blue.webp",
+   "look": {
+    "classic": "#1e3a8a",
+    "outline": "#03004a",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "mc-rainbow",
+   "name": "Rainbow",
+   "group": "Menu buttons",
+   "category": "Classic",
+   "kind": "menu",
+   "file": "viruses/classic-rainbow.webp",
+   "base": "viruses/classic-rainbow.webp",
+   "look": {
+    "classic": "rainbow",
+    "outline": "#3a0050",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-gold",
+   "name": "Gold",
+   "group": "Menu buttons",
+   "category": "Metals",
+   "kind": "menu",
+   "file": "materials/gold.webp",
+   "base": "buttons/gold.webp",
+   "look": {
+    "outline": "#5c3d00",
+    "glow": "",
+    "ink": "#fff6d8",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "m-chrome",
+   "name": "Chrome",
+   "group": "Menu buttons",
+   "category": "Metals",
+   "kind": "menu",
+   "file": "materials/chrome.webp",
+   "base": "buttons/chrome.webp",
+   "look": {
+    "outline": "#2a2f38",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "m-rose-gold",
+   "name": "Rose gold",
+   "group": "Menu buttons",
+   "category": "Metals",
+   "kind": "menu",
+   "file": "materials/rose-gold.webp",
+   "base": "buttons/rose-gold.webp",
+   "look": {
+    "outline": "#5a2e2a",
+    "glow": "",
+    "ink": "#fff0ea",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "m-bronze",
+   "name": "Bronze",
+   "group": "Menu buttons",
+   "category": "Metals",
+   "kind": "menu",
+   "file": "materials/bronze.webp",
+   "base": "buttons/bronze.webp",
+   "look": {
+    "outline": "#3a2410",
+    "glow": "",
+    "ink": "#ffe2b8",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "m-copper",
+   "name": "Copper",
+   "group": "Menu buttons",
+   "category": "Metals",
+   "kind": "menu",
+   "file": "materials/copper.webp",
+   "base": "buttons/copper.webp",
+   "look": {
+    "outline": "#3d1f12",
+    "glow": "",
+    "ink": "#ffe7d6",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "m-ruby",
+   "name": "Ruby",
+   "group": "Menu buttons",
+   "category": "Gems",
+   "kind": "menu",
+   "file": "materials/ruby.webp",
+   "base": "buttons/ruby.webp",
+   "look": {
+    "outline": "#4a0010",
+    "glow": "#ff3355",
+    "ink": "#fff0f3",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-sapphire",
+   "name": "Sapphire",
+   "group": "Menu buttons",
+   "category": "Gems",
+   "kind": "menu",
+   "file": "materials/sapphire.webp",
+   "base": "buttons/sapphire.webp",
+   "look": {
+    "outline": "#001a4d",
+    "glow": "#3d7bff",
+    "ink": "#eef4ff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-emerald",
+   "name": "Emerald",
+   "group": "Menu buttons",
+   "category": "Gems",
+   "kind": "menu",
+   "file": "materials/emerald.webp",
+   "base": "buttons/emerald.webp",
+   "look": {
+    "outline": "#00331a",
+    "glow": "#2bff88",
+    "ink": "#ecfff4",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-amethyst",
+   "name": "Amethyst",
+   "group": "Menu buttons",
+   "category": "Gems",
+   "kind": "menu",
+   "file": "materials/amethyst.webp",
+   "base": "buttons/amethyst.webp",
+   "look": {
+    "outline": "#2a0a4a",
+    "glow": "#b46bff",
+    "ink": "#f6eeff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-diamond",
+   "name": "Diamond",
+   "group": "Menu buttons",
+   "category": "Gems",
+   "kind": "menu",
+   "file": "materials/diamond.webp",
+   "base": "buttons/diamond.webp",
+   "look": {
+    "outline": "#3b5a78",
+    "glow": "#bfe9ff",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-opal",
+   "name": "Opal",
+   "group": "Menu buttons",
+   "category": "Gems",
+   "kind": "menu",
+   "file": "materials/opal.webp",
+   "base": "buttons/opal.webp",
+   "look": {
+    "outline": "#4a4a66",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "m-lava",
+   "name": "Lava",
+   "group": "Menu buttons",
+   "category": "Elements",
+   "kind": "menu",
+   "file": "materials/lava.webp",
+   "base": "buttons/lava.webp",
+   "look": {
+    "outline": "#1a0500",
+    "glow": "#ff5a00",
+    "ink": "#ffe2b0",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-ice",
+   "name": "Ice",
+   "group": "Menu buttons",
+   "category": "Elements",
+   "kind": "menu",
+   "file": "materials/ice.webp",
+   "base": "buttons/ice.webp",
+   "look": {
+    "outline": "#1e4a6e",
+    "glow": "#9fe3ff",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "m-ocean",
+   "name": "Ocean",
+   "group": "Menu buttons",
+   "category": "Elements",
+   "kind": "menu",
+   "file": "materials/ocean.webp",
+   "base": "buttons/ocean.webp",
+   "look": {
+    "outline": "#00264d",
+    "glow": "",
+    "ink": "#e8fbff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "m-fire",
+   "name": "Fire",
+   "group": "Menu buttons",
+   "category": "Elements",
+   "kind": "menu",
+   "file": "materials/fire.webp",
+   "base": "buttons/fire.webp",
+   "look": {
+    "outline": "#4a0e00",
+    "glow": "#ff8a00",
+    "ink": "#fff4c2",
+    "bevel": 0.7
+   },
+   "for": []
+  },
+  {
+   "id": "m-toxic",
+   "name": "Toxic",
+   "group": "Menu buttons",
+   "category": "Elements",
+   "kind": "menu",
+   "file": "materials/toxic.webp",
+   "base": "buttons/toxic.webp",
+   "look": {
+    "outline": "#103300",
+    "glow": "#7dff2a",
+    "ink": "#f2ffe0",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "m-storm",
+   "name": "Storm",
+   "group": "Menu buttons",
+   "category": "Elements",
+   "kind": "menu",
+   "file": "materials/storm.webp",
+   "base": "buttons/storm.webp",
+   "look": {
+    "outline": "#0d1426",
+    "glow": "#6ab8ff",
+    "ink": "#eaf4ff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "m-wood",
+   "name": "Wood",
+   "group": "Menu buttons",
+   "category": "Nature",
+   "kind": "menu",
+   "file": "materials/wood.webp",
+   "base": "buttons/wood.webp",
+   "look": {
+    "outline": "#2b1708",
+    "glow": "",
+    "ink": "#fff1dc",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-marble",
+   "name": "Marble",
+   "group": "Menu buttons",
+   "category": "Nature",
+   "kind": "menu",
+   "file": "materials/marble.webp",
+   "base": "buttons/marble.webp",
+   "look": {
+    "outline": "#4a4a4a",
+    "glow": "",
+    "ink": "#2b2b2b",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "m-jungle",
+   "name": "Jungle",
+   "group": "Menu buttons",
+   "category": "Nature",
+   "kind": "menu",
+   "file": "materials/jungle.webp",
+   "base": "buttons/jungle.webp",
+   "look": {
+    "outline": "#0d2a0d",
+    "glow": "",
+    "ink": "#f0ffe8",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "m-stone",
+   "name": "Stone",
+   "group": "Menu buttons",
+   "category": "Nature",
+   "kind": "menu",
+   "file": "materials/stone.webp",
+   "base": "buttons/stone.webp",
+   "look": {
+    "outline": "#1f2226",
+    "glow": "",
+    "ink": "#f2f2ea",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "m-coral",
+   "name": "Coral",
+   "group": "Menu buttons",
+   "category": "Nature",
+   "kind": "menu",
+   "file": "materials/coral.webp",
+   "base": "buttons/coral.webp",
+   "look": {
+    "outline": "#4a1a1a",
+    "glow": "",
+    "ink": "#fff4ee",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "m-galaxy",
+   "name": "Galaxy",
+   "group": "Menu buttons",
+   "category": "Space",
+   "kind": "menu",
+   "file": "materials/galaxy.webp",
+   "base": "buttons/galaxy.webp",
+   "look": {
+    "outline": "#120a2a",
+    "glow": "#a070ff",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "m-nebula",
+   "name": "Nebula",
+   "group": "Menu buttons",
+   "category": "Space",
+   "kind": "menu",
+   "file": "materials/nebula.webp",
+   "base": "buttons/nebula.webp",
+   "look": {
+    "outline": "#1a0a26",
+    "glow": "#ff6ad5",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "m-starry",
+   "name": "Starry night",
+   "group": "Menu buttons",
+   "category": "Space",
+   "kind": "menu",
+   "file": "materials/starry.webp",
+   "base": "buttons/starry.webp",
+   "look": {
+    "outline": "#000814",
+    "glow": "#8fb8ff",
+    "ink": "#ffe9a8",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "m-aurora",
+   "name": "Aurora",
+   "group": "Menu buttons",
+   "category": "Space",
+   "kind": "menu",
+   "file": "materials/aurora.webp",
+   "base": "buttons/aurora.webp",
+   "look": {
+    "outline": "#06201c",
+    "glow": "#5fffc8",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "m-candy-cane",
+   "name": "Candy cane",
+   "group": "Menu buttons",
+   "category": "Sweet",
+   "kind": "menu",
+   "file": "materials/candy-cane.webp",
+   "base": "buttons/candy-cane.webp",
+   "look": {
+    "outline": "#5a0010",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-bubblegum",
+   "name": "Bubblegum",
+   "group": "Menu buttons",
+   "category": "Sweet",
+   "kind": "menu",
+   "file": "materials/bubblegum.webp",
+   "base": "buttons/bubblegum.webp",
+   "look": {
+    "outline": "#6a1040",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-chocolate",
+   "name": "Chocolate",
+   "group": "Menu buttons",
+   "category": "Sweet",
+   "kind": "menu",
+   "file": "materials/chocolate.webp",
+   "base": "buttons/chocolate.webp",
+   "look": {
+    "outline": "#1e0e05",
+    "glow": "",
+    "ink": "#fff1dc",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-cotton-candy",
+   "name": "Cotton candy",
+   "group": "Menu buttons",
+   "category": "Sweet",
+   "kind": "menu",
+   "file": "materials/cotton-candy.webp",
+   "base": "buttons/cotton-candy.webp",
+   "look": {
+    "outline": "#5a3a6e",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.7
+   },
+   "for": []
+  },
+  {
+   "id": "m-sherbet",
+   "name": "Sherbet",
+   "group": "Menu buttons",
+   "category": "Sweet",
+   "kind": "menu",
+   "file": "materials/sherbet.webp",
+   "base": "buttons/sherbet.webp",
+   "look": {
+    "outline": "#6a3a2a",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "m-neon-cyan",
+   "name": "Neon cyan",
+   "group": "Menu buttons",
+   "category": "Neon & tech",
+   "kind": "menu",
+   "file": "materials/neon-cyan.webp",
+   "base": "buttons/neon-cyan.webp",
+   "look": {
+    "outline": "#002a2e",
+    "glow": "#00f0ff",
+    "ink": "#e6fdff",
+    "bevel": 0.6
+   },
+   "for": []
+  },
+  {
+   "id": "m-neon-pink",
+   "name": "Neon pink",
+   "group": "Menu buttons",
+   "category": "Neon & tech",
+   "kind": "menu",
+   "file": "materials/neon-pink.webp",
+   "base": "buttons/neon-pink.webp",
+   "look": {
+    "outline": "#2e0020",
+    "glow": "#ff2fd0",
+    "ink": "#ffe6f8",
+    "bevel": 0.6
+   },
+   "for": []
+  },
+  {
+   "id": "m-circuit",
+   "name": "Circuit",
+   "group": "Menu buttons",
+   "category": "Neon & tech",
+   "kind": "menu",
+   "file": "materials/circuit.webp",
+   "base": "buttons/circuit.webp",
+   "look": {
+    "outline": "#001a0a",
+    "glow": "#2bff9a",
+    "ink": "#e8fff2",
+    "bevel": 0.7
+   },
+   "for": []
+  },
+  {
+   "id": "m-carbon",
+   "name": "Carbon fiber",
+   "group": "Menu buttons",
+   "category": "Neon & tech",
+   "kind": "menu",
+   "file": "materials/carbon.webp",
+   "base": "buttons/carbon.webp",
+   "look": {
+    "outline": "#000000",
+    "glow": "",
+    "ink": "#e8e8e8",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "m-holographic",
+   "name": "Holographic",
+   "group": "Menu buttons",
+   "category": "Neon & tech",
+   "kind": "menu",
+   "file": "materials/holographic.webp",
+   "base": "buttons/holographic.webp",
+   "look": {
+    "outline": "#3a3a5a",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-synthwave",
+   "name": "Synthwave",
+   "group": "Menu buttons",
+   "category": "Neon & tech",
+   "kind": "menu",
+   "file": "materials/synthwave.webp",
+   "base": "buttons/synthwave.webp",
+   "look": {
+    "outline": "#1a0026",
+    "glow": "#ff4fd8",
+    "ink": "#fff0ff",
+    "bevel": 0.7
+   },
+   "for": []
+  },
+  {
+   "id": "m-obsidian",
+   "name": "Obsidian",
+   "group": "Menu buttons",
+   "category": "Dark & sleek",
+   "kind": "menu",
+   "file": "materials/obsidian.webp",
+   "base": "buttons/obsidian.webp",
+   "look": {
+    "outline": "#000000",
+    "glow": "#7a4dff",
+    "ink": "#e9e0ff",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "m-midnight",
+   "name": "Midnight",
+   "group": "Menu buttons",
+   "category": "Dark & sleek",
+   "kind": "menu",
+   "file": "materials/midnight.webp",
+   "base": "buttons/midnight.webp",
+   "look": {
+    "outline": "#000000",
+    "glow": "",
+    "ink": "#cfd8ff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-shadow",
+   "name": "Shadow",
+   "group": "Menu buttons",
+   "category": "Dark & sleek",
+   "kind": "menu",
+   "file": "materials/shadow.webp",
+   "base": "buttons/shadow.webp",
+   "look": {
+    "outline": "#000000",
+    "glow": "#ff3030",
+    "ink": "#f0e0e0",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-enchanted",
+   "name": "Enchanted",
+   "group": "Menu buttons",
+   "category": "Fantasy",
+   "kind": "menu",
+   "file": "materials/enchanted.webp",
+   "base": "buttons/enchanted.webp",
+   "look": {
+    "outline": "#0c2426",
+    "glow": "#3ef0ff",
+    "ink": "#e6fffe",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-elven",
+   "name": "Elven",
+   "group": "Menu buttons",
+   "category": "Fantasy",
+   "kind": "menu",
+   "file": "materials/elven.webp",
+   "base": "buttons/elven.webp",
+   "look": {
+    "outline": "#22303a",
+    "glow": "#bfffd8",
+    "ink": "#ffffff",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "m-dragon",
+   "name": "Dragon",
+   "group": "Menu buttons",
+   "category": "Fantasy",
+   "kind": "menu",
+   "file": "materials/dragon.webp",
+   "base": "buttons/dragon.webp",
+   "look": {
+    "outline": "#2a0004",
+    "glow": "#ff4a2a",
+    "ink": "#ffe9c2",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "m-arcane",
+   "name": "Arcane",
+   "group": "Menu buttons",
+   "category": "Fantasy",
+   "kind": "menu",
+   "file": "materials/arcane.webp",
+   "base": "buttons/arcane.webp",
+   "look": {
+    "outline": "#1a0a33",
+    "glow": "#c08aff",
+    "ink": "#ffe9a8",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-fairy",
+   "name": "Fairy",
+   "group": "Menu buttons",
+   "category": "Fantasy",
+   "kind": "menu",
+   "file": "materials/fairy.webp",
+   "base": "buttons/fairy.webp",
+   "look": {
+    "outline": "#6a2a4a",
+    "glow": "#ffb6e6",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "m-dwarven",
+   "name": "Dwarven",
+   "group": "Menu buttons",
+   "category": "Fantasy",
+   "kind": "menu",
+   "file": "materials/dwarven.webp",
+   "base": "buttons/dwarven.webp",
+   "look": {
+    "outline": "#120c06",
+    "glow": "",
+    "ink": "#ffd27a",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "m-phoenix",
+   "name": "Phoenix",
+   "group": "Menu buttons",
+   "category": "Fantasy",
+   "kind": "menu",
+   "file": "materials/phoenix.webp",
+   "base": "buttons/phoenix.webp",
+   "look": {
+    "outline": "#3a0600",
+    "glow": "#ff7a00",
+    "ink": "#fff3c2",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-unicorn",
+   "name": "Unicorn",
+   "group": "Menu buttons",
+   "category": "Fantasy",
+   "kind": "menu",
+   "file": "materials/unicorn.webp",
+   "base": "buttons/unicorn.webp",
+   "look": {
+    "outline": "#5a4a7a",
+    "glow": "#ffc6f2",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "m-kitty",
+   "name": "Kitty",
+   "group": "Menu buttons",
+   "category": "Creatures",
+   "kind": "menu",
+   "file": "materials/kitty.webp",
+   "base": "buttons/kitty.webp",
+   "look": {
+    "outline": "#3a1a06",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.7
+   },
+   "for": []
+  },
+  {
+   "id": "m-panda",
+   "name": "Panda",
+   "group": "Menu buttons",
+   "category": "Creatures",
+   "kind": "menu",
+   "file": "materials/panda.webp",
+   "base": "buttons/panda.webp",
+   "look": {
+    "outline": "#000000",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.7
+   },
+   "for": []
+  },
+  {
+   "id": "m-owl",
+   "name": "Owl",
+   "group": "Menu buttons",
+   "category": "Creatures",
+   "kind": "menu",
+   "file": "materials/owl.webp",
+   "base": "buttons/owl.webp",
+   "look": {
+    "outline": "#2a1606",
+    "glow": "",
+    "ink": "#fff1d6",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "m-octopus",
+   "name": "Octopus",
+   "group": "Menu buttons",
+   "category": "Creatures",
+   "kind": "menu",
+   "file": "materials/octopus.webp",
+   "base": "buttons/octopus.webp",
+   "look": {
+    "outline": "#24082e",
+    "glow": "#d16bff",
+    "ink": "#fff0ff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-bee",
+   "name": "Bee",
+   "group": "Menu buttons",
+   "category": "Creatures",
+   "kind": "menu",
+   "file": "materials/bee.webp",
+   "base": "buttons/bee.webp",
+   "look": {
+    "outline": "#3a2400",
+    "glow": "#ffc400",
+    "ink": "#fffbe0",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-frog",
+   "name": "Frog",
+   "group": "Menu buttons",
+   "category": "Creatures",
+   "kind": "menu",
+   "file": "materials/frog.webp",
+   "base": "buttons/frog.webp",
+   "look": {
+    "outline": "#0a2a06",
+    "glow": "",
+    "ink": "#f2ffd8",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-pearl",
+   "name": "Pearl",
+   "group": "Menu buttons",
+   "category": "Ocean",
+   "kind": "menu",
+   "file": "materials/pearl.webp",
+   "base": "buttons/pearl.webp",
+   "look": {
+    "outline": "#5a4a5a",
+    "glow": "",
+    "ink": "#4a2a4a",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-reef",
+   "name": "Reef",
+   "group": "Menu buttons",
+   "category": "Ocean",
+   "kind": "menu",
+   "file": "materials/reef.webp",
+   "base": "buttons/reef.webp",
+   "look": {
+    "outline": "#4a1006",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "m-scallop",
+   "name": "Seashell",
+   "group": "Menu buttons",
+   "category": "Ocean",
+   "kind": "menu",
+   "file": "materials/scallop.webp",
+   "base": "buttons/scallop.webp",
+   "look": {
+    "outline": "#5a2e1a",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-bubble",
+   "name": "Bubble",
+   "group": "Menu buttons",
+   "category": "Ocean",
+   "kind": "menu",
+   "file": "materials/bubble.webp",
+   "base": "buttons/bubble.webp",
+   "look": {
+    "outline": "#2a5a7a",
+    "glow": "#bfeaff",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-abyss",
+   "name": "Abyss",
+   "group": "Menu buttons",
+   "category": "Ocean",
+   "kind": "menu",
+   "file": "materials/abyss.webp",
+   "base": "buttons/abyss.webp",
+   "look": {
+    "outline": "#000a1a",
+    "glow": "#38e8ff",
+    "ink": "#dffbff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "m-starfish",
+   "name": "Starfish",
+   "group": "Menu buttons",
+   "category": "Ocean",
+   "kind": "menu",
+   "file": "materials/starfish.webp",
+   "base": "buttons/starfish.webp",
+   "look": {
+    "outline": "#4a1600",
+    "glow": "",
+    "ink": "#fff2e0",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-crown-jewels",
+   "name": "Crown jewels",
+   "group": "Menu buttons",
+   "category": "Royal",
+   "kind": "menu",
+   "file": "materials/crown-jewels.webp",
+   "base": "buttons/crown-jewels.webp",
+   "look": {
+    "outline": "#3a0008",
+    "glow": "#ffd34a",
+    "ink": "#ffe9a8",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "m-jade",
+   "name": "Jade",
+   "group": "Menu buttons",
+   "category": "Royal",
+   "kind": "menu",
+   "file": "materials/jade.webp",
+   "base": "buttons/jade.webp",
+   "look": {
+    "outline": "#062a16",
+    "glow": "",
+    "ink": "#fff1c2",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "m-mosaic",
+   "name": "Mosaic",
+   "group": "Menu buttons",
+   "category": "Royal",
+   "kind": "menu",
+   "file": "materials/mosaic.webp",
+   "base": "buttons/mosaic.webp",
+   "look": {
+    "outline": "#06303a",
+    "glow": "",
+    "ink": "#fff6d8",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-knight",
+   "name": "Knight",
+   "group": "Menu buttons",
+   "category": "Royal",
+   "kind": "menu",
+   "file": "materials/knight.webp",
+   "base": "buttons/knight.webp",
+   "look": {
+    "outline": "#121a26",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "m-tiara",
+   "name": "Tiara",
+   "group": "Menu buttons",
+   "category": "Royal",
+   "kind": "menu",
+   "file": "materials/tiara.webp",
+   "base": "buttons/tiara.webp",
+   "look": {
+    "outline": "#5a2a4a",
+    "glow": "#ffc6ea",
+    "ink": "#ffffff",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "m-scarab",
+   "name": "Scarab",
+   "group": "Menu buttons",
+   "category": "Royal",
+   "kind": "menu",
+   "file": "materials/scarab.webp",
+   "base": "buttons/scarab.webp",
+   "look": {
+    "outline": "#06143a",
+    "glow": "#ffd34a",
+    "ink": "#ffe9a8",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "m-pumpkin",
+   "name": "Pumpkin",
+   "group": "Menu buttons",
+   "category": "Spooky",
+   "kind": "menu",
+   "file": "materials/pumpkin.webp",
+   "base": "buttons/pumpkin.webp",
+   "look": {
+    "outline": "#3a1400",
+    "glow": "#ff8a00",
+    "ink": "#ffe6a8",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-bone",
+   "name": "Bone",
+   "group": "Menu buttons",
+   "category": "Spooky",
+   "kind": "menu",
+   "file": "materials/bone.webp",
+   "base": "buttons/bone.webp",
+   "look": {
+    "outline": "#3a3226",
+    "glow": "",
+    "ink": "#2a2016",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-ghost",
+   "name": "Ghost",
+   "group": "Menu buttons",
+   "category": "Spooky",
+   "kind": "menu",
+   "file": "materials/ghost.webp",
+   "base": "buttons/ghost.webp",
+   "look": {
+    "outline": "#1a2a3a",
+    "glow": "#bfe6ff",
+    "ink": "#ffffff",
+    "bevel": 0.7
+   },
+   "for": []
+  },
+  {
+   "id": "m-cauldron",
+   "name": "Witch brew",
+   "group": "Menu buttons",
+   "category": "Spooky",
+   "kind": "menu",
+   "file": "materials/cauldron.webp",
+   "base": "buttons/cauldron.webp",
+   "look": {
+    "outline": "#000000",
+    "glow": "#7dff4a",
+    "ink": "#eaffd8",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-vampire",
+   "name": "Vampire",
+   "group": "Menu buttons",
+   "category": "Spooky",
+   "kind": "menu",
+   "file": "materials/vampire.webp",
+   "base": "buttons/vampire.webp",
+   "look": {
+    "outline": "#1a0004",
+    "glow": "#ff1a3a",
+    "ink": "#ffe0e6",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-zombie",
+   "name": "Zombie",
+   "group": "Menu buttons",
+   "category": "Spooky",
+   "kind": "menu",
+   "file": "materials/zombie.webp",
+   "base": "buttons/zombie.webp",
+   "look": {
+    "outline": "#0e1a06",
+    "glow": "",
+    "ink": "#eaffd8",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "m-pixel",
+   "name": "Pixel",
+   "group": "Menu buttons",
+   "category": "Toys & arcade",
+   "kind": "menu",
+   "file": "materials/pixel.webp",
+   "base": "buttons/pixel.webp",
+   "look": {
+    "outline": "#000a2a",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.4
+   },
+   "for": []
+  },
+  {
+   "id": "m-toy-brick",
+   "name": "Toy brick",
+   "group": "Menu buttons",
+   "category": "Toys & arcade",
+   "kind": "menu",
+   "file": "materials/toy-brick.webp",
+   "base": "buttons/toy-brick.webp",
+   "look": {
+    "outline": "#3a0004",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "m-arcade",
+   "name": "Arcade",
+   "group": "Menu buttons",
+   "category": "Toys & arcade",
+   "kind": "menu",
+   "file": "materials/arcade.webp",
+   "base": "buttons/arcade.webp",
+   "look": {
+    "outline": "#2a0004",
+    "glow": "#ff4a4a",
+    "ink": "#ffffff",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "m-gumball",
+   "name": "Gumball",
+   "group": "Menu buttons",
+   "category": "Toys & arcade",
+   "kind": "menu",
+   "file": "materials/gumball.webp",
+   "base": "buttons/gumball.webp",
+   "look": {
+    "outline": "#2a1a3a",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-rubber",
+   "name": "Rubber",
+   "group": "Menu buttons",
+   "category": "Toys & arcade",
+   "kind": "menu",
+   "file": "materials/rubber.webp",
+   "base": "buttons/rubber.webp",
+   "look": {
+    "outline": "#3a2a00",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "m-dice",
+   "name": "Dice",
+   "group": "Menu buttons",
+   "category": "Toys & arcade",
+   "kind": "menu",
+   "file": "materials/dice.webp",
+   "base": "buttons/dice.webp",
+   "look": {
+    "outline": "#1a1a1a",
+    "glow": "",
+    "ink": "#1a1a1a",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "m-ornament",
+   "name": "Ornament",
+   "group": "Menu buttons",
+   "category": "Holiday",
+   "kind": "menu",
+   "file": "materials/ornament.webp",
+   "base": "buttons/ornament.webp",
+   "look": {
+    "outline": "#3a0006",
+    "glow": "#ffd34a",
+    "ink": "#ffffff",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "m-snowflake",
+   "name": "Snowflake",
+   "group": "Menu buttons",
+   "category": "Holiday",
+   "kind": "menu",
+   "file": "materials/snowflake.webp",
+   "base": "buttons/snowflake.webp",
+   "look": {
+    "outline": "#1a3a5a",
+    "glow": "#d8f4ff",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "m-easter",
+   "name": "Easter",
+   "group": "Menu buttons",
+   "category": "Holiday",
+   "kind": "menu",
+   "file": "materials/easter.webp",
+   "base": "buttons/easter.webp",
+   "look": {
+    "outline": "#4a3a5a",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "m-valentine",
+   "name": "Valentine",
+   "group": "Menu buttons",
+   "category": "Holiday",
+   "kind": "menu",
+   "file": "materials/valentine.webp",
+   "base": "buttons/valentine.webp",
+   "look": {
+    "outline": "#4a0020",
+    "glow": "#ff6aa6",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-lantern",
+   "name": "Lantern",
+   "group": "Menu buttons",
+   "category": "Holiday",
+   "kind": "menu",
+   "file": "materials/lantern.webp",
+   "base": "buttons/lantern.webp",
+   "look": {
+    "outline": "#3a0006",
+    "glow": "#ffb02e",
+    "ink": "#ffe9a8",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "m-birthday",
+   "name": "Birthday",
+   "group": "Menu buttons",
+   "category": "Holiday",
+   "kind": "menu",
+   "file": "materials/birthday.webp",
+   "base": "buttons/birthday.webp",
+   "look": {
+    "outline": "#4a2a3a",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "m-planet",
+   "name": "Planet",
+   "group": "Menu buttons",
+   "category": "Cosmic",
+   "kind": "menu",
+   "file": "materials/planet.webp",
+   "base": "buttons/planet.webp",
+   "look": {
+    "outline": "#3a1600",
+    "glow": "#ffb070",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-sun",
+   "name": "Sun",
+   "group": "Menu buttons",
+   "category": "Cosmic",
+   "kind": "menu",
+   "file": "materials/sun.webp",
+   "base": "buttons/sun.webp",
+   "look": {
+    "outline": "#4a1a00",
+    "glow": "#ffcc33",
+    "ink": "#fff8d8",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-moon",
+   "name": "Moon",
+   "group": "Menu buttons",
+   "category": "Cosmic",
+   "kind": "menu",
+   "file": "materials/moon.webp",
+   "base": "buttons/moon.webp",
+   "look": {
+    "outline": "#1a1a22",
+    "glow": "#d8e0ff",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-black-hole",
+   "name": "Black hole",
+   "group": "Menu buttons",
+   "category": "Cosmic",
+   "kind": "menu",
+   "file": "materials/black-hole.webp",
+   "base": "buttons/black-hole.webp",
+   "look": {
+    "outline": "#000000",
+    "glow": "#ff8a2a",
+    "ink": "#ffe6c2",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-comet",
+   "name": "Comet",
+   "group": "Menu buttons",
+   "category": "Cosmic",
+   "kind": "menu",
+   "file": "materials/comet.webp",
+   "base": "buttons/comet.webp",
+   "look": {
+    "outline": "#06203a",
+    "glow": "#7fd8ff",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-constellation",
+   "name": "Constellation",
+   "group": "Menu buttons",
+   "category": "Cosmic",
+   "kind": "menu",
+   "file": "materials/constellation.webp",
+   "base": "buttons/constellation.webp",
+   "look": {
+    "outline": "#000814",
+    "glow": "#ffd96a",
+    "ink": "#ffe9a8",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "m-donut",
+   "name": "Donut",
+   "group": "Menu buttons",
+   "category": "Food",
+   "kind": "menu",
+   "file": "materials/donut.webp",
+   "base": "buttons/donut.webp",
+   "look": {
+    "outline": "#4a1a2a",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-pizza",
+   "name": "Pizza",
+   "group": "Menu buttons",
+   "category": "Food",
+   "kind": "menu",
+   "file": "materials/pizza.webp",
+   "base": "buttons/pizza.webp",
+   "look": {
+    "outline": "#4a1a00",
+    "glow": "",
+    "ink": "#fff6d8",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "m-cookie",
+   "name": "Cookie",
+   "group": "Menu buttons",
+   "category": "Food",
+   "kind": "menu",
+   "file": "materials/cookie.webp",
+   "base": "buttons/cookie.webp",
+   "look": {
+    "outline": "#3a1e06",
+    "glow": "",
+    "ink": "#fff1dc",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-sushi",
+   "name": "Sushi",
+   "group": "Menu buttons",
+   "category": "Food",
+   "kind": "menu",
+   "file": "materials/sushi.webp",
+   "base": "buttons/sushi.webp",
+   "look": {
+    "outline": "#0a0a0a",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "m-watermelon",
+   "name": "Watermelon",
+   "group": "Menu buttons",
+   "category": "Food",
+   "kind": "menu",
+   "file": "materials/watermelon.webp",
+   "base": "buttons/watermelon.webp",
+   "look": {
+    "outline": "#062a06",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-hologram",
+   "name": "Hologram",
+   "group": "Menu buttons",
+   "category": "Futuristic",
+   "kind": "menu",
+   "file": "materials/hologram.webp",
+   "base": "buttons/hologram.webp",
+   "look": {
+    "outline": "#002a3a",
+    "glow": "#00e5ff",
+    "ink": "#e6fdff",
+    "bevel": 0.6
+   },
+   "for": []
+  },
+  {
+   "id": "m-mech",
+   "name": "Mech",
+   "group": "Menu buttons",
+   "category": "Futuristic",
+   "kind": "menu",
+   "file": "materials/mech.webp",
+   "base": "buttons/mech.webp",
+   "look": {
+    "outline": "#0a0e14",
+    "glow": "#ff8a2a",
+    "ink": "#ffe6c2",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "m-plasma",
+   "name": "Plasma",
+   "group": "Menu buttons",
+   "category": "Futuristic",
+   "kind": "menu",
+   "file": "materials/plasma.webp",
+   "base": "buttons/plasma.webp",
+   "look": {
+    "outline": "#1a0026",
+    "glow": "#ff4af0",
+    "ink": "#fff0ff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "m-quantum",
+   "name": "Quantum",
+   "group": "Menu buttons",
+   "category": "Futuristic",
+   "kind": "menu",
+   "file": "materials/quantum.webp",
+   "base": "buttons/quantum.webp",
+   "look": {
+    "outline": "#000a1a",
+    "glow": "#4aa8ff",
+    "ink": "#e6f2ff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "m-laser",
+   "name": "Laser",
+   "group": "Menu buttons",
+   "category": "Futuristic",
+   "kind": "menu",
+   "file": "materials/laser.webp",
+   "base": "buttons/laser.webp",
+   "look": {
+    "outline": "#000000",
+    "glow": "#ff2a2a",
+    "ink": "#ffe0e0",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "mr-gold-royal",
+   "name": "Royal gold",
+   "group": "Menu buttons",
+   "category": "Fully redrawn",
+   "kind": "menu",
+   "file": "redrawn/r-gold-royal/icon-play.webp",
+   "base": "",
+   "redrawn": "redrawn/r-gold-royal",
+   "look": {
+    "outline": "#141414",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "mr-lava",
+   "name": "Molten lava",
+   "group": "Menu buttons",
+   "category": "Fully redrawn",
+   "kind": "menu",
+   "file": "redrawn/r-lava/icon-play.webp",
+   "base": "",
+   "redrawn": "redrawn/r-lava",
+   "look": {
+    "outline": "#141414",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "mr-ice",
+   "name": "Ice crystal",
+   "group": "Menu buttons",
+   "category": "Fully redrawn",
+   "kind": "menu",
+   "file": "redrawn/r-ice/icon-play.webp",
+   "base": "",
+   "redrawn": "redrawn/r-ice",
+   "look": {
+    "outline": "#141414",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "mr-candy",
+   "name": "Candy land",
+   "group": "Menu buttons",
+   "category": "Fully redrawn",
+   "kind": "menu",
+   "file": "redrawn/r-candy/icon-play.webp",
+   "base": "",
+   "redrawn": "redrawn/r-candy",
+   "look": {
+    "outline": "#141414",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "mr-neon",
+   "name": "Neon sign",
+   "group": "Menu buttons",
+   "category": "Fully redrawn",
+   "kind": "menu",
+   "file": "redrawn/r-neon/icon-play.webp",
+   "base": "",
+   "redrawn": "redrawn/r-neon",
+   "look": {
+    "outline": "#141414",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "mr-galaxy",
+   "name": "Galaxy",
+   "group": "Menu buttons",
+   "category": "Fully redrawn",
+   "kind": "menu",
+   "file": "redrawn/r-galaxy/icon-play.webp",
+   "base": "",
+   "redrawn": "redrawn/r-galaxy",
+   "look": {
+    "outline": "#141414",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "mr-wood",
+   "name": "Carved wood",
+   "group": "Menu buttons",
+   "category": "Fully redrawn",
+   "kind": "menu",
+   "file": "redrawn/r-wood/icon-play.webp",
+   "base": "",
+   "redrawn": "redrawn/r-wood",
+   "look": {
+    "outline": "#141414",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "mr-slime",
+   "name": "Toxic slime",
+   "group": "Menu buttons",
+   "category": "Fully redrawn",
+   "kind": "menu",
+   "file": "redrawn/r-slime/icon-play.webp",
+   "base": "",
+   "redrawn": "redrawn/r-slime",
+   "look": {
+    "outline": "#141414",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "mr-crystal",
+   "name": "Gem crystal",
+   "group": "Menu buttons",
+   "category": "Fully redrawn",
+   "kind": "menu",
+   "file": "redrawn/r-crystal/icon-play.webp",
+   "base": "",
+   "redrawn": "redrawn/r-crystal",
+   "look": {
+    "outline": "#141414",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "mr-pixel",
+   "name": "Pixel art",
+   "group": "Menu buttons",
+   "category": "Fully redrawn",
+   "kind": "menu",
+   "file": "redrawn/r-pixel/icon-play.webp",
+   "base": "",
+   "redrawn": "redrawn/r-pixel",
+   "look": {
+    "outline": "#141414",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "mr-cloud",
+   "name": "Cloud dream",
+   "group": "Menu buttons",
+   "category": "Fully redrawn",
+   "kind": "menu",
+   "file": "redrawn/r-cloud/icon-play.webp",
+   "base": "",
+   "redrawn": "redrawn/r-cloud",
+   "look": {
+    "outline": "#141414",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "mr-steampunk",
+   "name": "Steampunk",
+   "group": "Menu buttons",
+   "category": "Fully redrawn",
+   "kind": "menu",
+   "file": "redrawn/r-steampunk/icon-play.webp",
+   "base": "",
+   "redrawn": "redrawn/r-steampunk",
+   "look": {
+    "outline": "#141414",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "mr-spooky",
+   "name": "Spooky",
+   "group": "Menu buttons",
+   "category": "Fully redrawn",
+   "kind": "menu",
+   "file": "redrawn/r-spooky/icon-play.webp",
+   "base": "",
+   "redrawn": "redrawn/r-spooky",
+   "look": {
+    "outline": "#141414",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "mr-ocean",
+   "name": "Ocean",
+   "group": "Menu buttons",
+   "category": "Fully redrawn",
+   "kind": "menu",
+   "file": "redrawn/r-ocean/icon-play.webp",
+   "base": "",
+   "redrawn": "redrawn/r-ocean",
+   "look": {
+    "outline": "#141414",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "mr-jungle",
+   "name": "Jungle",
+   "group": "Menu buttons",
+   "category": "Fully redrawn",
+   "kind": "menu",
+   "file": "redrawn/r-jungle/icon-play.webp",
+   "base": "",
+   "redrawn": "redrawn/r-jungle",
+   "look": {
+    "outline": "#141414",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "mr-cyber",
+   "name": "Cyber",
+   "group": "Menu buttons",
+   "category": "Fully redrawn",
+   "kind": "menu",
+   "file": "redrawn/r-cyber/icon-play.webp",
+   "base": "",
+   "redrawn": "redrawn/r-cyber",
+   "look": {
+    "outline": "#141414",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "mr-fire",
+   "name": "Fire",
+   "group": "Menu buttons",
+   "category": "Fully redrawn",
+   "kind": "menu",
+   "file": "redrawn/r-fire/icon-play.webp",
+   "base": "",
+   "redrawn": "redrawn/r-fire",
+   "look": {
+    "outline": "#141414",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "mr-chocolate",
+   "name": "Chocolate",
+   "group": "Menu buttons",
+   "category": "Fully redrawn",
+   "kind": "menu",
+   "file": "redrawn/r-chocolate/icon-play.webp",
+   "base": "",
+   "redrawn": "redrawn/r-chocolate",
+   "look": {
+    "outline": "#141414",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "mr-fairy",
+   "name": "Fairy",
+   "group": "Menu buttons",
+   "category": "Fully redrawn",
+   "kind": "menu",
+   "file": "redrawn/r-fairy/icon-play.webp",
+   "base": "",
+   "redrawn": "redrawn/r-fairy",
+   "look": {
+    "outline": "#141414",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "mr-obsidian",
+   "name": "Obsidian",
+   "group": "Menu buttons",
+   "category": "Fully redrawn",
+   "kind": "menu",
+   "file": "redrawn/r-obsidian/icon-play.webp",
+   "base": "",
+   "redrawn": "redrawn/r-obsidian",
+   "look": {
+    "outline": "#141414",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "mf-gold",
+   "name": "Gold",
+   "group": "Menu buttons",
+   "category": "Flat",
+   "kind": "menu",
+   "file": "materials/gold.webp",
+   "base": "",
+   "look": {
+    "outline": "#5c3d00",
+    "glow": "",
+    "ink": "#fff6d8",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "mf-chrome",
+   "name": "Chrome",
+   "group": "Menu buttons",
+   "category": "Flat",
+   "kind": "menu",
+   "file": "materials/chrome.webp",
+   "base": "",
+   "look": {
+    "outline": "#2a2f38",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "mf-rose-gold",
+   "name": "Rose gold",
+   "group": "Menu buttons",
+   "category": "Flat",
+   "kind": "menu",
+   "file": "materials/rose-gold.webp",
+   "base": "",
+   "look": {
+    "outline": "#5a2e2a",
+    "glow": "",
+    "ink": "#fff0ea",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "mf-bronze",
+   "name": "Bronze",
+   "group": "Menu buttons",
+   "category": "Flat",
+   "kind": "menu",
+   "file": "materials/bronze.webp",
+   "base": "",
+   "look": {
+    "outline": "#3a2410",
+    "glow": "",
+    "ink": "#ffe2b8",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "mf-copper",
+   "name": "Copper",
+   "group": "Menu buttons",
+   "category": "Flat",
+   "kind": "menu",
+   "file": "materials/copper.webp",
+   "base": "",
+   "look": {
+    "outline": "#3d1f12",
+    "glow": "",
+    "ink": "#ffe7d6",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "mf-ruby",
+   "name": "Ruby",
+   "group": "Menu buttons",
+   "category": "Flat",
+   "kind": "menu",
+   "file": "materials/ruby.webp",
+   "base": "",
+   "look": {
+    "outline": "#4a0010",
+    "glow": "#ff3355",
+    "ink": "#fff0f3",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "mf-sapphire",
+   "name": "Sapphire",
+   "group": "Menu buttons",
+   "category": "Flat",
+   "kind": "menu",
+   "file": "materials/sapphire.webp",
+   "base": "",
+   "look": {
+    "outline": "#001a4d",
+    "glow": "#3d7bff",
+    "ink": "#eef4ff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "mf-emerald",
+   "name": "Emerald",
+   "group": "Menu buttons",
+   "category": "Flat",
+   "kind": "menu",
+   "file": "materials/emerald.webp",
+   "base": "",
+   "look": {
+    "outline": "#00331a",
+    "glow": "#2bff88",
+    "ink": "#ecfff4",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "mf-amethyst",
+   "name": "Amethyst",
+   "group": "Menu buttons",
+   "category": "Flat",
+   "kind": "menu",
+   "file": "materials/amethyst.webp",
+   "base": "",
+   "look": {
+    "outline": "#2a0a4a",
+    "glow": "#b46bff",
+    "ink": "#f6eeff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "mf-diamond",
+   "name": "Diamond",
+   "group": "Menu buttons",
+   "category": "Flat",
+   "kind": "menu",
+   "file": "materials/diamond.webp",
+   "base": "",
+   "look": {
+    "outline": "#3b5a78",
+    "glow": "#bfe9ff",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "mf-opal",
+   "name": "Opal",
+   "group": "Menu buttons",
+   "category": "Flat",
+   "kind": "menu",
+   "file": "materials/opal.webp",
+   "base": "",
+   "look": {
+    "outline": "#4a4a66",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "mf-lava",
+   "name": "Lava",
+   "group": "Menu buttons",
+   "category": "Flat",
+   "kind": "menu",
+   "file": "materials/lava.webp",
+   "base": "",
+   "look": {
+    "outline": "#1a0500",
+    "glow": "#ff5a00",
+    "ink": "#ffe2b0",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "mf-ice",
+   "name": "Ice",
+   "group": "Menu buttons",
+   "category": "Flat",
+   "kind": "menu",
+   "file": "materials/ice.webp",
+   "base": "",
+   "look": {
+    "outline": "#1e4a6e",
+    "glow": "#9fe3ff",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "mf-ocean",
+   "name": "Ocean",
+   "group": "Menu buttons",
+   "category": "Flat",
+   "kind": "menu",
+   "file": "materials/ocean.webp",
+   "base": "",
+   "look": {
+    "outline": "#00264d",
+    "glow": "",
+    "ink": "#e8fbff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "mf-fire",
+   "name": "Fire",
+   "group": "Menu buttons",
+   "category": "Flat",
+   "kind": "menu",
+   "file": "materials/fire.webp",
+   "base": "",
+   "look": {
+    "outline": "#4a0e00",
+    "glow": "#ff8a00",
+    "ink": "#fff4c2",
+    "bevel": 0.7
+   },
+   "for": []
+  },
+  {
+   "id": "mf-toxic",
+   "name": "Toxic",
+   "group": "Menu buttons",
+   "category": "Flat",
+   "kind": "menu",
+   "file": "materials/toxic.webp",
+   "base": "",
+   "look": {
+    "outline": "#103300",
+    "glow": "#7dff2a",
+    "ink": "#f2ffe0",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "mf-storm",
+   "name": "Storm",
+   "group": "Menu buttons",
+   "category": "Flat",
+   "kind": "menu",
+   "file": "materials/storm.webp",
+   "base": "",
+   "look": {
+    "outline": "#0d1426",
+    "glow": "#6ab8ff",
+    "ink": "#eaf4ff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "mf-wood",
+   "name": "Wood",
+   "group": "Menu buttons",
+   "category": "Flat",
+   "kind": "menu",
+   "file": "materials/wood.webp",
+   "base": "",
+   "look": {
+    "outline": "#2b1708",
+    "glow": "",
+    "ink": "#fff1dc",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "mf-marble",
+   "name": "Marble",
+   "group": "Menu buttons",
+   "category": "Flat",
+   "kind": "menu",
+   "file": "materials/marble.webp",
+   "base": "",
+   "look": {
+    "outline": "#4a4a4a",
+    "glow": "",
+    "ink": "#2b2b2b",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "mf-jungle",
+   "name": "Jungle",
+   "group": "Menu buttons",
+   "category": "Flat",
+   "kind": "menu",
+   "file": "materials/jungle.webp",
+   "base": "",
+   "look": {
+    "outline": "#0d2a0d",
+    "glow": "",
+    "ink": "#f0ffe8",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "mf-stone",
+   "name": "Stone",
+   "group": "Menu buttons",
+   "category": "Flat",
+   "kind": "menu",
+   "file": "materials/stone.webp",
+   "base": "",
+   "look": {
+    "outline": "#1f2226",
+    "glow": "",
+    "ink": "#f2f2ea",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "mf-coral",
+   "name": "Coral",
+   "group": "Menu buttons",
+   "category": "Flat",
+   "kind": "menu",
+   "file": "materials/coral.webp",
+   "base": "",
+   "look": {
+    "outline": "#4a1a1a",
+    "glow": "",
+    "ink": "#fff4ee",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "mf-galaxy",
+   "name": "Galaxy",
+   "group": "Menu buttons",
+   "category": "Flat",
+   "kind": "menu",
+   "file": "materials/galaxy.webp",
+   "base": "",
+   "look": {
+    "outline": "#120a2a",
+    "glow": "#a070ff",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "mf-nebula",
+   "name": "Nebula",
+   "group": "Menu buttons",
+   "category": "Flat",
+   "kind": "menu",
+   "file": "materials/nebula.webp",
+   "base": "",
+   "look": {
+    "outline": "#1a0a26",
+    "glow": "#ff6ad5",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "mf-starry",
+   "name": "Starry night",
+   "group": "Menu buttons",
+   "category": "Flat",
+   "kind": "menu",
+   "file": "materials/starry.webp",
+   "base": "",
+   "look": {
+    "outline": "#000814",
+    "glow": "#8fb8ff",
+    "ink": "#ffe9a8",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "mf-aurora",
+   "name": "Aurora",
+   "group": "Menu buttons",
+   "category": "Flat",
+   "kind": "menu",
+   "file": "materials/aurora.webp",
+   "base": "",
+   "look": {
+    "outline": "#06201c",
+    "glow": "#5fffc8",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "mf-candy-cane",
+   "name": "Candy cane",
+   "group": "Menu buttons",
+   "category": "Flat",
+   "kind": "menu",
+   "file": "materials/candy-cane.webp",
+   "base": "",
+   "look": {
+    "outline": "#5a0010",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "mf-bubblegum",
+   "name": "Bubblegum",
+   "group": "Menu buttons",
+   "category": "Flat",
+   "kind": "menu",
+   "file": "materials/bubblegum.webp",
+   "base": "",
+   "look": {
+    "outline": "#6a1040",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "mf-chocolate",
+   "name": "Chocolate",
+   "group": "Menu buttons",
+   "category": "Flat",
+   "kind": "menu",
+   "file": "materials/chocolate.webp",
+   "base": "",
+   "look": {
+    "outline": "#1e0e05",
+    "glow": "",
+    "ink": "#fff1dc",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "mf-cotton-candy",
+   "name": "Cotton candy",
+   "group": "Menu buttons",
+   "category": "Flat",
+   "kind": "menu",
+   "file": "materials/cotton-candy.webp",
+   "base": "",
+   "look": {
+    "outline": "#5a3a6e",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.7
+   },
+   "for": []
+  },
+  {
+   "id": "mf-sherbet",
+   "name": "Sherbet",
+   "group": "Menu buttons",
+   "category": "Flat",
+   "kind": "menu",
+   "file": "materials/sherbet.webp",
+   "base": "",
+   "look": {
+    "outline": "#6a3a2a",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "mf-neon-cyan",
+   "name": "Neon cyan",
+   "group": "Menu buttons",
+   "category": "Flat",
+   "kind": "menu",
+   "file": "materials/neon-cyan.webp",
+   "base": "",
+   "look": {
+    "outline": "#002a2e",
+    "glow": "#00f0ff",
+    "ink": "#e6fdff",
+    "bevel": 0.6
+   },
+   "for": []
+  },
+  {
+   "id": "mf-neon-pink",
+   "name": "Neon pink",
+   "group": "Menu buttons",
+   "category": "Flat",
+   "kind": "menu",
+   "file": "materials/neon-pink.webp",
+   "base": "",
+   "look": {
+    "outline": "#2e0020",
+    "glow": "#ff2fd0",
+    "ink": "#ffe6f8",
+    "bevel": 0.6
+   },
+   "for": []
+  },
+  {
+   "id": "mf-circuit",
+   "name": "Circuit",
+   "group": "Menu buttons",
+   "category": "Flat",
+   "kind": "menu",
+   "file": "materials/circuit.webp",
+   "base": "",
+   "look": {
+    "outline": "#001a0a",
+    "glow": "#2bff9a",
+    "ink": "#e8fff2",
+    "bevel": 0.7
+   },
+   "for": []
+  },
+  {
+   "id": "mf-carbon",
+   "name": "Carbon fiber",
+   "group": "Menu buttons",
+   "category": "Flat",
+   "kind": "menu",
+   "file": "materials/carbon.webp",
+   "base": "",
+   "look": {
+    "outline": "#000000",
+    "glow": "",
+    "ink": "#e8e8e8",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "mf-holographic",
+   "name": "Holographic",
+   "group": "Menu buttons",
+   "category": "Flat",
+   "kind": "menu",
+   "file": "materials/holographic.webp",
+   "base": "",
+   "look": {
+    "outline": "#3a3a5a",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "mf-synthwave",
+   "name": "Synthwave",
+   "group": "Menu buttons",
+   "category": "Flat",
+   "kind": "menu",
+   "file": "materials/synthwave.webp",
+   "base": "",
+   "look": {
+    "outline": "#1a0026",
+    "glow": "#ff4fd8",
+    "ink": "#fff0ff",
+    "bevel": 0.7
+   },
+   "for": []
+  },
+  {
+   "id": "mf-obsidian",
+   "name": "Obsidian",
+   "group": "Menu buttons",
+   "category": "Flat",
+   "kind": "menu",
+   "file": "materials/obsidian.webp",
+   "base": "",
+   "look": {
+    "outline": "#000000",
+    "glow": "#7a4dff",
+    "ink": "#e9e0ff",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "mf-midnight",
+   "name": "Midnight",
+   "group": "Menu buttons",
+   "category": "Flat",
+   "kind": "menu",
+   "file": "materials/midnight.webp",
+   "base": "",
+   "look": {
+    "outline": "#000000",
+    "glow": "",
+    "ink": "#cfd8ff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "mf-shadow",
+   "name": "Shadow",
+   "group": "Menu buttons",
+   "category": "Flat",
+   "kind": "menu",
+   "file": "materials/shadow.webp",
+   "base": "",
+   "look": {
+    "outline": "#000000",
+    "glow": "#ff3030",
+    "ink": "#f0e0e0",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "ic-purple",
+   "name": "Purple",
+   "group": "In-game buttons",
+   "category": "Classic",
+   "kind": "ingame",
+   "file": "purple-virus.png",
+   "base": "purple-virus.png",
+   "look": {
+    "classic": "#b300ff",
+    "outline": "#51008e",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "ic-crimson",
+   "name": "Crimson",
+   "group": "In-game buttons",
+   "category": "Classic",
+   "kind": "ingame",
+   "file": "viruses/classic-crimson.webp",
+   "base": "viruses/classic-crimson.webp",
+   "look": {
+    "classic": "#c8102e",
+    "outline": "#600000",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "ic-orange",
+   "name": "Orange",
+   "group": "In-game buttons",
+   "category": "Classic",
+   "kind": "ingame",
+   "file": "viruses/classic-orange.webp",
+   "base": "viruses/classic-orange.webp",
+   "look": {
+    "classic": "#ff7a1a",
+    "outline": "#750000",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "ic-golden",
+   "name": "Golden",
+   "group": "In-game buttons",
+   "category": "Classic",
+   "kind": "ingame",
+   "file": "viruses/classic-golden.webp",
+   "base": "viruses/classic-golden.webp",
+   "look": {
+    "classic": "#f5c542",
+    "outline": "#633800",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "ic-toxic",
+   "name": "Toxic",
+   "group": "In-game buttons",
+   "category": "Classic",
+   "kind": "ingame",
+   "file": "viruses/classic-toxic.webp",
+   "base": "viruses/classic-toxic.webp",
+   "look": {
+    "classic": "#5fd61a",
+    "outline": "#004f00",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "ic-teal",
+   "name": "Teal",
+   "group": "In-game buttons",
+   "category": "Classic",
+   "kind": "ingame",
+   "file": "viruses/classic-teal.webp",
+   "base": "viruses/classic-teal.webp",
+   "look": {
+    "classic": "#14b8a6",
+    "outline": "#004337",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "ic-ocean",
+   "name": "Ocean",
+   "group": "In-game buttons",
+   "category": "Classic",
+   "kind": "ingame",
+   "file": "viruses/classic-ocean.webp",
+   "base": "viruses/classic-ocean.webp",
+   "look": {
+    "classic": "#1e6bd6",
+    "outline": "#000073",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "ic-frost",
+   "name": "Frost",
+   "group": "In-game buttons",
+   "category": "Classic",
+   "kind": "ingame",
+   "file": "viruses/classic-frost.webp",
+   "base": "viruses/classic-frost.webp",
+   "look": {
+    "classic": "#9fdcff",
+    "outline": "#064b68",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "ic-pink",
+   "name": "Pink",
+   "group": "In-game buttons",
+   "category": "Classic",
+   "kind": "ingame",
+   "file": "viruses/classic-pink.webp",
+   "base": "viruses/classic-pink.webp",
+   "look": {
+    "classic": "#ff5fb0",
+    "outline": "#74003d",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "ic-shadow",
+   "name": "Shadow",
+   "group": "In-game buttons",
+   "category": "Classic",
+   "kind": "ingame",
+   "file": "viruses/classic-shadow.webp",
+   "base": "viruses/classic-shadow.webp",
+   "look": {
+    "classic": "#20202a",
+    "outline": "#04040a",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "ic-white",
+   "name": "White",
+   "group": "In-game buttons",
+   "category": "Classic",
+   "kind": "ingame",
+   "file": "viruses/classic-white.webp",
+   "base": "viruses/classic-white.webp",
+   "look": {
+    "classic": "#f4f4f8",
+    "outline": "#515154",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "ic-dark-blue",
+   "name": "Dark blue",
+   "group": "In-game buttons",
+   "category": "Classic",
+   "kind": "ingame",
+   "file": "viruses/classic-dark-blue.webp",
+   "base": "viruses/classic-dark-blue.webp",
+   "look": {
+    "classic": "#1e3a8a",
+    "outline": "#03004a",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "ic-rainbow",
+   "name": "Rainbow",
+   "group": "In-game buttons",
+   "category": "Classic",
+   "kind": "ingame",
+   "file": "viruses/classic-rainbow.webp",
+   "base": "viruses/classic-rainbow.webp",
+   "look": {
+    "classic": "rainbow",
+    "outline": "#3a0050",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-gold",
+   "name": "Gold",
+   "group": "In-game buttons",
+   "category": "Metals",
+   "kind": "ingame",
+   "file": "materials/gold.webp",
+   "base": "buttons/gold.webp",
+   "look": {
+    "outline": "#5c3d00",
+    "glow": "",
+    "ink": "#fff6d8",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "i-chrome",
+   "name": "Chrome",
+   "group": "In-game buttons",
+   "category": "Metals",
+   "kind": "ingame",
+   "file": "materials/chrome.webp",
+   "base": "buttons/chrome.webp",
+   "look": {
+    "outline": "#2a2f38",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "i-rose-gold",
+   "name": "Rose gold",
+   "group": "In-game buttons",
+   "category": "Metals",
+   "kind": "ingame",
+   "file": "materials/rose-gold.webp",
+   "base": "buttons/rose-gold.webp",
+   "look": {
+    "outline": "#5a2e2a",
+    "glow": "",
+    "ink": "#fff0ea",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "i-bronze",
+   "name": "Bronze",
+   "group": "In-game buttons",
+   "category": "Metals",
+   "kind": "ingame",
+   "file": "materials/bronze.webp",
+   "base": "buttons/bronze.webp",
+   "look": {
+    "outline": "#3a2410",
+    "glow": "",
+    "ink": "#ffe2b8",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "i-copper",
+   "name": "Copper",
+   "group": "In-game buttons",
+   "category": "Metals",
+   "kind": "ingame",
+   "file": "materials/copper.webp",
+   "base": "buttons/copper.webp",
+   "look": {
+    "outline": "#3d1f12",
+    "glow": "",
+    "ink": "#ffe7d6",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "i-ruby",
+   "name": "Ruby",
+   "group": "In-game buttons",
+   "category": "Gems",
+   "kind": "ingame",
+   "file": "materials/ruby.webp",
+   "base": "buttons/ruby.webp",
+   "look": {
+    "outline": "#4a0010",
+    "glow": "#ff3355",
+    "ink": "#fff0f3",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-sapphire",
+   "name": "Sapphire",
+   "group": "In-game buttons",
+   "category": "Gems",
+   "kind": "ingame",
+   "file": "materials/sapphire.webp",
+   "base": "buttons/sapphire.webp",
+   "look": {
+    "outline": "#001a4d",
+    "glow": "#3d7bff",
+    "ink": "#eef4ff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-emerald",
+   "name": "Emerald",
+   "group": "In-game buttons",
+   "category": "Gems",
+   "kind": "ingame",
+   "file": "materials/emerald.webp",
+   "base": "buttons/emerald.webp",
+   "look": {
+    "outline": "#00331a",
+    "glow": "#2bff88",
+    "ink": "#ecfff4",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-amethyst",
+   "name": "Amethyst",
+   "group": "In-game buttons",
+   "category": "Gems",
+   "kind": "ingame",
+   "file": "materials/amethyst.webp",
+   "base": "buttons/amethyst.webp",
+   "look": {
+    "outline": "#2a0a4a",
+    "glow": "#b46bff",
+    "ink": "#f6eeff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-diamond",
+   "name": "Diamond",
+   "group": "In-game buttons",
+   "category": "Gems",
+   "kind": "ingame",
+   "file": "materials/diamond.webp",
+   "base": "buttons/diamond.webp",
+   "look": {
+    "outline": "#3b5a78",
+    "glow": "#bfe9ff",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-opal",
+   "name": "Opal",
+   "group": "In-game buttons",
+   "category": "Gems",
+   "kind": "ingame",
+   "file": "materials/opal.webp",
+   "base": "buttons/opal.webp",
+   "look": {
+    "outline": "#4a4a66",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "i-lava",
+   "name": "Lava",
+   "group": "In-game buttons",
+   "category": "Elements",
+   "kind": "ingame",
+   "file": "materials/lava.webp",
+   "base": "buttons/lava.webp",
+   "look": {
+    "outline": "#1a0500",
+    "glow": "#ff5a00",
+    "ink": "#ffe2b0",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-ice",
+   "name": "Ice",
+   "group": "In-game buttons",
+   "category": "Elements",
+   "kind": "ingame",
+   "file": "materials/ice.webp",
+   "base": "buttons/ice.webp",
+   "look": {
+    "outline": "#1e4a6e",
+    "glow": "#9fe3ff",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "i-ocean",
+   "name": "Ocean",
+   "group": "In-game buttons",
+   "category": "Elements",
+   "kind": "ingame",
+   "file": "materials/ocean.webp",
+   "base": "buttons/ocean.webp",
+   "look": {
+    "outline": "#00264d",
+    "glow": "",
+    "ink": "#e8fbff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "i-fire",
+   "name": "Fire",
+   "group": "In-game buttons",
+   "category": "Elements",
+   "kind": "ingame",
+   "file": "materials/fire.webp",
+   "base": "buttons/fire.webp",
+   "look": {
+    "outline": "#4a0e00",
+    "glow": "#ff8a00",
+    "ink": "#fff4c2",
+    "bevel": 0.7
+   },
+   "for": []
+  },
+  {
+   "id": "i-toxic",
+   "name": "Toxic",
+   "group": "In-game buttons",
+   "category": "Elements",
+   "kind": "ingame",
+   "file": "materials/toxic.webp",
+   "base": "buttons/toxic.webp",
+   "look": {
+    "outline": "#103300",
+    "glow": "#7dff2a",
+    "ink": "#f2ffe0",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "i-storm",
+   "name": "Storm",
+   "group": "In-game buttons",
+   "category": "Elements",
+   "kind": "ingame",
+   "file": "materials/storm.webp",
+   "base": "buttons/storm.webp",
+   "look": {
+    "outline": "#0d1426",
+    "glow": "#6ab8ff",
+    "ink": "#eaf4ff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "i-wood",
+   "name": "Wood",
+   "group": "In-game buttons",
+   "category": "Nature",
+   "kind": "ingame",
+   "file": "materials/wood.webp",
+   "base": "buttons/wood.webp",
+   "look": {
+    "outline": "#2b1708",
+    "glow": "",
+    "ink": "#fff1dc",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-marble",
+   "name": "Marble",
+   "group": "In-game buttons",
+   "category": "Nature",
+   "kind": "ingame",
+   "file": "materials/marble.webp",
+   "base": "buttons/marble.webp",
+   "look": {
+    "outline": "#4a4a4a",
+    "glow": "",
+    "ink": "#2b2b2b",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "i-jungle",
+   "name": "Jungle",
+   "group": "In-game buttons",
+   "category": "Nature",
+   "kind": "ingame",
+   "file": "materials/jungle.webp",
+   "base": "buttons/jungle.webp",
+   "look": {
+    "outline": "#0d2a0d",
+    "glow": "",
+    "ink": "#f0ffe8",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "i-stone",
+   "name": "Stone",
+   "group": "In-game buttons",
+   "category": "Nature",
+   "kind": "ingame",
+   "file": "materials/stone.webp",
+   "base": "buttons/stone.webp",
+   "look": {
+    "outline": "#1f2226",
+    "glow": "",
+    "ink": "#f2f2ea",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "i-coral",
+   "name": "Coral",
+   "group": "In-game buttons",
+   "category": "Nature",
+   "kind": "ingame",
+   "file": "materials/coral.webp",
+   "base": "buttons/coral.webp",
+   "look": {
+    "outline": "#4a1a1a",
+    "glow": "",
+    "ink": "#fff4ee",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "i-galaxy",
+   "name": "Galaxy",
+   "group": "In-game buttons",
+   "category": "Space",
+   "kind": "ingame",
+   "file": "materials/galaxy.webp",
+   "base": "buttons/galaxy.webp",
+   "look": {
+    "outline": "#120a2a",
+    "glow": "#a070ff",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "i-nebula",
+   "name": "Nebula",
+   "group": "In-game buttons",
+   "category": "Space",
+   "kind": "ingame",
+   "file": "materials/nebula.webp",
+   "base": "buttons/nebula.webp",
+   "look": {
+    "outline": "#1a0a26",
+    "glow": "#ff6ad5",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "i-starry",
+   "name": "Starry night",
+   "group": "In-game buttons",
+   "category": "Space",
+   "kind": "ingame",
+   "file": "materials/starry.webp",
+   "base": "buttons/starry.webp",
+   "look": {
+    "outline": "#000814",
+    "glow": "#8fb8ff",
+    "ink": "#ffe9a8",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "i-aurora",
+   "name": "Aurora",
+   "group": "In-game buttons",
+   "category": "Space",
+   "kind": "ingame",
+   "file": "materials/aurora.webp",
+   "base": "buttons/aurora.webp",
+   "look": {
+    "outline": "#06201c",
+    "glow": "#5fffc8",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "i-candy-cane",
+   "name": "Candy cane",
+   "group": "In-game buttons",
+   "category": "Sweet",
+   "kind": "ingame",
+   "file": "materials/candy-cane.webp",
+   "base": "buttons/candy-cane.webp",
+   "look": {
+    "outline": "#5a0010",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-bubblegum",
+   "name": "Bubblegum",
+   "group": "In-game buttons",
+   "category": "Sweet",
+   "kind": "ingame",
+   "file": "materials/bubblegum.webp",
+   "base": "buttons/bubblegum.webp",
+   "look": {
+    "outline": "#6a1040",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-chocolate",
+   "name": "Chocolate",
+   "group": "In-game buttons",
+   "category": "Sweet",
+   "kind": "ingame",
+   "file": "materials/chocolate.webp",
+   "base": "buttons/chocolate.webp",
+   "look": {
+    "outline": "#1e0e05",
+    "glow": "",
+    "ink": "#fff1dc",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-cotton-candy",
+   "name": "Cotton candy",
+   "group": "In-game buttons",
+   "category": "Sweet",
+   "kind": "ingame",
+   "file": "materials/cotton-candy.webp",
+   "base": "buttons/cotton-candy.webp",
+   "look": {
+    "outline": "#5a3a6e",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.7
+   },
+   "for": []
+  },
+  {
+   "id": "i-sherbet",
+   "name": "Sherbet",
+   "group": "In-game buttons",
+   "category": "Sweet",
+   "kind": "ingame",
+   "file": "materials/sherbet.webp",
+   "base": "buttons/sherbet.webp",
+   "look": {
+    "outline": "#6a3a2a",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "i-neon-cyan",
+   "name": "Neon cyan",
+   "group": "In-game buttons",
+   "category": "Neon & tech",
+   "kind": "ingame",
+   "file": "materials/neon-cyan.webp",
+   "base": "buttons/neon-cyan.webp",
+   "look": {
+    "outline": "#002a2e",
+    "glow": "#00f0ff",
+    "ink": "#e6fdff",
+    "bevel": 0.6
+   },
+   "for": []
+  },
+  {
+   "id": "i-neon-pink",
+   "name": "Neon pink",
+   "group": "In-game buttons",
+   "category": "Neon & tech",
+   "kind": "ingame",
+   "file": "materials/neon-pink.webp",
+   "base": "buttons/neon-pink.webp",
+   "look": {
+    "outline": "#2e0020",
+    "glow": "#ff2fd0",
+    "ink": "#ffe6f8",
+    "bevel": 0.6
+   },
+   "for": []
+  },
+  {
+   "id": "i-circuit",
+   "name": "Circuit",
+   "group": "In-game buttons",
+   "category": "Neon & tech",
+   "kind": "ingame",
+   "file": "materials/circuit.webp",
+   "base": "buttons/circuit.webp",
+   "look": {
+    "outline": "#001a0a",
+    "glow": "#2bff9a",
+    "ink": "#e8fff2",
+    "bevel": 0.7
+   },
+   "for": []
+  },
+  {
+   "id": "i-carbon",
+   "name": "Carbon fiber",
+   "group": "In-game buttons",
+   "category": "Neon & tech",
+   "kind": "ingame",
+   "file": "materials/carbon.webp",
+   "base": "buttons/carbon.webp",
+   "look": {
+    "outline": "#000000",
+    "glow": "",
+    "ink": "#e8e8e8",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "i-holographic",
+   "name": "Holographic",
+   "group": "In-game buttons",
+   "category": "Neon & tech",
+   "kind": "ingame",
+   "file": "materials/holographic.webp",
+   "base": "buttons/holographic.webp",
+   "look": {
+    "outline": "#3a3a5a",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-synthwave",
+   "name": "Synthwave",
+   "group": "In-game buttons",
+   "category": "Neon & tech",
+   "kind": "ingame",
+   "file": "materials/synthwave.webp",
+   "base": "buttons/synthwave.webp",
+   "look": {
+    "outline": "#1a0026",
+    "glow": "#ff4fd8",
+    "ink": "#fff0ff",
+    "bevel": 0.7
+   },
+   "for": []
+  },
+  {
+   "id": "i-obsidian",
+   "name": "Obsidian",
+   "group": "In-game buttons",
+   "category": "Dark & sleek",
+   "kind": "ingame",
+   "file": "materials/obsidian.webp",
+   "base": "buttons/obsidian.webp",
+   "look": {
+    "outline": "#000000",
+    "glow": "#7a4dff",
+    "ink": "#e9e0ff",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "i-midnight",
+   "name": "Midnight",
+   "group": "In-game buttons",
+   "category": "Dark & sleek",
+   "kind": "ingame",
+   "file": "materials/midnight.webp",
+   "base": "buttons/midnight.webp",
+   "look": {
+    "outline": "#000000",
+    "glow": "",
+    "ink": "#cfd8ff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-shadow",
+   "name": "Shadow",
+   "group": "In-game buttons",
+   "category": "Dark & sleek",
+   "kind": "ingame",
+   "file": "materials/shadow.webp",
+   "base": "buttons/shadow.webp",
+   "look": {
+    "outline": "#000000",
+    "glow": "#ff3030",
+    "ink": "#f0e0e0",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-enchanted",
+   "name": "Enchanted",
+   "group": "In-game buttons",
+   "category": "Fantasy",
+   "kind": "ingame",
+   "file": "materials/enchanted.webp",
+   "base": "buttons/enchanted.webp",
+   "look": {
+    "outline": "#0c2426",
+    "glow": "#3ef0ff",
+    "ink": "#e6fffe",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-elven",
+   "name": "Elven",
+   "group": "In-game buttons",
+   "category": "Fantasy",
+   "kind": "ingame",
+   "file": "materials/elven.webp",
+   "base": "buttons/elven.webp",
+   "look": {
+    "outline": "#22303a",
+    "glow": "#bfffd8",
+    "ink": "#ffffff",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "i-dragon",
+   "name": "Dragon",
+   "group": "In-game buttons",
+   "category": "Fantasy",
+   "kind": "ingame",
+   "file": "materials/dragon.webp",
+   "base": "buttons/dragon.webp",
+   "look": {
+    "outline": "#2a0004",
+    "glow": "#ff4a2a",
+    "ink": "#ffe9c2",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "i-arcane",
+   "name": "Arcane",
+   "group": "In-game buttons",
+   "category": "Fantasy",
+   "kind": "ingame",
+   "file": "materials/arcane.webp",
+   "base": "buttons/arcane.webp",
+   "look": {
+    "outline": "#1a0a33",
+    "glow": "#c08aff",
+    "ink": "#ffe9a8",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-fairy",
+   "name": "Fairy",
+   "group": "In-game buttons",
+   "category": "Fantasy",
+   "kind": "ingame",
+   "file": "materials/fairy.webp",
+   "base": "buttons/fairy.webp",
+   "look": {
+    "outline": "#6a2a4a",
+    "glow": "#ffb6e6",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "i-dwarven",
+   "name": "Dwarven",
+   "group": "In-game buttons",
+   "category": "Fantasy",
+   "kind": "ingame",
+   "file": "materials/dwarven.webp",
+   "base": "buttons/dwarven.webp",
+   "look": {
+    "outline": "#120c06",
+    "glow": "",
+    "ink": "#ffd27a",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "i-phoenix",
+   "name": "Phoenix",
+   "group": "In-game buttons",
+   "category": "Fantasy",
+   "kind": "ingame",
+   "file": "materials/phoenix.webp",
+   "base": "buttons/phoenix.webp",
+   "look": {
+    "outline": "#3a0600",
+    "glow": "#ff7a00",
+    "ink": "#fff3c2",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-unicorn",
+   "name": "Unicorn",
+   "group": "In-game buttons",
+   "category": "Fantasy",
+   "kind": "ingame",
+   "file": "materials/unicorn.webp",
+   "base": "buttons/unicorn.webp",
+   "look": {
+    "outline": "#5a4a7a",
+    "glow": "#ffc6f2",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "i-kitty",
+   "name": "Kitty",
+   "group": "In-game buttons",
+   "category": "Creatures",
+   "kind": "ingame",
+   "file": "materials/kitty.webp",
+   "base": "buttons/kitty.webp",
+   "look": {
+    "outline": "#3a1a06",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.7
+   },
+   "for": []
+  },
+  {
+   "id": "i-panda",
+   "name": "Panda",
+   "group": "In-game buttons",
+   "category": "Creatures",
+   "kind": "ingame",
+   "file": "materials/panda.webp",
+   "base": "buttons/panda.webp",
+   "look": {
+    "outline": "#000000",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.7
+   },
+   "for": []
+  },
+  {
+   "id": "i-owl",
+   "name": "Owl",
+   "group": "In-game buttons",
+   "category": "Creatures",
+   "kind": "ingame",
+   "file": "materials/owl.webp",
+   "base": "buttons/owl.webp",
+   "look": {
+    "outline": "#2a1606",
+    "glow": "",
+    "ink": "#fff1d6",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "i-octopus",
+   "name": "Octopus",
+   "group": "In-game buttons",
+   "category": "Creatures",
+   "kind": "ingame",
+   "file": "materials/octopus.webp",
+   "base": "buttons/octopus.webp",
+   "look": {
+    "outline": "#24082e",
+    "glow": "#d16bff",
+    "ink": "#fff0ff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-bee",
+   "name": "Bee",
+   "group": "In-game buttons",
+   "category": "Creatures",
+   "kind": "ingame",
+   "file": "materials/bee.webp",
+   "base": "buttons/bee.webp",
+   "look": {
+    "outline": "#3a2400",
+    "glow": "#ffc400",
+    "ink": "#fffbe0",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-frog",
+   "name": "Frog",
+   "group": "In-game buttons",
+   "category": "Creatures",
+   "kind": "ingame",
+   "file": "materials/frog.webp",
+   "base": "buttons/frog.webp",
+   "look": {
+    "outline": "#0a2a06",
+    "glow": "",
+    "ink": "#f2ffd8",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-pearl",
+   "name": "Pearl",
+   "group": "In-game buttons",
+   "category": "Ocean",
+   "kind": "ingame",
+   "file": "materials/pearl.webp",
+   "base": "buttons/pearl.webp",
+   "look": {
+    "outline": "#5a4a5a",
+    "glow": "",
+    "ink": "#4a2a4a",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-reef",
+   "name": "Reef",
+   "group": "In-game buttons",
+   "category": "Ocean",
+   "kind": "ingame",
+   "file": "materials/reef.webp",
+   "base": "buttons/reef.webp",
+   "look": {
+    "outline": "#4a1006",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "i-scallop",
+   "name": "Seashell",
+   "group": "In-game buttons",
+   "category": "Ocean",
+   "kind": "ingame",
+   "file": "materials/scallop.webp",
+   "base": "buttons/scallop.webp",
+   "look": {
+    "outline": "#5a2e1a",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-bubble",
+   "name": "Bubble",
+   "group": "In-game buttons",
+   "category": "Ocean",
+   "kind": "ingame",
+   "file": "materials/bubble.webp",
+   "base": "buttons/bubble.webp",
+   "look": {
+    "outline": "#2a5a7a",
+    "glow": "#bfeaff",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-abyss",
+   "name": "Abyss",
+   "group": "In-game buttons",
+   "category": "Ocean",
+   "kind": "ingame",
+   "file": "materials/abyss.webp",
+   "base": "buttons/abyss.webp",
+   "look": {
+    "outline": "#000a1a",
+    "glow": "#38e8ff",
+    "ink": "#dffbff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "i-starfish",
+   "name": "Starfish",
+   "group": "In-game buttons",
+   "category": "Ocean",
+   "kind": "ingame",
+   "file": "materials/starfish.webp",
+   "base": "buttons/starfish.webp",
+   "look": {
+    "outline": "#4a1600",
+    "glow": "",
+    "ink": "#fff2e0",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-crown-jewels",
+   "name": "Crown jewels",
+   "group": "In-game buttons",
+   "category": "Royal",
+   "kind": "ingame",
+   "file": "materials/crown-jewels.webp",
+   "base": "buttons/crown-jewels.webp",
+   "look": {
+    "outline": "#3a0008",
+    "glow": "#ffd34a",
+    "ink": "#ffe9a8",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "i-jade",
+   "name": "Jade",
+   "group": "In-game buttons",
+   "category": "Royal",
+   "kind": "ingame",
+   "file": "materials/jade.webp",
+   "base": "buttons/jade.webp",
+   "look": {
+    "outline": "#062a16",
+    "glow": "",
+    "ink": "#fff1c2",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "i-mosaic",
+   "name": "Mosaic",
+   "group": "In-game buttons",
+   "category": "Royal",
+   "kind": "ingame",
+   "file": "materials/mosaic.webp",
+   "base": "buttons/mosaic.webp",
+   "look": {
+    "outline": "#06303a",
+    "glow": "",
+    "ink": "#fff6d8",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-knight",
+   "name": "Knight",
+   "group": "In-game buttons",
+   "category": "Royal",
+   "kind": "ingame",
+   "file": "materials/knight.webp",
+   "base": "buttons/knight.webp",
+   "look": {
+    "outline": "#121a26",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "i-tiara",
+   "name": "Tiara",
+   "group": "In-game buttons",
+   "category": "Royal",
+   "kind": "ingame",
+   "file": "materials/tiara.webp",
+   "base": "buttons/tiara.webp",
+   "look": {
+    "outline": "#5a2a4a",
+    "glow": "#ffc6ea",
+    "ink": "#ffffff",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "i-scarab",
+   "name": "Scarab",
+   "group": "In-game buttons",
+   "category": "Royal",
+   "kind": "ingame",
+   "file": "materials/scarab.webp",
+   "base": "buttons/scarab.webp",
+   "look": {
+    "outline": "#06143a",
+    "glow": "#ffd34a",
+    "ink": "#ffe9a8",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "i-pumpkin",
+   "name": "Pumpkin",
+   "group": "In-game buttons",
+   "category": "Spooky",
+   "kind": "ingame",
+   "file": "materials/pumpkin.webp",
+   "base": "buttons/pumpkin.webp",
+   "look": {
+    "outline": "#3a1400",
+    "glow": "#ff8a00",
+    "ink": "#ffe6a8",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-bone",
+   "name": "Bone",
+   "group": "In-game buttons",
+   "category": "Spooky",
+   "kind": "ingame",
+   "file": "materials/bone.webp",
+   "base": "buttons/bone.webp",
+   "look": {
+    "outline": "#3a3226",
+    "glow": "",
+    "ink": "#2a2016",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-ghost",
+   "name": "Ghost",
+   "group": "In-game buttons",
+   "category": "Spooky",
+   "kind": "ingame",
+   "file": "materials/ghost.webp",
+   "base": "buttons/ghost.webp",
+   "look": {
+    "outline": "#1a2a3a",
+    "glow": "#bfe6ff",
+    "ink": "#ffffff",
+    "bevel": 0.7
+   },
+   "for": []
+  },
+  {
+   "id": "i-cauldron",
+   "name": "Witch brew",
+   "group": "In-game buttons",
+   "category": "Spooky",
+   "kind": "ingame",
+   "file": "materials/cauldron.webp",
+   "base": "buttons/cauldron.webp",
+   "look": {
+    "outline": "#000000",
+    "glow": "#7dff4a",
+    "ink": "#eaffd8",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-vampire",
+   "name": "Vampire",
+   "group": "In-game buttons",
+   "category": "Spooky",
+   "kind": "ingame",
+   "file": "materials/vampire.webp",
+   "base": "buttons/vampire.webp",
+   "look": {
+    "outline": "#1a0004",
+    "glow": "#ff1a3a",
+    "ink": "#ffe0e6",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-zombie",
+   "name": "Zombie",
+   "group": "In-game buttons",
+   "category": "Spooky",
+   "kind": "ingame",
+   "file": "materials/zombie.webp",
+   "base": "buttons/zombie.webp",
+   "look": {
+    "outline": "#0e1a06",
+    "glow": "",
+    "ink": "#eaffd8",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "i-pixel",
+   "name": "Pixel",
+   "group": "In-game buttons",
+   "category": "Toys & arcade",
+   "kind": "ingame",
+   "file": "materials/pixel.webp",
+   "base": "buttons/pixel.webp",
+   "look": {
+    "outline": "#000a2a",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.4
+   },
+   "for": []
+  },
+  {
+   "id": "i-toy-brick",
+   "name": "Toy brick",
+   "group": "In-game buttons",
+   "category": "Toys & arcade",
+   "kind": "ingame",
+   "file": "materials/toy-brick.webp",
+   "base": "buttons/toy-brick.webp",
+   "look": {
+    "outline": "#3a0004",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "i-arcade",
+   "name": "Arcade",
+   "group": "In-game buttons",
+   "category": "Toys & arcade",
+   "kind": "ingame",
+   "file": "materials/arcade.webp",
+   "base": "buttons/arcade.webp",
+   "look": {
+    "outline": "#2a0004",
+    "glow": "#ff4a4a",
+    "ink": "#ffffff",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "i-gumball",
+   "name": "Gumball",
+   "group": "In-game buttons",
+   "category": "Toys & arcade",
+   "kind": "ingame",
+   "file": "materials/gumball.webp",
+   "base": "buttons/gumball.webp",
+   "look": {
+    "outline": "#2a1a3a",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-rubber",
+   "name": "Rubber",
+   "group": "In-game buttons",
+   "category": "Toys & arcade",
+   "kind": "ingame",
+   "file": "materials/rubber.webp",
+   "base": "buttons/rubber.webp",
+   "look": {
+    "outline": "#3a2a00",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "i-dice",
+   "name": "Dice",
+   "group": "In-game buttons",
+   "category": "Toys & arcade",
+   "kind": "ingame",
+   "file": "materials/dice.webp",
+   "base": "buttons/dice.webp",
+   "look": {
+    "outline": "#1a1a1a",
+    "glow": "",
+    "ink": "#1a1a1a",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "i-ornament",
+   "name": "Ornament",
+   "group": "In-game buttons",
+   "category": "Holiday",
+   "kind": "ingame",
+   "file": "materials/ornament.webp",
+   "base": "buttons/ornament.webp",
+   "look": {
+    "outline": "#3a0006",
+    "glow": "#ffd34a",
+    "ink": "#ffffff",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "i-snowflake",
+   "name": "Snowflake",
+   "group": "In-game buttons",
+   "category": "Holiday",
+   "kind": "ingame",
+   "file": "materials/snowflake.webp",
+   "base": "buttons/snowflake.webp",
+   "look": {
+    "outline": "#1a3a5a",
+    "glow": "#d8f4ff",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "i-easter",
+   "name": "Easter",
+   "group": "In-game buttons",
+   "category": "Holiday",
+   "kind": "ingame",
+   "file": "materials/easter.webp",
+   "base": "buttons/easter.webp",
+   "look": {
+    "outline": "#4a3a5a",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "i-valentine",
+   "name": "Valentine",
+   "group": "In-game buttons",
+   "category": "Holiday",
+   "kind": "ingame",
+   "file": "materials/valentine.webp",
+   "base": "buttons/valentine.webp",
+   "look": {
+    "outline": "#4a0020",
+    "glow": "#ff6aa6",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-lantern",
+   "name": "Lantern",
+   "group": "In-game buttons",
+   "category": "Holiday",
+   "kind": "ingame",
+   "file": "materials/lantern.webp",
+   "base": "buttons/lantern.webp",
+   "look": {
+    "outline": "#3a0006",
+    "glow": "#ffb02e",
+    "ink": "#ffe9a8",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "i-birthday",
+   "name": "Birthday",
+   "group": "In-game buttons",
+   "category": "Holiday",
+   "kind": "ingame",
+   "file": "materials/birthday.webp",
+   "base": "buttons/birthday.webp",
+   "look": {
+    "outline": "#4a2a3a",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "i-planet",
+   "name": "Planet",
+   "group": "In-game buttons",
+   "category": "Cosmic",
+   "kind": "ingame",
+   "file": "materials/planet.webp",
+   "base": "buttons/planet.webp",
+   "look": {
+    "outline": "#3a1600",
+    "glow": "#ffb070",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-sun",
+   "name": "Sun",
+   "group": "In-game buttons",
+   "category": "Cosmic",
+   "kind": "ingame",
+   "file": "materials/sun.webp",
+   "base": "buttons/sun.webp",
+   "look": {
+    "outline": "#4a1a00",
+    "glow": "#ffcc33",
+    "ink": "#fff8d8",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-moon",
+   "name": "Moon",
+   "group": "In-game buttons",
+   "category": "Cosmic",
+   "kind": "ingame",
+   "file": "materials/moon.webp",
+   "base": "buttons/moon.webp",
+   "look": {
+    "outline": "#1a1a22",
+    "glow": "#d8e0ff",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-black-hole",
+   "name": "Black hole",
+   "group": "In-game buttons",
+   "category": "Cosmic",
+   "kind": "ingame",
+   "file": "materials/black-hole.webp",
+   "base": "buttons/black-hole.webp",
+   "look": {
+    "outline": "#000000",
+    "glow": "#ff8a2a",
+    "ink": "#ffe6c2",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-comet",
+   "name": "Comet",
+   "group": "In-game buttons",
+   "category": "Cosmic",
+   "kind": "ingame",
+   "file": "materials/comet.webp",
+   "base": "buttons/comet.webp",
+   "look": {
+    "outline": "#06203a",
+    "glow": "#7fd8ff",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-constellation",
+   "name": "Constellation",
+   "group": "In-game buttons",
+   "category": "Cosmic",
+   "kind": "ingame",
+   "file": "materials/constellation.webp",
+   "base": "buttons/constellation.webp",
+   "look": {
+    "outline": "#000814",
+    "glow": "#ffd96a",
+    "ink": "#ffe9a8",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "i-donut",
+   "name": "Donut",
+   "group": "In-game buttons",
+   "category": "Food",
+   "kind": "ingame",
+   "file": "materials/donut.webp",
+   "base": "buttons/donut.webp",
+   "look": {
+    "outline": "#4a1a2a",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-pizza",
+   "name": "Pizza",
+   "group": "In-game buttons",
+   "category": "Food",
+   "kind": "ingame",
+   "file": "materials/pizza.webp",
+   "base": "buttons/pizza.webp",
+   "look": {
+    "outline": "#4a1a00",
+    "glow": "",
+    "ink": "#fff6d8",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "i-cookie",
+   "name": "Cookie",
+   "group": "In-game buttons",
+   "category": "Food",
+   "kind": "ingame",
+   "file": "materials/cookie.webp",
+   "base": "buttons/cookie.webp",
+   "look": {
+    "outline": "#3a1e06",
+    "glow": "",
+    "ink": "#fff1dc",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-sushi",
+   "name": "Sushi",
+   "group": "In-game buttons",
+   "category": "Food",
+   "kind": "ingame",
+   "file": "materials/sushi.webp",
+   "base": "buttons/sushi.webp",
+   "look": {
+    "outline": "#0a0a0a",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "i-watermelon",
+   "name": "Watermelon",
+   "group": "In-game buttons",
+   "category": "Food",
+   "kind": "ingame",
+   "file": "materials/watermelon.webp",
+   "base": "buttons/watermelon.webp",
+   "look": {
+    "outline": "#062a06",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-hologram",
+   "name": "Hologram",
+   "group": "In-game buttons",
+   "category": "Futuristic",
+   "kind": "ingame",
+   "file": "materials/hologram.webp",
+   "base": "buttons/hologram.webp",
+   "look": {
+    "outline": "#002a3a",
+    "glow": "#00e5ff",
+    "ink": "#e6fdff",
+    "bevel": 0.6
+   },
+   "for": []
+  },
+  {
+   "id": "i-mech",
+   "name": "Mech",
+   "group": "In-game buttons",
+   "category": "Futuristic",
+   "kind": "ingame",
+   "file": "materials/mech.webp",
+   "base": "buttons/mech.webp",
+   "look": {
+    "outline": "#0a0e14",
+    "glow": "#ff8a2a",
+    "ink": "#ffe6c2",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "i-plasma",
+   "name": "Plasma",
+   "group": "In-game buttons",
+   "category": "Futuristic",
+   "kind": "ingame",
+   "file": "materials/plasma.webp",
+   "base": "buttons/plasma.webp",
+   "look": {
+    "outline": "#1a0026",
+    "glow": "#ff4af0",
+    "ink": "#fff0ff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "i-quantum",
+   "name": "Quantum",
+   "group": "In-game buttons",
+   "category": "Futuristic",
+   "kind": "ingame",
+   "file": "materials/quantum.webp",
+   "base": "buttons/quantum.webp",
+   "look": {
+    "outline": "#000a1a",
+    "glow": "#4aa8ff",
+    "ink": "#e6f2ff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "i-laser",
+   "name": "Laser",
+   "group": "In-game buttons",
+   "category": "Futuristic",
+   "kind": "ingame",
+   "file": "materials/laser.webp",
+   "base": "buttons/laser.webp",
+   "look": {
+    "outline": "#000000",
+    "glow": "#ff2a2a",
+    "ink": "#ffe0e0",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "if-gold",
+   "name": "Gold",
+   "group": "In-game buttons",
+   "category": "Flat",
+   "kind": "ingame",
+   "file": "materials/gold.webp",
+   "base": "",
+   "look": {
+    "outline": "#5c3d00",
+    "glow": "",
+    "ink": "#fff6d8",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "if-chrome",
+   "name": "Chrome",
+   "group": "In-game buttons",
+   "category": "Flat",
+   "kind": "ingame",
+   "file": "materials/chrome.webp",
+   "base": "",
+   "look": {
+    "outline": "#2a2f38",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "if-rose-gold",
+   "name": "Rose gold",
+   "group": "In-game buttons",
+   "category": "Flat",
+   "kind": "ingame",
+   "file": "materials/rose-gold.webp",
+   "base": "",
+   "look": {
+    "outline": "#5a2e2a",
+    "glow": "",
+    "ink": "#fff0ea",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "if-bronze",
+   "name": "Bronze",
+   "group": "In-game buttons",
+   "category": "Flat",
+   "kind": "ingame",
+   "file": "materials/bronze.webp",
+   "base": "",
+   "look": {
+    "outline": "#3a2410",
+    "glow": "",
+    "ink": "#ffe2b8",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "if-copper",
+   "name": "Copper",
+   "group": "In-game buttons",
+   "category": "Flat",
+   "kind": "ingame",
+   "file": "materials/copper.webp",
+   "base": "",
+   "look": {
+    "outline": "#3d1f12",
+    "glow": "",
+    "ink": "#ffe7d6",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "if-ruby",
+   "name": "Ruby",
+   "group": "In-game buttons",
+   "category": "Flat",
+   "kind": "ingame",
+   "file": "materials/ruby.webp",
+   "base": "",
+   "look": {
+    "outline": "#4a0010",
+    "glow": "#ff3355",
+    "ink": "#fff0f3",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "if-sapphire",
+   "name": "Sapphire",
+   "group": "In-game buttons",
+   "category": "Flat",
+   "kind": "ingame",
+   "file": "materials/sapphire.webp",
+   "base": "",
+   "look": {
+    "outline": "#001a4d",
+    "glow": "#3d7bff",
+    "ink": "#eef4ff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "if-emerald",
+   "name": "Emerald",
+   "group": "In-game buttons",
+   "category": "Flat",
+   "kind": "ingame",
+   "file": "materials/emerald.webp",
+   "base": "",
+   "look": {
+    "outline": "#00331a",
+    "glow": "#2bff88",
+    "ink": "#ecfff4",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "if-amethyst",
+   "name": "Amethyst",
+   "group": "In-game buttons",
+   "category": "Flat",
+   "kind": "ingame",
+   "file": "materials/amethyst.webp",
+   "base": "",
+   "look": {
+    "outline": "#2a0a4a",
+    "glow": "#b46bff",
+    "ink": "#f6eeff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "if-diamond",
+   "name": "Diamond",
+   "group": "In-game buttons",
+   "category": "Flat",
+   "kind": "ingame",
+   "file": "materials/diamond.webp",
+   "base": "",
+   "look": {
+    "outline": "#3b5a78",
+    "glow": "#bfe9ff",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "if-opal",
+   "name": "Opal",
+   "group": "In-game buttons",
+   "category": "Flat",
+   "kind": "ingame",
+   "file": "materials/opal.webp",
+   "base": "",
+   "look": {
+    "outline": "#4a4a66",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "if-lava",
+   "name": "Lava",
+   "group": "In-game buttons",
+   "category": "Flat",
+   "kind": "ingame",
+   "file": "materials/lava.webp",
+   "base": "",
+   "look": {
+    "outline": "#1a0500",
+    "glow": "#ff5a00",
+    "ink": "#ffe2b0",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "if-ice",
+   "name": "Ice",
+   "group": "In-game buttons",
+   "category": "Flat",
+   "kind": "ingame",
+   "file": "materials/ice.webp",
+   "base": "",
+   "look": {
+    "outline": "#1e4a6e",
+    "glow": "#9fe3ff",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "if-ocean",
+   "name": "Ocean",
+   "group": "In-game buttons",
+   "category": "Flat",
+   "kind": "ingame",
+   "file": "materials/ocean.webp",
+   "base": "",
+   "look": {
+    "outline": "#00264d",
+    "glow": "",
+    "ink": "#e8fbff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "if-fire",
+   "name": "Fire",
+   "group": "In-game buttons",
+   "category": "Flat",
+   "kind": "ingame",
+   "file": "materials/fire.webp",
+   "base": "",
+   "look": {
+    "outline": "#4a0e00",
+    "glow": "#ff8a00",
+    "ink": "#fff4c2",
+    "bevel": 0.7
+   },
+   "for": []
+  },
+  {
+   "id": "if-toxic",
+   "name": "Toxic",
+   "group": "In-game buttons",
+   "category": "Flat",
+   "kind": "ingame",
+   "file": "materials/toxic.webp",
+   "base": "",
+   "look": {
+    "outline": "#103300",
+    "glow": "#7dff2a",
+    "ink": "#f2ffe0",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "if-storm",
+   "name": "Storm",
+   "group": "In-game buttons",
+   "category": "Flat",
+   "kind": "ingame",
+   "file": "materials/storm.webp",
+   "base": "",
+   "look": {
+    "outline": "#0d1426",
+    "glow": "#6ab8ff",
+    "ink": "#eaf4ff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "if-wood",
+   "name": "Wood",
+   "group": "In-game buttons",
+   "category": "Flat",
+   "kind": "ingame",
+   "file": "materials/wood.webp",
+   "base": "",
+   "look": {
+    "outline": "#2b1708",
+    "glow": "",
+    "ink": "#fff1dc",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "if-marble",
+   "name": "Marble",
+   "group": "In-game buttons",
+   "category": "Flat",
+   "kind": "ingame",
+   "file": "materials/marble.webp",
+   "base": "",
+   "look": {
+    "outline": "#4a4a4a",
+    "glow": "",
+    "ink": "#2b2b2b",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "if-jungle",
+   "name": "Jungle",
+   "group": "In-game buttons",
+   "category": "Flat",
+   "kind": "ingame",
+   "file": "materials/jungle.webp",
+   "base": "",
+   "look": {
+    "outline": "#0d2a0d",
+    "glow": "",
+    "ink": "#f0ffe8",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "if-stone",
+   "name": "Stone",
+   "group": "In-game buttons",
+   "category": "Flat",
+   "kind": "ingame",
+   "file": "materials/stone.webp",
+   "base": "",
+   "look": {
+    "outline": "#1f2226",
+    "glow": "",
+    "ink": "#f2f2ea",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "if-coral",
+   "name": "Coral",
+   "group": "In-game buttons",
+   "category": "Flat",
+   "kind": "ingame",
+   "file": "materials/coral.webp",
+   "base": "",
+   "look": {
+    "outline": "#4a1a1a",
+    "glow": "",
+    "ink": "#fff4ee",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "if-galaxy",
+   "name": "Galaxy",
+   "group": "In-game buttons",
+   "category": "Flat",
+   "kind": "ingame",
+   "file": "materials/galaxy.webp",
+   "base": "",
+   "look": {
+    "outline": "#120a2a",
+    "glow": "#a070ff",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "if-nebula",
+   "name": "Nebula",
+   "group": "In-game buttons",
+   "category": "Flat",
+   "kind": "ingame",
+   "file": "materials/nebula.webp",
+   "base": "",
+   "look": {
+    "outline": "#1a0a26",
+    "glow": "#ff6ad5",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "if-starry",
+   "name": "Starry night",
+   "group": "In-game buttons",
+   "category": "Flat",
+   "kind": "ingame",
+   "file": "materials/starry.webp",
+   "base": "",
+   "look": {
+    "outline": "#000814",
+    "glow": "#8fb8ff",
+    "ink": "#ffe9a8",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "if-aurora",
+   "name": "Aurora",
+   "group": "In-game buttons",
+   "category": "Flat",
+   "kind": "ingame",
+   "file": "materials/aurora.webp",
+   "base": "",
+   "look": {
+    "outline": "#06201c",
+    "glow": "#5fffc8",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "if-candy-cane",
+   "name": "Candy cane",
+   "group": "In-game buttons",
+   "category": "Flat",
+   "kind": "ingame",
+   "file": "materials/candy-cane.webp",
+   "base": "",
+   "look": {
+    "outline": "#5a0010",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "if-bubblegum",
+   "name": "Bubblegum",
+   "group": "In-game buttons",
+   "category": "Flat",
+   "kind": "ingame",
+   "file": "materials/bubblegum.webp",
+   "base": "",
+   "look": {
+    "outline": "#6a1040",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "if-chocolate",
+   "name": "Chocolate",
+   "group": "In-game buttons",
+   "category": "Flat",
+   "kind": "ingame",
+   "file": "materials/chocolate.webp",
+   "base": "",
+   "look": {
+    "outline": "#1e0e05",
+    "glow": "",
+    "ink": "#fff1dc",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "if-cotton-candy",
+   "name": "Cotton candy",
+   "group": "In-game buttons",
+   "category": "Flat",
+   "kind": "ingame",
+   "file": "materials/cotton-candy.webp",
+   "base": "",
+   "look": {
+    "outline": "#5a3a6e",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.7
+   },
+   "for": []
+  },
+  {
+   "id": "if-sherbet",
+   "name": "Sherbet",
+   "group": "In-game buttons",
+   "category": "Flat",
+   "kind": "ingame",
+   "file": "materials/sherbet.webp",
+   "base": "",
+   "look": {
+    "outline": "#6a3a2a",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "if-neon-cyan",
+   "name": "Neon cyan",
+   "group": "In-game buttons",
+   "category": "Flat",
+   "kind": "ingame",
+   "file": "materials/neon-cyan.webp",
+   "base": "",
+   "look": {
+    "outline": "#002a2e",
+    "glow": "#00f0ff",
+    "ink": "#e6fdff",
+    "bevel": 0.6
+   },
+   "for": []
+  },
+  {
+   "id": "if-neon-pink",
+   "name": "Neon pink",
+   "group": "In-game buttons",
+   "category": "Flat",
+   "kind": "ingame",
+   "file": "materials/neon-pink.webp",
+   "base": "",
+   "look": {
+    "outline": "#2e0020",
+    "glow": "#ff2fd0",
+    "ink": "#ffe6f8",
+    "bevel": 0.6
+   },
+   "for": []
+  },
+  {
+   "id": "if-circuit",
+   "name": "Circuit",
+   "group": "In-game buttons",
+   "category": "Flat",
+   "kind": "ingame",
+   "file": "materials/circuit.webp",
+   "base": "",
+   "look": {
+    "outline": "#001a0a",
+    "glow": "#2bff9a",
+    "ink": "#e8fff2",
+    "bevel": 0.7
+   },
+   "for": []
+  },
+  {
+   "id": "if-carbon",
+   "name": "Carbon fiber",
+   "group": "In-game buttons",
+   "category": "Flat",
+   "kind": "ingame",
+   "file": "materials/carbon.webp",
+   "base": "",
+   "look": {
+    "outline": "#000000",
+    "glow": "",
+    "ink": "#e8e8e8",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "if-holographic",
+   "name": "Holographic",
+   "group": "In-game buttons",
+   "category": "Flat",
+   "kind": "ingame",
+   "file": "materials/holographic.webp",
+   "base": "",
+   "look": {
+    "outline": "#3a3a5a",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "if-synthwave",
+   "name": "Synthwave",
+   "group": "In-game buttons",
+   "category": "Flat",
+   "kind": "ingame",
+   "file": "materials/synthwave.webp",
+   "base": "",
+   "look": {
+    "outline": "#1a0026",
+    "glow": "#ff4fd8",
+    "ink": "#fff0ff",
+    "bevel": 0.7
+   },
+   "for": []
+  },
+  {
+   "id": "if-obsidian",
+   "name": "Obsidian",
+   "group": "In-game buttons",
+   "category": "Flat",
+   "kind": "ingame",
+   "file": "materials/obsidian.webp",
+   "base": "",
+   "look": {
+    "outline": "#000000",
+    "glow": "#7a4dff",
+    "ink": "#e9e0ff",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "if-midnight",
+   "name": "Midnight",
+   "group": "In-game buttons",
+   "category": "Flat",
+   "kind": "ingame",
+   "file": "materials/midnight.webp",
+   "base": "",
+   "look": {
+    "outline": "#000000",
+    "glow": "",
+    "ink": "#cfd8ff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "if-shadow",
+   "name": "Shadow",
+   "group": "In-game buttons",
+   "category": "Flat",
+   "kind": "ingame",
+   "file": "materials/shadow.webp",
+   "base": "",
+   "look": {
+    "outline": "#000000",
+    "glow": "#ff3030",
+    "ink": "#f0e0e0",
+    "bevel": 0.9
+   },
+   "for": []
   }
  ]
 }

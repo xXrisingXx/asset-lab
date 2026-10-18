@@ -112,7 +112,9 @@ drawer.addEventListener('drop',e=>{const file=[...(e.dataTransfer?.files||[])].f
 // Presets: ready-made art in the chat, by category. A click starts its card; right-click (or ⋯) also offers a whole theme
 // made from it.
 presetsButton.onclick=()=>window.LabPresets?.open();
-form.append(starters,attached,input,row,filePick);
+// More and Plan on the starters' line, at its right end, above the box.
+const toolbar=el('div','theme-toolbar');toolbar.append(starters,row);
+form.append(toolbar,attached,input,filePick);
 
 // Dock: what is waiting to be installed, whether Mitosis is open, and the install / restore actions.
 const dock=el('div','theme-dock');

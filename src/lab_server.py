@@ -110,10 +110,10 @@ def server_for(lab, port):
                 super().handle_one_request()
             finally: self.busy = False
 
-        def send(self, data, mime='application/json', status=200, filename=None):
+        def send(self, data, mime='application/json', status=200, filename=None, cache=False):
             if not isinstance(data, bytes): data = json.dumps(data, ensure_ascii=False).encode('utf-8')
             self.send_response(status)
-            for name, value in {'Content-Type': mime, 'Content-Length': str(len(data)), 'Cache-Control': 'no-store',
+            for name, value in {'Content-Type': mime, 'Content-Length': str(len(data)), 'Cache-Control': 'private, max-age=604800, immutable' if cache else 'no-store',
                                 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer',
                                 'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob: data:; media-src 'self' blob:; connect-src 'self'; frame-ancestors 'none'"}.items():
                 self.send_header(name, value)
@@ -179,8 +179,9 @@ def server_for(lab, port):
                 if path == '/api/picture':   # a pasted picture or a preset, recolored when a color is given
                     image = themes.pictures.render(q.get('id', ''), q.get('color', ''), small=bool(q.get('small')))
                     if q.get('small'): image.thumbnail((256, 256), Image.Resampling.LANCZOS)
-                    return self.send(png(image), 'image/png')
-                if path == '/api/presets': return self.send({'presets': pictures.presets(), 'game_files': themes.pictures.game_targets()})
+                    # A preset's picture only changes with the presets (the address carries their version): kept by the browser.
+                    return self.send(png(image), 'image/png', cache=bool(q.get('v')) and q.get('id', '').startswith('preset:'))
+                if path == '/api/presets': return self.send({'presets': pictures.presets(), 'game_files': themes.pictures.game_targets(), 'version': pictures.version()})
                 if path == '/api/presets-export':   # presets to send to people: one, a category or a whole group, as a zip
                     ids, name = pictures.chosen(q)
                     return self.send(themes.pictures.export(ids, q.get('target', '')), 'application/zip', filename=f"{name}{'-game-files' if q.get('target') else ''}.zip")
@@ -447,6 +448,16 @@ def server_for(lab, port):
         def __init__(self, *args, **kwargs):
             self.open_connections, self.open_lock = set(), threading.Lock()
             super().__init__(*args, **kwargs)
+            # The Presets window's previews, drawn ahead once the lab has settled; stopped (and waited for) on close.
+            self.previews_stop = threading.Event()
+            self.previews = threading.Thread(target=lambda: self.previews_stop.wait(8) or themes.pictures.prewarm(self.previews_stop),
+                                             name='preset previews', daemon=True)
+            self.previews.start()
+
+        def server_close(self):
+            self.previews_stop.set()
+            self.previews.join(10)
+            super().server_close()
 
         def end_idle_connections(self):
             """Stopping: a request being answered still finishes and gets its answer, then its connection closes;

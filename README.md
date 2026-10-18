@@ -37,7 +37,7 @@ You need a 64-bit Windows PC with **Mitos.is: The Game** installed from Steam.
 | **AI image generation** | Redraw any art: “turn the coin into a diamond”, “make the food little tires”, “give the virus a santa hat”, or right-click a picture › **Redraw with Image AI**. Compare variants, adjust the fit and apply the one you like. Requires the optional local AI download. |
 | **Whole-game redraw** | One request redraws what players care about: the menu and arena backgrounds, the viruses, the menu buttons, the in-game buttons and the three foods (anything else, like the title or the coin, by name). A queue shows every piece large, lets you leave pieces out, pick how many variants each gets and the order, and shows the finish time. |
 | **Accelerate** | One click uses the whole graphics card and every processor core for faster drawings (the PC is slower while it draws). |
-| **Your pictures and presets** | Paste or drop any picture into Theme AI and say “make this dark blue”: the main color changes and the light and shade stay. **Presets** is a window of ready-made art by category: 61 seamless backgrounds, 87 viruses (the classic virus in 12 colors, wild creatures like a unicorn, dragon or knight, black holes, donuts…), 80 foods (wild ones like a dragon egg, galaxy donut or lava cake), and 40 looks for the **menu buttons** and for the **in-game buttons** on phone and PC (gold, lava, galaxy, neon…), each restyling the game's own buttons so they all match. Click one to see it big, **Use** to pick it, pick one of each kind and **Use all**. Right-click a picture to **export** it, or a category to export all of it as a zip or a folder; backgrounds export as the game's own files, named and sized to drop in. |
+| **Your pictures and presets** | Paste or drop any picture into Theme AI and say “make this dark blue”: the main color changes and the light and shade stay. **Presets** is a window of ready-made art by category: 100 seamless backgrounds, 100 viruses (the classic virus in 25 colors, wild creatures like a unicorn, dragon or knight…), 120 foods and collectibles (13 classic ones that match the classic viruses, a dragon egg, a galaxy donut, a rubber duck…), **menu button sets** (100 looks with their own exotic button, from gold medallions to lava rocks, 13 classic ones, 20 fully redrawn sets and the flat originals), matching **in-game button sets** for phone and PC, and 113 **titles** (60 fully redrawn by Image AI, like a spooky one with pumpkins and bats). **Clean up** hides the Discord button, the store badges and the OG tag. Click one to see it big, **Use** to pick it, pick one of each kind and **Use all**. Right-click a picture to **export** it, or a category to export all of it as a zip or a folder; backgrounds export as the game's own files, named and sized to drop in. |
 | **Fonts and new fonts** | Restyle the game's text in any font with gradients, outlines, glow and shadow, or ask Theme AI for a brand-new one: “a font made of lava”, “letters covered in sprinkles”, “a new font for a pirate ship”. Image AI draws what the letters are made of and the letters stay readable. |
 | **Sounds** | Replace or edit sounds, with trimming, fades, looping and volume controls. |
 | **Game preview** | See the menu and a match with your mod, in light and dark mode, with the game's controls. |
@@ -48,15 +48,27 @@ You need a 64-bit Windows PC with **Mitos.is: The Game** installed from Steam.
 
 ## What's new
 
+- **Whole new menu buttons.** 100 looks, each with its own exotic button (a jeweled medallion, a jagged lava rock, an ice crystal, a pumpkin, a planet…) carrying the game's symbols, and the in-game buttons to match. 20 sets are fully redrawn, symbols and all: an arrow stays an arrow and points the way the game's does.
+- **113 MITOSIS titles.** 60 fully redrawn by Image AI (spooky, frozen, molten, graffiti, pirate, space…), 40 in a look with that look's button as the O, and 13 classic ones that glow like the classic viruses.
+- **Classic everything.** 13 classic button sets and titles to go with the 13 classic viruses, 13 more classic viruses in two-tone glows, and 13 classic foods in the same style.
+- **Clean up:** one click hides the Discord button, the store badges or the OG tag (made see-through; the game itself is not changed).
+- **More presets:** 100 backgrounds (a new Mitosis cells category, gaming, patterns, fantasy, underwater, sky and weather…) and 120 foods and collectibles (creatures, magic items, toys, treasure…).
+- **All foods at once:** a food preset goes on all three of the game's foods in one go (or on just one), and the Presets tour shows it.
+- **Theme AI:** More and Plan now sit on the line of starter buttons, at the right.
+- **More of the game in every set:** the coin, Remove friend X, the SELL tag, and in a match the potion slot, the potion button and the chat button now take a set's look too (and a whole-game redraw includes them).
+- **Presets open fast:** previews are drawn ahead and kept, so switching categories no longer waits.
+
+### Before that
+
 - **How to download and run it**, step by step, at the top of this page.
-- **Menu and in-game button sets.** 40 looks (gold, chrome, gems, lava, ice, galaxy, candy, neon, obsidian…), each for the whole main menu and for the in-game buttons on phone (split, eject, joystick) and PC. Every button keeps its exact shape from your game, so they all match. Icons the game colors itself (the teal and pink ones) keep that color with the set's shine and outline.
+- **Menu and in-game button sets.** The first 40 looks (gold, chrome, gems, lava, ice, galaxy, candy, neon, obsidian…), each for the whole main menu and for the in-game buttons on phone (split, eject, joystick) and PC. Every button keeps its exact shape from your game, so they all match. Icons the game colors itself (the teal and pink ones) keep that color with the set's shine and outline.
 - **Pick several presets, use them all.** Use picks a preset; pick a background, a virus, food and buttons, then **Use all** puts them all in the game.
 - **40 wild foods** (dragon egg, galaxy donut, kitty mochi, lava cake, treasure cookie…) and **40 creative viruses** (unicorn, dragon, knight, octopus, clockwork…), plus the classic virus in 12 colors.
 - **Export to share.** Right-click any preset or any edited picture in the chat › **Export**. Right-click a category (or a whole kind) to export all of it as a zip or a folder. Backgrounds can be exported as **game files**: the exact files they change, named as in the game, a folder for each background.
 - **A first-time tour of Presets** shows all of this (open it again with **?**).
 - **Fixes:** the Build to Mitosis review now always shows your newest change (it could show the previous picture).
 
-### Before that
+### Earlier still
 
 - **The Presets window.** 61 backgrounds, 41 viruses and 40 foods, by category. Click one to see it big with its changes, then Use; click any picture in the chat to see it big with its color and placement controls.
 - **Build to Mitosis** shows what goes into the game first, then Apply build; **Restore original** shows what comes out first.

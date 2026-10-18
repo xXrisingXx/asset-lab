@@ -49,7 +49,8 @@ VIRUSES = ('virus.png', 'light_virus.png', 'spawner.png')
 # A whole-game redesign: the menu buttons (named on the game's screens: "Play button (Main menu)", "Back arrow (Menus)"), the
 # in-game buttons ("Split button (in a match, phones)") and the phone joystick; the title and the coin are not among them.
 WHOLE_GAME_BUTTONS = r'\((?:Main menu|Menus)\)$|\(in a match\b'
-INGAME_CONTROLS = {'joystick', 'joystick-bg'}
+INGAME_CONTROLS = {'joystick', 'joystick-bg', 'power-container', 'icon-ingame-potion', 'icon-chat'}   # and the potion slot, potion, chat
+MENU_EXTRAS = {'icon-coin', 'popup-close', 'icon-remove', 'icon-sell'}   # menu art players asked for too (the coin, the remove and sell marks)
 SPAWNER_RED = '#e0262f'   # the game paints the spawner red in maps (so players call it the red virus)
 # Store badges and sign-in buttons show other companies' logos: never redrawn with the rest of the game.
 KEEP_AS_IS = {'icon-iphone', 'icon-android', 'icon-facebook', 'icon-gamecenter'}
@@ -581,8 +582,8 @@ class Designer:
         sheet_of = lambda r: rows.get(r.get('parent', ''), {}).get('name', '')
         live = lambda r: r['editable'] and not r.get('legacy') and not r.get('removed') and not r.get('server_only')
         main = [r for r in rows.values() if live(r) and sheet_of(r) == 'theme.png']
-        names = {r['name'] for r in main if re.search(WHOLE_GAME_BUTTONS, r.get('label') or '') or r['name'] in INGAME_CONTROLS}
-        names = {n for n in names - KEEP_AS_IS - {'icon-coin'} if not n.startswith('logo')}   # not the title, the coin or store badges
+        names = {r['name'] for r in main if re.search(WHOLE_GAME_BUTTONS, r.get('label') or '') or r['name'] in INGAME_CONTROLS | MENU_EXTRAS}
+        names = {n for n in names - KEEP_AS_IS if not n.startswith('logo')}   # not the title or the store badges
         buttons = sorted((r for r in rows.values() if live(r) and r['name'] in names and sheet_of(r) in THEME_SHEETS),
                          # play first, then the rest of the menu, then what is pressed in a match
                          key=lambda r: (r['name'] != 'icon-play', bool(re.search(r'in a match', r.get('label') or '')) or r['name'] in INGAME_CONTROLS, r['name'], r['source']))

@@ -6,8 +6,9 @@
 (()=>{
 const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
 const btn=(text,cls,title)=>{const b=el('button',cls||'',text);b.type='button';if(title)b.title=title;return b;};
-const url=(id,color,small)=>`/api/picture?id=${encodeURIComponent(id)}${color?'&color='+encodeURIComponent(color):''}${small?'&small=1':''}`;
-const GROUPS=['Backgrounds','Viruses','Food','Menu buttons','In-game buttons'];
+// A preset's picture carries the presets' version: the browser keeps it, so switching categories shows it at once.
+const url=(id,color,small)=>`/api/picture?id=${encodeURIComponent(id)}${color?'&color='+encodeURIComponent(color):''}${small?'&small=1':''}${String(id).startsWith('preset:')&&P.version?'&v='+encodeURIComponent(P.version):''}`;
+const GROUPS=['Backgrounds','Viruses','Food','Menu buttons','In-game buttons','Title'];
 const P={list:null,group:'Backgrounds',category:'',scroll:0,picks:{}};
 
 // ----- the big view (also for a picture card's picture) -----------------------------------------------------------
@@ -41,10 +42,13 @@ window.LabViewer={open:view,close:shut};
 
 // ----- the Presets window -----------------------------------------------------------------------------------------
 const dlg=el('dialog','pv-dialog presets-dialog');dlg.id='presetsDialog';dlg.setAttribute('aria-label','Presets');document.body.append(dlg);
-function use(p){dlg.close();window.LabThemeChat?.ask(`Use the ${p.name} preset`,{picture:p.id});}
+// Clean up presets hide clutter in one step (no color to pick): straight into the build.
+async function hideNow(p){const r=await api('/api/picture-apply',{id:p.id,key:'set:cleanup'});message(`${p.name}: hidden in your build (${r.count} picture${r.count===1?'':'s'} made see-through). Build to Mitosis to see it.`);}
+function use(p){dlg.close();if(p.kind==='hide')return run(()=>hideNow(p))();window.LabThemeChat?.ask(`Use the ${p.name} preset`,{picture:p.id});}
 function whole(p){dlg.close();window.LabThemeChat?.ask(`Make a whole theme from ${p.name}`,{theme_from:p.id});}
 const themeable=p=>p.kind==='background'||p.kind==='virus';
-const sets=p=>p.kind==='menu'||p.kind==='ingame';   // button sets: many buttons, exported as a zip of them all
+const sets=p=>p.kind==='menu'||p.kind==='ingame';
+const onMenu=p=>p.kind==='menu'||p.kind==='logo'||p.kind==='hide';   // shown on the menu's own color   // button sets: many buttons, exported as a zip of them all
 const zipUrl=q=>'/api/presets-export?'+new URLSearchParams(q);
 function exportSet(q,name){const a=document.createElement('a');a.href=zipUrl(q);a.download=fileName(name).replace(/\.png$/,'.zip');document.body.append(a);a.click();a.remove();
   message(`Saved ${a.download} in your Downloads folder, ready to send.`);}
@@ -60,16 +64,19 @@ function gameFiles(q,label,name,kind,x,y){const t=gameTargets(kind);
   return t.length?[[`Export ${label} as game files ▸`,()=>popup([...t.map(([key,where])=>[`${where} (zip)`,()=>exportSet({...q,target:key},name+' game files')])],x,y)]]:[];}
 /* Picks: Use picks a preset (one of each kind: a background, a virus, a food, menu buttons, in-game buttons), then Use all
    puts every pick in the game at once. */
-const picked=g=>P.picks[g];
-function pick(p){if(P.picks[p.group]?.id===p.id)delete P.picks[p.group];else P.picks[p.group]=p;}
-async function useAll(){const list=GROUPS.map(g=>P.picks[g]).filter(Boolean);if(!list.length)return;P.picks={};dlg.close();
-  for(const p of list)await window.LabThemeChat?.ask(`Use the ${p.name} preset`,{picture:p.id,apply:true});}
+// One pick of each kind; a Clean up pick goes with a button set, not instead of it.
+const slot=p=>p.kind==='hide'?'Clean up':p.group;
+const SLOTS=[...GROUPS,'Clean up'];
+const isPicked=p=>P.picks[slot(p)]?.id===p.id;
+function pick(p){if(isPicked(p))delete P.picks[slot(p)];else P.picks[slot(p)]=p;}
+async function useAll(){const list=SLOTS.map(g=>P.picks[g]).filter(Boolean);if(!list.length)return;P.picks={};dlg.close();
+  for(const p of list){if(p.kind==='hide')await hideNow(p);else await window.LabThemeChat?.ask(`Use the ${p.name} preset`,{picture:p.id,apply:true});}}
 function tray(){
-  const list=GROUPS.map(g=>P.picks[g]).filter(Boolean);const box=el('div','pv-tray');box.id='presetsTray';
+  const list=SLOTS.map(g=>P.picks[g]).filter(Boolean);const box=el('div','pv-tray');box.id='presetsTray';
   if(!list.length){box.append(el('span','pv-tray-empty','Use picks a preset. Pick a background, a virus, food and buttons, then use them all at once.'));return box;}
   const chips=el('div','pv-tray-picks');
   for(const p of list){const c=el('span','pv-pick');const im=el('img');im.src=url(p.id,'',true);im.alt='';const x=btn('✕','quiet','Unpick '+p.name);
-    x.onclick=()=>{delete P.picks[p.group];render();};c.append(im,el('span','',`${p.group}: ${p.name}`),x);chips.append(c);}
+    x.onclick=()=>{delete P.picks[slot(p)];render();};c.append(im,el('span','',`${slot(p)}: ${p.name}`),x);chips.append(c);}
   const clear=btn('Clear');clear.onclick=()=>{P.picks={};render();};
   const go=btn(`Use all (${list.length})`,'primary','Put every pick in the game');go.id='presetsUseAll';go.onclick=run(useAll);
   box.append(chips,clear,go);return box;}
@@ -92,8 +99,8 @@ function render(){
     chips.append(b);}
   const grid=el('div','pv-grid'+(P.group==='Backgrounds'?' tiles':''));
   for(const p of mine.filter(p=>!P.category||p.category===P.category)){
-    const card=btn('','pv-card');card.dataset.id=p.id;card.title=`${p.name} · ${p.category}`;card.classList.toggle('picked',picked(p.group)?.id===p.id);
-    const pic=el('div','pv-thumb'+(sets(p)?' buttons':''));
+    const card=btn('','pv-card');card.dataset.id=p.id;card.title=`${p.name} · ${p.category}`;card.classList.toggle('picked',isPicked(p));
+    const pic=el('div','pv-thumb'+(onMenu(p)||sets(p)?' buttons':''));
     if(p.kind==='background')pic.style.backgroundImage=`url("${url(p.id,'',true)}")`;else{const im=el('img');im.loading='lazy';im.src=url(p.id,'',true);im.alt=p.name;pic.append(im);}
     card.append(pic,el('span','',p.name));card.onclick=()=>detail(p);
     card.oncontextmenu=e=>{e.preventDefault();menu(p,e.clientX,e.clientY);};grid.append(card);}
@@ -105,7 +112,7 @@ function detail(p){
   dlg.replaceChildren();
   const head=el('div','pv-head');const x=btn('✕','quiet','Close');x.onclick=()=>dlg.close();
   head.append(el('h2','',p.name),el('span','pv-sub',`${p.group} · ${p.category}`),x);
-  const on=picked(p.group)?.id===p.id;
+  const on=isPicked(p);
   const go=btn(on?'Picked ✓':'Use','primary',on?'Click to unpick it':'Pick it, then pick more (a background, a virus, food, buttons) and use them all');go.id='presetUse';
   go.onclick=()=>{pick(p);render();};
   const back=btn('Back');back.onclick=render;
@@ -119,7 +126,8 @@ function detail(p){
     as.title='Game files are the game’s own files this changes, named as in the game: drop them in, no renaming';
     out.onclick=()=>as.value?exportSet({id:p.id,target:as.value},p.name+' game files'):exportOne(p);bar.append(as);}
   bar.append(out);
-  const pic=stage(url(p.id),p.kind,p.name);pic.dataset.exportName=p.name;
+  const pic=stage(url(p.id),onMenu(p)?'menu':p.kind,p.name);pic.dataset.exportName=p.name;
+  if(p.kind==='hide')bar.prepend(el('p','pv-note','Hidden by making these pictures see-through: the game itself is not changed, and the empty spot can still be clicked.'));
   if(sets(p))bar.prepend(el('p','pv-note',p.kind==='menu'?'Some menu icons are colored by the game itself (the teal and pink ones): they keep that color, with this set’s shine and outline.':'Phone and PC buttons: split, eject and the joystick.'));
   bar.append(go);dlg.append(head,pic,bar);go.focus();
 }
@@ -129,7 +137,7 @@ function popup(items,x,y){pmenu.replaceChildren();
   for(const [text,fn] of items){const b=btn(text);b.onclick=()=>{pmenu.hidden=true;fn();};pmenu.append(b);}
   const home=[...document.querySelectorAll('dialog[open]')].pop()||document.body;if(pmenu.parentNode!==home)home.append(pmenu);
   pmenu.hidden=false;pmenu.style.left=Math.min(innerWidth-260,x)+'px';pmenu.style.top=Math.min(innerHeight-40*items.length-10,y)+'px';}
-function menu(p,x,y){const items=[['See it big',()=>detail(p)],[picked(p.group)?.id===p.id?'Unpick it':'Pick it',()=>{pick(p);render();}],['Use this preset now',()=>use(p)]];
+function menu(p,x,y){const items=[['See it big',()=>detail(p)],[isPicked(p)?'Unpick it':'Pick it',()=>{pick(p);render();}],['Use this preset now',()=>use(p)]];
   if(themeable(p))items.push(['Make a whole theme from this',()=>whole(p)]);
   if(sets(p))items.push(...exportItems({id:p.id},'all its buttons',p.name));else items.push(['Export picture (PNG)',()=>exportOne(p)],...gameFiles({id:p.id},'it',p.name,p.kind,x,y));
   popup(items,x,y);}
@@ -171,6 +179,7 @@ const TOUR=[
    text:'Export saves it as a PNG to send to people. Make a whole theme draws the rest of the game to match it.'},
   {at:'.pv-cats .picture-chip:nth-child(2),.pv-cats .picture-chip',menu:['Export all in this category as a zip','Export all in this category as a folder'],title:'Right-click a category',
    text:'Export a whole category as one zip or as a folder, ready to send. Right-click a kind at the top to export all of it.'},
+  {at:'.pv-groups button[data-group="Food"],.pv-groups',title:'Food: all at once',text:'The game has three foods, from small to big. A food preset goes on all of them at once (All foods), or pick just one in the chat.'},
   {at:'#presetsTray',title:'Pick a few, then use them all',text:'Pick a background, a virus, food and buttons: your picks wait down here. Use all puts every one in the game at once.'},
   {title:'That’s it',text:'See this again any time with the ? button at the top. Have fun!'}];
 let coach=null;
@@ -202,7 +211,7 @@ function tour(force){
     next.focus();};
   show();}
 async function open(group){
-  if(!P.list){const r=await api('/api/presets');P.list=r.presets||[];P.gameFiles=r.game_files||{};}
+  if(!P.list){const r=await api('/api/presets');P.list=r.presets||[];P.gameFiles=r.game_files||{};P.version=r.version||'';}
   if(group&&GROUPS.includes(group))P.group=group;
   if(!P.list.some(p=>p.group===P.group))P.group=P.list[0]?.group||'Backgrounds';
   render();if(!dlg.open)dlg.showModal();tour(false);}

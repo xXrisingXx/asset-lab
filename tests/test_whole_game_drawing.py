@@ -47,5 +47,5 @@ class WholeGame(Base):
         with patch.object(self.lab.catalog, 'rows', rows), patch.object(self.designer, 'menu_backgrounds', return_value=[{'name': 'bg2.png'}]), \
                 patch.object(self.designer, 'arena_backgrounds', return_value=[{'name': 'worldbg.png'}]), patch.object(self.designer, 'food_rows', return_value=[{'name': 'food1'}]):
             names = [r['name'] for r in self.designer.whole_game_rows()]
-        self.assertEqual(names, ['bg2.png', 'worldbg.png', 'virus.png', 'icon-play', 'icon-play', 'back-icon', 'icon-menu-settings',
-                                 'button-explain-eject', 'button-split', 'joystick', 'food1'])
+        self.assertEqual(names, ['bg2.png', 'worldbg.png', 'virus.png', 'icon-play', 'icon-play', 'back-icon', 'icon-coin', 'icon-menu-settings',
+                                 'button-explain-eject', 'button-split', 'joystick', 'food1'])   # the coin too, players asked
