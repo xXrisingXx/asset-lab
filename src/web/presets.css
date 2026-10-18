@@ -1,0 +1,55 @@
+/* Presets window and the big picture view (presets.js), in the style of Game preview. */
+.pv-dialog{width:min(1100px,94vw);max-width:none;height:min(820px,90vh);padding:20px 22px;display:flex;flex-direction:column;gap:12px}
+.pv-dialog:not([open]){display:none}
+.pv-head{display:flex;align-items:center;gap:12px}.pv-head h2{margin:0;font-size:20px}.pv-head .quiet{margin-left:auto;padding:5px 11px}
+.pv-sub{color:var(--muted);font-size:12px}
+.pv-groups{align-self:flex-start}.pv-groups button{padding:7px 14px;font-size:12px}
+.pv-cats{display:flex;flex-wrap:wrap;gap:6px}
+.pv-hint{margin:0;font-size:11px;color:var(--muted)}
+.pv-grid{flex:1;min-height:0;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;align-content:start;padding:2px;scrollbar-width:thin}
+.pv-card{display:flex;flex-direction:column;gap:6px;padding:7px;white-space:normal;text-align:center;font-size:12px;border-radius:9px}
+.pv-card:hover{border-color:var(--cyan)}
+.pv-thumb{height:130px;border-radius:6px;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 50% 45%,#f4f5f6 0,#e2e5e9 100%)}
+.pv-thumb img{max-width:88%;max-height:88%;object-fit:contain}
+.pv-grid.tiles .pv-thumb{background-size:64px 64px;background-repeat:repeat}
+/* The big view: a background as the tiled floor it becomes; a sprite on the game's light and dark floor. */
+.pv-stage{flex:1;min-height:0;border-radius:10px;overflow:hidden;display:flex;gap:10px}
+.pv-stage.tiled{background-size:160px 160px;background-repeat:repeat;box-shadow:inset 0 0 0 1px var(--line)}
+.pv-floor{flex:1;display:flex;align-items:center;justify-content:center;border-radius:10px;min-width:0}
+.pv-floor.light{background:#eceef0}.pv-floor.dark{background:#2e343c}
+.pv-floor img{max-width:72%;max-height:72%;object-fit:contain}
+.pv-actions{display:flex;gap:9px;justify-content:flex-end}.pv-actions button{padding:9px 18px}
+.picture-view{cursor:zoom-in}
+
+/* The big view with a picture card's controls beside it. */
+.pv-body{flex:1;min-height:0;display:flex;gap:16px}.pv-body .pv-stage{flex:1.6}
+.pv-controls{flex:1;min-width:280px;max-width:420px;overflow:auto;display:flex;flex-direction:column}
+.picture-controls{display:flex;flex-direction:column;gap:8px}
+@media(max-width:900px){.pv-body{flex-direction:column}.pv-controls{max-width:none}}
+
+/* Button sets: on the menu's color. */
+.pv-floor.menu,.pv-thumb.buttons{background:#21454b}
+.pv-floor.menu img{max-width:92%;max-height:92%}
+.pv-note{margin:0 auto 0 0;align-self:center;font-size:11px;color:var(--muted);max-width:520px;line-height:1.5}
+/* Picks: what Use picked, waiting to be used all at once. */
+.pv-card.picked{border-color:var(--cyan);box-shadow:0 0 0 2px var(--cyan) inset;position:relative}
+.pv-card.picked::after{content:'✓';position:absolute;top:10px;right:12px;width:22px;height:22px;border-radius:50%;background:var(--cyan);color:#102b2a;font-weight:700;line-height:22px;text-align:center}
+.pv-tray{display:flex;align-items:center;gap:9px;border-top:1px solid var(--line);padding-top:10px;min-height:48px}
+.pv-tray-empty{font-size:12px;color:var(--muted)}
+.pv-tray-picks{display:flex;flex-wrap:wrap;gap:6px;flex:1;min-width:0}
+.pv-pick{display:flex;align-items:center;gap:6px;background:#1d2f3d;border:1px solid #405264;border-radius:16px;padding:2px 4px 2px 3px;font-size:11px}
+.pv-pick img{width:26px;height:26px;object-fit:contain;border-radius:50%;background:#21454b}
+.pv-pick .quiet{padding:2px 6px;font-size:10px}
+.pv-help{margin-left:auto!important;padding:5px 11px;font-weight:700}
+.pv-help+.quiet{margin-left:0!important}
+/* The first-time tour, inside the window. */
+.pv-coach{position:absolute;inset:0;z-index:5;background:#060b1355}
+.pv-coach-ring{position:absolute;border:2px solid var(--cyan);border-radius:10px;box-shadow:0 0 0 4px #70e5d455,0 0 24px #70e5d488;pointer-events:none}
+.pv-coach-card{position:absolute;left:50%;transform:translateX(-50%);width:min(420px,86%);background:var(--panel);border:1px solid var(--cyan);border-radius:12px;padding:16px 18px;box-shadow:0 20px 60px #000a}
+.pv-coach-card small{color:var(--muted);font-size:10px;letter-spacing:1px}
+.pv-coach-card h3{margin:4px 0 6px}
+.pv-coach-card p{margin:0 0 12px;color:var(--muted);line-height:1.55;white-space:normal}
+.pv-coach-actions{display:flex;gap:8px;justify-content:flex-end}
+.pv-coach-menu{position:absolute;pointer-events:none}
+.pv-export-as{max-width:300px}

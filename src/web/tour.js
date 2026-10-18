@@ -11,7 +11,7 @@ const RIGHT_CLICK={at:'#assetList .asset-card',menu:['Redraw with Image AI…','
   text:'Right-click any picture for quick actions: redraw it with Image AI, change a font (on the letter pictures), or add it to your favorites.'};
 // Pictures: any picture a player pastes or drops, and the presets, recolored in one request.
 const PICTURES={at:'#themePictureButton,#themePresetsButton',theme:true,title:'Bring your own picture',
-  text:'Paste or drop a picture into Theme AI (or click Your picture) and say what to change, like “make this dark blue”. Presets has ready-made art to recolor and put in the game.'};
+  text:'Paste or drop a picture into Theme AI and say what to change, like “make this dark blue”. Presets has ready-made backgrounds, viruses and food: click one to see it big, then Use.'};
 const STEPS=[
   {title:'Welcome to Asset Lab',text:'Asset Lab lets you restyle Mitos.is: recolor or redraw its art, change its text and sounds, and install it all as a mod. Your game files are backed up first, and Restore original always puts them back. This quick tour shows you around.'},
   {at:'.library',title:'1. Find the art',text:'The library holds every picture in the game. Search by name (“play button”, “coin”), pick a category, or drop an image here to find art that looks like it. Click a card to open it; double-click to check it.'},
@@ -21,7 +21,7 @@ const STEPS=[
   {at:'.inspector',title:'4. Layers and saving',text:'Here you find the layers, the color controls and the history. When you like your edit, click Save edit: it is stored in your workspace, never straight in the game.'},
   {at:'#themeStarters,#themeButton',theme:true,examples:true,title:'5. Theme AI',text:'Describe a look in your own words (“spooky halloween”, “gold buttons with a glow”, “make the player names neon”) and Theme AI changes many assets at once. You see a preview before anything is saved.'},
   PICTURES,
-  {at:'.mod-tray',title:'6. Test it in the game',text:'Close Mitosis, then click Install (or Update Mitosis) to put your saved edits in the game. Restore original takes the mod back out and returns every file exactly as it was.'},
+  {at:'.mod-tray',title:'6. Test it in the game',text:'Close Mitosis, then click Build to Mitosis to see what goes in and put your saved edits in the game. Restore original takes the mod back out and returns every file exactly as it was.'},
   {at:'#launchButton',title:'7. Play',text:'Open Mitosis starts the game through Steam so you can see your mod.'},
   {at:'#settingsButton',title:'8. Settings',text:'Change the language, the look of the lab, the AI and much more. You can open this tour again with the ? button next to it.'},
   {title:'You are ready',text:'Start by searching for something you want to change, or open Theme AI and describe a look. Have fun!'},
@@ -32,11 +32,11 @@ const SIMPLE_STEPS=[STEPS[0],
   RIGHT_CLICK,
   {at:'#themeStarters,#themeInput',examples:true,title:'Describe it',text:'Type what you want (“gold buttons with a glow”, “a spooky halloween theme”, “change the font to comic sans”) or click a button above the box to start. You see it before anything is saved.'},
   PICTURES,
-  {at:'#themeInstall',title:'Put it in the game',text:'Close Mitosis, then click Install in Mitosis. Restore original takes your changes back out and puts every file back exactly as it was.'},
+  {at:'#themeInstall',title:'Put it in the game',text:'Close Mitosis, then click Build to Mitosis and Apply build. Restore original takes your changes back out and puts every file back exactly as it was.'},
   {at:'#viewSwitch',title:'Want more control?',text:'Advanced opens the full image editor: layers, brushes, filters and more. You can switch back any time.'},
   STEPS[STEPS.length-1]];
 let steps=STEPS;
-let index=0,box=null,shade=null,ring=null,target=null,undoDemo=null;
+let index=0,box=null,shade=null,ring=null,target=null,drawerWasOpen=false;
 function target_(step){if(!step.at)return null;for(const s of step.at.split(',')){const e=document.querySelector(s.trim());if(e&&e.offsetParent!==null&&e.getBoundingClientRect().width>0)return e;}return null;}
 function place(){
   if(!box)return;const r=target?target.getBoundingClientRect():null;
@@ -50,8 +50,10 @@ function place(){
   box.style.left=Math.round(x)+'px';box.style.top=Math.round(y)+'px';}
 function show(i){
   const forward=i>=index;index=Math.max(0,Math.min(steps.length-1,i));const step=steps[index];
-  undoDemo?.();undoDemo=null;
-  if(step.theme&&document.getElementById('themeDrawer')?.hidden)document.getElementById('themeButton')?.click();   // its step shows Theme AI open
+  // Theme AI is open on its own steps and closed on the others, where it would cover the part being shown (the ring
+  // around a panel underneath showed through it). Simple keeps it open: there it is the page and covers nothing.
+  const drawer=document.getElementById('themeDrawer'),simple=document.body.classList.contains('lab-simple');
+  if(drawer&&!simple&&!!step.theme===drawer.hidden)document.getElementById('themeButton')?.click();
   target=target_(step);
   if(step.at&&!target&&index>0&&index<steps.length-1)return show(forward?index+1:index-1);   // a part that is hidden right now (e.g. a folded panel) is skipped
   box.replaceChildren();
@@ -61,8 +63,8 @@ function show(i){
   skip.onclick=end;back.onclick=()=>show(index-1);next.onclick=()=>index===steps.length-1?end():show(index+1);
   actions.append(skip,back,next);box.append(count,h,p);
   if(step.examples)box.append(examples());
+  if(step.menu)box.append(demoMenu(step.menu));
   box.append(actions);
-  if(step.menu&&target)undoDemo=demoMenu(step.menu,target);
   if(target)target.scrollIntoView({block:'nearest',inline:'nearest'});
   place();requestAnimationFrame(place);next.focus();}   // placed now too: a page in the background may get no frame for a while
 // Examples: one click puts a request in Theme AI's box (opened if needed), ready to send or change. They stay English,
@@ -75,17 +77,17 @@ function examples(){
       list.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));requestAnimationFrame(place);};
     list.append(b);}
   return list;}
-// The right-click menu, drawn beside a picture while its step shows (nothing is opened or changed).
-function demoMenu(items,at){
-  const r=at.getBoundingClientRect(),menu=el('div','tour-demo-menu');menu.setAttribute('aria-hidden','true');
-  menu.append(el('span','tour-demo-pointer','➤'));for(const item of items)menu.append(el('div','',item));
-  menu.style.left=Math.round(Math.min(innerWidth-230,r.left+r.width*0.55))+'px';menu.style.top=Math.round(Math.min(innerHeight-140,r.top+r.height*0.45))+'px';
-  document.body.append(menu);return ()=>menu.remove();}
+// What the right-click menu looks like, drawn in the tour card (it never covers the card's own words; nothing opens).
+function demoMenu(items){
+  const menu=el('div','tour-demo-menu');menu.setAttribute('aria-hidden','true');
+  menu.append(el('span','tour-demo-pointer','🖱 Right-click'));for(const item of items)menu.append(el('div','',item));
+  return menu;}
 function start(){
-  end(true);index=0;steps=document.body.classList.contains('lab-simple')?SIMPLE_STEPS:STEPS;shade=el('div','tour-shade');ring=el('div','tour-ring');box=el('div','tour-box');box.setAttribute('role','dialog');box.setAttribute('aria-label','Asset Lab tour');
+  end(true);index=0;drawerWasOpen=!document.getElementById('themeDrawer')?.hidden;steps=document.body.classList.contains('lab-simple')?SIMPLE_STEPS:STEPS;shade=el('div','tour-shade');ring=el('div','tour-ring');box=el('div','tour-box');box.setAttribute('role','dialog');box.setAttribute('aria-label','Asset Lab tour');
   document.body.append(shade,ring,box);show(0);addEventListener('resize',place);addEventListener('keydown',keys,true);}
 function end(quiet){
-  undoDemo?.();undoDemo=null;
+  const drawer=document.getElementById('themeDrawer');
+  if(box&&drawer&&!document.body.classList.contains('lab-simple')&&drawer.hidden===drawerWasOpen)document.getElementById('themeButton')?.click();   // as it was
   for(const n of [shade,ring,box])n?.remove();shade=ring=box=target=null;removeEventListener('resize',place);removeEventListener('keydown',keys,true);
   if(quiet!==true){try{localStorage.setItem(KEY,'1');}catch(e){}askForIdeas();}}
 // The first time the tour ends (finished or skipped), About opens at Suggestions: the creator wants to hear from players.

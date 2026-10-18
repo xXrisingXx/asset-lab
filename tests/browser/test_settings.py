@@ -222,11 +222,11 @@ class WindowTests(SettingsCase):
         # A real click on a switch saves at once.
         self.open_settings('general')
         self.assertTrue(b.eval("document.getElementById('settingsReset').disabled"))
-        b.click_selector('#set-confirm_install')
-        until(lambda: self.saved('confirm_install') is True)
+        b.click_selector('#set-confirm_install')                                    # on by default (Show the build first): off
+        until(lambda: self.saved('confirm_install') is False)
         b.wait_for(SAVED)
         b.wait_for("document.querySelector('.settings-row[data-key=confirm_install] .settings-saved').classList.contains('on')")
-        self.assertEqual(self.stored(), {'confirm_install': True})
+        self.assertEqual(self.stored(), {'confirm_install': False})
         self.change('game_open', 'close')
         self.assertEqual(b.text('#settingsReset'), 'Reset General')
         b.wait_for("!document.getElementById('settingsReset').disabled")
@@ -234,8 +234,8 @@ class WindowTests(SettingsCase):
         b.wait_for("document.getElementById('dialog').open")
         self.assertEqual(b.text('#dialogTitle'), 'Reset General?')
         b.click_selector('#dialogAccept')
-        until(lambda: self.saved('confirm_install') is False and self.saved('game_open') == 'ask')
-        b.wait_for("!document.getElementById('set-confirm_install').checked && document.getElementById('settingsReset').disabled")
+        until(lambda: self.saved('confirm_install') is True and self.saved('game_open') == 'ask')
+        b.wait_for("document.getElementById('set-confirm_install').checked && document.getElementById('settingsReset').disabled")
         # Reset everything, from another category.
         self.change('compact_cards', True)
         self.change('history_states', 100)
@@ -322,9 +322,14 @@ class GeneralTests(SettingsCase):
         if self.server.get('/api/status')['active']: self.server.post('/api/restore', {})
         self.browser.eval('await status(); true')
 
-    def install_click(self):
-        self.browser.eval("document.activeElement && document.activeElement.blur()")
-        self.browser.click_selector('#installButton')
+    def install_click(self, apply=True):
+        """Build to Mitosis: the build is shown first (when Settings asks before installing), then Apply build."""
+        b = self.browser
+        b.eval("document.activeElement && document.activeElement.blur()")
+        b.click_selector('#installButton')
+        if apply and self.saved().get('confirm_install') is not False:
+            b.wait_for("document.getElementById('reviewDialog').open && !!document.getElementById('reviewGo')")
+            b.click_selector('#reviewGo')
 
     def installed(self): return self.browser.wait_for("!S.busy && !!S.status.active && S.status.active.state === 'installed'", 30)
 
@@ -358,21 +363,21 @@ class GeneralTests(SettingsCase):
         self.edit_and_reload()
         self.change('confirm_install', True)
         self.close_settings()
-        self.install_click()
-        b.wait_for("document.getElementById('dialog').open")
-        self.assertEqual(b.text('#dialogTitle'), 'Install your mod in Mitosis?')
-        b.click_selector('#dialog button[value=cancel]')
+        self.install_click(apply=False)                                       # the build is shown first
+        b.wait_for("document.getElementById('reviewDialog').open")
+        self.assertEqual(b.text('#reviewDialog h2'), 'Build to Mitosis')
+        self.assertEqual(b.text('#reviewGo'), 'Apply build')
+        b.eval("document.getElementById('reviewDialog').close(); true")
         b.settle(5)
-        self.assertIsNone(self.server.get('/api/status')['active'])         # cancelled: nothing installed
+        self.assertIsNone(self.server.get('/api/status')['active'])         # closed: nothing installed
         self.install_click()
-        b.wait_for("document.getElementById('dialog').open")
-        b.click_selector('#dialogAccept')
         self.installed()
+        self.assertFalse(b.eval("document.getElementById('dialog').open"))   # the list was the question: no second one
         b.eval("document.activeElement && document.activeElement.blur()")
         b.click_selector('#restoreButton')
-        b.wait_for("document.getElementById('dialog').open")
-        self.assertEqual(b.text('#dialogTitle'), 'Restore the original game files?')
-        b.click_selector('#dialogAccept')
+        b.wait_for("document.getElementById('reviewDialog').open")
+        self.assertEqual(b.text('#reviewDialog h2'), 'Restore original')
+        b.click_selector('#reviewGo')
         b.wait_for("!S.busy && !S.status.active", 30)
         # Off: Install goes ahead without asking.
         self.change('confirm_install', False)
@@ -768,6 +773,7 @@ class ThemeAiTests(SettingsCase):
         self.reload()
         self.close_settings() if b.eval("document.getElementById('settingsDialog')?.open") else None
         self.open_drawer()
+        b.eval("document.getElementById('themeMore').open = true; true")              # Accelerate sits under More
         self.assertEqual(b.eval("document.getElementById('themeAccelerate').getAttribute('aria-pressed')"), 'false')
         b.click_selector('#themeAccelerate')
         b.wait_for("document.getElementById('dialog').open")

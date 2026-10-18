@@ -1,13 +1,13 @@
 'use strict';
 // Simple and Advanced. Simple is the library and Theme AI only, for players who want a new look without an image
-// editor: click pictures to pick what changes, describe it, install. Advanced is the full editor. New players (no tour
-// seen yet) start in Simple and everyone else keeps Advanced; the choice is remembered in this browser.
+// editor: click pictures to pick what changes, describe it, install. Advanced is the full editor. Everyone starts in
+// Simple; a switch to Advanced is remembered in this browser.
 // Uses app.js globals: $.
 (()=>{
-const KEY='lab-view';
+const KEY='lab-layout';   // only a switch the player made (1.0.51 saved 'lab-view' for everyone by itself)
 const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
 let view='advanced';
-try{view=localStorage.getItem(KEY)||(localStorage.getItem('lab-tour-done')?'advanced':'simple');localStorage.setItem(KEY,view);}catch(e){}
+try{view=localStorage.getItem(KEY)||'simple';}catch(e){view='simple';}
 if(view!=='simple')view='advanced';
 const seg=el('div','segmented view-switch');seg.id='viewSwitch';seg.setAttribute('role','group');seg.setAttribute('aria-label','Layout');
 for(const [id,label,tip] of [['simple','Simple','Pick what to change and describe it: Theme AI does the rest'],['advanced','Advanced','The full image editor: layers, brushes, filters and more']]){

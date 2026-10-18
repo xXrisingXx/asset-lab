@@ -3,6 +3,7 @@
 //  1. A banner when the lab's code is newer than the running server, with a one-click restart.
 //  2. "Find similar": rank every sprite by how much it looks like an asset or a dropped/pasted image.
 //  3. Your own names for assets ("Speed potion"), shown on cards and understood by search and Theme AI.
+// (And at the end: the top bar's real height as the CSS variable --topbar-h, for desktop.css.)
 // Uses app.js globals: $, api, message, library, run, select, S.
 (()=>{
 const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
@@ -60,4 +61,9 @@ new MutationObserver(()=>{if(!menu.hidden&&S.asset)nameItem.textContent=S.asset.
 menu.addEventListener('click',run(async e=>{const a=e.target.dataset.action;if(!S.asset)return;
   if(a==='find-similar')await like('key:'+S.asset.key,S.asset.label||S.asset.name);
   if(a==='name-asset')await nameThese([S.asset.key],S.asset.label||'');}));
+
+// ----- the top bar's height ----------------------------------------------------------------------
+// In the desktop window the bar may wrap and grow (desktop.css); what sits under it (Theme AI, the page) reads --topbar-h.
+{const bar=document.querySelector('.topbar');if(bar){const measure=()=>document.documentElement.style.setProperty('--topbar-h',Math.round(bar.getBoundingClientRect().height)+'px');
+ new ResizeObserver(measure).observe(bar,{box:'border-box'});addEventListener('resize',measure);measure();}}
 })();

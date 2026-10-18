@@ -9,3 +9,10 @@
   .topbar .brand { margin-right:auto; }
   .topbar .brand-logo { width:32px; height:32px; }
 }
+/* The host paints the window buttons' block itself, in the bar's color (launcher/WindowChrome.cs), so nothing of the page
+   may spill over the bar there. Theme AI's drawer used to: its shadow darkened the bottom of the bar everywhere except
+   under that block, which then looked like a lighter patch hanging below the bar. Clip the shadow at the drawer's top
+   edge, and start the drawer (and the page) at the bar's real height, which grows when the bar wraps (--topbar-h is
+   measured by lab_extras.js). */
+.theme-drawer { top:var(--topbar-h, 76px) !important; clip-path:inset(0 0 0 -100vw); }
+@media(min-width:921px) { main { height:calc(100vh - var(--topbar-h, 76px)); } }

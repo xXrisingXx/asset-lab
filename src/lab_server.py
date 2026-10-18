@@ -64,7 +64,7 @@ def server_for(lab, port):
     designer = Designer(lab, themes)
     themes.designer = designer
     designer.director = themes.art_direction
-    themes.pictures.sets = {'menu': designer.menu_backgrounds, 'arena': designer.arena_backgrounds}   # where a background preset goes
+    themes.pictures.sets = {'menu': designer.menu_backgrounds, 'arena': designer.arena_backgrounds, 'food': designer.food_kinds}   # where a preset goes
     designer.concepts = themes.art_concepts   # and a different idea for each variant   # the planner model writes the art direction for each redraw
 
     def quiet():
@@ -177,10 +177,13 @@ def server_for(lab, port):
                     if not re.fullmatch(r'[0-9a-f]{20}\.png', name) or not (lab.root / 'inspiration' / name).is_file(): raise ValueError('No such inspiration picture.')
                     return self.send((lab.root / 'inspiration' / name).read_bytes(), 'image/png')
                 if path == '/api/picture':   # a pasted picture or a preset, recolored when a color is given
-                    image = themes.pictures.render(q.get('id', ''), q.get('color', ''))
+                    image = themes.pictures.render(q.get('id', ''), q.get('color', ''), small=bool(q.get('small')))
                     if q.get('small'): image.thumbnail((256, 256), Image.Resampling.LANCZOS)
                     return self.send(png(image), 'image/png')
-                if path == '/api/presets': return self.send({'presets': pictures.presets()})
+                if path == '/api/presets': return self.send({'presets': pictures.presets(), 'game_files': themes.pictures.game_targets()})
+                if path == '/api/presets-export':   # presets to send to people: one, a category or a whole group, as a zip
+                    ids, name = pictures.chosen(q)
+                    return self.send(themes.pictures.export(ids, q.get('target', '')), 'application/zip', filename=f"{name}{'-game-files' if q.get('target') else ''}.zip")
                 if path == '/api/ai-activity': return self.send(activity.snapshot(designer, themes))   # the activity strip in Theme AI
                 if path == '/api/builds': return self.send(builds.listing())
                 if path == '/api/chats': return self.send(builds.chats())
@@ -354,6 +357,11 @@ def server_for(lab, port):
                 if path == '/api/theme-preview': return self.send(themes.preview(clean_plan(data.get('plan')), themes.scope(only)))
                 if path == '/api/theme-apply': return self.send(themes.apply(data.get('plan'), data.get('prompt', ''), only))
                 if path == '/api/theme-undo': return self.send(themes.undo())
+                if path == '/api/presets-folder':   # the same as a folder in Downloads, opened in Explorer
+                    ids, name = pictures.chosen({k: str(v) for k, v in data.items() if k in ('id', 'group', 'category')})
+                    folder = themes.pictures.export_folder(ids, name + ('-game-files' if data.get('target') else ''), str(data.get('target') or ''))
+                    if os.name == 'nt': os.startfile(str(folder))
+                    return self.send({'path': str(folder), 'name': folder.name})
                 if path == '/api/open-workspace':
                     if os.name == 'nt': os.startfile(str(lab.root))
                     return self.send({'path': str(lab.root)})

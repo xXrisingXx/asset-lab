@@ -14,7 +14,7 @@ document.querySelector('.top-status').after(pick);
 const dlg=el('dialog','builds');dlg.id='buildsDialog';dlg.setAttribute('aria-label','Your builds');document.body.append(dlg);
 const head=el('div','builds-head');const x=el('button','quiet','✕');x.type='button';x.title='Close';x.onclick=()=>dlg.close();
 head.append(el('h2','', 'Your builds'),x);
-const intro=el('p','hint','Each build is its own version of your mod: edits, sounds, fonts, game colors and Theme AI chats. Switching changes what you edit here; the game keeps what is installed until you press Update Mitosis.');
+const intro=el('p','hint','Each build is its own version of your mod: edits, sounds, fonts, game colors and Theme AI chats. Switching changes what you edit here; the game keeps what is installed until you press Build to Mitosis.');
 const list=el('div','builds-list');list.id='buildsList';
 const foot=el('div','builds-foot');
 const startOver=el('button','primary','Start over');startOver.id='startOverButton';startOver.type='button';startOver.title='A new, empty build from the game’s original art. Your current build stays in this list.';

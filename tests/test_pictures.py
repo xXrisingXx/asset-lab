@@ -1,6 +1,7 @@
 import base64
 import io
 import unittest
+import unittest.mock
 from unittest.mock import patch
 import numpy as np
 from PIL import Image
@@ -79,6 +80,15 @@ class PicturesInTheLab(Base):
             with self.assertRaises(ValueError): self.pics.image(bad)
         with self.assertRaises(ValueError): self.pics.save(b'not a picture')
 
+    def test_the_build_review_sees_each_new_picture(self):
+        # The review asks for each edit's picture by its revision: one address per picture, so a new one is never the old one.
+        row = next(r for r in self.lab.catalog.rows.values() if r['editable'] and r['kind'] == 'sprite' and r['width'] >= 16)
+        self.pics.apply('preset:purple-virus', row['key'], '#1e3a8a')
+        first = next(e for e in self.lab.mod()['edits'] if e['key'] == row['key'])['revision']
+        self.pics.apply('preset:purple-virus', row['key'], '#c8102e')
+        second = next(e for e in self.lab.mod()['edits'] if e['key'] == row['key'])['revision']
+        self.assertNotEqual(first, second)
+
     def test_presets_are_listed_and_offered_for_their_own_art(self):
         listed = pictures.presets()
         virus = next(p for p in listed if p['id'] == 'preset:purple-virus')
@@ -92,7 +102,13 @@ class PicturesInTheLab(Base):
         if bg is None: self.skipTest('no background presets drawn yet')
         rows = [r for r in self.lab.catalog.rows.values() if r['editable'] and r['kind'] == 'image'][:2]
         self.pics.sets = {'menu': lambda: rows, 'arena': lambda: []}
-        self.assertEqual([t['key'] for t in self.pics.targets(bg['id'])], ['set:menu'])     # the arena set is offered only when the game has one
+        self.assertEqual([t['key'] for t in self.pics.targets(bg['id'])], ['set:menu'])     # in-game sets are offered only when the game has floors
+        floors = [dict(r, name=n) for r, n in zip([r for r in self.lab.catalog.rows.values() if r['editable'] and r['kind'] == 'image'][2:4], ('worldbg.png', 'worldbg_w.png'))]
+        self.pics.sets = {'menu': lambda: rows, 'arena': lambda: floors}
+        self.assertEqual([t['key'] for t in self.pics.targets(bg['id'])][:5], pictures.BACKGROUND_SETS)   # everywhere first
+        self.assertEqual([r['name'] for r in self.pics.background_rows('set:arena-light')], ['worldbg_w.png'])
+        self.assertEqual(len(self.pics.background_rows('set:everywhere')), 4)
+        self.pics.sets = {'menu': lambda: rows, 'arena': lambda: []}
         result = self.pics.apply(bg['id'], 'set:menu', '#3b82f6')
         self.assertEqual(result['count'], 2)
         for r in rows:
@@ -106,7 +122,8 @@ class PicturesInTheLab(Base):
     def test_presets_have_categories(self):
         listed = pictures.presets()
         self.assertTrue(all(p['category'] and p['kind'] for p in listed))
-        self.assertEqual(next(p for p in listed if p['id'] == 'preset:purple-virus')['category'], 'Viruses')
+        virus = next(p for p in listed if p['id'] == 'preset:purple-virus')
+        self.assertEqual((virus['group'], virus['category']), ('Viruses', 'Classic'))   # groups, then categories in them
         for p in listed:
             if p['kind'] == 'background': self.assertEqual(p['for'], ['menu', 'arena'])
 
@@ -132,3 +149,109 @@ class AWholeThemeFromAPreset(Base):
             plain = self.themes.chat('Make a whole theme from Purple virus', theme_from='preset:purple-virus')
         self.assertNotIn('design', plain)
         self.assertIn('install the image model', plain['plan']['reply'])
+
+
+class VirusAndFoodPresets(Base):
+    def test_a_virus_goes_on_both_viruses_and_a_food_on_one_food(self):
+        pics = pictures.Pictures(self.lab)
+        rows = [r for r in self.lab.catalog.rows.values() if r['editable'] and r['kind'] == 'sprite' and r['width'] >= 16][:3]
+        pics.sets = {'food': lambda: [[rows[0]], [rows[1], rows[2]]]}                      # two foods here, the second with a small copy
+        foods = [t['key'] for t in pics.targets('preset:purple-virus') if t['key'].startswith('set:')]
+        self.assertEqual(foods, [])                                                        # no viruses in this test game
+        food = next((p for p in pictures.presets() if p['kind'] == 'food'), None)
+        if food is None: self.skipTest('no food presets drawn yet')
+        self.assertEqual([t['key'] for t in pics.targets(food['id'])][:2], ['set:food:0', 'set:food:1'])
+        result = pics.apply(food['id'], 'set:food:1', '#e53935')
+        self.assertEqual(result['count'], 2)
+        for r in rows[1:]: self.assertEqual(self.lab.image(r['key']).size, (r['width'], r['height']))   # fitted to each size
+        self.assertEqual(food['group'], 'Food')
+
+
+class ButtonSets(unittest.TestCase):
+    """A button set restyles the game's own buttons in one look: same shapes and sizes, the set's material."""
+
+    @staticmethod
+    def play():   # a pink circle with a white triangle, like the game's play button
+        size = 128
+        yy, xx = np.mgrid[0:size, 0:size]
+        a = np.zeros((size, size, 4), np.uint8)
+        circle = np.hypot(xx - 64, yy - 64) < 56
+        a[circle] = (231, 57, 98, 255)
+        tri = (xx > 48) & (xx < 88) & (np.abs(yy - 64) < (88 - xx) * 0.6)
+        a[tri & circle] = (255, 255, 255, 255)
+        return Image.fromarray(a, 'RGBA')
+
+    def test_a_button_keeps_its_shape_and_takes_the_material(self):
+        import button_sets
+        gold = Image.new('RGB', (64, 64), (230, 180, 40))
+        out = button_sets.style(self.play(), dict(outline='#5c3d00', ink='#ffffff', bevel=0.9), gold)
+        self.assertEqual(out.size, (128, 128))
+        px = np.asarray(out).astype(int)
+        self.assertEqual(px[64, 4, 3], 0)                                   # outside stays clear
+        face = px[40, 64]                                                     # the circle's face: gold, not pink
+        self.assertGreater(face[0], face[2] + 60)
+        self.assertGreater(face[1], face[2] + 30)
+        self.assertGreater(px[64, 60, :3].min(), 200)                       # the triangle: the set's white ink
+        self.assertEqual(px[64, 60, 3], 255)
+
+    def test_icons_the_game_tints_stay_light_gray(self):
+        import button_sets
+        icon = Image.new('RGBA', (64, 64), (0, 0, 0, 0))
+        icon.paste((255, 255, 255, 255), (16, 16, 48, 48))
+        out = np.asarray(button_sets.style(icon, dict(outline='#000000', glow='#ff0000', bevel=0.9), Image.new('RGB', (32, 32), (200, 30, 30)), tinted=True)).astype(int)
+        solid = out[..., 3] > 200
+        self.assertTrue((np.abs(out[solid, 0] - out[solid, 2]) < 3).all())  # gray: the game's color does the coloring
+        self.assertGreater(out[32, 32, :3].mean(), 120)
+
+    def test_a_set_goes_on_every_button_of_the_menu(self):
+        sets = [p for p in pictures.presets() if p['kind'] == 'menu']
+        if not sets: self.skipTest('no button sets drawn yet')
+        self.assertTrue(all(p['group'] == 'Menu buttons' and p['look'] for p in sets))
+        self.assertEqual(len([p for p in pictures.presets() if p['kind'] == 'ingame']), len(sets))   # every look: menu and in game
+        lab = unittest.mock.MagicMock()
+        pics = pictures.Pictures(lab)
+        rows = [dict(key='a', name='icon-play', width=128, height=128), dict(key='b', name='back-icon', width=128, height=128)]
+        lab.catalog.image.return_value = self.play()
+        with patch.object(pictures.Pictures, 'button_rows', return_value=rows):
+            self.assertEqual([t['key'] for t in pics.targets(sets[0]['id'])], ['set:menu-buttons'])
+            done = pics.apply(sets[0]['id'], 'set:menu-buttons')
+            self.assertEqual(done['count'], 2)
+            self.assertEqual([c.args[0] for c in lab.commit.call_args_list], ['a', 'b'])
+            self.assertEqual(lab.commit.call_args_list[0].args[1].size, (128, 128))
+            sheet = pics.render(sets[0]['id'], small=True)
+            self.assertGreater(sheet.width, 64)
+            data = pics.export([sets[0]['id']])
+        import zipfile
+        names = zipfile.ZipFile(io.BytesIO(data)).namelist()
+        self.assertTrue(any(n.endswith('/preview.png') for n in names) and any(n.endswith('/icon-play.png') for n in names))
+
+    def test_a_category_is_chosen_for_export(self):
+        listed = pictures.presets()
+        bg = next((p for p in listed if p['kind'] == 'background'), None)
+        if bg is None: self.skipTest('no backgrounds')
+        ids, name = pictures.chosen(dict(group='Backgrounds', category=bg['category']))
+        self.assertIn(bg['id'], ids)
+        self.assertTrue(all(p['category'] == bg['category'] for p in listed if p['id'] in ids))
+        self.assertNotIn(' ', name)
+        with self.assertRaises(ValueError): pictures.chosen(dict(id='preset:nope'))
+
+    def test_backgrounds_export_as_the_game_files_they_change(self):
+        # Ready to drop in: each file named as in the game, its size; one folder per background when there are several.
+        import zipfile
+        bgs = [p for p in pictures.presets() if p['kind'] == 'background'][:2]
+        if len(bgs) < 2: self.skipTest('no background presets')
+        lab = unittest.mock.MagicMock()
+        pics = pictures.Pictures(lab)
+        menu = [dict(key='m', name='bg2.png', source='assets/bg2.png', entry='', editable=True, width=512, height=512)]
+        arena = [dict(key='a', name='worldbg_w.png', source='assets/assets.zip', entry='worldbg_w.png', editable=True, width=256, height=256),
+                 dict(key='s', name='sprite', source='assets/theme4.png', entry='', parent='sheet', editable=True, width=64, height=64)]
+        pics.sets = {'menu': lambda: menu, 'arena': lambda: arena}
+        # the dark-mode floors here are a sheet's sprite, not a file: not offered
+        self.assertEqual([k for k, _ in pics.game_targets()['background']], ['set:everywhere', 'set:menu', 'set:arena', 'set:arena-light'])
+        one = zipfile.ZipFile(io.BytesIO(pics.export([bgs[0]['id']], 'set:everywhere')))
+        self.assertEqual(sorted(one.namelist()), ['READ ME.txt', 'bg2.png', 'inside assets.zip/worldbg_w.png'])
+        self.assertEqual(Image.open(io.BytesIO(one.read('inside assets.zip/worldbg_w.png'))).size, (256, 256))
+        both = zipfile.ZipFile(io.BytesIO(pics.export([p['id'] for p in bgs], 'set:menu')))
+        self.assertEqual(sorted(n.split('/')[-1] for n in both.namelist() if '/' in n), ['bg2.png', 'bg2.png'])
+        self.assertEqual(len({n.split('/')[0] for n in both.namelist() if '/' in n}), 2)                 # a folder for each
+        with self.assertRaises(ValueError): pics.export([bgs[0]['id']], 'set:nowhere')

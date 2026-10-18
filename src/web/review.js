@@ -4,18 +4,22 @@
 (()=>{
 const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
 const dlg=el('dialog','review');dlg.id='reviewDialog';dlg.setAttribute('aria-label','Review your mod');document.body.append(dlg);
-const R={data:null,out:new Set(),colorsOut:{},hideOut:new Set(),changed:false};
+// mode: 'review' (Review), 'build' (Build to Mitosis: what goes in, then Apply build) or 'restore' (Restore original:
+// what comes out of the game, then Restore original).
+const R={data:null,out:new Set(),colorsOut:{},hideOut:new Set(),changed:false,mode:'review'};
 
-function thumb(key,original,alt){const im=new Image();im.loading='lazy';im.decoding='async';im.alt=alt;im.src=`/api/thumb?key=${encodeURIComponent(key)}${original?'&original=1':''}&big=1`;return im;}
+// The revision is in the address: the browser keeps pictures it already loaded by address, so a new edit showed the old one.
+function thumb(key,original,alt,rev){const im=new Image();im.loading='lazy';im.decoding='async';im.alt=alt;im.src=`/api/thumb?key=${encodeURIComponent(key)}${original?'&original=1':`&v=${encodeURIComponent(rev??Date.now())}`}&big=1`;return im;}
 // A fully transparent "after" is art hidden on purpose ("hide the discord button"): say so instead of showing nothing.
 function markHidden(im,pair){im.addEventListener('load',()=>{try{const c=document.createElement('canvas');c.width=c.height=24;const x=c.getContext('2d');x.drawImage(im,0,0,24,24);
   const a=x.getImageData(0,0,24,24).data;for(let i=3;i<a.length;i+=4)if(a[i])return;pair.classList.add('hidden-art');pair.append(el('span','review-hidden','Hidden in the game'));}catch(e){}});}
 function toggle(label,out,onRemove,onBack){
+  if(R.mode==='restore')return el('span');   // everything installed comes out: nothing to pick
   const b=el('button','review-toggle',out?'Put back':'Remove');b.type='button';b.title=out?'Include this in the mod again':'Leave this out of the mod';
   b.onclick=run(async()=>{b.disabled=true;try{await (out?onBack():onRemove());R.changed=true;render();}finally{b.disabled=false;}});return b;}
 function swatch(color){const s=el('span','review-swatch');s.style.backgroundColor=color;s.title=color;return s;}
 
-async function open(){R.out=new Set();R.colorsOut={};R.hideOut=new Set();R.changed=false;R.data=await api('/api/mod');render();dlg.showModal();}
+async function open(mode){R.mode=['build','restore'].includes(mode)?mode:'review';R.out=new Set();R.colorsOut={};R.hideOut=new Set();R.changed=false;R.data=await api('/api/mod');render();dlg.showModal();}
 async function savePalette(){const colors={...R.data.palette};for(const f of Object.keys(R.colorsOut))delete colors[f];await api('/api/palette',{colors});}
 async function saveHide(){await api('/api/hide',{groups:R.data.hide.filter(h=>!R.hideOut.has(h))});}
 
@@ -32,14 +36,17 @@ function render(){
   const d=R.data;dlg.replaceChildren();
   const edits=d.edits.filter(e=>!R.out.has(e.key)).length,colors=Object.keys(d.palette).filter(f=>!(f in R.colorsOut)).length,hidden=d.hide.filter(h=>!R.hideOut.has(h)).length;
   const sounds=(d.audio||[]).filter(a=>a.staged).length;
-  const head=el('div','review-head');const h=el('h2','', 'Review your mod');const x=el('button','quiet','✕');x.type='button';x.onclick=()=>dlg.close();
+  const head=el('div','review-head');const h=el('h2','',{build:'Build to Mitosis',restore:'Restore original'}[R.mode]||'Review your mod');const x=el('button','quiet','✕');x.type='button';x.onclick=()=>dlg.close();
   const total=d.edits.length+Object.keys(d.palette).length+d.hide.length+(d.audio||[]).length,anyIn=edits||colors||hidden||sounds;
   const all=el('button','review-all',anyIn?'Remove all':'Put all back');all.type='button';all.id='reviewAll';all.hidden=!total;
   all.title=anyIn?'Leave everything out of the mod (your work stays saved)':'Include everything in the mod again';
   all.onclick=run(async()=>{all.disabled=true;try{await setAll(!anyIn);}finally{all.disabled=false;}});
+  if(R.mode==='restore')all.hidden=true;
   head.append(h,all,x);
   const summary=[`${edits} edit${edits===1?'':'s'}`,colors&&`${colors} game color${colors===1?'':'s'}`,hidden&&`${hidden} hidden menu control${hidden===1?'':'s'}`,sounds&&`${sounds} sound${sounds===1?'':'s'}`].filter(Boolean).join(' · ');
-  const sub=el('p','review-sub',(d.installed?'Installed in Mitosis now. Items marked New are not in the game yet; Update Mitosis puts the list below in. ':'Nothing is installed yet. ')+`This mod: ${summary}. Remove leaves an item out without deleting your work; Put back includes it again.`);
+  const sub=el('p','review-sub',(d.installed?'Installed in Mitosis now. Items marked New are not in the game yet; Build to Mitosis puts the list below in. ':'Nothing is installed yet. ')+`This mod: ${summary}. Remove leaves an item out without deleting your work; Put back includes it again.`);
+  if(R.mode==='build')sub.textContent='This is what goes into Mitosis. Leave anything out with Remove, then click Apply build. '+sub.textContent;
+  if(R.mode==='restore')sub.textContent='Restoring takes your mod out of Mitosis and puts every game file back exactly as it was. Your saved work stays in Asset Lab.';
   const body=el('div','review-body');dlg.append(head,sub,body);
 
   // Game colors: the original next to the new one.
@@ -69,7 +76,7 @@ function render(){
     const grid=el('div','review-grid');sec.append(grid);
     const shown=g.items.length>24&&!g.all?g.items.slice(0,24):g.items;
     for(const e of shown){const out=R.out.has(e.key);const card=el('div','review-card'+(out?' out':''));
-      const pair=el('button','review-pair big');pair.type='button';pair.title='Open '+e.name+' in the editor';const after=thumb(e.key,false,'after');markHidden(after,pair);pair.append(thumb(e.key,true,'before'),el('span','review-arrow','→'),after);
+      const pair=el('button','review-pair big');pair.type='button';pair.title='Open '+e.name+' in the editor';const after=thumb(e.key,false,'after',e.revision);markHidden(after,pair);pair.append(thumb(e.key,true,'before'),el('span','review-arrow','→'),after);
       pair.onclick=run(async()=>{dlg.close();await select(e.key);});
       const text=el('div','review-text');text.append(el('b','',e.name),el('small','',`${e.size[0]} × ${e.size[1]}${e.sheet?' · whole sheet':''} · ${e.source}`));
       if(d.installed&&!e.installed)text.firstChild.append(el('span','review-new','New'));
@@ -82,14 +89,17 @@ function render(){
       if(d.installed&&!f.installed)t.firstChild.append(el('span','review-new','New'));
       const change=el('button','','Change…');change.type='button';change.onclick=()=>{dlg.close();window.openFonts&&window.openFonts(f.id);};row.append(t,change);sec.append(row);}}
   soundSection(d,body);
-  if(!fields.length&&!d.hide.length&&!d.edits.length&&!(d.fonts||[]).length&&!(d.audio||[]).length)body.append(el('p','hint',d.installed?'Everything is out of the mod. Update Mitosis now puts the original files back.':'Your mod is empty. Save an edit, apply a theme, or set game colors first.'));
+  if(!fields.length&&!d.hide.length&&!d.edits.length&&!(d.fonts||[]).length&&!(d.audio||[]).length)body.append(el('p','hint',d.installed?'Everything is out of the mod. Build to Mitosis now puts the original files back.':'Your mod is empty. Save an edit, apply a theme, or set game colors first.'));
 
   // Footer: file check and install.
   const foot=el('div','review-foot');const files=el('details','review-files');files.append(el('summary','', 'Check the game files'));const pre=el('pre');files.append(pre);
   files.ontoggle=run(async()=>{if(!files.open||pre.textContent)return;pre.textContent='Building…';try{const b=await build();pre.textContent=buildText(b)||'No game files change.';}catch(e){pre.textContent=e.message;}});
   const close=el('button','', 'Close');close.type='button';close.onclick=()=>dlg.close();
-  const go=el('button','primary',d.installed?'Update Mitosis':'Install in Mitosis');go.type='button';go.disabled=!d.installed&&!(edits||colors||hidden||sounds);
-  go.onclick=()=>{dlg.close();setTimeout(()=>$('installButton').click(),0);};
+  const go=el('button','primary',{build:'Apply build',restore:'Restore original'}[R.mode]||'Build to Mitosis');go.type='button';go.id='reviewGo';
+  go.disabled=R.mode==='restore'?!d.installed:R.mode==='build'?!d.installed&&!(edits||colors||hidden||sounds):false;
+  const target=R.mode==='restore'?'restoreButton':'installButton',now=R.mode!=='review';
+  // Apply build / Restore original go ahead (through the usual checks); Build to Mitosis from Review shows the build first.
+  go.onclick=()=>{dlg.close();setTimeout(()=>now&&window.LabThemeChat?.proceed?LabThemeChat.proceed(target):$(target).click(),0);};
   foot.append(files,close,go);dlg.append(foot);
   body.scrollTop=scrolled;dlg.scrollTop=page;
 }
@@ -116,5 +126,6 @@ function soundSection(d,body){
 dlg.addEventListener('close',()=>{ear.pause();if(earButton)earButton.dispatchEvent(new Event('stopped'));});
 
 dlg.addEventListener('close',run(async()=>{if(!R.changed)return;S.build=null;await status();await library();}));
-$('reviewButton').onclick=run(open);
+$('reviewButton').onclick=run(()=>open('review'));
+window.LabReview={open:run(open)};
 })();

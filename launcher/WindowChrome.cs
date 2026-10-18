@@ -31,10 +31,14 @@ internal sealed partial class Loader {
         if (hit == 20) Close();
         if (hit == 8) WindowState = FormWindowState.Minimized;
         if (hit == 9) WindowState = WindowState == FormWindowState.Maximized ? FormWindowState.Normal : FormWindowState.Maximized;
-        Invalidate();
+        chromeHover = 0; Invalidate();   // the button moved away from the pointer: no hover block left behind
     }
     void PaintChrome(Graphics g) {
+        // The bar's color (.topbar, #141b25) beside the bar; the page's color (#10151e) on the resize border below it,
+        // so no lighter strip runs down the window's edges.
         g.Clear(Color.FromArgb(20, 27, 37));
+        int below = Padding.Top + desktop.HeaderHeight;
+        using (var page = new SolidBrush(Bg)) g.FillRectangle(page, 0, below, ClientSize.Width, Math.Max(0, ClientSize.Height - below));
         g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
         using (var line = new Pen(Line)) g.DrawLine(line, 0, Padding.Top + desktop.HeaderHeight - 1, ClientSize.Width, Padding.Top + desktop.HeaderHeight - 1);
         foreach (int hit in new[] { 8, 9, 20 }) {
@@ -79,6 +83,10 @@ internal sealed partial class Loader {
         if (m.Msg == 0xA1 && (m.WParam.ToInt32() == 8 || m.WParam.ToInt32() == 9 || m.WParam.ToInt32() == 20)) return true;
         if (m.Msg == 0xA2 && (m.WParam.ToInt32() == 8 || m.WParam.ToInt32() == 9 || m.WParam.ToInt32() == 20)) { CaptionAction(m.WParam.ToInt32()); return true; }
         if (m.Msg == 0x2A2) { chromeHover = 0; Invalidate(); }
+        if (m.Msg == 0x05) { // WM_SIZE: a maximized window has no resize border, so the page and its bar reach the screen edges
+            int pad = m.WParam.ToInt32() == 2 ? 0 : S(5);
+            if (Padding.All != pad) Padding = new Padding(pad);
+        }
         if (m.Msg == 0x24) { // WM_GETMINMAXINFO: custom chrome must respect the taskbar on each monitor.
             var area = Screen.FromHandle(Handle).WorkingArea; var screen = Screen.FromHandle(Handle).Bounds;
             var info = (MinMaxInfo)Marshal.PtrToStructure(m.LParam, typeof(MinMaxInfo));

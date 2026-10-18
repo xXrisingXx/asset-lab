@@ -113,7 +113,12 @@ jobs:
           $lines = $env:MESSAGE -split "`r?`n" | Where-Object { $_ -notmatch '^\s*(co-authored-by:|signed-off-by:.*noreply@anthropic|.*generated with \[?claude)' }
           $sha = (Get-FileHash dist/AssetLab.exe -Algorithm SHA256).Hash.ToLower()
           $safe = @(
-            '', '---', '### Is it safe?',
+            '', '---', '### How to run it',
+            '1. Under **Assets** below, click **AssetLab.exe** to download it. (Not "Source code": that is the code, not the program. You do not need asset-lab-app.zip either: Asset Lab downloads it by itself.)',
+            '2. Open your **Downloads** folder and double-click **AssetLab.exe**. If your browser asks, choose **Keep**.',
+            '3. If Windows says **"Windows protected your PC"**, click **More info**, then **Run anyway**.',
+            '4. Follow the short setup. Asset Lab finds Mitos.is from Steam and opens. To open it again later, double-click AssetLab.exe again.',
+            '', '### Is it safe?',
             "- **Built by GitHub from the public code.** This file was built on GitHub's servers from [this repository's source](https://github.com/$env:REPO), not on anyone's PC. [Check the build attestation](https://github.com/$env:REPO/attestations).",
             "- **Same file as here:** SHA-256 ``$sha``. [VirusTotal scan of this exact file](https://www.virustotal.com/gui/file/$sha).",
             '- **Why Windows warns:** the app is new and not code-signed yet, so SmartScreen shows "Windows protected your PC" (More info > Run anyway). It does not need administrator rights, backs up every game file before changing it, and Restore original puts them back.')

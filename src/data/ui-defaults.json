@@ -441,6 +441,14 @@
   {
    "id": "sprite|theme4.png|button-eject",
    "label": "Eject button (in a match, phones)"
+  },
+  {
+   "id": "image||virus.png",
+   "label": "Virus (light mode)"
+  },
+  {
+   "id": "image||light_virus.png",
+   "label": "Virus (dark mode)"
   }
  ],
  "removed": [

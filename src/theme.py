@@ -1638,7 +1638,8 @@ class Themes:
         else: reply = 'Pick a color (or keep it as it is), check where it goes, then click Use this one.'
         note = '' if targets else 'Pick where it goes by checking that picture in the library first.'
         return dict(plan=dict(reply=reply, operations=[], ui_colors={}, hide=[]), source='picture', note=note, preview=None,
-                    picture=dict(id=pid, color=color, targets=targets, name=next((p['name'] for p in pictures.presets() if p['id'] == pid), '')))
+                    picture=dict(id=pid, color=color, targets=targets, **next(({'name': p['name'], 'kind': p['kind']} for p in pictures.presets() if p['id'] == pid),
+                                                                              {'name': '', 'kind': 'picture'})))
 
     def preset_theme(self, pid, only=None):
         """A whole theme from a preset (a background or a virus): the preset itself, ready to put on, and the rest of the

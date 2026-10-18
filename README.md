@@ -8,6 +8,19 @@ Asset Lab is a Windows desktop editor for the artwork and sounds in **Mitos.is: 
 
 [**Download Asset Lab**](https://github.com/xXrisingXx/asset-lab/releases/latest)
 
+### How to download and run it
+
+1. Open the [**latest release**](https://github.com/xXrisingXx/asset-lab/releases/latest).
+2. Scroll down to **Assets** and click **AssetLab.exe**. Only that file:
+   - **Source code (zip)** is the code, not the program.
+   - **asset-lab-app.zip** is downloaded by Asset Lab itself.
+3. Open your **Downloads** folder and **double-click AssetLab.exe**. If your browser asks whether to keep the file, choose **Keep**.
+4. If Windows says **"Windows protected your PC"**, click **More info**, then **Run anyway** (why: see *Is it safe?* below).
+5. Follow the short setup: Asset Lab finds Mitos.is from Steam and opens its window. The AI download is optional; you can skip it.
+6. To open Asset Lab again later, double-click **AssetLab.exe** again (move it to your Desktop to find it easily).
+
+You need a 64-bit Windows PC with **Mitos.is: The Game** installed from Steam.
+
 > **Is it safe?** Asset Lab is open source: every line is in this repository. `AssetLab.exe` is built on GitHub's servers from this code, never on anyone's PC, and each release carries a [build attestation](https://github.com/xXrisingXx/asset-lab/attestations) that proves it. Each release's notes also give the file's SHA-256 and a VirusTotal link for that exact file.
 >
 > Windows shows **"Windows protected your PC"** because the app is new and not code-signed yet. Click **More info › Run anyway**. Asset Lab does not need administrator rights, installs into your own user folder, backs up every game file before changing it, and **Restore original** puts them back exactly. See [Privacy](#privacy) for everything it connects to.
@@ -24,7 +37,7 @@ Asset Lab is a Windows desktop editor for the artwork and sounds in **Mitos.is: 
 | **AI image generation** | Redraw any art: “turn the coin into a diamond”, “make the food little tires”, “give the virus a santa hat”, or right-click a picture › **Redraw with Image AI**. Compare variants, adjust the fit and apply the one you like. Requires the optional local AI download. |
 | **Whole-game redraw** | One request redraws what players care about: the menu and arena backgrounds, the viruses, the menu buttons, the in-game buttons and the three foods (anything else, like the title or the coin, by name). A queue shows every piece large, lets you leave pieces out, pick how many variants each gets and the order, and shows the finish time. |
 | **Accelerate** | One click uses the whole graphics card and every processor core for faster drawings (the PC is slower while it draws). |
-| **Your pictures and presets** | Paste or drop any picture into Theme AI and say “make this dark blue”: the main color changes and the light and shade stay. **Presets** are ready-made art to recolor and put in the game: viruses and about 60 seamless backgrounds by category (space, nature, neon, holidays, colorful & exotic, dark & subtle, solid black with stars and more). A background goes on every menu background or the arena floor at once. Right-click a preset to **make a whole theme from it**: the rest of the game is drawn in its colors and style. |
+| **Your pictures and presets** | Paste or drop any picture into Theme AI and say “make this dark blue”: the main color changes and the light and shade stay. **Presets** is a window of ready-made art by category: 61 seamless backgrounds, 87 viruses (the classic virus in 12 colors, wild creatures like a unicorn, dragon or knight, black holes, donuts…), 80 foods (wild ones like a dragon egg, galaxy donut or lava cake), and 40 looks for the **menu buttons** and for the **in-game buttons** on phone and PC (gold, lava, galaxy, neon…), each restyling the game's own buttons so they all match. Click one to see it big, **Use** to pick it, pick one of each kind and **Use all**. Right-click a picture to **export** it, or a category to export all of it as a zip or a folder; backgrounds export as the game's own files, named and sized to drop in. |
 | **Fonts and new fonts** | Restyle the game's text in any font with gradients, outlines, glow and shadow, or ask Theme AI for a brand-new one: “a font made of lava”, “letters covered in sprinkles”, “a new font for a pirate ship”. Image AI draws what the letters are made of and the letters stay readable. |
 | **Sounds** | Replace or edit sounds, with trimming, fades, looping and volume controls. |
 | **Game preview** | See the menu and a match with your mod, in light and dark mode, with the game's controls. |
@@ -35,6 +48,19 @@ Asset Lab is a Windows desktop editor for the artwork and sounds in **Mitos.is: 
 
 ## What's new
 
+- **How to download and run it**, step by step, at the top of this page.
+- **Menu and in-game button sets.** 40 looks (gold, chrome, gems, lava, ice, galaxy, candy, neon, obsidian…), each for the whole main menu and for the in-game buttons on phone (split, eject, joystick) and PC. Every button keeps its exact shape from your game, so they all match. Icons the game colors itself (the teal and pink ones) keep that color with the set's shine and outline.
+- **Pick several presets, use them all.** Use picks a preset; pick a background, a virus, food and buttons, then **Use all** puts them all in the game.
+- **40 wild foods** (dragon egg, galaxy donut, kitty mochi, lava cake, treasure cookie…) and **40 creative viruses** (unicorn, dragon, knight, octopus, clockwork…), plus the classic virus in 12 colors.
+- **Export to share.** Right-click any preset or any edited picture in the chat › **Export**. Right-click a category (or a whole kind) to export all of it as a zip or a folder. Backgrounds can be exported as **game files**: the exact files they change, named as in the game, a folder for each background.
+- **A first-time tour of Presets** shows all of this (open it again with **?**).
+- **Fixes:** the Build to Mitosis review now always shows your newest change (it could show the previous picture).
+
+### Before that
+
+- **The Presets window.** 61 backgrounds, 41 viruses and 40 foods, by category. Click one to see it big with its changes, then Use; click any picture in the chat to see it big with its color and placement controls.
+- **Build to Mitosis** shows what goes into the game first, then Apply build; **Restore original** shows what comes out first.
+- **Simple for everyone** by default, with more room for the chat: chats on the title line, and the AI model, Accelerate and Your picture under More.
 - **Simple mode.** New players get just the pictures and Theme AI: click what to change, describe it, install. Starter buttons (Colors, Whole theme, Background, Redraw something, Text & fonts) mean nobody has to know what to type, and the tour shows examples and the right-click menu.
 - **Your own pictures and presets.** Paste a picture into Theme AI and say “make this dark blue”. Presets are ready-made viruses and about 60 seamless backgrounds to recolor and use; right-click one to make a whole theme from it.
 - **AI-made fonts.** “A font made of lava” draws the material with Image AI and fills the letters of a real typeface with it; Theme AI also understands every way of asking about text (“change the nicktext font”, “make my name glow”, “use a different font”).
@@ -97,8 +123,8 @@ Ask Theme AI for a new background (“a city at night”, “BMW logos on carbon
 
 ## Get started
 
-1. Download **AssetLab.exe** from the [latest release](https://github.com/xXrisingXx/asset-lab/releases/latest).
-2. Run it and follow setup. Asset Lab finds your Steam installation of Mitos.is and opens its own desktop window.
+1. Download **AssetLab.exe** from the [latest release](https://github.com/xXrisingXx/asset-lab/releases/latest) (step by step: [How to download and run it](#how-to-download-and-run-it)).
+2. Double-click it and follow setup. Asset Lab finds your Steam installation of Mitos.is and opens its own desktop window.
 3. Choose whether to install the optional local AI. You can skip it and use the manual editor and keyword-based theme effects.
 4. If setup asks for Microsoft's WebView2 runtime, follow the installation prompt so the desktop window can open.
 
@@ -131,7 +157,7 @@ Be specific about the asset, colors and effect you want. Generated lettering and
 1. Open **Review** or **Review files** to compare the saved changes with the originals.
 2. Use **Remove** beside anything you want to leave out. Your saved work stays available.
 3. Close Mitos.is, or let Asset Lab close it when prompted.
-4. Choose **Install in Mitosis** or **Install saved mod**, then launch the game to see the result.
+4. Choose **Build to Mitosis**, check what goes in, then **Apply build** and launch the game to see the result.
 
 **Apply and Save change your workspace. Install changes what the game uses.** You can keep editing an existing mod and install the updated version without restoring everything first.
 

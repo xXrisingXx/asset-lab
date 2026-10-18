@@ -29,7 +29,7 @@ const drawer=el('aside','theme-drawer');drawer.id='themeDrawer';drawer.hidden=tr
 // Header: title, model and close on one line.
 const head=el('div','theme-head');const title=el('div','theme-title');title.append(el('span','section-label','THEME AI'));
 const model=el('select');model.id='themeModel';model.setAttribute('aria-label','Local AI model');const state=el('span','theme-state','Checking…');
-const close=el('button','quiet','✕');close.id='themeClose';close.title='Close Theme AI';head.append(title,model,state,close);
+const close=el('button','quiet','✕');close.id='themeClose';close.title='Close Theme AI';head.append(title,close);
 
 // With assets checked in the library, a request changes only those.
 const scopeLine=el('div','theme-scope');scopeLine.hidden=true;const scopeText=el('span');const scopeAll=el('button','', 'Use everything');scopeLine.append(scopeText,scopeAll);
@@ -87,11 +87,13 @@ for(const [label,start,tip] of [['Colors','Make the buttons and panels ','Recolo
   const b=el('button','',label);b.type='button';b.title=tip;b.onclick=()=>{input.value=start;input.focus();input.setSelectionRange(start.length,start.length);};starters.append(b);}
 const pictureButton=el('button','', 'Your picture');pictureButton.id='themePictureButton';pictureButton.type='button';pictureButton.title='Add a picture (or paste or drop one here), then say what to change: “make this dark blue”';
 const presetsButton=el('button','', 'Presets');presetsButton.id='themePresetsButton';presetsButton.type='button';presetsButton.title='Ready-made art you can recolor and put in the game';
-starters.append(fontsButton,pictureButton,presetsButton);
+starters.append(fontsButton,presetsButton);
 // More: the extras most requests never need, folded away.
 const more=el('details','theme-more');more.id='themeMore';more.append(el('summary','','More'));const moreBody=el('div','theme-more-body');
-moreBody.append(drawRow,auto,ideas,tags);more.append(moreBody);
-row.append(more,accel,send);
+const modelRow=el('label','theme-model-row');modelRow.append(el('span','section-label','AI MODEL'),model,state);
+const extras=el('div','theme-more-row');extras.append(pictureButton,accel);
+moreBody.append(drawRow,modelRow,extras,auto,ideas,tags);more.append(moreBody);
+row.append(more,send);
 // A picture for the next request ("make this dark blue"): pasted, dropped or picked with Your picture.
 const attached=el('div','theme-attached');attached.id='themeAttached';attached.hidden=true;
 const attachedImg=el('img');attachedImg.alt='Your picture';const unattach=el('button','quiet','✕');unattach.type='button';unattach.title='Remove the picture';
@@ -109,25 +111,7 @@ drawer.addEventListener('dragleave',e=>{if(e.target===drawer)drawer.classList.re
 drawer.addEventListener('drop',e=>{const file=[...(e.dataTransfer?.files||[])].find(f=>f.type.startsWith('image/'));drawer.classList.remove('dropping');if(file){e.preventDefault();attach(file);}});
 // Presets: ready-made art in the chat, by category. A click starts its card; right-click (or ⋯) also offers a whole theme
 // made from it.
-presetsButton.onclick=run(async()=>{const list=(await api('/api/presets')).presets||[];
-  const box=bubble('bot',list.length?'Pick a preset. You can recolor it and put it in the game. Right-click one to make a whole theme from it.':'No presets yet.');
-  const cats=[...new Set(list.map(p=>p.category))],tabs=el('div','preset-tabs'),grid=el('div','preset-grid');let shown='';
-  const filter=c=>{shown=c;tabs.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.cat===c));grid.querySelectorAll('.preset').forEach(b=>{b.hidden=!!c&&b.dataset.cat!==c;});};
-  for(const c of ['',...cats]){const t=el('button','picture-chip',c||'All');t.type='button';t.dataset.cat=c;t.onclick=()=>filter(c);tabs.append(t);}
-  for(const p of list){const b=el('button','preset');b.type='button';b.dataset.cat=p.category;const im=el('img');im.loading='lazy';im.src='/api/picture?small=1&id='+encodeURIComponent(p.id);im.alt=p.name;
-    if(p.kind==='background')im.classList.add('tiled');
-    b.append(im,el('span','',p.name));b.onclick=run(()=>ask(`Use the ${p.name} preset`,{picture:p.id}));
-    b.oncontextmenu=e=>{e.preventDefault();e.stopPropagation();presetMenu(p,e.clientX,e.clientY);};grid.append(b);}
-  if(cats.length>1)box.append(tabs);box.append(grid);filter('');scroll();});
-// Right-click a preset: use it, or make a whole theme from it (backgrounds and viruses).
-const pmenu=el('div','context preset-menu');pmenu.hidden=true;document.body.append(pmenu);
-function presetMenu(p,x,y){pmenu.replaceChildren();
-  const use=el('button','','Use this preset');use.type='button';use.onclick=()=>{pmenu.hidden=true;run(()=>ask(`Use the ${p.name} preset`,{picture:p.id}))();};pmenu.append(use);
-  if(p.kind==='background'||(p.for||[]).some(n=>/virus/.test(n))){const whole=el('button','','Make a whole theme from this');whole.type='button';
-    whole.onclick=()=>{pmenu.hidden=true;run(()=>ask(`Make a whole theme from ${p.name}`,{theme_from:p.id}))();};pmenu.append(whole);}
-  pmenu.hidden=false;pmenu.style.left=Math.min(innerWidth-230,x)+'px';pmenu.style.top=Math.min(innerHeight-100,y)+'px';}
-addEventListener('pointerdown',e=>{if(!pmenu.hidden&&!pmenu.contains(e.target))pmenu.hidden=true;},true);
-addEventListener('keydown',e=>{if(e.key==='Escape')pmenu.hidden=true;});
+presetsButton.onclick=()=>window.LabPresets?.open();
 form.append(starters,attached,input,row,filePick);
 
 // Dock: what is waiting to be installed, whether Mitosis is open, and the install / restore actions.
@@ -135,10 +119,10 @@ const dock=el('div','theme-dock');
 const modLine=el('div','theme-dock-line');const modText=el('b','', 'Your mod is empty');const gameText=el('small','', '');modLine.append(modText,gameText);
 const actions=el('div','theme-dock-actions');
 const review=el('button','', 'Review');review.title='List the game files the install would change';
-const install=el('button','primary','Install in Mitosis');install.id='themeInstall';
-const restore=el('button','', 'Restore original');const launch=el('button','', 'Open Mitosis');
+const install=el('button','primary','Build to Mitosis');install.id='themeInstall';
+const restore=el('button','', 'Restore original');
 const undo=el('button','quiet','Undo theme');undo.id='themeUndo';undo.title='Take the last theme back off';
-actions.append(review,install,restore,launch,undo);dock.append(modLine,actions);
+actions.append(review,install,restore,undo);dock.append(modLine,actions);
 
 drawer.append(head,scopeLine,log,form,dock);document.body.append(drawer);
 
@@ -159,7 +143,7 @@ function showPlan(box,result,prompt,keys,entry){
     li.append(el('b','',targetText(line)),document.createTextNode(' — '+line.effect));
     li.append(el('small','',line.sheets?`${line.sheets} sheet${line.sheets===1?'':'s'}${line.regions?` · ${line.regions} sprites`:''}`:'matches nothing'));list.append(li);}
   box.append(list);
-  if(preview.samples.length){const grid=el('div','theme-samples');for(const s of preview.samples){const fig=el('button','theme-sample');fig.title='Open '+s.name;const a=new Image(),b=new Image();a.src=s.before;b.src=s.after;a.alt='before';b.alt='after';fig.append(a,el('span','','→'),b,el('small','',(s.label||s.name)+(s.tint?' · in game':'')));if(s.tint)fig.title+=` · shown as the game draws it (× ${s.tint})`;fig.onclick=run(()=>select(s.key));grid.append(fig);}box.append(grid);}
+  if(preview.samples.length){const grid=el('div','theme-samples');for(const s of preview.samples){const fig=el('button','theme-sample');fig.title='Open '+s.name;fig.dataset.exportName=s.label||s.name;const a=new Image(),b=new Image();a.src=s.before;b.src=s.after;a.alt='before';b.alt='after';fig.append(a,el('span','','→'),b,el('small','',(s.label||s.name)+(s.tint?' · in game':'')));if(s.tint)fig.title+=` · shown as the game draws it (× ${s.tint})`;fig.onclick=run(()=>select(s.key));grid.append(fig);}box.append(grid);}
   const colorsOnly=!preview.sheets&&code;
   const bar=el('div','theme-actions');const apply=el('button','primary',colorsOnly?(preview.ui_colors?.length?'Apply game colors':'Apply'):'Apply');apply.disabled=!preview.sheets&&!colorsOnly;
   const scope=[preview.sheets?`up to ${preview.sheets} sheet${preview.sheets===1?'':'s'}`:'',preview.ui_colors?.length?'game colors':'',preview.hide?.length?'menu':'',keys?`${keys.length} checked only`:''].filter(Boolean).join(' + ');
@@ -188,9 +172,9 @@ function setBusy(value){T.busy=value;send.disabled=value;input.disabled=value;un
 function dockState(){
   const st=S.status||{},edits=(st.staged||[]).length,colors=Object.keys(st.palette||{}).length+(st.hidden||[]).length,active=st.active;
   const broken=active&&active.state!=='installed',pending=!!st.pending;
-  modText.textContent=broken?'An install was interrupted':active?(pending?'Changes since your install · Update Mitosis to see them':'Your mod is installed in Mitosis'):edits||colors?`${edits} saved sheet${edits===1?'':'s'}${colors?' + game colors/menu':''} ready to install`:'Nothing to install yet';
+  modText.textContent=broken?'An install was interrupted':active?(pending?'Changes since your build · Build to Mitosis to see them':'Your mod is installed in Mitosis'):edits||colors?`${edits} saved sheet${edits===1?'':'s'}${colors?' + game colors/menu':''} ready to install`:'Nothing to install yet';
   gameText.textContent=T.game===null?'':T.game?' · Mitosis is open':' · Mitosis is closed';gameText.classList.toggle('warn',!!T.game);
-  install.textContent=active?'Update Mitosis':'Install in Mitosis';install.hidden=!!broken;restore.hidden=!active;launch.hidden=!active||!!T.game;
+  install.textContent='Build to Mitosis';install.hidden=!!broken;restore.hidden=!active;
   install.disabled=T.busy||(active?!pending:!(edits||colors));review.disabled=T.busy||!(edits||colors||active);
 }
 async function checkGame(){try{T.game=(await api('/api/game')).running;}catch{T.game=null;}dockState();return T.game;}
@@ -206,16 +190,20 @@ async function closedFirst(what){
   if(!r.closed){message('Mitosis did not close. Close it yourself, then try again.',true);return false;}
   return true;}
 // Settings › General › Ask before installing or restoring asks first (LabSettings.beforeGameChange).
-async function pass(target,what){
-  if(window.LabSettings&&LabSettings.beforeGameChange&&!await LabSettings.beforeGameChange(target.id))return;
+async function pass(target,what,reviewed){   // reviewed: the player saw the build or restore list and went ahead
+  if(!reviewed&&window.LabSettings&&LabSettings.beforeGameChange&&!await LabSettings.beforeGameChange(target.id))return;
   if(!await closedFirst(what))return;T.passing=true;try{target.click();}finally{T.passing=false;}}
 // The same check guards the editor's own Install and Restore buttons.
+// Build to Mitosis and Restore original show what they will do first (the review), and go ahead from there.
 for(const [id,what] of [['installButton','Installing the mod'],['restoreButton','Restoring the original files']]){
-  $(id).addEventListener('click',e=>{if(T.passing)return;e.stopImmediatePropagation();e.preventDefault();run(()=>pass($(id),what))();},true);}
+  $(id).addEventListener('click',e=>{if(T.passing)return;e.stopImmediatePropagation();e.preventDefault();
+    // Settings › General › Ask before installing or restoring: the list is that question. Off: straight ahead.
+    const ask=!window.LabSettings||LabSettings.get('confirm_install')!==false;
+    if(!T.reviewed&&ask&&window.LabReview){LabReview.open(id==='installButton'?'build':'restore');return;}
+    T.reviewed=false;run(()=>pass($(id),what,true))();},true);}
 review.onclick=()=>$('reviewButton').click();
-install.onclick=run(()=>pass($('installButton'),'Installing the mod'));
-restore.onclick=run(()=>pass($('restoreButton'),'Restoring the original files'));
-launch.onclick=()=>$('launchButton').click();
+install.onclick=()=>$('installButton').click();
+restore.onclick=()=>$('restoreButton').click();
 
 // ----- asking and applying -----------------------------------------------------------------------
 async function ask(text,opts={}){   // opts: {only: keys, draw: 'on'} for "Redraw with Image AI" from the right-click menu; {picture: id}
@@ -231,6 +219,7 @@ async function ask(text,opts={}){   // opts: {only: keys, draw: 'on'} for "Redra
     const result=await api('/api/theme-chat',{message:text,model:model.value,history:T.history,only:keys,language:window.LabI18n?.lang||'en',draw:opts.draw||drawMode,picture:opts.picture||'',theme_from:opts.theme_from||''});   // the model replies in the lab's language
     clearInterval(tick);wait.firstChild.textContent=result.plan.reply||'Here is the plan.';
     if(result.plan.operations.length||Object.keys(result.plan.ui_colors||{}).length||result.plan.hide?.length){T.history.push({role:'user',content:text},{role:'assistant',content:JSON.stringify(result.plan)});T.history=T.history.slice(-8);}
+    if(opts.apply&&result.picture)result.picture.autoApply=true;
     const entry=record({t:'bot',text:wait.firstChild.textContent,result,prompt:text,keys});
     if(result.undone){S.build=null;await status();await library();if(S.asset&&!S.dirty)await select(S.asset.key,true);await refresh();}
     renderResult(wait,entry,false);scroll();
@@ -244,7 +233,8 @@ async function ask(text,opts={}){   // opts: {only: keys, draw: 'on'} for "Redra
 function renderResult(wait,entry,restoring){
   const {result,prompt:text,keys}=entry;
   const planned=result.plan.operations.length||Object.keys(result.plan.ui_colors||{}).length||result.plan.hide?.length;
-  if(result.picture){showPicture(wait,result.picture,result.note);
+  // Use all in Presets: the picture goes straight on its usual place, once (never again when the chat is reopened).
+  if(result.picture){const go=!restoring&&!!result.picture.autoApply;delete result.picture.autoApply;showPicture(wait,result.picture,result.note,go);
     if(result.design){const offer=el('div','design-offer');offer.append(el('p',''));wait.append(offer);showDesign(offer,result.design,keys,null,true,entry,restoring);}   // a whole theme from a preset
     return;}
   if(result.font&&!planned&&!result.design){showFont(wait,result.font,result.note);return;}
@@ -383,7 +373,7 @@ async function applyFinished(Q){
       Q.cards.get(item)?.querySelector('.design-card')?.dispatchEvent(new CustomEvent('applied'));
       const line=Q.cards.get(item)?.querySelector('.design-part-state');if(line)line.textContent=' · applied ✓';}}
   finally{Q.ready.disabled=false;}
-  message(`Applied ${ready.length} drawing${ready.length===1?'':'s'}. Install in Mitosis to see them.`);S.build=null;await status();await library();refreshQueue(Q);
+  message(`Applied ${ready.length} drawing${ready.length===1?'':'s'}. Build to Mitosis to see them.`);S.build=null;await status();await library();refreshQueue(Q);
 }
 // The queue window: every piece large, with its state; leave pieces out, set their variants, put them in the order to draw.
 function openQueue(Q){
@@ -424,7 +414,7 @@ function renderQueue(Q){
     const grip=el('span','draw-queue-grip',waiting?'⋮⋮':'');grip.setAttribute('aria-hidden','true');
     const tick=el('input');tick.type='checkbox';tick.checked=item.on;tick.disabled=!waiting;tick.title='Draw this piece';
     tick.onchange=()=>{item.on=tick.checked;keepQueue(Q);refreshQueue(Q);};
-    const pic=new Image();pic.loading='lazy';pic.alt='';pic.className='draw-queue-pic';pic.src=`/api/thumb?key=${encodeURIComponent(item.rep||item.keys[0])}&big=1${item.applied?`&t=${item.job}`:''}`;
+    const pic=new Image();pic.loading='lazy';pic.alt='';pic.className='draw-queue-pic';pic.dataset.exportName=item.label||'drawing';pic.src=`/api/thumb?key=${encodeURIComponent(item.rep||item.keys[0])}&big=1${item.applied?`&t=${item.job}`:''}`;
     pic.title='See it larger';pic.onclick=()=>zoomPiece(Q,item);
     const text=el('div','draw-queue-text');const place=waiting&&item.on?queuedNow.indexOf(item)+1:0;
     text.append(el('b','',item.label||'This piece'),el('small','',`${item.applied?'Applied ✓':states[item.state]}${place?` · #${place}`:''}`));
@@ -501,10 +491,14 @@ async function resumeDesign(box,info,entry){
 function pictureThumb(id){const im=el('img','theme-thumb');im.src='/api/picture?small=1&id='+encodeURIComponent(id);im.alt='Your picture';return im;}
 // A picture card: the picture in its color, color chips (or any color in words), where it goes, and Use this one.
 const CHIPS=[['Dark blue','#1e3a8a'],['Blue','#3b82f6'],['Red','#e53935'],['Gold','#f5c542'],['Green','#2ecc71'],['Pink','#ff6fb5'],['Purple','#9b5de5'],['Black','#101216'],['White','#ffffff']];
-function showPicture(box,pic,note){
+function showPicture(box,pic,note,applyNow){
   if(note)box.append(el('p','theme-note',note));
-  const card=el('div','picture-card');const img=el('img','picture-view');img.alt='The picture';
-  const show=()=>{img.src=`/api/picture?id=${encodeURIComponent(pic.id)}${pic.color?'&color='+encodeURIComponent(pic.color):''}`;
+  const card=el('div','picture-card');const img=el('img','picture-view');img.alt='The picture';img.title='Click to see it big';
+  /* Big, with its controls: whoever looks closer wants to see the changes closer too. */
+  let big=null;
+  img.onclick=()=>{if(!window.LabViewer)return;big=LabViewer.open({src:img.src,kind:pic.kind,name:pic.name||'Your picture',exportName:card.dataset.exportName,controls:ctrl,onclose:()=>{big=null;}});};
+  const show=()=>{img.src=`/api/picture?id=${encodeURIComponent(pic.id)}${pic.color?'&color='+encodeURIComponent(pic.color):''}`;big?.show(img.src);
+    card.dataset.exportName=[pic.name||'picture',(pic.color||'').replace('#','')].filter(Boolean).join(' ');
     chips.querySelectorAll('button').forEach(b=>b.classList.toggle('active',(b.dataset.color||'')===(pic.color||'')));apply.disabled=false;apply.textContent='Use this one';};
   const chips=el('div','picture-chips');
   for(const [label,color] of [['Original',''],...CHIPS]){const b=el('button','picture-chip');b.type='button';b.dataset.color=color;b.title=label;
@@ -522,15 +516,20 @@ function showPicture(box,pic,note){
   const strengthRow=el('label','picture-where');const strength=el('input');strength.type='range';strength.min=0.2;strength.max=1;strength.step=0.05;strength.value=pic.strength??1;
   strength.oninput=()=>{pic.strength=+strength.value;keepChat();apply.disabled=false;apply.textContent='Use this one';};
   strengthRow.append(el('span','','Strength'),strength);strengthRow.title='How strongly the picture covers the game’s own color: lower lets it show through';
-  const isSet=()=>where.value.startsWith('set:');strengthRow.hidden=!isSet();where.onchange=()=>{strengthRow.hidden=!isSet();apply.disabled=false;apply.textContent='Use this one';};
+  const isSet=()=>/^set:(?:everywhere|menu|arena)/.test(where.value);   // backgrounds: how much of the game's own color shows
+  /* In a match the game shows the floor as it is in light mode, but lays its own dark color over it in dark mode. */
+  const darkNote=el('p','theme-note','In dark mode the game lays its own dark color over the in-game floor, so it looks darker there than here.');
+  const showDark=()=>{darkNote.hidden=!/^set:(?:everywhere|arena$|arena-dark)/.test(where.value);};strengthRow.hidden=!isSet();where.onchange=()=>{strengthRow.hidden=!isSet();showDark();apply.disabled=false;apply.textContent='Use this one';};showDark();
   const actions=el('div','theme-actions');const apply=el('button','primary','Use this one');
   apply.onclick=run(async()=>{if(!where.value){message('Check the picture it goes on in the library first.',true);return;}
     apply.disabled=true;try{const r=await api('/api/picture-apply',{id:pic.id,key:where.value,color:pic.color||'',strength:isSet()?+strength.value:1});apply.textContent='Applied ✓';
-      message(`${r.name} changed. Install in Mitosis to see it.`);}catch(e){apply.disabled=false;throw e;}
+      message(`${r.name} changed. Build to Mitosis to see it.`);}catch(e){apply.disabled=false;throw e;}
     S.build=null;await status();await library();if(S.asset&&!S.dirty)await select(S.asset.key,true);});
   if(!where.options.length)apply.disabled=true;
-  actions.append(apply);card.append(img,el('p','design-how','Pick a color, then Use this one.'),chips,wordsRow,whereRow,strengthRow,actions);box.append(card);show();
+  const ctrl=el('div','picture-controls');ctrl.append(el('p','design-how','Pick a color, then Use this one.'),chips,wordsRow,whereRow,strengthRow,darkNote,actions);
+  actions.append(apply);card.append(img,ctrl);box.append(card);show();
   if(!where.options.length)apply.disabled=true;scroll();
+  if(applyNow&&where.options.length)apply.click();   // Use all in Presets (it can still be recolored and used again here)
 }
 function showFont(box,font,note){
   // A text style, asked for or offered with a whole-game theme: the game font in that look, previewed. The looks menu
@@ -576,7 +575,7 @@ function showFont(box,font,note){
   box.append(img);if(textures)box.append(textures);if(pick)box.append(pick);box.append(actions);
 }
 function designCard(box,job,keys,entry,info){
-  const card=el('div','design-card');box.append(card);
+  const card=el('div','design-card');card.dataset.exportName=job.names?.[0]||'drawing';box.append(card);
   // Settings › Theme AI & drawing › Keep game-colored icons white ticks "Keep it white" for icons the game colors.
   const S2={variant:0,settings:designDefaults(job),applied:null};   // food: the game paints every pellet its own color
   if(job.food)card.append(el('p','theme-note',(job.food_tier?.[1]>1?`This drawing becomes one of the game’s ${job.food_tier[1]} foods (each is worth a different mass), in every size and copy. `:`This drawing becomes every food pellet (${job.targets.length} shapes and sizes). `)+'It keeps the drawing’s colors; the game also tints each pellet, so the colors mix with it. Tick “Keep it white” for the game’s own pellet colors.'));
@@ -596,7 +595,7 @@ function designCard(box,job,keys,entry,info){
   showWarning();
   const views=el('div','design-views');
   const frames=job.frames.map((f,t)=>{const fig=el('figure','design-view');const im=new Image();im.alt=job.names[t];fig.append(im,el('figcaption','',`${job.names[t]} · ${f[0]}×${f[1]} frame in the game`));views.append(fig);return im;});
-  const before=el('figure','design-view before');const old=new Image();old.src=`/api/thumb?key=${encodeURIComponent(job.targets[0])}&big=1`;before.append(old,el('figcaption','','Now'));views.prepend(before);
+  const before=el('figure','design-view before');const old=new Image();old.src=`/api/thumb?key=${encodeURIComponent(job.targets[0])}&big=1&v=${Date.now()}`;before.append(old,el('figcaption','','Now'));views.prepend(before);
   if(job.tint){
     // The game multiplies this icon by one of its colors: show the drawing that way too (white turns into that color).
     const fig=el('figure','design-view ingame');const cv=document.createElement('canvas');fig.append(cv,el('figcaption','',`In game (× ${job.tint})`));views.append(fig);
@@ -637,7 +636,7 @@ function designCard(box,job,keys,entry,info){
     if(info){info.applied=true;info.variant=S2.variant;keepChat();}S.build=null;await status();await library();if(S.asset&&!S.dirty)await select(S.asset.key,true);return r;}
   apply.onclick=run(async()=>{await applyNow();
     const undoD=el('button','quiet','Undo design');undoD.onclick=run(async()=>{await api('/api/design-undo',{job:job.id});undoD.remove();S2.live=false;apply.disabled=false;apply.textContent='Use this one';if(info){info.applied=false;keepChat();}S.build=null;await status();await library();});
-    const inst=el('button','primary',S.status?.active?'Update Mitosis':'Install in Mitosis');inst.onclick=install.onclick;actions.append(undoD,inst);});
+    const inst=el('button','primary','Build to Mitosis');inst.onclick=install.onclick;actions.append(undoD,inst);});
   if(info?.applied){apply.disabled=true;apply.textContent='Applied ✓';S2.live=true;}
   card.addEventListener('applied',()=>{S2.live=true;apply.disabled=true;apply.textContent='Applied ✓';if(info){info.applied=true;keepChat();}});   /* by the queue's Apply finished */
   more.onclick=run(()=>drawDesign(box,job.prompt,job.targets,drawings(),null,job.direction,entry,'',job.inspiration));   // same art direction: the new variants match
@@ -657,7 +656,7 @@ function follow(id,box,control){
     T.job=null;setBusy(false);bar.classList.toggle('done',job.state==='complete');box.classList.toggle('error',job.state!=='complete');
     if(job.errors?.length)box.append(el('p','theme-note',`${job.errors.length} sheet(s) skipped: ${job.errors.slice(0,3).join(' · ')}`));
     if(job.state==='complete'){if(control){control.textContent='Saved ✓';control.disabled=true;}
-      const next=el('div','theme-actions');const go=el('button','primary','Install in Mitosis');go.onclick=install.onclick;next.append(go,el('small','hint','or keep refining first'));box.append(next);}
+      const next=el('div','theme-actions');const go=el('button','primary','Build to Mitosis');go.onclick=install.onclick;next.append(go,el('small','hint','or keep refining first'));box.append(next);}
     else if(control)control.disabled=false;
     S.build=null;await status();await library();if(S.asset&&!S.dirty)await select(S.asset.key,true);await refresh();scroll();
     resolve(job);};poll();});
@@ -673,7 +672,7 @@ form.onsubmit=e=>{e.preventDefault();run(()=>ask(input.value))();};
 input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();form.requestSubmit();}});
 undo.onclick=run(async()=>{if(!await confirmAction('Undo the last theme?','Every sheet it changed goes back to how it was just before. Sheets you edited by hand afterwards are left alone.','Undo theme'))return;
   setBusy(true);try{const r=await api('/api/theme-undo',{});const said=`Undid “${r.prompt.slice(0,80)}”: ${r.reverted} sheet(s) restored${r.skipped?`, ${r.skipped} left alone`:''}.`;bubble('bot',said);T.history=[];record({t:'note',text:said});S.build=null;await status();await library();if(S.asset&&!S.dirty)await select(S.asset.key,true);}finally{setBusy(false);await refresh();}});
-const WELCOME='Describe the look you want: a color, a mood, or parts like buttons, panels, icons, cells, the logo or the menu pattern. I show a plan with samples; Apply saves it, and Install in Mitosis (below) puts it in the game. Say “undo” to take a theme back off, or “help” for more.';
+const WELCOME='Describe the look you want: a color, a mood, or parts like buttons, panels, icons, cells, the logo or the menu pattern. I show a plan with samples; Apply saves it, and Build to Mitosis (below) puts it in the game. Say “undo” to take a theme back off, or “help” for more.';
 function toggle(open){T.open=open;drawer.hidden=!open;showScope();document.body.classList.toggle('theme-on',open);button.classList.toggle('active',open);
   try{localStorage.setItem('lab-theme-open',open?'1':'');}catch(e){}
   if(open){run(refresh)();checkGame();input.focus();if(!log.childElementCount)bubble('bot',WELCOME);}}
@@ -699,7 +698,7 @@ const chatMenu=el('div','chat-menu');chatMenu.id='themeChatMenu';chatMenu.hidden
 const chatFind=el('input','chat-find');chatFind.type='search';chatFind.id='themeChatSearch';chatFind.placeholder='Search chats';chatFind.setAttribute('aria-label','Search chats');
 const chatRows=el('div','chat-list');chatRows.setAttribute('role','listbox');chatRows.setAttribute('aria-label','Saved chats of this build');
 const chatNone=el('p','chat-none','No chats match.');
-chatMenu.append(chatFind,chatRows,chatNone);chatBar.append(chatPick,fresh,chatMenu);head.after(chatBar);
+chatMenu.append(chatFind,chatRows,chatNone);chatBar.append(chatPick,fresh,chatMenu);close.before(chatBar);   // on the title line: more room for the chat
 const own=(node,title)=>{node.translate=!title||title==='New chat';return node;};   // your own words stay as written
 function ago(t){const s=Math.max(0,Date.now()/1000-(+t||0));if(s<60)return 'just now';if(s<3600)return `${Math.floor(s/60)} min ago`;
   if(s<86400)return `${Math.floor(s/3600)} h ago`;if(s<7*86400)return `${Math.floor(s/86400)} d ago`;
@@ -799,7 +798,7 @@ J.id=newId();showChats();
    if(!look||!look.trim())return;
    if(!T.open)toggle(true);
    await ask(`Redraw ${name}: ${look.trim()}`,{only:keys,draw:'on'});});}
-window.LabThemeChat={reset(){clearTimeout(J.saveTimer);J.saveTimer=0;J.list=[];startChat();}};   // tests: forget the open chat
+window.LabThemeChat={ask(text,opts){if(!T.open)toggle(true);return run(()=>ask(text,opts))();},proceed(id){T.reviewed=true;$(id).click();},reset(){clearTimeout(J.saveTimer);J.saveTimer=0;J.list=[];startChat();}};   // tests: forget the open chat
 run(loadChats)();try{if(localStorage.getItem('lab-theme-open'))toggle(true);}catch(e){}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&T.open&&!$('dialog').open&&document.activeElement!==input)toggle(false);});
 

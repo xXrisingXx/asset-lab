@@ -8,8 +8,9 @@
     "virus.png",
     "light_virus.png"
    ],
-   "category": "Viruses",
-   "kind": "virus"
+   "category": "Classic",
+   "kind": "virus",
+   "group": "Viruses"
   },
   {
    "id": "bg-solid-black",
@@ -680,6 +681,3118 @@
    "for": [
     "menu",
     "arena"
+   ]
+  },
+  {
+   "id": "m-gold",
+   "name": "Gold",
+   "group": "Menu buttons",
+   "category": "Metals",
+   "kind": "menu",
+   "file": "materials/gold.webp",
+   "look": {
+    "outline": "#5c3d00",
+    "glow": "",
+    "ink": "#fff6d8",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "m-chrome",
+   "name": "Chrome",
+   "group": "Menu buttons",
+   "category": "Metals",
+   "kind": "menu",
+   "file": "materials/chrome.webp",
+   "look": {
+    "outline": "#2a2f38",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "m-rose-gold",
+   "name": "Rose gold",
+   "group": "Menu buttons",
+   "category": "Metals",
+   "kind": "menu",
+   "file": "materials/rose-gold.webp",
+   "look": {
+    "outline": "#5a2e2a",
+    "glow": "",
+    "ink": "#fff0ea",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "m-bronze",
+   "name": "Bronze",
+   "group": "Menu buttons",
+   "category": "Metals",
+   "kind": "menu",
+   "file": "materials/bronze.webp",
+   "look": {
+    "outline": "#3a2410",
+    "glow": "",
+    "ink": "#ffe2b8",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "m-copper",
+   "name": "Copper",
+   "group": "Menu buttons",
+   "category": "Metals",
+   "kind": "menu",
+   "file": "materials/copper.webp",
+   "look": {
+    "outline": "#3d1f12",
+    "glow": "",
+    "ink": "#ffe7d6",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "m-ruby",
+   "name": "Ruby",
+   "group": "Menu buttons",
+   "category": "Gems",
+   "kind": "menu",
+   "file": "materials/ruby.webp",
+   "look": {
+    "outline": "#4a0010",
+    "glow": "#ff3355",
+    "ink": "#fff0f3",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-sapphire",
+   "name": "Sapphire",
+   "group": "Menu buttons",
+   "category": "Gems",
+   "kind": "menu",
+   "file": "materials/sapphire.webp",
+   "look": {
+    "outline": "#001a4d",
+    "glow": "#3d7bff",
+    "ink": "#eef4ff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-emerald",
+   "name": "Emerald",
+   "group": "Menu buttons",
+   "category": "Gems",
+   "kind": "menu",
+   "file": "materials/emerald.webp",
+   "look": {
+    "outline": "#00331a",
+    "glow": "#2bff88",
+    "ink": "#ecfff4",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-amethyst",
+   "name": "Amethyst",
+   "group": "Menu buttons",
+   "category": "Gems",
+   "kind": "menu",
+   "file": "materials/amethyst.webp",
+   "look": {
+    "outline": "#2a0a4a",
+    "glow": "#b46bff",
+    "ink": "#f6eeff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-diamond",
+   "name": "Diamond",
+   "group": "Menu buttons",
+   "category": "Gems",
+   "kind": "menu",
+   "file": "materials/diamond.webp",
+   "look": {
+    "outline": "#3b5a78",
+    "glow": "#bfe9ff",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-opal",
+   "name": "Opal",
+   "group": "Menu buttons",
+   "category": "Gems",
+   "kind": "menu",
+   "file": "materials/opal.webp",
+   "look": {
+    "outline": "#4a4a66",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "m-lava",
+   "name": "Lava",
+   "group": "Menu buttons",
+   "category": "Elements",
+   "kind": "menu",
+   "file": "materials/lava.webp",
+   "look": {
+    "outline": "#1a0500",
+    "glow": "#ff5a00",
+    "ink": "#ffe2b0",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-ice",
+   "name": "Ice",
+   "group": "Menu buttons",
+   "category": "Elements",
+   "kind": "menu",
+   "file": "materials/ice.webp",
+   "look": {
+    "outline": "#1e4a6e",
+    "glow": "#9fe3ff",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "m-ocean",
+   "name": "Ocean",
+   "group": "Menu buttons",
+   "category": "Elements",
+   "kind": "menu",
+   "file": "materials/ocean.webp",
+   "look": {
+    "outline": "#00264d",
+    "glow": "",
+    "ink": "#e8fbff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "m-fire",
+   "name": "Fire",
+   "group": "Menu buttons",
+   "category": "Elements",
+   "kind": "menu",
+   "file": "materials/fire.webp",
+   "look": {
+    "outline": "#4a0e00",
+    "glow": "#ff8a00",
+    "ink": "#fff4c2",
+    "bevel": 0.7
+   },
+   "for": []
+  },
+  {
+   "id": "m-toxic",
+   "name": "Toxic",
+   "group": "Menu buttons",
+   "category": "Elements",
+   "kind": "menu",
+   "file": "materials/toxic.webp",
+   "look": {
+    "outline": "#103300",
+    "glow": "#7dff2a",
+    "ink": "#f2ffe0",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "m-storm",
+   "name": "Storm",
+   "group": "Menu buttons",
+   "category": "Elements",
+   "kind": "menu",
+   "file": "materials/storm.webp",
+   "look": {
+    "outline": "#0d1426",
+    "glow": "#6ab8ff",
+    "ink": "#eaf4ff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "m-wood",
+   "name": "Wood",
+   "group": "Menu buttons",
+   "category": "Nature",
+   "kind": "menu",
+   "file": "materials/wood.webp",
+   "look": {
+    "outline": "#2b1708",
+    "glow": "",
+    "ink": "#fff1dc",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-marble",
+   "name": "Marble",
+   "group": "Menu buttons",
+   "category": "Nature",
+   "kind": "menu",
+   "file": "materials/marble.webp",
+   "look": {
+    "outline": "#4a4a4a",
+    "glow": "",
+    "ink": "#2b2b2b",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "m-jungle",
+   "name": "Jungle",
+   "group": "Menu buttons",
+   "category": "Nature",
+   "kind": "menu",
+   "file": "materials/jungle.webp",
+   "look": {
+    "outline": "#0d2a0d",
+    "glow": "",
+    "ink": "#f0ffe8",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "m-stone",
+   "name": "Stone",
+   "group": "Menu buttons",
+   "category": "Nature",
+   "kind": "menu",
+   "file": "materials/stone.webp",
+   "look": {
+    "outline": "#1f2226",
+    "glow": "",
+    "ink": "#f2f2ea",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "m-coral",
+   "name": "Coral",
+   "group": "Menu buttons",
+   "category": "Nature",
+   "kind": "menu",
+   "file": "materials/coral.webp",
+   "look": {
+    "outline": "#4a1a1a",
+    "glow": "",
+    "ink": "#fff4ee",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "m-galaxy",
+   "name": "Galaxy",
+   "group": "Menu buttons",
+   "category": "Space",
+   "kind": "menu",
+   "file": "materials/galaxy.webp",
+   "look": {
+    "outline": "#120a2a",
+    "glow": "#a070ff",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "m-nebula",
+   "name": "Nebula",
+   "group": "Menu buttons",
+   "category": "Space",
+   "kind": "menu",
+   "file": "materials/nebula.webp",
+   "look": {
+    "outline": "#1a0a26",
+    "glow": "#ff6ad5",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "m-starry",
+   "name": "Starry night",
+   "group": "Menu buttons",
+   "category": "Space",
+   "kind": "menu",
+   "file": "materials/starry.webp",
+   "look": {
+    "outline": "#000814",
+    "glow": "#8fb8ff",
+    "ink": "#ffe9a8",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "m-aurora",
+   "name": "Aurora",
+   "group": "Menu buttons",
+   "category": "Space",
+   "kind": "menu",
+   "file": "materials/aurora.webp",
+   "look": {
+    "outline": "#06201c",
+    "glow": "#5fffc8",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "m-candy-cane",
+   "name": "Candy cane",
+   "group": "Menu buttons",
+   "category": "Sweet",
+   "kind": "menu",
+   "file": "materials/candy-cane.webp",
+   "look": {
+    "outline": "#5a0010",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-bubblegum",
+   "name": "Bubblegum",
+   "group": "Menu buttons",
+   "category": "Sweet",
+   "kind": "menu",
+   "file": "materials/bubblegum.webp",
+   "look": {
+    "outline": "#6a1040",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-chocolate",
+   "name": "Chocolate",
+   "group": "Menu buttons",
+   "category": "Sweet",
+   "kind": "menu",
+   "file": "materials/chocolate.webp",
+   "look": {
+    "outline": "#1e0e05",
+    "glow": "",
+    "ink": "#fff1dc",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-cotton-candy",
+   "name": "Cotton candy",
+   "group": "Menu buttons",
+   "category": "Sweet",
+   "kind": "menu",
+   "file": "materials/cotton-candy.webp",
+   "look": {
+    "outline": "#5a3a6e",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.7
+   },
+   "for": []
+  },
+  {
+   "id": "m-sherbet",
+   "name": "Sherbet",
+   "group": "Menu buttons",
+   "category": "Sweet",
+   "kind": "menu",
+   "file": "materials/sherbet.webp",
+   "look": {
+    "outline": "#6a3a2a",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "m-neon-cyan",
+   "name": "Neon cyan",
+   "group": "Menu buttons",
+   "category": "Neon & tech",
+   "kind": "menu",
+   "file": "materials/neon-cyan.webp",
+   "look": {
+    "outline": "#002a2e",
+    "glow": "#00f0ff",
+    "ink": "#e6fdff",
+    "bevel": 0.6
+   },
+   "for": []
+  },
+  {
+   "id": "m-neon-pink",
+   "name": "Neon pink",
+   "group": "Menu buttons",
+   "category": "Neon & tech",
+   "kind": "menu",
+   "file": "materials/neon-pink.webp",
+   "look": {
+    "outline": "#2e0020",
+    "glow": "#ff2fd0",
+    "ink": "#ffe6f8",
+    "bevel": 0.6
+   },
+   "for": []
+  },
+  {
+   "id": "m-circuit",
+   "name": "Circuit",
+   "group": "Menu buttons",
+   "category": "Neon & tech",
+   "kind": "menu",
+   "file": "materials/circuit.webp",
+   "look": {
+    "outline": "#001a0a",
+    "glow": "#2bff9a",
+    "ink": "#e8fff2",
+    "bevel": 0.7
+   },
+   "for": []
+  },
+  {
+   "id": "m-carbon",
+   "name": "Carbon fiber",
+   "group": "Menu buttons",
+   "category": "Neon & tech",
+   "kind": "menu",
+   "file": "materials/carbon.webp",
+   "look": {
+    "outline": "#000000",
+    "glow": "",
+    "ink": "#e8e8e8",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "m-holographic",
+   "name": "Holographic",
+   "group": "Menu buttons",
+   "category": "Neon & tech",
+   "kind": "menu",
+   "file": "materials/holographic.webp",
+   "look": {
+    "outline": "#3a3a5a",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-synthwave",
+   "name": "Synthwave",
+   "group": "Menu buttons",
+   "category": "Neon & tech",
+   "kind": "menu",
+   "file": "materials/synthwave.webp",
+   "look": {
+    "outline": "#1a0026",
+    "glow": "#ff4fd8",
+    "ink": "#fff0ff",
+    "bevel": 0.7
+   },
+   "for": []
+  },
+  {
+   "id": "m-obsidian",
+   "name": "Obsidian",
+   "group": "Menu buttons",
+   "category": "Dark & sleek",
+   "kind": "menu",
+   "file": "materials/obsidian.webp",
+   "look": {
+    "outline": "#000000",
+    "glow": "#7a4dff",
+    "ink": "#e9e0ff",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "m-midnight",
+   "name": "Midnight",
+   "group": "Menu buttons",
+   "category": "Dark & sleek",
+   "kind": "menu",
+   "file": "materials/midnight.webp",
+   "look": {
+    "outline": "#000000",
+    "glow": "",
+    "ink": "#cfd8ff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "m-shadow",
+   "name": "Shadow",
+   "group": "Menu buttons",
+   "category": "Dark & sleek",
+   "kind": "menu",
+   "file": "materials/shadow.webp",
+   "look": {
+    "outline": "#000000",
+    "glow": "#ff3030",
+    "ink": "#f0e0e0",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-gold",
+   "name": "Gold",
+   "group": "In-game buttons",
+   "category": "Metals",
+   "kind": "ingame",
+   "file": "materials/gold.webp",
+   "look": {
+    "outline": "#5c3d00",
+    "glow": "",
+    "ink": "#fff6d8",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "i-chrome",
+   "name": "Chrome",
+   "group": "In-game buttons",
+   "category": "Metals",
+   "kind": "ingame",
+   "file": "materials/chrome.webp",
+   "look": {
+    "outline": "#2a2f38",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "i-rose-gold",
+   "name": "Rose gold",
+   "group": "In-game buttons",
+   "category": "Metals",
+   "kind": "ingame",
+   "file": "materials/rose-gold.webp",
+   "look": {
+    "outline": "#5a2e2a",
+    "glow": "",
+    "ink": "#fff0ea",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "i-bronze",
+   "name": "Bronze",
+   "group": "In-game buttons",
+   "category": "Metals",
+   "kind": "ingame",
+   "file": "materials/bronze.webp",
+   "look": {
+    "outline": "#3a2410",
+    "glow": "",
+    "ink": "#ffe2b8",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "i-copper",
+   "name": "Copper",
+   "group": "In-game buttons",
+   "category": "Metals",
+   "kind": "ingame",
+   "file": "materials/copper.webp",
+   "look": {
+    "outline": "#3d1f12",
+    "glow": "",
+    "ink": "#ffe7d6",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "i-ruby",
+   "name": "Ruby",
+   "group": "In-game buttons",
+   "category": "Gems",
+   "kind": "ingame",
+   "file": "materials/ruby.webp",
+   "look": {
+    "outline": "#4a0010",
+    "glow": "#ff3355",
+    "ink": "#fff0f3",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-sapphire",
+   "name": "Sapphire",
+   "group": "In-game buttons",
+   "category": "Gems",
+   "kind": "ingame",
+   "file": "materials/sapphire.webp",
+   "look": {
+    "outline": "#001a4d",
+    "glow": "#3d7bff",
+    "ink": "#eef4ff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-emerald",
+   "name": "Emerald",
+   "group": "In-game buttons",
+   "category": "Gems",
+   "kind": "ingame",
+   "file": "materials/emerald.webp",
+   "look": {
+    "outline": "#00331a",
+    "glow": "#2bff88",
+    "ink": "#ecfff4",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-amethyst",
+   "name": "Amethyst",
+   "group": "In-game buttons",
+   "category": "Gems",
+   "kind": "ingame",
+   "file": "materials/amethyst.webp",
+   "look": {
+    "outline": "#2a0a4a",
+    "glow": "#b46bff",
+    "ink": "#f6eeff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-diamond",
+   "name": "Diamond",
+   "group": "In-game buttons",
+   "category": "Gems",
+   "kind": "ingame",
+   "file": "materials/diamond.webp",
+   "look": {
+    "outline": "#3b5a78",
+    "glow": "#bfe9ff",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-opal",
+   "name": "Opal",
+   "group": "In-game buttons",
+   "category": "Gems",
+   "kind": "ingame",
+   "file": "materials/opal.webp",
+   "look": {
+    "outline": "#4a4a66",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "i-lava",
+   "name": "Lava",
+   "group": "In-game buttons",
+   "category": "Elements",
+   "kind": "ingame",
+   "file": "materials/lava.webp",
+   "look": {
+    "outline": "#1a0500",
+    "glow": "#ff5a00",
+    "ink": "#ffe2b0",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-ice",
+   "name": "Ice",
+   "group": "In-game buttons",
+   "category": "Elements",
+   "kind": "ingame",
+   "file": "materials/ice.webp",
+   "look": {
+    "outline": "#1e4a6e",
+    "glow": "#9fe3ff",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "i-ocean",
+   "name": "Ocean",
+   "group": "In-game buttons",
+   "category": "Elements",
+   "kind": "ingame",
+   "file": "materials/ocean.webp",
+   "look": {
+    "outline": "#00264d",
+    "glow": "",
+    "ink": "#e8fbff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "i-fire",
+   "name": "Fire",
+   "group": "In-game buttons",
+   "category": "Elements",
+   "kind": "ingame",
+   "file": "materials/fire.webp",
+   "look": {
+    "outline": "#4a0e00",
+    "glow": "#ff8a00",
+    "ink": "#fff4c2",
+    "bevel": 0.7
+   },
+   "for": []
+  },
+  {
+   "id": "i-toxic",
+   "name": "Toxic",
+   "group": "In-game buttons",
+   "category": "Elements",
+   "kind": "ingame",
+   "file": "materials/toxic.webp",
+   "look": {
+    "outline": "#103300",
+    "glow": "#7dff2a",
+    "ink": "#f2ffe0",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "i-storm",
+   "name": "Storm",
+   "group": "In-game buttons",
+   "category": "Elements",
+   "kind": "ingame",
+   "file": "materials/storm.webp",
+   "look": {
+    "outline": "#0d1426",
+    "glow": "#6ab8ff",
+    "ink": "#eaf4ff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "i-wood",
+   "name": "Wood",
+   "group": "In-game buttons",
+   "category": "Nature",
+   "kind": "ingame",
+   "file": "materials/wood.webp",
+   "look": {
+    "outline": "#2b1708",
+    "glow": "",
+    "ink": "#fff1dc",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-marble",
+   "name": "Marble",
+   "group": "In-game buttons",
+   "category": "Nature",
+   "kind": "ingame",
+   "file": "materials/marble.webp",
+   "look": {
+    "outline": "#4a4a4a",
+    "glow": "",
+    "ink": "#2b2b2b",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "i-jungle",
+   "name": "Jungle",
+   "group": "In-game buttons",
+   "category": "Nature",
+   "kind": "ingame",
+   "file": "materials/jungle.webp",
+   "look": {
+    "outline": "#0d2a0d",
+    "glow": "",
+    "ink": "#f0ffe8",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "i-stone",
+   "name": "Stone",
+   "group": "In-game buttons",
+   "category": "Nature",
+   "kind": "ingame",
+   "file": "materials/stone.webp",
+   "look": {
+    "outline": "#1f2226",
+    "glow": "",
+    "ink": "#f2f2ea",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "i-coral",
+   "name": "Coral",
+   "group": "In-game buttons",
+   "category": "Nature",
+   "kind": "ingame",
+   "file": "materials/coral.webp",
+   "look": {
+    "outline": "#4a1a1a",
+    "glow": "",
+    "ink": "#fff4ee",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "i-galaxy",
+   "name": "Galaxy",
+   "group": "In-game buttons",
+   "category": "Space",
+   "kind": "ingame",
+   "file": "materials/galaxy.webp",
+   "look": {
+    "outline": "#120a2a",
+    "glow": "#a070ff",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "i-nebula",
+   "name": "Nebula",
+   "group": "In-game buttons",
+   "category": "Space",
+   "kind": "ingame",
+   "file": "materials/nebula.webp",
+   "look": {
+    "outline": "#1a0a26",
+    "glow": "#ff6ad5",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "i-starry",
+   "name": "Starry night",
+   "group": "In-game buttons",
+   "category": "Space",
+   "kind": "ingame",
+   "file": "materials/starry.webp",
+   "look": {
+    "outline": "#000814",
+    "glow": "#8fb8ff",
+    "ink": "#ffe9a8",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "i-aurora",
+   "name": "Aurora",
+   "group": "In-game buttons",
+   "category": "Space",
+   "kind": "ingame",
+   "file": "materials/aurora.webp",
+   "look": {
+    "outline": "#06201c",
+    "glow": "#5fffc8",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "i-candy-cane",
+   "name": "Candy cane",
+   "group": "In-game buttons",
+   "category": "Sweet",
+   "kind": "ingame",
+   "file": "materials/candy-cane.webp",
+   "look": {
+    "outline": "#5a0010",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-bubblegum",
+   "name": "Bubblegum",
+   "group": "In-game buttons",
+   "category": "Sweet",
+   "kind": "ingame",
+   "file": "materials/bubblegum.webp",
+   "look": {
+    "outline": "#6a1040",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-chocolate",
+   "name": "Chocolate",
+   "group": "In-game buttons",
+   "category": "Sweet",
+   "kind": "ingame",
+   "file": "materials/chocolate.webp",
+   "look": {
+    "outline": "#1e0e05",
+    "glow": "",
+    "ink": "#fff1dc",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-cotton-candy",
+   "name": "Cotton candy",
+   "group": "In-game buttons",
+   "category": "Sweet",
+   "kind": "ingame",
+   "file": "materials/cotton-candy.webp",
+   "look": {
+    "outline": "#5a3a6e",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.7
+   },
+   "for": []
+  },
+  {
+   "id": "i-sherbet",
+   "name": "Sherbet",
+   "group": "In-game buttons",
+   "category": "Sweet",
+   "kind": "ingame",
+   "file": "materials/sherbet.webp",
+   "look": {
+    "outline": "#6a3a2a",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "i-neon-cyan",
+   "name": "Neon cyan",
+   "group": "In-game buttons",
+   "category": "Neon & tech",
+   "kind": "ingame",
+   "file": "materials/neon-cyan.webp",
+   "look": {
+    "outline": "#002a2e",
+    "glow": "#00f0ff",
+    "ink": "#e6fdff",
+    "bevel": 0.6
+   },
+   "for": []
+  },
+  {
+   "id": "i-neon-pink",
+   "name": "Neon pink",
+   "group": "In-game buttons",
+   "category": "Neon & tech",
+   "kind": "ingame",
+   "file": "materials/neon-pink.webp",
+   "look": {
+    "outline": "#2e0020",
+    "glow": "#ff2fd0",
+    "ink": "#ffe6f8",
+    "bevel": 0.6
+   },
+   "for": []
+  },
+  {
+   "id": "i-circuit",
+   "name": "Circuit",
+   "group": "In-game buttons",
+   "category": "Neon & tech",
+   "kind": "ingame",
+   "file": "materials/circuit.webp",
+   "look": {
+    "outline": "#001a0a",
+    "glow": "#2bff9a",
+    "ink": "#e8fff2",
+    "bevel": 0.7
+   },
+   "for": []
+  },
+  {
+   "id": "i-carbon",
+   "name": "Carbon fiber",
+   "group": "In-game buttons",
+   "category": "Neon & tech",
+   "kind": "ingame",
+   "file": "materials/carbon.webp",
+   "look": {
+    "outline": "#000000",
+    "glow": "",
+    "ink": "#e8e8e8",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "i-holographic",
+   "name": "Holographic",
+   "group": "In-game buttons",
+   "category": "Neon & tech",
+   "kind": "ingame",
+   "file": "materials/holographic.webp",
+   "look": {
+    "outline": "#3a3a5a",
+    "glow": "",
+    "ink": "#ffffff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-synthwave",
+   "name": "Synthwave",
+   "group": "In-game buttons",
+   "category": "Neon & tech",
+   "kind": "ingame",
+   "file": "materials/synthwave.webp",
+   "look": {
+    "outline": "#1a0026",
+    "glow": "#ff4fd8",
+    "ink": "#fff0ff",
+    "bevel": 0.7
+   },
+   "for": []
+  },
+  {
+   "id": "i-obsidian",
+   "name": "Obsidian",
+   "group": "In-game buttons",
+   "category": "Dark & sleek",
+   "kind": "ingame",
+   "file": "materials/obsidian.webp",
+   "look": {
+    "outline": "#000000",
+    "glow": "#7a4dff",
+    "ink": "#e9e0ff",
+    "bevel": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "i-midnight",
+   "name": "Midnight",
+   "group": "In-game buttons",
+   "category": "Dark & sleek",
+   "kind": "ingame",
+   "file": "materials/midnight.webp",
+   "look": {
+    "outline": "#000000",
+    "glow": "",
+    "ink": "#cfd8ff",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "i-shadow",
+   "name": "Shadow",
+   "group": "In-game buttons",
+   "category": "Dark & sleek",
+   "kind": "ingame",
+   "file": "materials/shadow.webp",
+   "look": {
+    "outline": "#000000",
+    "glow": "#ff3030",
+    "ink": "#f0e0e0",
+    "bevel": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "v-classic-crimson",
+   "name": "Crimson",
+   "group": "Viruses",
+   "category": "Classic",
+   "kind": "virus",
+   "file": "viruses/classic-crimson.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-classic-orange",
+   "name": "Orange",
+   "group": "Viruses",
+   "category": "Classic",
+   "kind": "virus",
+   "file": "viruses/classic-orange.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-classic-golden",
+   "name": "Golden",
+   "group": "Viruses",
+   "category": "Classic",
+   "kind": "virus",
+   "file": "viruses/classic-golden.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-classic-toxic",
+   "name": "Toxic",
+   "group": "Viruses",
+   "category": "Classic",
+   "kind": "virus",
+   "file": "viruses/classic-toxic.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-classic-teal",
+   "name": "Teal",
+   "group": "Viruses",
+   "category": "Classic",
+   "kind": "virus",
+   "file": "viruses/classic-teal.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-classic-ocean",
+   "name": "Ocean",
+   "group": "Viruses",
+   "category": "Classic",
+   "kind": "virus",
+   "file": "viruses/classic-ocean.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-classic-frost",
+   "name": "Frost",
+   "group": "Viruses",
+   "category": "Classic",
+   "kind": "virus",
+   "file": "viruses/classic-frost.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-classic-pink",
+   "name": "Pink",
+   "group": "Viruses",
+   "category": "Classic",
+   "kind": "virus",
+   "file": "viruses/classic-pink.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-classic-shadow",
+   "name": "Shadow",
+   "group": "Viruses",
+   "category": "Classic",
+   "kind": "virus",
+   "file": "viruses/classic-shadow.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-classic-white",
+   "name": "White",
+   "group": "Viruses",
+   "category": "Classic",
+   "kind": "virus",
+   "file": "viruses/classic-white.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-classic-dark-blue",
+   "name": "Dark blue",
+   "group": "Viruses",
+   "category": "Classic",
+   "kind": "virus",
+   "file": "viruses/classic-dark-blue.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-classic-rainbow",
+   "name": "Rainbow",
+   "group": "Viruses",
+   "category": "Classic",
+   "kind": "virus",
+   "file": "viruses/classic-rainbow.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-black-hole",
+   "name": "Black hole",
+   "group": "Viruses",
+   "category": "Space",
+   "kind": "virus",
+   "file": "viruses/black-hole.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-galaxy",
+   "name": "Galaxy",
+   "group": "Viruses",
+   "category": "Space",
+   "kind": "virus",
+   "file": "viruses/galaxy.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-sun",
+   "name": "Sun",
+   "group": "Viruses",
+   "category": "Space",
+   "kind": "virus",
+   "file": "viruses/sun.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-ringed-planet",
+   "name": "Ringed planet",
+   "group": "Viruses",
+   "category": "Space",
+   "kind": "virus",
+   "file": "viruses/ringed-planet.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-moon",
+   "name": "Moon",
+   "group": "Viruses",
+   "category": "Space",
+   "kind": "virus",
+   "file": "viruses/moon.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-neutron-star",
+   "name": "Neutron star",
+   "group": "Viruses",
+   "category": "Space",
+   "kind": "virus",
+   "file": "viruses/neutron-star.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-comet",
+   "name": "Comet",
+   "group": "Viruses",
+   "category": "Space",
+   "kind": "virus",
+   "file": "viruses/comet.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-donut",
+   "name": "Donut",
+   "group": "Viruses",
+   "category": "Food & candy",
+   "kind": "virus",
+   "file": "viruses/donut.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-cookie",
+   "name": "Cookie",
+   "group": "Viruses",
+   "category": "Food & candy",
+   "kind": "virus",
+   "file": "viruses/cookie.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-candy-ball",
+   "name": "Candy ball",
+   "group": "Viruses",
+   "category": "Food & candy",
+   "kind": "virus",
+   "file": "viruses/candy-ball.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-watermelon",
+   "name": "Watermelon",
+   "group": "Viruses",
+   "category": "Food & candy",
+   "kind": "virus",
+   "file": "viruses/watermelon.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-pizza",
+   "name": "Pizza",
+   "group": "Viruses",
+   "category": "Food & candy",
+   "kind": "virus",
+   "file": "viruses/pizza.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-cupcake",
+   "name": "Cupcake",
+   "group": "Viruses",
+   "category": "Food & candy",
+   "kind": "virus",
+   "file": "viruses/cupcake.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-eyeball",
+   "name": "Bloody eyeball",
+   "group": "Viruses",
+   "category": "Spooky & gory",
+   "kind": "virus",
+   "file": "viruses/eyeball.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-zombie",
+   "name": "Zombie",
+   "group": "Viruses",
+   "category": "Spooky & gory",
+   "kind": "virus",
+   "file": "viruses/zombie.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-skull",
+   "name": "Skull",
+   "group": "Viruses",
+   "category": "Spooky & gory",
+   "kind": "virus",
+   "file": "viruses/skull.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-brain",
+   "name": "Brain",
+   "group": "Viruses",
+   "category": "Spooky & gory",
+   "kind": "virus",
+   "file": "viruses/brain.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-jack-o-lantern",
+   "name": "Jack-o-lantern",
+   "group": "Viruses",
+   "category": "Spooky & gory",
+   "kind": "virus",
+   "file": "viruses/jack-o-lantern.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-spider",
+   "name": "Spider",
+   "group": "Viruses",
+   "category": "Spooky & gory",
+   "kind": "virus",
+   "file": "viruses/spider.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-mouth",
+   "name": "Toothy mouth",
+   "group": "Viruses",
+   "category": "Spooky & gory",
+   "kind": "virus",
+   "file": "viruses/mouth.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-urchin",
+   "name": "Sea urchin",
+   "group": "Viruses",
+   "category": "Nature",
+   "kind": "virus",
+   "file": "viruses/urchin.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-pufferfish",
+   "name": "Pufferfish",
+   "group": "Viruses",
+   "category": "Nature",
+   "kind": "virus",
+   "file": "viruses/pufferfish.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-cactus",
+   "name": "Cactus",
+   "group": "Viruses",
+   "category": "Nature",
+   "kind": "virus",
+   "file": "viruses/cactus.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-dandelion",
+   "name": "Dandelion",
+   "group": "Viruses",
+   "category": "Nature",
+   "kind": "virus",
+   "file": "viruses/dandelion.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-pinecone",
+   "name": "Pinecone",
+   "group": "Viruses",
+   "category": "Nature",
+   "kind": "virus",
+   "file": "viruses/pinecone.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-chestnut",
+   "name": "Chestnut burr",
+   "group": "Viruses",
+   "category": "Nature",
+   "kind": "virus",
+   "file": "viruses/chestnut.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-neon",
+   "name": "Neon",
+   "group": "Viruses",
+   "category": "Tech & neon",
+   "kind": "virus",
+   "file": "viruses/neon.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-sea-mine",
+   "name": "Sea mine",
+   "group": "Viruses",
+   "category": "Tech & neon",
+   "kind": "virus",
+   "file": "viruses/sea-mine.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-circuit",
+   "name": "Circuit",
+   "group": "Viruses",
+   "category": "Tech & neon",
+   "kind": "virus",
+   "file": "viruses/circuit.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-disco",
+   "name": "Disco ball",
+   "group": "Viruses",
+   "category": "Tech & neon",
+   "kind": "virus",
+   "file": "viruses/disco.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-glitch",
+   "name": "Glitch",
+   "group": "Viruses",
+   "category": "Tech & neon",
+   "kind": "virus",
+   "file": "viruses/glitch.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-fireball",
+   "name": "Fireball",
+   "group": "Viruses",
+   "category": "Elements",
+   "kind": "virus",
+   "file": "viruses/fireball.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-lava-rock",
+   "name": "Lava rock",
+   "group": "Viruses",
+   "category": "Elements",
+   "kind": "virus",
+   "file": "viruses/lava-rock.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-plasma",
+   "name": "Plasma",
+   "group": "Viruses",
+   "category": "Elements",
+   "kind": "virus",
+   "file": "viruses/plasma.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-unicorn",
+   "name": "Unicorn",
+   "group": "Viruses",
+   "category": "Fantasy",
+   "kind": "virus",
+   "file": "viruses/unicorn.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-dragon",
+   "name": "Dragon",
+   "group": "Viruses",
+   "category": "Fantasy",
+   "kind": "virus",
+   "file": "viruses/dragon.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-phoenix",
+   "name": "Phoenix",
+   "group": "Viruses",
+   "category": "Fantasy",
+   "kind": "virus",
+   "file": "viruses/phoenix.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-fairy",
+   "name": "Fairy",
+   "group": "Viruses",
+   "category": "Fantasy",
+   "kind": "virus",
+   "file": "viruses/fairy.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-angel",
+   "name": "Angel",
+   "group": "Viruses",
+   "category": "Fantasy",
+   "kind": "virus",
+   "file": "viruses/angel.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-octopus",
+   "name": "Octopus",
+   "group": "Viruses",
+   "category": "Creatures",
+   "kind": "virus",
+   "file": "viruses/octopus.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-jellyfish",
+   "name": "Jellyfish",
+   "group": "Viruses",
+   "category": "Creatures",
+   "kind": "virus",
+   "file": "viruses/jellyfish.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-owl",
+   "name": "Owl",
+   "group": "Viruses",
+   "category": "Creatures",
+   "kind": "virus",
+   "file": "viruses/owl.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-kitty",
+   "name": "Kitty",
+   "group": "Viruses",
+   "category": "Creatures",
+   "kind": "virus",
+   "file": "viruses/kitty.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-crab",
+   "name": "Crab",
+   "group": "Viruses",
+   "category": "Creatures",
+   "kind": "virus",
+   "file": "viruses/crab.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-wizard",
+   "name": "Wizard",
+   "group": "Viruses",
+   "category": "Cosmic & magic",
+   "kind": "virus",
+   "file": "viruses/wizard.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-eclipse",
+   "name": "Eclipse",
+   "group": "Viruses",
+   "category": "Cosmic & magic",
+   "kind": "virus",
+   "file": "viruses/eclipse.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-alien",
+   "name": "Alien",
+   "group": "Viruses",
+   "category": "Cosmic & magic",
+   "kind": "virus",
+   "file": "viruses/alien.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-crystal-ball",
+   "name": "Crystal ball",
+   "group": "Viruses",
+   "category": "Cosmic & magic",
+   "kind": "virus",
+   "file": "viruses/crystal-ball.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-aurora-spirit",
+   "name": "Aurora spirit",
+   "group": "Viruses",
+   "category": "Cosmic & magic",
+   "kind": "virus",
+   "file": "viruses/aurora-spirit.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-macaron",
+   "name": "Macaron",
+   "group": "Viruses",
+   "category": "Sweet & cute",
+   "kind": "virus",
+   "file": "viruses/macaron.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-cotton-candy",
+   "name": "Cotton candy",
+   "group": "Viruses",
+   "category": "Sweet & cute",
+   "kind": "virus",
+   "file": "viruses/cotton-candy.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-cupcake-monster",
+   "name": "Cupcake monster",
+   "group": "Viruses",
+   "category": "Sweet & cute",
+   "kind": "virus",
+   "file": "viruses/cupcake-monster.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-bubble-tea",
+   "name": "Bubble tea",
+   "group": "Viruses",
+   "category": "Sweet & cute",
+   "kind": "virus",
+   "file": "viruses/bubble-tea.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-sakura",
+   "name": "Sakura",
+   "group": "Viruses",
+   "category": "Sweet & cute",
+   "kind": "virus",
+   "file": "viruses/sakura.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-tentacle-maw",
+   "name": "Tentacle maw",
+   "group": "Viruses",
+   "category": "Nightmare",
+   "kind": "virus",
+   "file": "viruses/tentacle-maw.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-eye-cluster",
+   "name": "Eye cluster",
+   "group": "Viruses",
+   "category": "Nightmare",
+   "kind": "virus",
+   "file": "viruses/eye-cluster.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-demon",
+   "name": "Demon",
+   "group": "Viruses",
+   "category": "Nightmare",
+   "kind": "virus",
+   "file": "viruses/demon.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-plague",
+   "name": "Plague",
+   "group": "Viruses",
+   "category": "Nightmare",
+   "kind": "virus",
+   "file": "viruses/plague.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-reaper",
+   "name": "Reaper",
+   "group": "Viruses",
+   "category": "Nightmare",
+   "kind": "virus",
+   "file": "viruses/reaper.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-king",
+   "name": "King",
+   "group": "Viruses",
+   "category": "Royal & armored",
+   "kind": "virus",
+   "file": "viruses/king.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-knight",
+   "name": "Knight",
+   "group": "Viruses",
+   "category": "Royal & armored",
+   "kind": "virus",
+   "file": "viruses/knight.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-samurai",
+   "name": "Samurai",
+   "group": "Viruses",
+   "category": "Royal & armored",
+   "kind": "virus",
+   "file": "viruses/samurai.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-viking",
+   "name": "Viking",
+   "group": "Viruses",
+   "category": "Royal & armored",
+   "kind": "virus",
+   "file": "viruses/viking.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-pharaoh",
+   "name": "Pharaoh",
+   "group": "Viruses",
+   "category": "Royal & armored",
+   "kind": "virus",
+   "file": "viruses/pharaoh.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-geode",
+   "name": "Geode",
+   "group": "Viruses",
+   "category": "Gems & crystal",
+   "kind": "virus",
+   "file": "viruses/geode.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-opal",
+   "name": "Opal",
+   "group": "Viruses",
+   "category": "Gems & crystal",
+   "kind": "virus",
+   "file": "viruses/opal.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-crystal-heart",
+   "name": "Crystal heart",
+   "group": "Viruses",
+   "category": "Gems & crystal",
+   "kind": "virus",
+   "file": "viruses/crystal-heart.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-sapphire",
+   "name": "Sapphire",
+   "group": "Viruses",
+   "category": "Gems & crystal",
+   "kind": "virus",
+   "file": "viruses/sapphire.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-obsidian",
+   "name": "Obsidian",
+   "group": "Viruses",
+   "category": "Gems & crystal",
+   "kind": "virus",
+   "file": "viruses/obsidian.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-clockwork",
+   "name": "Clockwork",
+   "group": "Viruses",
+   "category": "Mech",
+   "kind": "virus",
+   "file": "viruses/clockwork.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-cyborg",
+   "name": "Cyborg",
+   "group": "Viruses",
+   "category": "Mech",
+   "kind": "virus",
+   "file": "viruses/cyborg.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-mecha",
+   "name": "Mecha",
+   "group": "Viruses",
+   "category": "Mech",
+   "kind": "virus",
+   "file": "viruses/mecha.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-drone",
+   "name": "Drone",
+   "group": "Viruses",
+   "category": "Mech",
+   "kind": "virus",
+   "file": "viruses/drone.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "v-tesla",
+   "name": "Tesla coil",
+   "group": "Viruses",
+   "category": "Mech",
+   "kind": "virus",
+   "file": "viruses/tesla.webp",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ]
+  },
+  {
+   "id": "f-donut",
+   "name": "Donut",
+   "group": "Food",
+   "category": "Treats",
+   "kind": "food",
+   "file": "food/donut.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-cookie",
+   "name": "Cookie",
+   "group": "Food",
+   "category": "Treats",
+   "kind": "food",
+   "file": "food/cookie.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-cupcake",
+   "name": "Cupcake",
+   "group": "Food",
+   "category": "Treats",
+   "kind": "food",
+   "file": "food/cupcake.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-lollipop",
+   "name": "Lollipop",
+   "group": "Food",
+   "category": "Treats",
+   "kind": "food",
+   "file": "food/lollipop.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-ice-cream",
+   "name": "Ice cream",
+   "group": "Food",
+   "category": "Treats",
+   "kind": "food",
+   "file": "food/ice-cream.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-candy",
+   "name": "Candy",
+   "group": "Food",
+   "category": "Treats",
+   "kind": "food",
+   "file": "food/candy.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-chocolate",
+   "name": "Chocolate",
+   "group": "Food",
+   "category": "Treats",
+   "kind": "food",
+   "file": "food/chocolate.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-apple",
+   "name": "Apple",
+   "group": "Food",
+   "category": "Fruit",
+   "kind": "food",
+   "file": "food/apple.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-cherries",
+   "name": "Cherries",
+   "group": "Food",
+   "category": "Fruit",
+   "kind": "food",
+   "file": "food/cherries.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-strawberry",
+   "name": "Strawberry",
+   "group": "Food",
+   "category": "Fruit",
+   "kind": "food",
+   "file": "food/strawberry.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-orange",
+   "name": "Orange slice",
+   "group": "Food",
+   "category": "Fruit",
+   "kind": "food",
+   "file": "food/orange.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-grapes",
+   "name": "Grapes",
+   "group": "Food",
+   "category": "Fruit",
+   "kind": "food",
+   "file": "food/grapes.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-watermelon",
+   "name": "Watermelon",
+   "group": "Food",
+   "category": "Fruit",
+   "kind": "food",
+   "file": "food/watermelon.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-crown",
+   "name": "Crown",
+   "group": "Food",
+   "category": "Shiny",
+   "kind": "food",
+   "file": "food/crown.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-star",
+   "name": "Star",
+   "group": "Food",
+   "category": "Shiny",
+   "kind": "food",
+   "file": "food/star.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-gem",
+   "name": "Gem",
+   "group": "Food",
+   "category": "Shiny",
+   "kind": "food",
+   "file": "food/gem.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-diamond",
+   "name": "Diamond",
+   "group": "Food",
+   "category": "Shiny",
+   "kind": "food",
+   "file": "food/diamond.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-coin",
+   "name": "Coin",
+   "group": "Food",
+   "category": "Shiny",
+   "kind": "food",
+   "file": "food/coin.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-pearl",
+   "name": "Pearl",
+   "group": "Food",
+   "category": "Shiny",
+   "kind": "food",
+   "file": "food/pearl.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-heart",
+   "name": "Heart",
+   "group": "Food",
+   "category": "Shiny",
+   "kind": "food",
+   "file": "food/heart.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-planet",
+   "name": "Planet",
+   "group": "Food",
+   "category": "Space",
+   "kind": "food",
+   "file": "food/planet.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-moon",
+   "name": "Moon",
+   "group": "Food",
+   "category": "Space",
+   "kind": "food",
+   "file": "food/moon.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-sun",
+   "name": "Sun",
+   "group": "Food",
+   "category": "Space",
+   "kind": "food",
+   "file": "food/sun.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-sparkle",
+   "name": "Sparkle",
+   "group": "Food",
+   "category": "Space",
+   "kind": "food",
+   "file": "food/sparkle.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-ufo",
+   "name": "UFO",
+   "group": "Food",
+   "category": "Space",
+   "kind": "food",
+   "file": "food/ufo.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-burger",
+   "name": "Burger",
+   "group": "Food",
+   "category": "Meals",
+   "kind": "food",
+   "file": "food/burger.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-pizza",
+   "name": "Pizza slice",
+   "group": "Food",
+   "category": "Meals",
+   "kind": "food",
+   "file": "food/pizza.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-sushi",
+   "name": "Sushi",
+   "group": "Food",
+   "category": "Meals",
+   "kind": "food",
+   "file": "food/sushi.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-taco",
+   "name": "Taco",
+   "group": "Food",
+   "category": "Meals",
+   "kind": "food",
+   "file": "food/taco.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-fries",
+   "name": "Fries",
+   "group": "Food",
+   "category": "Meals",
+   "kind": "food",
+   "file": "food/fries.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-skull",
+   "name": "Skull",
+   "group": "Food",
+   "category": "Spooky",
+   "kind": "food",
+   "file": "food/skull.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-eyeball",
+   "name": "Eyeball",
+   "group": "Food",
+   "category": "Spooky",
+   "kind": "food",
+   "file": "food/eyeball.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-pumpkin",
+   "name": "Pumpkin",
+   "group": "Food",
+   "category": "Spooky",
+   "kind": "food",
+   "file": "food/pumpkin.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-ghost",
+   "name": "Ghost",
+   "group": "Food",
+   "category": "Spooky",
+   "kind": "food",
+   "file": "food/ghost.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-potion",
+   "name": "Potion",
+   "group": "Food",
+   "category": "Spooky",
+   "kind": "food",
+   "file": "food/potion.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-tire",
+   "name": "Tire",
+   "group": "Food",
+   "category": "Objects",
+   "kind": "food",
+   "file": "food/tire.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-soccer",
+   "name": "Soccer ball",
+   "group": "Food",
+   "category": "Objects",
+   "kind": "food",
+   "file": "food/soccer.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-gear",
+   "name": "Gear",
+   "group": "Food",
+   "category": "Objects",
+   "kind": "food",
+   "file": "food/gear.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-battery",
+   "name": "Battery",
+   "group": "Food",
+   "category": "Objects",
+   "kind": "food",
+   "file": "food/battery.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-note",
+   "name": "Music note",
+   "group": "Food",
+   "category": "Objects",
+   "kind": "food",
+   "file": "food/note.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-dragon-egg",
+   "name": "Dragon egg",
+   "group": "Food",
+   "category": "Magic bites",
+   "kind": "food",
+   "file": "food/dragon-egg.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-phoenix-feather",
+   "name": "Phoenix feather",
+   "group": "Food",
+   "category": "Magic bites",
+   "kind": "food",
+   "file": "food/phoenix-feather.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-enchanted-mushroom",
+   "name": "Enchanted mushroom",
+   "group": "Food",
+   "category": "Magic bites",
+   "kind": "food",
+   "file": "food/enchanted-mushroom.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-mana-orb",
+   "name": "Mana orb",
+   "group": "Food",
+   "category": "Magic bites",
+   "kind": "food",
+   "file": "food/mana-orb.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-fairy-cake",
+   "name": "Fairy cake",
+   "group": "Food",
+   "category": "Magic bites",
+   "kind": "food",
+   "file": "food/fairy-cake.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-galaxy-donut",
+   "name": "Galaxy donut",
+   "group": "Food",
+   "category": "Cosmic snacks",
+   "kind": "food",
+   "file": "food/galaxy-donut.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-nebula-gumball",
+   "name": "Nebula gumball",
+   "group": "Food",
+   "category": "Cosmic snacks",
+   "kind": "food",
+   "file": "food/nebula-gumball.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-star-candy",
+   "name": "Star candy",
+   "group": "Food",
+   "category": "Cosmic snacks",
+   "kind": "food",
+   "file": "food/star-candy.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-black-hole-cookie",
+   "name": "Black hole cookie",
+   "group": "Food",
+   "category": "Cosmic snacks",
+   "kind": "food",
+   "file": "food/black-hole-cookie.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-planet-macaron",
+   "name": "Planet macaron",
+   "group": "Food",
+   "category": "Cosmic snacks",
+   "kind": "food",
+   "file": "food/planet-macaron.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-kitty-mochi",
+   "name": "Kitty mochi",
+   "group": "Food",
+   "category": "Cute critters",
+   "kind": "food",
+   "file": "food/kitty-mochi.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-octopus-dumpling",
+   "name": "Octopus dumpling",
+   "group": "Food",
+   "category": "Cute critters",
+   "kind": "food",
+   "file": "food/octopus-dumpling.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-panda-bun",
+   "name": "Panda bun",
+   "group": "Food",
+   "category": "Cute critters",
+   "kind": "food",
+   "file": "food/panda-bun.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-bunny-jelly",
+   "name": "Bunny jelly",
+   "group": "Food",
+   "category": "Cute critters",
+   "kind": "food",
+   "file": "food/bunny-jelly.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-dino-nugget",
+   "name": "Dino nugget",
+   "group": "Food",
+   "category": "Cute critters",
+   "kind": "food",
+   "file": "food/dino-nugget.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-eyeball-jelly",
+   "name": "Eyeball jelly",
+   "group": "Food",
+   "category": "Monster munch",
+   "kind": "food",
+   "file": "food/eyeball-jelly.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-slime-drop",
+   "name": "Slime drop",
+   "group": "Food",
+   "category": "Monster munch",
+   "kind": "food",
+   "file": "food/slime-drop.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-fang-candy",
+   "name": "Fang candy",
+   "group": "Food",
+   "category": "Monster munch",
+   "kind": "food",
+   "file": "food/fang-candy.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-tentacle-taco",
+   "name": "Tentacle taco",
+   "group": "Food",
+   "category": "Monster munch",
+   "kind": "food",
+   "file": "food/tentacle-taco.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-brain-cake",
+   "name": "Brain cake",
+   "group": "Food",
+   "category": "Monster munch",
+   "kind": "food",
+   "file": "food/brain-cake.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-crystal-lollipop",
+   "name": "Crystal lollipop",
+   "group": "Food",
+   "category": "Crystal candy",
+   "kind": "food",
+   "file": "food/crystal-lollipop.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-gem-jellybean",
+   "name": "Gem jelly bean",
+   "group": "Food",
+   "category": "Crystal candy",
+   "kind": "food",
+   "file": "food/gem-jellybean.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-rock-candy",
+   "name": "Rock candy",
+   "group": "Food",
+   "category": "Crystal candy",
+   "kind": "food",
+   "file": "food/rock-candy.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-sugar-diamond",
+   "name": "Sugar diamond",
+   "group": "Food",
+   "category": "Crystal candy",
+   "kind": "food",
+   "file": "food/sugar-diamond.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-opal-bonbon",
+   "name": "Opal bonbon",
+   "group": "Food",
+   "category": "Crystal candy",
+   "kind": "food",
+   "file": "food/opal-bonbon.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-neon-gummy",
+   "name": "Neon gummy",
+   "group": "Food",
+   "category": "Neon & tech",
+   "kind": "food",
+   "file": "food/neon-gummy.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-cyber-donut",
+   "name": "Cyber donut",
+   "group": "Food",
+   "category": "Neon & tech",
+   "kind": "food",
+   "file": "food/cyber-donut.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-circuit-cookie",
+   "name": "Circuit cookie",
+   "group": "Food",
+   "category": "Neon & tech",
+   "kind": "food",
+   "file": "food/circuit-cookie.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-glow-pop",
+   "name": "Glow pop",
+   "group": "Food",
+   "category": "Neon & tech",
+   "kind": "food",
+   "file": "food/glow-pop.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-holo-cupcake",
+   "name": "Hologram cupcake",
+   "group": "Food",
+   "category": "Neon & tech",
+   "kind": "food",
+   "file": "food/holo-cupcake.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-fire-pepper",
+   "name": "Fire pepper",
+   "group": "Food",
+   "category": "Elemental",
+   "kind": "food",
+   "file": "food/fire-pepper.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-ice-pop",
+   "name": "Ice popsicle",
+   "group": "Food",
+   "category": "Elemental",
+   "kind": "food",
+   "file": "food/ice-pop.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-lightning-lemon",
+   "name": "Lightning lemon",
+   "group": "Food",
+   "category": "Elemental",
+   "kind": "food",
+   "file": "food/lightning-lemon.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-lava-cake",
+   "name": "Lava cake",
+   "group": "Food",
+   "category": "Elemental",
+   "kind": "food",
+   "file": "food/lava-cake.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-storm-cotton",
+   "name": "Storm cotton candy",
+   "group": "Food",
+   "category": "Elemental",
+   "kind": "food",
+   "file": "food/storm-cotton.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-golden-apple",
+   "name": "Golden apple",
+   "group": "Food",
+   "category": "Golden feast",
+   "kind": "food",
+   "file": "food/golden-apple.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-golden-egg",
+   "name": "Golden egg",
+   "group": "Food",
+   "category": "Golden feast",
+   "kind": "food",
+   "file": "food/golden-egg.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-royal-cake",
+   "name": "Royal cake",
+   "group": "Food",
+   "category": "Golden feast",
+   "kind": "food",
+   "file": "food/royal-cake.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-treasure-cookie",
+   "name": "Treasure cookie",
+   "group": "Food",
+   "category": "Golden feast",
+   "kind": "food",
+   "file": "food/treasure-cookie.webp",
+   "for": [
+    "food"
+   ]
+  },
+  {
+   "id": "f-crown-jelly",
+   "name": "Crown jelly",
+   "group": "Food",
+   "category": "Golden feast",
+   "kind": "food",
+   "file": "food/crown-jelly.webp",
+   "for": [
+    "food"
    ]
   }
  ]

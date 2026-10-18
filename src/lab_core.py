@@ -1,4 +1,5 @@
 """Mitos.is Asset Lab: versioned pixel edits and reversible visual-only game installs."""
+from collections import Counter
 from contextlib import contextmanager
 import hashlib
 import io
@@ -769,8 +770,10 @@ class Lab:
         with self.lock:
             sounds = self.state.get('audio') or {}   # sounds with a saved replacement count as saved edits
             # Tidy hides leftover atlas rectangles and shows one card per identical copy.
+            # The kind filter comes last, so the page can see what every other kind would show (the "kinds" counts) and
+            # never leave the player on an empty kind by surprise.
             rows = [r for r in self.catalog.rows.values()
-                    if (not group or r['group'] == group) and (not kind or (r['editable'] if kind == 'visual' else r['kind'] == kind))
+                    if (not group or r['group'] == group)
                     and bool(r.get('removed')) == bool(removed) and not r.get('server_only') and (not favorite or r.get('favorite'))
                     and (not tidy or favorite or saved or removed or (not r.get('legacy') and (parent or r.get('primary', True))))
                     and (not parent or r.get('parent') == parent)
@@ -785,14 +788,17 @@ class Lab:
                     identity = row.get('dup') or row['key']
                     if identity not in unique or row.get('primary', False): unique[identity] = row
                 rows = list(unique.values())
+            kinds = dict(Counter(r['kind'] for r in rows), visual=sum(1 for r in rows if r['editable']))
+            if kind: rows = [r for r in rows if (r['editable'] if kind == 'visual' else r['kind'] == kind)]
             if target is not None:
                 scores = self.similar.rank(target, [r['key'] for r in rows])
                 rows = sorted((r for r in rows if r['key'] in scores), key=lambda r: scores[r['key']])[:240]
-                return {'total': len(rows), 'items': [{**r, 'similarity': round(1 - scores[r['key']], 3), 'saved': bool(self.current(r['key'])), 'staged': r['key'] in self.state['staged'], **locked(r)}
-                                                       for r in rows[max(0, offset):max(0, offset)+min(120, limit)]]}
-            rows.sort(key=lambda r: (r['group'] == 'Metadata', r['group'] == 'Audio', r['kind'] != 'image', r['name'].casefold(), r['source']))
-            return {'total': len(rows), 'items': [{**r, 'saved': bool(self.current(r['key'])) or r['key'] in sounds, 'staged': r['key'] in self.state['staged'] or bool((sounds.get(r['key']) or {}).get('staged')), **locked(r)}
-                                                   for r in rows[max(0, offset):max(0, offset)+min(120, limit)]]}
+                return {'total': len(rows), 'kinds': kinds, 'items': [{**r, 'similarity': round(1 - scores[r['key']], 3), 'saved': bool(self.current(r['key'])), 'staged': r['key'] in self.state['staged'], **locked(r)}
+                                                                      for r in rows[max(0, offset):max(0, offset)+min(120, limit)]]}
+            # By name: whole pictures and sprites side by side (sheets first hid every sprite behind hundreds of pages).
+            rows.sort(key=lambda r: (r['group'] == 'Metadata', r['group'] == 'Audio', r['name'].casefold(), r['kind'] != 'image', r['source']))
+            return {'total': len(rows), 'kinds': kinds, 'items': [{**r, 'saved': bool(self.current(r['key'])) or r['key'] in sounds, 'staged': r['key'] in self.state['staged'] or bool((sounds.get(r['key']) or {}).get('staged')), **locked(r)}
+                                                                  for r in rows[max(0, offset):max(0, offset)+min(120, limit)]]}
 
     def history(self, key): return self.state['edits'].get(key, {'versions': [], 'cursor': -1})
 
@@ -1185,7 +1191,7 @@ class Lab:
                 edits.append(dict(key=r['key'], name=row.get('label') or row['name'], source=row['source'], sheet=bool(self.catalog.children.get(r['key'])),
                                   size=[row['width'], row['height']], theme=recipe.get('prompt', '') if recipe.get('theme') else '', theme_id=recipe.get('theme', ''),
                                   redraw=recipe.get('prompt', '') if recipe.get('design') else '', redraw_id=recipe.get('design', ''),
-                                  installed=then.get(r['key']) == r['revision']))
+                                  revision=r['revision'], installed=then.get(r['key']) == r['revision']))
             by_name = {}
             for row in self.catalog.rows.values():
                 if row.get('editable') and row.get('primary', True) and not row.get('legacy'): by_name.setdefault(row['name'], row['key'])
