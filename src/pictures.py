@@ -264,9 +264,11 @@ class Pictures:
         for p in presets():
             if stop is not None and stop.is_set(): return
             if p['kind'] not in BUTTON_KINDS: continue
+            started = time.monotonic()
             try: self.render(p['id'], small=True)
             except Exception: pass   # a game without these buttons, a preset still being drawn: shown when asked
-            time.sleep(0.02)   # leave room for what the player is doing
+            # Paced: at most about a third of one processor core, so a slow PC stays quick while they are drawn.
+            if stop is not None and stop.wait(max(0.02, 2 * (time.monotonic() - started))): return
 
     def hide_preview(self, pid, small=False):
         """What a Clean up preset takes away: the game's own pictures of it, faded and crossed out."""

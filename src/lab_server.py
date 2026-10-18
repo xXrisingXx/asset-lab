@@ -452,12 +452,12 @@ def server_for(lab, port):
             self.previews_stop = threading.Event()
             self.previews = threading.Thread(target=lambda: self.previews_stop.wait(8) or themes.pictures.prewarm(self.previews_stop),
                                              name='preset previews', daemon=True)
-            self.previews.start()
+            if os.environ.get('ASSET_LAB_PREVIEWS') != '0': self.previews.start()   # (tests switch it off)
 
         def server_close(self):
             # Also called by the server's own __init__ when the port is still taken (a restart, an update): the
             # previews have not started then, and the port is simply tried again.
-            if getattr(self, 'previews', None) is not None:
+            if getattr(self, 'previews', None) is not None and self.previews.is_alive():
                 self.previews_stop.set()
                 self.previews.join(10)
             super().server_close()

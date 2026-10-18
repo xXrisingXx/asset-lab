@@ -328,7 +328,8 @@ class LabServer:
             raise
 
     def _start(self, timeout):
-        env = dict(os.environ, ASSET_LAB_HOME=str(self.home), ASSET_LAB_RUNTIME=str(self.runtime), PYTHONDONTWRITEBYTECODE='1')
+        # No presets previews drawn ahead: on a slow CI machine they took the processor from the test (a settings save timed out).
+        env = dict(os.environ, ASSET_LAB_HOME=str(self.home), ASSET_LAB_RUNTIME=str(self.runtime), PYTHONDONTWRITEBYTECODE='1', ASSET_LAB_PREVIEWS='0')
         env.pop('ASSET_LAB_LAUNCHER', None)
         deadline = time.monotonic() + timeout
         while True:
