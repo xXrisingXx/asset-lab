@@ -169,6 +169,10 @@ function paint(){
     if(k==='update_helper'||k==='remove_helper'){wants=true;const h=u&&u.helper;
       if(h){text=k==='remove_helper'?(h.installed?'Installed · '+size(h.bytes):'Not installed.'):h.ready?(h.updated?'Ready · '+h.updated:'Ready.'):'Not installed. It is downloaded, after asking, the first time a page link needs it.';
         if(b&&!r.dataset.busy)b.disabled=!(k==='remove_helper'?h.installed:h.ready);}}
+    if(k==='get_ai'){wants=true;const a=u&&u.ai;if(!a)text='Checking…';   // the line is there from the start, so nothing below it jumps
+      if(a&&!r.dataset.busy){text=a.installed?'Installed: Theme AI plans with it and Image AI redraws.':a.job?(a.job.message||'Downloading…'):a.known?'Not downloaded yet · '+size(a.missing)+', one time.':'';
+        if(b)b.disabled=a.installed||!a.known;if(b)b.textContent=a.installed?'Installed':'Get the local AI';
+        if(a.job&&!L.aiFollow){L.aiFollow=1;r.dataset.busy='1';if(b)b.disabled=true;follow(a.job,r).catch(e=>problem(r,e.message)).finally(()=>{L.aiFollow=0;delete r.dataset.busy;refreshUsage();});}}}
     if(k==='keep_builds'){wants=true;if(u)text=`${u.builds.count} build${u.builds.count===1?'':'s'} in your workspace now (${size(u.builds.bytes)}).`;}
     if(k==='open_workspace')text=((L.about&&L.about.folders||[]).find(f=>f.id==='workspace')||{}).path||'';
     if(k==='planner_model'&&L.models)text=!L.models.length?'No local AI model is installed, so Theme AI plans from keywords.':L.values.planner_model&&!L.models.includes(L.values.planner_model)?'That model is not installed now, so Automatic is used.':'';
@@ -330,12 +334,15 @@ async function act(spec,b){
   const r=rowOf(spec.key);problem(r,'');
   if(spec.key==='remove_helper'){const h=L.usage&&L.usage.helper;
     if(!await confirmAction('Remove the link helper?',`yt-dlp, Deno and PyAV are deleted from this PC${h&&h.bytes?' ('+size(h.bytes)+')':''}. Sounds you already saved keep working; the helper is downloaded again, after asking, the next time a page link needs it.`,'Remove'))return;}
+  if(spec.key==='get_ai'){const a=L.usage&&L.usage.ai;
+    if(!await confirmAction('Download the local AI?',`About ${a&&a.missing?size(a.missing):'7 GB'}, one time, from GitHub and Hugging Face. Then the smart Theme AI planner and Image AI redraws run on this PC: your requests never leave it. Works best with 16 GB of memory and a graphics card with 6 GB or more (without one, a drawing takes several minutes). You can keep using Asset Lab while it downloads, and a stopped download continues where it stopped.`,'Download'))return;
+    L.aiFollow=1;}
   b.disabled=true;if(r)r.dataset.busy='1';
   try{const res=await api('/api/settings-action',{id:spec.key});
     if(res.job)await follow(res.job,r);else if(res.message)say(res.message);else if(res.path)say((res.opened?'Opened ':'')+res.path);
     await refreshUsage();}
   catch(e){problem(rowOf(spec.key),e.message);}
-  finally{b.disabled=false;if(r)delete r.dataset.busy;paint();}
+  finally{b.disabled=false;if(r)delete r.dataset.busy;if(spec.key==='get_ai')L.aiFollow=0;paint();}
 }
 async function follow(job,r){
   const info=r&&r.querySelector('.settings-info');

@@ -955,7 +955,6 @@
   "Main menu:": "Menú principal:",
   "Everything else works by kind too: buttons, panels, icons, cells, food, the logo, the menu pattern.": "Todo lo demás también funciona por tipo: botones, paneles, iconos, células, comida, el logo, el patrón del menú.",
   "The image model is installed, so you can ask for redraws now.": "El modelo de imagen está instalado, así que ya puedes pedirme que redibuje cosas.",
-  "I can't download it from in here. Close Asset Lab and open it again: its start window offers to download the local AI (about 5 GB, one time), and has a \"Get the local AI\" button. Then ask me again.": "No puedo descargarlo desde aquí. Cierra Asset Lab y vuelve a abrirlo: su ventana de inicio ofrece descargar la IA local (unos 5 GB, una sola vez) y tiene un botón “Obtener la IA local”. Luego vuelve a pedírmelo.",
   "Ollama is not running, so the keyword planner was used. Start Ollama for full prompts.": "Ollama no se está ejecutando, así que se usó el planificador por palabras clave. Inicia Ollama para que entienda peticiones completas.",
   "I could not turn that into a visual change. Try naming a color, a mood, or a part of the game.": "No pude convertir eso en un cambio visual. Intenta nombrar un color, un ambiente o una parte del juego.",
   "That matched no art I can change, so nothing would happen. Try another name for the part (ask \"what can I change?\"), or check it in the library first.": "Eso no coincide con ningún arte que pueda cambiar, así que no pasaría nada. Prueba otro nombre para la parte (escribe “what can I change?”) o márcala antes en la biblioteca.",
@@ -3018,7 +3017,17 @@
   "Check what to change and describe it: Theme AI does the rest": "Marca lo que quieres cambiar y descríbelo: Theme AI hace el resto",
   "A spooky halloween theme": "Un tema de Halloween de terror",
   "See your changes the way the game shows them, without opening Mitosis": "Mira tus cambios como los muestra el juego, sin abrir Mitosis",
-  "Start again from the game’s original art (your current changes are kept as a build you can switch back to)": "Empezar de nuevo desde el arte original del juego (tus cambios actuales se guardan como un build al que puedes volver)"
+  "Start again from the game’s original art (your current changes are kept as a build you can switch back to)": "Empezar de nuevo desde el arte original del juego (tus cambios actuales se guardan como un build al que puedes volver)",
+  "The smart Theme AI planner and Image AI redraws, on this PC. A one-time download from GitHub and Hugging Face. Without it, Theme AI still works from keywords.": "El planificador inteligente de Theme AI y los redibujos de Image AI, en este PC. Una descarga única desde GitHub y Hugging Face. Sin ella, Theme AI sigue funcionando con palabras clave.",
+  "Get the local AI": "Obtener la IA local",
+  "Installed: Theme AI plans with it and Image AI redraws.": "Instalada: Theme AI planifica con ella e Image AI redibuja.",
+  "Download the local AI?": "¿Descargar la IA local?",
+  "Download": "Descargar",
+  "Getting the AI ready…": "Preparando la IA…",
+  "The local AI is ready. Theme AI uses it from your next request.": "La IA local está lista. Theme AI la usa desde tu próximo pedido.",
+  "The local AI is already on this PC.": "La IA local ya está en este PC.",
+  "This copy of Asset Lab has no list of the local AI files. Update Asset Lab, then try again.": "Esta copia de Asset Lab no tiene la lista de archivos de la IA local. Actualiza Asset Lab y vuelve a intentarlo.",
+  "Get it in Settings › Theme AI & drawing › Get the local AI (about 7 GB, one time). You can keep working while it downloads. Then ask me again.": "Consíguela en Ajustes › Theme AI y dibujo › Obtener la IA local (unos 7 GB, una sola vez). Puedes seguir trabajando mientras se descarga. Después vuelve a pedírmelo."
  },
  "patterns": {
   "{n} visuals": "{n} gráficos",
@@ -3446,7 +3455,10 @@
   "Checked ({n})": "Marcadas ({n})",
   "Only the {n} checked pictures will change.": "Solo cambiarán las {n} imágenes marcadas.",
   "Uncheck {s}": "Desmarcar {s}",
-  "+{n} more": "+{n} más"
+  "+{n} more": "+{n} más",
+  "Not downloaded yet · {s}, one time.": "Aún no descargada · {s}, una sola vez.",
+  "About {s}, one time, from GitHub and Hugging Face. Then the smart Theme AI planner and Image AI redraws run on this PC: your requests never leave it. Works best with 16 GB of memory and a graphics card with 6 GB or more (without one, a drawing takes several minutes). You can keep using Asset Lab while it downloads, and a stopped download continues where it stopped.": "Unos {s}, una sola vez, desde GitHub y Hugging Face. Después, el planificador inteligente de Theme AI y los redibujos de Image AI funcionan en este PC: tus pedidos nunca salen de él. Funciona mejor con 16 GB de memoria y una tarjeta gráfica de 6 GB o más (sin ella, un dibujo tarda varios minutos). Puedes seguir usando Asset Lab mientras se descarga, y una descarga detenida continúa donde se quedó.",
+  "Not enough free disk space: the local AI needs {s} and {s2} has {s3} free.": "No hay suficiente espacio libre: la IA local necesita {s} y {s2} tiene {s3} libres."
  },
  "keys": {
   "Shift": "Mayús",

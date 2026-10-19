@@ -48,6 +48,8 @@ You need a 64-bit Windows PC with **Mitos.is: The Game** installed from Steam.
 
 ## What's new
 
+- **Get the local AI from Settings.** Said "Not now" at the first start? Settings › Theme AI & drawing › **Get the local AI** downloads it (about 7 GB, one time, checked like the first-start download) while you keep working, and a stopped download continues where it stopped.
+
 - **A simpler Simple mode.** The library on the left now shows only what players change, by the names they know (Play button, Coin icon, Game floor 2…) in big pictures and categories, one card per thing; what is checked stays in sight with an ✕ to uncheck. The chat starts with ideas to click, says what a request will change, and won't send a half-finished sentence. Clearer buttons: **Show me**, **Keep this**, **Apply to Game**, plus **Preview in game** and **Start fresh**. Simple works in a narrow window too.
 
 - **A tidier Theme AI box.** One line of starters, then one box: 📎 your picture, 🖼 Presets and Aa Text & fonts sit beside what you type, with ⚡ Accelerate and **Show me** at the end. In Simple, Image AI is always on.
@@ -147,7 +149,7 @@ Ask Theme AI for a new background (“a city at night”, “BMW logos on carbon
 
 1. Download **AssetLab.exe** from the [latest release](https://github.com/xXrisingXx/asset-lab/releases/latest) (step by step: [How to download and run it](#how-to-download-and-run-it)).
 2. Double-click it and follow setup. Asset Lab finds your Steam installation of Mitos.is and opens its own desktop window.
-3. Choose whether to install the optional local AI. You can skip it and use the manual editor and keyword-based theme effects.
+3. Choose whether to install the optional local AI. You can skip it and use the manual editor and keyword-based theme effects, and get it later in Settings › Theme AI & drawing › **Get the local AI**.
 4. If setup asks for Microsoft's WebView2 runtime, follow the installation prompt so the desktop window can open.
 
 You need a **64-bit Windows PC** and an installed copy of **Mitos.is: The Game**. The optional AI download is about **6.3 GB**. For local AI, **16 GB of RAM** is recommended; **32 GB is recommended for image generation**, which uses both system memory and graphics memory. A compatible graphics card with **6 GB or more of video memory** helps. Setup checks your hardware and available space. On an 8 GB laptop graphics card (RTX 4060) a drawing takes about 20–30 seconds, or 15–20 seconds with **Accelerate**; the first one takes longer while the models load, and speed varies by PC.

@@ -444,6 +444,38 @@ class StorageTests(Temp):
         self.assertFalse(tools.exists())
         self.assertEqual(list(self.root.glob('tools.removing-*')), [])
 
+    def test_the_local_ai_can_be_downloaded_from_settings(self):
+        # A player who said Not now at the first start: Settings downloads the same files the launcher would, checked.
+        home = self.root / 'launcher'
+        rt = home / 'runtime'
+        (home).mkdir()
+        (home / 'ai-declined').write_text('2026-10-18', encoding='utf-8')
+        boot = self.root / 'bootstrap.json'
+        items = [dict(file='models/planner.gguf', url='https://huggingface.co/x/planner.gguf', sha256='a' * 64, size=10),
+                 dict(file='models/image.gguf', url='https://huggingface.co/x/image.gguf', sha256='b' * 64, size=20)]
+        boot.write_text(json.dumps(dict(runtime=items)), encoding='utf-8')
+        got = []
+        def fetch(url, dest, size, sha, progress=None, cancel=None):
+            got.append(url); dest.parent.mkdir(parents=True, exist_ok=True); dest.write_bytes(b'x' * size); progress(size)
+        with patch.object(labsettings, 'BOOTSTRAP', boot), patch.object(runtime, 'ROOT', rt), patch.object(audio, 'download', fetch), \
+             patch.object(runtime.OLLAMA, 'ensure', lambda: None), patch.dict(os.environ, ASSET_LAB_RUNTIME=str(rt)):
+            status = labsettings.usage(self.lab)['ai']
+            self.assertEqual((status['installed'], status['missing']), (False, 30))
+            with patch.object(labsettings.shutil, 'disk_usage', return_value=type('Usage', (), dict(free=100))()):
+                with self.assertRaisesRegex(ValueError, 'Not enough free disk space'): labsettings.run_action(self.lab, 'get_ai')
+            job = labsettings.run_action(self.lab, 'get_ai')['job']
+            for _ in range(100):
+                job = self.lab._sound()['jobs'].get(job['id'])
+                if job['state'] != 'running': break
+                time.sleep(0.05)
+            self.assertEqual(job['state'], 'done', job)
+            self.assertIn('ready', job['result']['message'])
+            self.assertEqual(got, [i['url'] for i in items])
+            self.assertTrue(labsettings.usage(self.lab)['ai']['installed'])
+            self.assertFalse((home / 'ai-declined').exists())             # the launcher no longer asks at start
+            self.assertIn('already', labsettings.run_action(self.lab, 'get_ai')['message'])
+        self.assertEqual(SCHEMA[[s['key'] for s in SCHEMA].index('get_ai')]['category'], 'theme')
+
     def test_privacy_note_names_every_address_in_the_code(self):
         listed = {h for p in labsettings.PRIVACY for h in p['hosts']}
         local = {'127.0.0.1', 'localhost', 'www.w3.org'}   # this PC, and the SVG namespace (a name, never fetched)

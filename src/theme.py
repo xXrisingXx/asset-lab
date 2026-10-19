@@ -1841,8 +1841,8 @@ class Themes:
         if len(low) < 60 and re.search(r'\b(?:install|download|get|add|set ?up|enable)\b', low) and re.search(r'\b(?:it|that|model|ai|image|drawing|redraws?)\b', low):
             ready = not runtime.missing('sd', 'diffusion', 'llm', 'vae')
             return dict(plan=dict(empty, reply='The image model is installed, so you can ask for redraws now.' if ready else
-                                  "I can't download it from in here. Close Asset Lab and open it again: its start window offers to "
-                                  'download the local AI (about 5 GB, one time), and has a "Get the local AI" button. Then ask me again.'),
+                                  'Get it in Settings › Theme AI & drawing › Get the local AI (about 7 GB, one time). '
+                                  'You can keep working while it downloads. Then ask me again.'),
                         source='command', note='', preview=None)
         if re.fullmatch(r'undo(?: (?:that|it|the last (?:theme|change|one)))?|go back|revert(?: that| it)?|take (?:that|it) (?:back )?off', low):
             done = self.undo()

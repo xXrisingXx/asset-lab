@@ -955,7 +955,6 @@
   "Main menu:": "Menu principal :",
   "Everything else works by kind too: buttons, panels, icons, cells, food, the logo, the menu pattern.": "Tout le reste marche aussi par type : boutons, panneaux, icônes, cellules, nourriture, le logo, le motif du menu.",
   "The image model is installed, so you can ask for redraws now.": "Le modèle d’image est installé, tu peux demander des redessins maintenant.",
-  "I can't download it from in here. Close Asset Lab and open it again: its start window offers to download the local AI (about 5 GB, one time), and has a \"Get the local AI\" button. Then ask me again.": "Je ne peux pas le télécharger d’ici. Ferme Asset Lab et rouvre-le : sa fenêtre de démarrage propose de télécharger l’IA locale (environ 5 Go, une seule fois) et a un bouton « Obtenir l'IA locale ». Ensuite, redemande-moi.",
   "Ollama is not running, so the keyword planner was used. Start Ollama for full prompts.": "Ollama ne tourne pas, donc le planificateur par mots-clés a été utilisé. Lance Ollama pour des prompts complets.",
   "I could not turn that into a visual change. Try naming a color, a mood, or a part of the game.": "Je n’ai pas pu transformer ça en changement visuel. Essaie de nommer une couleur, une ambiance ou une partie du jeu.",
   "That matched no art I can change, so nothing would happen. Try another name for the part (ask \"what can I change?\"), or check it in the library first.": "Ça ne correspond à aucun graphisme que je peux changer, donc rien ne se passerait. Essaie un autre nom pour cette partie (tape « what can I change? »), ou coche-la d’abord dans la bibliothèque.",
@@ -3018,7 +3017,17 @@
   "Check what to change and describe it: Theme AI does the rest": "Coche ce que tu veux changer et décris-le : Theme AI fait le reste",
   "A spooky halloween theme": "Un thème d’Halloween effrayant",
   "See your changes the way the game shows them, without opening Mitosis": "Vois tes changements comme le jeu les montre, sans ouvrir Mitosis",
-  "Start again from the game’s original art (your current changes are kept as a build you can switch back to)": "Recommencer depuis les images d’origine du jeu (tes changements actuels sont gardés dans une build vers laquelle revenir)"
+  "Start again from the game’s original art (your current changes are kept as a build you can switch back to)": "Recommencer depuis les images d’origine du jeu (tes changements actuels sont gardés dans une build vers laquelle revenir)",
+  "The smart Theme AI planner and Image AI redraws, on this PC. A one-time download from GitHub and Hugging Face. Without it, Theme AI still works from keywords.": "Le planificateur intelligent de Theme AI et les redessins d’Image AI, sur ce PC. Un téléchargement unique depuis GitHub et Hugging Face. Sans elle, Theme AI fonctionne quand même avec des mots-clés.",
+  "Get the local AI": "Obtenir l’IA locale",
+  "Installed: Theme AI plans with it and Image AI redraws.": "Installée : Theme AI planifie avec elle et Image AI redessine.",
+  "Download the local AI?": "Télécharger l’IA locale ?",
+  "Download": "Télécharger",
+  "Getting the AI ready…": "Préparation de l’IA…",
+  "The local AI is ready. Theme AI uses it from your next request.": "L’IA locale est prête. Theme AI l’utilise dès votre prochaine demande.",
+  "The local AI is already on this PC.": "L’IA locale est déjà sur ce PC.",
+  "This copy of Asset Lab has no list of the local AI files. Update Asset Lab, then try again.": "Cette copie d’Asset Lab n’a pas la liste des fichiers de l’IA locale. Mettez Asset Lab à jour, puis réessayez.",
+  "Get it in Settings › Theme AI & drawing › Get the local AI (about 7 GB, one time). You can keep working while it downloads. Then ask me again.": "Obtenez-la dans Réglages › Theme AI & dessin › Obtenir l’IA locale (environ 7 Go, une seule fois). Vous pouvez continuer à travailler pendant le téléchargement. Puis redemandez-moi."
  },
  "patterns": {
   "{n} visuals": "{n} visuels",
@@ -3446,7 +3455,10 @@
   "Checked ({n})": "Cochées ({n})",
   "Only the {n} checked pictures will change.": "Seules les {n} images cochées changeront.",
   "Uncheck {s}": "Décocher {s}",
-  "+{n} more": "+{n} de plus"
+  "+{n} more": "+{n} de plus",
+  "Not downloaded yet · {s}, one time.": "Pas encore téléchargée · {s}, une seule fois.",
+  "About {s}, one time, from GitHub and Hugging Face. Then the smart Theme AI planner and Image AI redraws run on this PC: your requests never leave it. Works best with 16 GB of memory and a graphics card with 6 GB or more (without one, a drawing takes several minutes). You can keep using Asset Lab while it downloads, and a stopped download continues where it stopped.": "Environ {s}, une seule fois, depuis GitHub et Hugging Face. Ensuite, le planificateur intelligent de Theme AI et les redessins d’Image AI tournent sur ce PC : vos demandes n’en sortent jamais. Idéal avec 16 Go de mémoire et une carte graphique de 6 Go ou plus (sans elle, un dessin prend plusieurs minutes). Vous pouvez continuer à utiliser Asset Lab pendant le téléchargement, et un téléchargement interrompu reprend là où il s’est arrêté.",
+  "Not enough free disk space: the local AI needs {s} and {s2} has {s3} free.": "Pas assez d’espace libre : l’IA locale a besoin de {s} et {s2} a {s3} de libre."
  },
  "keys": {
   "Shift": "Maj",

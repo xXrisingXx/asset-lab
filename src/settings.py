@@ -79,6 +79,8 @@ SCHEMA = [
     _s('remember_tools', 'editor', 'Remember tool settings', 'Keeps each tool’s size, opacity and other options between visits. Off: every tool starts fresh.',
        'bool', True, restart='page', keywords='brush size options defaults'),
     # ----- Theme AI and drawing
+    _s('get_ai', 'theme', 'Local AI', 'The smart Theme AI planner and Image AI redraws, on this PC. A one-time download from GitHub and Hugging Face. '
+       'Without it, Theme AI still works from keywords.', 'action', button='Get the local AI', keywords='download install ollama image model ai planner'),
     _s('planner_model', 'theme', 'Planner model', 'The local AI model that turns your requests into theme plans. Automatic uses the best one installed.',
        'text', '', options='models', max_length=200, pattern=r'[\w.:/@+-]*', keywords='ollama llm ai model'),
     _s('auto_apply', 'theme', 'Apply plans automatically', 'Applies a theme as soon as its plan is ready (the Auto-apply box), instead of waiting for you.', 'bool', False),
@@ -440,6 +442,66 @@ def update_helper(lab):
     return dict(job=lab.audio_tools_update())
 
 
+BOOTSTRAP = Path(__file__).resolve().parent.parent / 'bootstrap.json'
+
+
+def ai_files():
+    """The local AI's downloads (bootstrap.json "runtime"), and the ones not on this PC yet, counted the way the launcher does."""
+    import runtime
+    try: items = [i for i in json.loads(BOOTSTRAP.read_text(encoding='utf-8')).get('runtime') or [] if isinstance(i, dict)]
+    except (OSError, ValueError, AttributeError): items = []
+    root = Path(runtime.ROOT)
+    def present(item):
+        path = root / item['file']
+        unpacked = root / 'ollama' / 'ollama.exe' if 'ollama-windows' in item['file'] else root / 'sd' / 'sd-cli.exe' if 'sd-master' in item['file'] else None
+        return (path.is_file() and path.stat().st_size == int(item['size'])) or bool(unpacked and unpacked.is_file())
+    return items, [i for i in items if not present(i)]
+
+
+def ai_status(lab):
+    items, missing = ai_files()
+    return dict(known=bool(items), installed=bool(items) and not missing, missing=sum(int(i['size']) for i in missing),
+                job=lab._sound()['jobs'].running('ai'))
+
+
+def get_ai(lab):
+    """Download the local AI from Settings, for players who said Not now at the first start: the same files and checks
+    as the launcher's download (bootstrap.json, SHA-256), resumed from a stopped download (.part, like the launcher's)."""
+    import audio as soundlab
+    import runtime
+    items, missing = ai_files()
+    if not items: raise ValueError('This copy of Asset Lab has no list of the local AI files. Update Asset Lab, then try again.')
+    if not missing: return dict(message='The local AI is already on this PC.')
+    jobs = lab._sound()['jobs']
+    running = jobs.running('ai')
+    if running: return dict(job=running)
+    total = sum(int(i['size']) for i in missing)
+    root = Path(runtime.ROOT)
+    root.mkdir(parents=True, exist_ok=True)
+    free = shutil.disk_usage(root).free
+    if free < total + (1 << 30):
+        raise ValueError(f'Not enough free disk space: the local AI needs {mb(total + (1 << 30))} and {root.anchor or "this drive"} has {mb(free)} free.')
+
+    def work(update, cancel):
+        done = 0
+        for item in missing:
+            size, name = int(item['size']), Path(item['file']).name
+            def progress(have, start=done, name=name):
+                update((start + have) / total, f'Downloading {name} · {mb(start + have)} of {mb(total)}')
+            soundlab.download(item['url'], root / item['file'], size, item['sha256'], progress=progress, cancel=cancel)
+            done += size
+        update(1, 'Getting the AI ready…')
+        runtime.unpack()
+        # The launcher no longer needs to ask at start (it remembers a "Not now" in this file, beside the runtime folder).
+        if os.environ.get('ASSET_LAB_RUNTIME'):
+            try: (root.parent / 'ai-declined').unlink(missing_ok=True)
+            except OSError: pass
+        runtime.OLLAMA.retry_at = 0
+        threading.Thread(target=runtime.OLLAMA.ensure, daemon=True, name='ai-start').start()   # the planner, ready for the next request
+        return dict(message='The local AI is ready. Theme AI uses it from your next request.')
+    return dict(job=jobs.start('ai', work))
+
+
 def usage(lab, runtime_root=None):
     """Disk use of the workspace (by part), the local AI runtime and the link helper."""
     import runtime
@@ -454,7 +516,7 @@ def usage(lab, runtime_root=None):
     rt_bytes = folder_size(rt)[0] if rt.is_dir() else 0
     if Path(helper['path']).resolve().is_relative_to(rt.resolve()): rt_bytes = max(0, rt_bytes - helper['bytes'])
     return dict(workspace=dict(path=str(root), bytes=total, parts=parts), builds=dict(count=len(builds), bytes=parts['builds'], keep=value(lab, 'keep_builds')),
-                runtime=dict(path=str(rt), bytes=rt_bytes), helper=helper, data=dict(path=str(Path(lab.settings.path).parent) if getattr(lab, 'settings', None) else str(root.parent)))
+                runtime=dict(path=str(rt), bytes=rt_bytes), helper=helper, ai=ai_status(lab), data=dict(path=str(Path(lab.settings.path).parent) if getattr(lab, 'settings', None) else str(root.parent)))
 
 
 def about(lab, version):
@@ -498,6 +560,7 @@ def run_action(lab, name, data=None):
     if name == 'clear_caches': return clear_caches(lab)
     if name == 'remove_helper': return remove_helper(lab)
     if name == 'update_helper': return update_helper(lab)
+    if name == 'get_ai': return get_ai(lab)
     if name == 'prune_builds':
         done = prune_builds(lab)
         return dict(done, message=f'{done["removed"]} old build{"s" if done["removed"] != 1 else ""} deleted ({mb(done["freed"])} freed).')
