@@ -442,7 +442,7 @@ class Pictures:
                        '(Steam: right-click Mitos.is > Manage > Browse local files > assets) and replace the files there with these.\r\n'
                        'Files in a folder named "inside assets.zip" go inside that archive in the assets folder: open assets.zip and '
                        'replace the files of the same name in it.\r\n'
-                       'Keep a copy of the originals first. Easier: Asset Lab puts them in for you (Build to Mitosis) and Restore original '
+                       'Keep a copy of the originals first. Easier: Asset Lab puts them in for you (Apply to Game) and Restore original '
                        'takes them back out.\r\n')
 
     def export(self, ids, target=''):

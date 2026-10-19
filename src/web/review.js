@@ -4,7 +4,7 @@
 (()=>{
 const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
 const dlg=el('dialog','review');dlg.id='reviewDialog';dlg.setAttribute('aria-label','Review your mod');document.body.append(dlg);
-// mode: 'review' (Review), 'build' (Build to Mitosis: what goes in, then Apply build) or 'restore' (Restore original:
+// mode: 'review' (Review), 'build' (Apply to Game: what goes in, then Apply to Game) or 'restore' (Restore original:
 // what comes out of the game, then Restore original).
 const R={data:null,out:new Set(),colorsOut:{},hideOut:new Set(),changed:false,mode:'review'};
 
@@ -36,7 +36,7 @@ function render(){
   const d=R.data;dlg.replaceChildren();
   const edits=d.edits.filter(e=>!R.out.has(e.key)).length,colors=Object.keys(d.palette).filter(f=>!(f in R.colorsOut)).length,hidden=d.hide.filter(h=>!R.hideOut.has(h)).length;
   const sounds=(d.audio||[]).filter(a=>a.staged).length;
-  const head=el('div','review-head');const h=el('h2','',{build:'Build to Mitosis',restore:'Restore original'}[R.mode]||'Review your mod');const x=el('button','quiet','✕');x.type='button';x.onclick=()=>dlg.close();
+  const head=el('div','review-head');const h=el('h2','',{build:'Apply to Game',restore:'Restore original'}[R.mode]||'Review your mod');const x=el('button','quiet','✕');x.type='button';x.onclick=()=>dlg.close();
   const total=d.edits.length+Object.keys(d.palette).length+d.hide.length+(d.audio||[]).length,anyIn=edits||colors||hidden||sounds;
   const all=el('button','review-all',anyIn?'Remove all':'Put all back');all.type='button';all.id='reviewAll';all.hidden=!total;
   all.title=anyIn?'Leave everything out of the mod (your work stays saved)':'Include everything in the mod again';
@@ -44,8 +44,8 @@ function render(){
   if(R.mode==='restore')all.hidden=true;
   head.append(h,all,x);
   const summary=[`${edits} edit${edits===1?'':'s'}`,colors&&`${colors} game color${colors===1?'':'s'}`,hidden&&`${hidden} hidden menu control${hidden===1?'':'s'}`,sounds&&`${sounds} sound${sounds===1?'':'s'}`].filter(Boolean).join(' · ');
-  const sub=el('p','review-sub',(d.installed?'Installed in Mitosis now. Items marked New are not in the game yet; Build to Mitosis puts the list below in. ':'Nothing is installed yet. ')+`This mod: ${summary}. Remove leaves an item out without deleting your work; Put back includes it again.`);
-  if(R.mode==='build')sub.textContent='This is what goes into Mitosis. Leave anything out with Remove, then click Apply build. '+sub.textContent;
+  const sub=el('p','review-sub',(d.installed?'Installed in Mitosis now. Items marked New are not in the game yet; Apply to Game puts the list below in. ':'Nothing is installed yet. ')+`This mod: ${summary}. Remove leaves an item out without deleting your work; Put back includes it again.`);
+  if(R.mode==='build')sub.textContent='This is what goes into Mitosis. Leave anything out with Remove, then click Apply to Game. '+sub.textContent;
   if(R.mode==='restore')sub.textContent='Restoring takes your mod out of Mitosis and puts every game file back exactly as it was. Your saved work stays in Asset Lab.';
   const body=el('div','review-body');dlg.append(head,sub,body);
 
@@ -89,16 +89,16 @@ function render(){
       if(d.installed&&!f.installed)t.firstChild.append(el('span','review-new','New'));
       const change=el('button','','Change…');change.type='button';change.onclick=()=>{dlg.close();window.openFonts&&window.openFonts(f.id);};row.append(t,change);sec.append(row);}}
   soundSection(d,body);
-  if(!fields.length&&!d.hide.length&&!d.edits.length&&!(d.fonts||[]).length&&!(d.audio||[]).length)body.append(el('p','hint',d.installed?'Everything is out of the mod. Build to Mitosis now puts the original files back.':'Your mod is empty. Save an edit, apply a theme, or set game colors first.'));
+  if(!fields.length&&!d.hide.length&&!d.edits.length&&!(d.fonts||[]).length&&!(d.audio||[]).length)body.append(el('p','hint',d.installed?'Everything is out of the mod. Apply to Game now puts the original files back.':'Your mod is empty. Save an edit, apply a theme, or set game colors first.'));
 
   // Footer: file check and install.
   const foot=el('div','review-foot');const files=el('details','review-files');files.append(el('summary','', 'Check the game files'));const pre=el('pre');files.append(pre);
   files.ontoggle=run(async()=>{if(!files.open||pre.textContent)return;pre.textContent='Building…';try{const b=await build();pre.textContent=buildText(b)||'No game files change.';}catch(e){pre.textContent=e.message;}});
   const close=el('button','', 'Close');close.type='button';close.onclick=()=>dlg.close();
-  const go=el('button','primary',{build:'Apply build',restore:'Restore original'}[R.mode]||'Build to Mitosis');go.type='button';go.id='reviewGo';
+  const go=el('button','primary',{build:'Apply to Game',restore:'Restore original'}[R.mode]||'Apply to Game');go.type='button';go.id='reviewGo';
   go.disabled=R.mode==='restore'?!d.installed:R.mode==='build'?!d.installed&&!(edits||colors||hidden||sounds):false;
   const target=R.mode==='restore'?'restoreButton':'installButton',now=R.mode!=='review';
-  // Apply build / Restore original go ahead (through the usual checks); Build to Mitosis from Review shows the build first.
+  // Apply to Game / Restore original go ahead (through the usual checks); Apply to Game from Review shows the build first.
   go.onclick=()=>{dlg.close();setTimeout(()=>now&&window.LabThemeChat?.proceed?LabThemeChat.proceed(target):$(target).click(),0);};
   foot.append(files,close,go);dlg.append(foot);
   body.scrollTop=scrolled;dlg.scrollTop=page;

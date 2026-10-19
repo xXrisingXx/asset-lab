@@ -68,6 +68,9 @@ $('showRemoved').addEventListener('change',()=>{remove.textContent=$('showRemove
 const menu=$('contextMenu'),item=el('button','', 'Add to favorites');item.dataset.action='favorite-toggle';menu.append(item);
 new MutationObserver(()=>{if(!menu.hidden&&S.asset)item.textContent=favorites.has(S.asset.key)?'Remove from favorites':'Add to favorites';}).observe(menu,{attributes:true,attributeFilter:['hidden']});
 menu.addEventListener('click',run(async e=>{if(e.target.dataset.action==='favorite-toggle'&&S.asset)await mark([S.asset.key],favorites.has(S.asset.key)?'unfavorite':'favorite');}));
-window.LabSelection={keys:()=>[...picked],size:()=>picked.size,clear:()=>{picked.clear();changed();}};
+window.LabSelection={keys:()=>[...picked],size:()=>picked.size,clear:()=>{picked.clear();changed();},
+  has:key=>picked.has(key),
+  // Simple's cards: one card is every copy of a picture, checked or unchecked together.
+  set:(keys,on)=>{for(const k of keys)on?picked.add(k):picked.delete(k);changed();}};
 run(loadMarks)();
 })();

@@ -35,7 +35,12 @@ const close=el('button','quiet','✕');close.id='themeClose';close.title='Close 
 const scopeLine=el('div','theme-scope');scopeLine.hidden=true;const scopeText=el('span');const scopeAll=el('button','', 'Use everything');scopeLine.append(scopeText,scopeAll);
 let scopeOff=false;
 function only(){return !scopeOff&&window.LabSelection?.size()?window.LabSelection.keys():null;}
-function showScope(){const n=window.LabSelection?.size()||0;if(!n)scopeOff=false;scopeLine.hidden=!n;scopeText.textContent=scopeOff?`${n} checked, but this request covers everything.`:`Only the ${n} checked asset${n===1?'':'s'} will change.`;scopeAll.textContent=scopeOff?'Use checked only':'Use everything';}
+function showScope(){const n=window.LabSelection?.size()||0;if(!n)scopeOff=false;scopeLine.hidden=!n;
+  if(!n&&document.body.classList.contains('lab-simple')){scopeLine.hidden=false;scopeText.textContent='Changes: the whole game. Check pictures on the left to change only those.';scopeAll.hidden=true;return;}
+  scopeAll.hidden=false;
+  // Simple counts pictures as its cards do (the coin, with its copies, is one picture).
+  const simple=document.body.classList.contains('lab-simple'),shown=simple&&window.LabSimpleLibrary?LabSimpleLibrary.count():n,what=simple?'picture':'asset';
+  scopeText.textContent=scopeOff?`${shown} checked, but this request covers everything.`:simple&&shown===1?'Only the checked picture will change.':`Only the ${shown} checked ${what}${shown===1?'':'s'} will change.`;scopeAll.textContent=scopeOff?'Use checked only':'Use everything';}
 scopeAll.onclick=()=>{scopeOff=!scopeOff;showScope();};document.addEventListener('lab-selection',showScope);
 
 const log=el('div','theme-log');log.id='themeLog';log.setAttribute('role','log');
@@ -56,7 +61,7 @@ for(const [label,words] of [['Parts','buttons · panels · icons · logo · cell
   ['Text','player names · menu text — a look (gold · neon sign · candy cane · galaxy…) · a font (“in impact”) · “red, orange and yellow gradient” · left to right · diagonal · 45 degrees · hollow · wide / narrow · white glow · black outline'],
   ['Styles','neon · glass · pastel · greyscale · retro 8-bit · cartoon · scanlines · grainy · hide · more / less transparent']]){const p=el('p');p.append(el('b','',label+' '),document.createTextNode(words));tagList.append(p);}
 const auto=el('label','compact');const autoBox=el('input');autoBox.type='checkbox';autoBox.id='themeAuto';auto.title='Apply the plan as soon as it is ready';auto.append(autoBox,document.createTextNode(' Auto-apply'));
-const send=el('button','primary','Plan');send.id='themeSend';send.type='submit';
+const send=el('button','primary','Show me');send.id='themeSend';send.type='submit';
 // Image AI: Auto draws when a request needs new art ("put a hat on the title"), On always draws new art (the main
 // pieces of the game when nothing is named), Off only recolors and shades. Remembered between visits.
 const drawRow=el('div','theme-drawmode');drawRow.id='themeDraw';const drawSeg=el('div','segmented');
@@ -66,7 +71,7 @@ for(const [id,label,tip] of [['auto','Auto','Draw new art when the request needs
 function showDraw(){drawSeg.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.draw===drawMode));}
 // Accelerate (Settings › Theme AI & drawing): drawings use the whole graphics card and every processor core. Turning
 // it on warns first that the computer is slow while it draws.
-const accel=el('button','accelerate','⚡ Accelerate');accel.id='themeAccelerate';accel.type='button';
+const accel=el('button','accelerate');accel.id='themeAccelerate';accel.type='button';accel.append(el('span','accel-icon','⚡'),el('span','accel-label',' Accelerate'));
 accel.title='Draw faster with the whole graphics card and every processor core (the computer is slow while it draws)';
 function showAccel(){const on=!!(window.LabSettings&&LabSettings.get('accelerate'));accel.classList.toggle('active',on);accel.setAttribute('aria-pressed',String(on));}
 accel.onclick=run(async()=>{const on=!(window.LabSettings&&LabSettings.get('accelerate'));
@@ -78,20 +83,21 @@ drawRow.append(el('span','section-label','IMAGE AI'),drawSeg);showDraw();showAcc
 // Start here: one click per kind of change, so nobody has to know what to type. Each fills in the start of a request
 // (the cursor waits at the end); Text & fonts opens the fonts window, where every look is one click.
 const starters=el('div','theme-starters');starters.id='themeStarters';
-const fontsButton=el('button','', 'Text & fonts');fontsButton.id='fontsButton';fontsButton.type='button';fontsButton.title='Draw the game’s text (player names, menu text) in any font, with outline, glow and shadow';
+const fontsButton=el('button','theme-tool','Aa');fontsButton.setAttribute('aria-label','Text & fonts');fontsButton.id='fontsButton';fontsButton.type='button';fontsButton.title='Draw the game’s text (player names, menu text) in any font, with outline, glow and shadow';
 fontsButton.onclick=()=>window.openFonts&&window.openFonts();
 for(const [label,start,tip] of [['Colors','Make the buttons and panels ','Recolor parts of the game: say which parts and the colors or effect'],
   ['Whole theme','Give the whole game a theme: ','One look for everything: a mood, a holiday, a brand, a game…'],
   ['Background','A new menu background of ','Draw a new background picture'],
   ['Redraw something','Turn the coin into ','Draw new art for one part of the game (name it, or check it in the library first)']]){
-  const b=el('button','',label);b.type='button';b.title=tip;b.onclick=()=>{input.value=start;input.focus();input.setSelectionRange(start.length,start.length);};starters.append(b);}
-const pictureButton=el('button','', 'Your picture');pictureButton.id='themePictureButton';pictureButton.type='button';pictureButton.title='Add a picture (or paste or drop one here), then say what to change: “make this dark blue”';
-const presetsButton=el('button','', 'Presets');presetsButton.id='themePresetsButton';presetsButton.type='button';presetsButton.title='Ready-made art you can recolor and put in the game';
-starters.append(fontsButton,presetsButton);
+  const b=el('button','',label);b.type='button';b.title=tip;b.dataset.start=start;b.onclick=()=>{input.value=start;input.focus();input.setSelectionRange(start.length,start.length);};starters.append(b);}
+const pictureButton=el('button','theme-tool','📎');pictureButton.setAttribute('aria-label','Your picture');pictureButton.id='themePictureButton';pictureButton.type='button';pictureButton.title='Add a picture (or paste or drop one here), then say what to change: “make this dark blue”';
+const presetsButton=el('button','theme-tool','🖼');presetsButton.setAttribute('aria-label','Presets');presetsButton.id='themePresetsButton';presetsButton.type='button';presetsButton.title='Ready-made art you can recolor and put in the game';
+// The tools (a picture of yours, Presets, Text & fonts) are icons in the box; the chips above only start a sentence.
+const tools=el('div','theme-tools');tools.append(pictureButton,presetsButton,fontsButton);
 // More: the extras most requests never need, folded away.
 const more=el('details','theme-more');more.id='themeMore';more.append(el('summary','','More'));const moreBody=el('div','theme-more-body');
 const modelRow=el('label','theme-model-row');modelRow.append(el('span','section-label','AI MODEL'),model,state);
-const extras=el('div','theme-more-row');extras.append(pictureButton,accel);
+const extras=el('div','theme-more-row');extras.append(accel);
 moreBody.append(drawRow,modelRow,extras,auto,ideas,tags);more.append(moreBody);
 row.append(more,send);
 // A picture for the next request ("make this dark blue"): pasted, dropped or picked with Your picture.
@@ -113,18 +119,23 @@ drawer.addEventListener('drop',e=>{const file=[...(e.dataTransfer?.files||[])].f
 // made from it.
 presetsButton.onclick=()=>window.LabPresets?.open();
 // More and Plan on the starters' line, at its right end, above the box.
-const toolbar=el('div','theme-toolbar');toolbar.append(starters,row);
-form.append(toolbar,attached,input,filePick);
+// One line of sentence starters (and More, in Advanced), then one box: the tools, the request, Accelerate (Simple) and Show me.
+const toolbar=el('div','theme-toolbar');toolbar.append(starters,more);
+const inputBar=el('div','theme-inputbar');inputBar.append(tools,input,row);row.replaceChildren(send);
+form.append(toolbar,attached,inputBar,filePick);
 
 // Dock: what is waiting to be installed, whether Mitosis is open, and the install / restore actions.
 const dock=el('div','theme-dock');
 const modLine=el('div','theme-dock-line');const modText=el('b','', 'Your mod is empty');const gameText=el('small','', '');modLine.append(modText,gameText);
 const actions=el('div','theme-dock-actions');
 const review=el('button','', 'Review');review.title='List the game files the install would change';
-const install=el('button','primary','Build to Mitosis');install.id='themeInstall';
+const install=el('button','primary','Apply to Game');install.id='themeInstall';
 const restore=el('button','', 'Restore original');
 const undo=el('button','quiet','Undo theme');undo.id='themeUndo';undo.title='Take the last theme back off';
-actions.append(review,install,restore,undo);dock.append(modLine,actions);
+// See it the way the game shows it before putting it in; and a fresh start that keeps the current build to go back to.
+const previewGame=el('button','quiet','Preview in game');previewGame.title='See your changes the way the game shows them, without opening Mitosis';previewGame.onclick=()=>window.LabPreview?.open();
+const startFresh=el('button','quiet','Start fresh');startFresh.title='Start again from the game’s original art (your current changes are kept as a build you can switch back to)';startFresh.onclick=()=>window.LabBuilds?.startOver?.();
+actions.append(review,install,restore,previewGame,undo,startFresh);dock.append(modLine,actions);
 
 drawer.append(head,scopeLine,log,form,dock);document.body.append(drawer);
 
@@ -147,7 +158,7 @@ function showPlan(box,result,prompt,keys,entry){
   box.append(list);
   if(preview.samples.length){const grid=el('div','theme-samples');for(const s of preview.samples){const fig=el('button','theme-sample');fig.title='Open '+s.name;fig.dataset.exportName=s.label||s.name;const a=new Image(),b=new Image();a.src=s.before;b.src=s.after;a.alt='before';b.alt='after';fig.append(a,el('span','','→'),b,el('small','',(s.label||s.name)+(s.tint?' · in game':'')));if(s.tint)fig.title+=` · shown as the game draws it (× ${s.tint})`;fig.onclick=run(()=>select(s.key));grid.append(fig);}box.append(grid);}
   const colorsOnly=!preview.sheets&&code;
-  const bar=el('div','theme-actions');const apply=el('button','primary',colorsOnly?(preview.ui_colors?.length?'Apply game colors':'Apply'):'Apply');apply.disabled=!preview.sheets&&!colorsOnly;
+  const bar=el('div','theme-actions');const apply=el('button','primary',colorsOnly?(preview.ui_colors?.length?'Apply game colors':'Keep this'):'Keep this');apply.disabled=!preview.sheets&&!colorsOnly;
   const scope=[preview.sheets?`up to ${preview.sheets} sheet${preview.sheets===1?'':'s'}`:'',preview.ui_colors?.length?'game colors':'',preview.hide?.length?'menu':'',keys?`${keys.length} checked only`:''].filter(Boolean).join(' + ');
   apply.onclick=run(async()=>{const job=await applyPlan(plan,prompt,apply,keys);if(entry&&job?.state==='complete'){entry.applied=true;keepChat();}});
   if(entry?.applied){apply.textContent='Saved ✓';apply.disabled=true;}
@@ -168,16 +179,19 @@ async function refresh(){
   if(T.info.job&&!T.job)follow(T.info.job.id,bubble('bot','A theme is being applied…'));
   dockState();
 }
-function setBusy(value){T.busy=value;send.disabled=value;input.disabled=value;undo.disabled=value||!T.info?.last;send.textContent=value?'Working…':'Plan';dockState();}
+function setBusy(value){T.busy=value;send.disabled=value;input.disabled=value;undo.disabled=value||!T.info?.last;send.textContent=value?'Working…':'Show me';dockState();}
 
 // ----- the dock ---------------------------------------------------------------------------------
 function dockState(){
   const st=S.status||{},edits=(st.staged||[]).length,colors=Object.keys(st.palette||{}).length+(st.hidden||[]).length,active=st.active;
   const broken=active&&active.state!=='installed',pending=!!st.pending;
-  modText.textContent=broken?'An install was interrupted':active?(pending?'Changes since your build · Build to Mitosis to see them':'Your mod is installed in Mitosis'):edits||colors?`${edits} saved sheet${edits===1?'':'s'}${colors?' + game colors/menu':''} ready to install`:'Nothing to install yet';
-  gameText.textContent=T.game===null?'':T.game?' · Mitosis is open':' · Mitosis is closed';gameText.classList.toggle('warn',!!T.game);
-  install.textContent='Build to Mitosis';install.hidden=!!broken;restore.hidden=!active;
+  modText.textContent=broken?'An install was interrupted':active?(pending?'Changes since your build · Apply to Game to see them':'Your mod is installed in Mitosis'):edits||colors?`${edits} saved sheet${edits===1?'':'s'}${colors?' + game colors/menu':''} ready to install`:'Nothing to install yet';
+  gameText.textContent=T.game===null?'':T.game?' · Mitosis is open':' · Mitosis is closed';
+  install.textContent='Apply to Game';install.hidden=!!broken;restore.hidden=!active;
   install.disabled=T.busy||(active?!pending:!(edits||colors));review.disabled=T.busy||!(edits||colors||active);
+  install.title=install.disabled?(T.busy?'Wait for Theme AI to finish':active?'Your game already has everything: change something first':'Change something first (Keep this), then put it in the game here'):'Put your changes in the game';
+  review.title=review.disabled?'Nothing to show yet: change something first':'See every file your changes would put in the game';
+  gameText.classList.toggle('warn',!!T.game&&!install.disabled);   // only a warning when it is in the way of Apply to Game
 }
 async function checkGame(){try{T.game=(await api('/api/game')).running;}catch{T.game=null;}dockState();return T.game;}
 new MutationObserver(dockState).observe($('modTitle'),{childList:true,characterData:true,subtree:true});
@@ -196,7 +210,7 @@ async function pass(target,what,reviewed){   // reviewed: the player saw the bui
   if(!reviewed&&window.LabSettings&&LabSettings.beforeGameChange&&!await LabSettings.beforeGameChange(target.id))return;
   if(!await closedFirst(what))return;T.passing=true;try{target.click();}finally{T.passing=false;}}
 // The same check guards the editor's own Install and Restore buttons.
-// Build to Mitosis and Restore original show what they will do first (the review), and go ahead from there.
+// Apply to Game and Restore original show what they will do first (the review), and go ahead from there.
 for(const [id,what] of [['installButton','Installing the mod'],['restoreButton','Restoring the original files']]){
   $(id).addEventListener('click',e=>{if(T.passing)return;e.stopImmediatePropagation();e.preventDefault();
     // Settings › General › Ask before installing or restoring: the list is that question. Off: straight ahead.
@@ -213,12 +227,13 @@ async function ask(text,opts={}){   // opts: {only: keys, draw: 'on'} for "Redra
   if(picture&&!opts.picture){   // the attached picture: kept by the lab, then the request is about it
     try{picture.id=picture.id||(await api('/api/picture',{image:picture.data})).id;}catch(e){message(e.message,true);return;}
     opts={...opts,picture:picture.id};text=text.trim()||'Recolor this picture';unattachPicture();}
+  document.getElementById('themeIdeaCards')?.remove();   // the chat has started
   const said=bubble('user',text);if(opts.picture)said.prepend(pictureThumb(opts.picture));
   record({t:'user',text,...(opts.picture?{picture:opts.picture}:{})});input.value='';setBusy(true);
   const wait=bubble('bot','Thinking…');const started=Date.now();const tick=setInterval(()=>{wait.firstChild.textContent=`Thinking… ${Math.round((Date.now()-started)/1000)}s`+(Date.now()-started>12000?' (the first request loads the model)':'');},1000);
   try{
     const keys=opts.only||only();
-    const result=await api('/api/theme-chat',{message:text,model:model.value,history:T.history,only:keys,language:window.LabI18n?.lang||'en',draw:opts.draw||drawMode,picture:opts.picture||'',theme_from:opts.theme_from||''});   // the model replies in the lab's language
+    const result=await api('/api/theme-chat',{message:text,model:model.value,history:T.history,only:keys,language:window.LabI18n?.lang||'en',draw:opts.draw||(document.body.classList.contains('lab-simple')?'on':drawMode)/* Simple: Image AI always on */,picture:opts.picture||'',theme_from:opts.theme_from||''});   // the model replies in the lab's language
     clearInterval(tick);wait.firstChild.textContent=result.plan.reply||'Here is the plan.';
     if(result.plan.operations.length||Object.keys(result.plan.ui_colors||{}).length||result.plan.hide?.length){T.history.push({role:'user',content:text},{role:'assistant',content:JSON.stringify(result.plan)});T.history=T.history.slice(-8);}
     if(opts.apply&&result.picture)result.picture.autoApply=true;
@@ -375,7 +390,7 @@ async function applyFinished(Q){
       Q.cards.get(item)?.querySelector('.design-card')?.dispatchEvent(new CustomEvent('applied'));
       const line=Q.cards.get(item)?.querySelector('.design-part-state');if(line)line.textContent=' · applied ✓';}}
   finally{Q.ready.disabled=false;}
-  message(`Applied ${ready.length} drawing${ready.length===1?'':'s'}. Build to Mitosis to see them.`);S.build=null;await status();await library();refreshQueue(Q);
+  message(`Applied ${ready.length} drawing${ready.length===1?'':'s'}. Apply to Game to see them.`);S.build=null;await status();await library();refreshQueue(Q);
 }
 // The queue window: every piece large, with its state; leave pieces out, set their variants, put them in the order to draw.
 function openQueue(Q){
@@ -525,7 +540,7 @@ function showPicture(box,pic,note,applyNow){
   const actions=el('div','theme-actions');const apply=el('button','primary','Use this one');
   apply.onclick=run(async()=>{if(!where.value){message('Check the picture it goes on in the library first.',true);return;}
     apply.disabled=true;try{const r=await api('/api/picture-apply',{id:pic.id,key:where.value,color:pic.color||'',strength:isSet()?+strength.value:1});apply.textContent='Applied ✓';
-      message(`${r.name} changed. Build to Mitosis to see it.`);}catch(e){apply.disabled=false;throw e;}
+      message(`${r.name} changed. Apply to Game to see it.`);}catch(e){apply.disabled=false;throw e;}
     S.build=null;await status();await library();if(S.asset&&!S.dirty)await select(S.asset.key,true);});
   if(!where.options.length)apply.disabled=true;
   const ctrl=el('div','picture-controls');ctrl.append(el('p','design-how','Pick a color, then Use this one.'),chips,wordsRow,whereRow,strengthRow,darkNote,actions);
@@ -539,7 +554,7 @@ function showFont(box,font,note){
   if(note)box.append(el('p','theme-note',note));
   const img=el('img','font-offer');img.src=font.image;img.alt=font.label+' preview';
   let style=font.style;
-  const actions=el('div','theme-actions');const apply=el('button','primary','Apply');const tune=el('button','','Fine-tune…');
+  const actions=el('div','theme-actions');const apply=el('button','primary','Keep this');const tune=el('button','','Fine-tune…');
   let texture=font.texture||'',textures=null;   // a new font: the drawn tile its letters are filled with ('<job>-<variant>')
   const withTexture=s=>texture?{...s,texture}:s;
   const pick=window.LabFonts&&window.LabFonts.picker({font:font.id,text:font.text,style:font.style,img,first:font.offer?undefined:'Your request',
@@ -638,7 +653,7 @@ function designCard(box,job,keys,entry,info){
     if(info){info.applied=true;info.variant=S2.variant;keepChat();}S.build=null;await status();await library();if(S.asset&&!S.dirty)await select(S.asset.key,true);return r;}
   apply.onclick=run(async()=>{await applyNow();
     const undoD=el('button','quiet','Undo design');undoD.onclick=run(async()=>{await api('/api/design-undo',{job:job.id});undoD.remove();S2.live=false;apply.disabled=false;apply.textContent='Use this one';if(info){info.applied=false;keepChat();}S.build=null;await status();await library();});
-    const inst=el('button','primary','Build to Mitosis');inst.onclick=install.onclick;actions.append(undoD,inst);});
+    const inst=el('button','primary','Apply to Game');inst.onclick=install.onclick;actions.append(undoD,inst);});
   if(info?.applied){apply.disabled=true;apply.textContent='Applied ✓';S2.live=true;}
   card.addEventListener('applied',()=>{S2.live=true;apply.disabled=true;apply.textContent='Applied ✓';if(info){info.applied=true;keepChat();}});   /* by the queue's Apply finished */
   more.onclick=run(()=>drawDesign(box,job.prompt,job.targets,drawings(),null,job.direction,entry,'',job.inspiration));   // same art direction: the new variants match
@@ -658,7 +673,7 @@ function follow(id,box,control){
     T.job=null;setBusy(false);bar.classList.toggle('done',job.state==='complete');box.classList.toggle('error',job.state!=='complete');
     if(job.errors?.length)box.append(el('p','theme-note',`${job.errors.length} sheet(s) skipped: ${job.errors.slice(0,3).join(' · ')}`));
     if(job.state==='complete'){if(control){control.textContent='Saved ✓';control.disabled=true;}
-      const next=el('div','theme-actions');const go=el('button','primary','Build to Mitosis');go.onclick=install.onclick;next.append(go,el('small','hint','or keep refining first'));box.append(next);}
+      const next=el('div','theme-actions');const go=el('button','primary','Apply to Game');go.onclick=install.onclick;next.append(go,el('small','hint','or keep refining first'));box.append(next);}
     else if(control)control.disabled=false;
     S.build=null;await status();await library();if(S.asset&&!S.dirty)await select(S.asset.key,true);await refresh();scroll();
     resolve(job);};poll();});
@@ -670,18 +685,29 @@ async function applyPlan(plan,prompt,control,keys){
   try{const job=await api('/api/theme-apply',{plan,prompt,only:keys||null});return await follow(job.id,control?control.closest('.theme-bubble'):bubble('bot','Applying…'),control);}
   catch(e){if(control)control.disabled=false;throw e;}
 }
-form.onsubmit=e=>{e.preventDefault();run(()=>ask(input.value))();};
+form.onsubmit=e=>{e.preventDefault();
+  // A starter's words alone ("Turn the coin into ") are only the start: finish the sentence first.
+  if([...starters.querySelectorAll('button[data-start]')].some(b=>b.dataset.start.trim()===input.value.trim())){
+    message('Finish the sentence first: say what you want, then press Enter.',true);input.focus();return;}
+  run(()=>ask(input.value))();};
 input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();form.requestSubmit();}});
 undo.onclick=run(async()=>{if(!await confirmAction('Undo the last theme?','Every sheet it changed goes back to how it was just before. Sheets you edited by hand afterwards are left alone.','Undo theme'))return;
   setBusy(true);try{const r=await api('/api/theme-undo',{});const said=`Undid “${r.prompt.slice(0,80)}”: ${r.reverted} sheet(s) restored${r.skipped?`, ${r.skipped} left alone`:''}.`;bubble('bot',said);T.history=[];record({t:'note',text:said});S.build=null;await status();await library();if(S.asset&&!S.dirty)await select(S.asset.key,true);}finally{setBusy(false);await refresh();}});
-const WELCOME='Describe the look you want: a color, a mood, or parts like buttons, panels, icons, cells, the logo or the menu pattern. I show a plan with samples; Apply saves it, and Build to Mitosis (below) puts it in the game. Say “undo” to take a theme back off, or “help” for more.';
+const WELCOME='Tell me what to change, like “gold buttons” or “a spooky theme”. I show you a preview first: Keep this saves it, and Apply to Game (below) puts it in the game. Say “undo” to take a theme back off, or “help” for more.';
+// An empty chat shows ideas to start from (one click puts one in the box) and how long things take.
+const IDEAS=['Glossy gold everything','A spooky halloween theme','Deep ocean blues, keep the logo','Synthwave with a chrome logo and neon outlines','Make the menu background solid black','Theme it rainbow with proper glows','Christmas theme and put a santa hat on the title','Retro 8-bit pixel look'];
+function ideaCards(){const box=el('div','theme-idea-cards');box.id='themeIdeaCards';
+  box.append(el('p','theme-idea-title','Try one of these, or write your own:'));const grid=el('div','theme-idea-grid');
+  for(const idea of IDEAS){const b=el('button','theme-idea-card',idea);b.type='button';b.onclick=()=>{input.value=idea;input.focus();};grid.append(b);}
+  box.append(grid,el('p','theme-timing','Colors and recolors take seconds. New drawings take a few minutes each.'));return box;}
+function showIdeas(){document.getElementById('themeIdeaCards')?.remove();if(!J.entries?.length)log.append(ideaCards());}
 function toggle(open){T.open=open;drawer.hidden=!open;showScope();document.body.classList.toggle('theme-on',open);button.classList.toggle('active',open);
   try{localStorage.setItem('lab-theme-open',open?'1':'');}catch(e){}
-  if(open){run(refresh)();checkGame();input.focus();if(!log.childElementCount)bubble('bot',WELCOME);}}
+  if(open){run(refresh)();checkGame();input.focus();if(!log.childElementCount){bubble('bot',WELCOME);showIdeas();}}}
 button.onclick=()=>toggle(!T.open);close.onclick=()=>toggle(false);model.addEventListener('change',()=>{T.picked=true;});
 // A saved conversation, drawn again; a request cut off by a reload says so.
 function restoreChat(saved){
-  log.replaceChildren();J.entries=saved?.entries||[];T.history=saved?.history||[];bubble('bot',WELCOME);if(!J.entries.length)return;
+  log.replaceChildren();J.entries=saved?.entries||[];T.history=saved?.history||[];bubble('bot',WELCOME);if(!J.entries.length){showIdeas();return;}
   J.entries.forEach((entry,i)=>{
     if(entry.t==='user'){const said=bubble('user',entry.text);if(entry.picture)said.prepend(pictureThumb(entry.picture));if(J.entries[i+1]?.t!=='bot')bubble('bot','This request was interrupted by a reload. Send it again if you still want it.').classList.add('error');return;}
     const b=bubble('bot',entry.error||entry.text);if(entry.error){b.classList.add('error');return;}
@@ -781,7 +807,8 @@ function showMeter(m,used,total){m.hidden=!total;if(!total)return;const share=Ma
 async function activity(){if(!T.open||document.hidden)return;let a;try{a=await (await fetch('/api/ai-activity')).json();}catch(e){return;}
   act.dataset.stage=a.stage;actDot.className='act-dot '+a.stage;
   const loaded=(a.loaded||[]).map(m=>m.name.replace(/:latest$/,'')).join(', ');
-  actText.textContent=a.stage==='idle'?(loaded?`Idle · ${loaded} loaded`:'Idle'):(a.detail||STAGE[a.stage]||a.stage);
+  const simple=document.body.classList.contains('lab-simple');
+  actText.textContent=a.stage==='idle'?(simple?(T.info&&!T.info.ollama?'AI not installed: simpler results (Settings › Theme AI)':'AI ready'):(loaded?`Idle · ${loaded} loaded`:'Idle')):(a.detail||STAGE[a.stage]||a.stage);
   actDot.translate=false;actDot.title=a.gpu?.name?`${a.gpu.name}${a.gpu.busy!=null?` · ${a.gpu.busy}%`:''}`:'';   // a product name stays as it is
   showMeter(ramMeter,a.ram?.used||0,a.ram?.total||0);showMeter(vramMeter,a.gpu?.used||0,a.gpu?.total||0);}
 setInterval(activity,2000);document.addEventListener('visibilitychange',activity);

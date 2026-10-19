@@ -43,7 +43,7 @@ window.LabViewer={open:view,close:shut};
 // ----- the Presets window -----------------------------------------------------------------------------------------
 const dlg=el('dialog','pv-dialog presets-dialog');dlg.id='presetsDialog';dlg.setAttribute('aria-label','Presets');document.body.append(dlg);
 // Clean up presets hide clutter in one step (no color to pick): straight into the build.
-async function hideNow(p){const r=await api('/api/picture-apply',{id:p.id,key:'set:cleanup'});message(`${p.name}: hidden in your build (${r.count} picture${r.count===1?'':'s'} made see-through). Build to Mitosis to see it.`);}
+async function hideNow(p){const r=await api('/api/picture-apply',{id:p.id,key:'set:cleanup'});message(`${p.name}: hidden in your build (${r.count} picture${r.count===1?'':'s'} made see-through). Apply to Game to see it.`);}
 function use(p){dlg.close();if(p.kind==='hide')return run(()=>hideNow(p))();window.LabThemeChat?.ask(`Use the ${p.name} preset`,{picture:p.id});}
 function whole(p){dlg.close();window.LabThemeChat?.ask(`Make a whole theme from ${p.name}`,{theme_from:p.id});}
 const themeable=p=>p.kind==='background'||p.kind==='virus';
@@ -101,7 +101,10 @@ function render(){
   for(const p of mine.filter(p=>!P.category||p.category===P.category)){
     const card=btn('','pv-card');card.dataset.id=p.id;card.title=`${p.name} · ${p.category}`;card.classList.toggle('picked',isPicked(p));
     const pic=el('div','pv-thumb'+(onMenu(p)||sets(p)?' buttons':''));
-    if(p.kind==='background')pic.style.backgroundImage=`url("${url(p.id,'',true)}")`;else{const im=el('img');im.loading='lazy';im.src=url(p.id,'',true);im.alt=p.name;pic.append(im);}
+    // A shimmer until the picture is there (a first look at a tab used to show plain white squares).
+    pic.classList.add('loading');const done=()=>pic.classList.remove('loading');
+    if(p.kind==='background'){const probe=new Image();probe.onload=probe.onerror=done;probe.src=url(p.id,'',true);pic.style.backgroundImage=`url("${probe.src}")`;}
+    else{const im=el('img');im.loading='lazy';im.onload=im.onerror=done;im.src=url(p.id,'',true);im.alt=p.name;pic.append(im);}
     card.append(pic,el('span','',p.name));card.onclick=()=>detail(p);
     card.oncontextmenu=e=>{e.preventDefault();menu(p,e.clientX,e.clientY);};grid.append(card);}
   const hint=el('p','pv-hint','Click a picture to see it big. Right-click a picture or a category to export it.');
@@ -180,7 +183,7 @@ const TOUR=[
   {at:'.pv-cats .picture-chip:nth-child(2),.pv-cats .picture-chip',menu:['Export all in this category as a zip','Export all in this category as a folder'],title:'Right-click a category',
    text:'Export a whole category as one zip or as a folder, ready to send. Right-click a kind at the top to export all of it.'},
   {at:'.pv-groups button[data-group="Food"],.pv-groups',title:'Food: all at once',text:'The game has three foods, from small to big. A food preset goes on all of them at once (All foods), or pick just one in the chat.'},
-  {at:'#presetsTray',title:'Pick a few, then use them all',text:'Pick a background, a virus, food and buttons: your picks wait down here. Use all puts every one in the game at once.'},
+  {at:'#presetsTray',title:'Pick a few, then use them all',text:'Pick a background, a virus, food and buttons: your picks wait down here. Use all adds every one to your changes at once, and Apply to Game puts them in the game.'},
   {title:'That’s it',text:'See this again any time with the ? button at the top. Have fun!'}];
 let coach=null;
 function tour(force){

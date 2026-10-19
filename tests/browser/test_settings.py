@@ -323,7 +323,7 @@ class GeneralTests(SettingsCase):
         self.browser.eval('await status(); true')
 
     def install_click(self, apply=True):
-        """Build to Mitosis: the build is shown first (when Settings asks before installing), then Apply build."""
+        """Apply to Game: the build is shown first (when Settings asks before installing), then Apply to Game."""
         b = self.browser
         b.eval("document.activeElement && document.activeElement.blur()")
         b.click_selector('#installButton')
@@ -365,8 +365,8 @@ class GeneralTests(SettingsCase):
         self.close_settings()
         self.install_click(apply=False)                                       # the build is shown first
         b.wait_for("document.getElementById('reviewDialog').open")
-        self.assertEqual(b.text('#reviewDialog h2'), 'Build to Mitosis')
-        self.assertEqual(b.text('#reviewGo'), 'Apply build')
+        self.assertEqual(b.text('#reviewDialog h2'), 'Apply to Game')
+        self.assertEqual(b.text('#reviewGo'), 'Apply to Game')
         b.eval("document.getElementById('reviewDialog').close(); true")
         b.settle(5)
         self.assertIsNone(self.server.get('/api/status')['active'])         # closed: nothing installed

@@ -17,20 +17,31 @@ import sys
 import time
 # The portable (embedded) Python ignores PYTHONPATH and does not add the script's folder to the path.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from lab_core import Lab, VERSION, ROOT, adjust, png, data_home
-from theme import Themes, clean_plan, UI_COLORS, HIDE
-from design import Designer
-from builds import Builds
-import activity
-import runtime
-import preview
-import audio as soundlab
-import settings as labsettings
-import suggest
-import pictures
+import errors
+try:
+    from lab_core import Lab, VERSION, ROOT, adjust, png, data_home
+    from theme import Themes, clean_plan, UI_COLORS, HIDE
+    from design import Designer
+    from builds import Builds
+    import activity
+    import runtime
+    import preview
+    import audio as soundlab
+    import settings as labsettings
+    import suggest
+    import pictures
+    import simple_library
+    from PIL import Image
+except Exception as broken:   # a program file damaged or missing: safe mode says so, instead of a lab that never opens
+    if __name__ != '__main__': raise
+    import rescue
+    traceback.print_exception(broken)
+    errors.record('start (loading the lab)', broken)
+    port = sys.argv[sys.argv.index('--port') + 1] if '--port' in sys.argv[:-1] else '8753'
+    rescue.serve(int(port) if port.isdigit() else 8753, broken)
+    sys.exit(1)
 AUDIO_REQUEST = 210 * 1024 * 1024   # a 150 MB sound file, even sent as base64 in JSON (only /api/audio-source)
 DESIGN_SETTINGS = ('scale', 'dx', 'dy', 'tolerance', 'shape', 'fill', 'white', 'calm', 'pale', 'paint', 'match')
-from PIL import Image
 
 
 def code_stamp():
@@ -141,6 +152,7 @@ def server_for(lab, port):
             if status == 500 or isinstance(exc, (TypeError, AttributeError)):
                 print(f'Asset Lab: {self.command} {self.path.split("?")[0]} failed:', file=sys.stderr)
                 traceback.print_exception(exc, file=sys.stderr)
+                errors.record(f'{self.command} {self.path.split("?")[0]}', exc)   # kept in the error log too
             try: self.send({'error': text}, status=status)
             except OSError: pass
 
@@ -181,6 +193,8 @@ def server_for(lab, port):
                     if q.get('small'): image.thumbnail((256, 256), Image.Resampling.LANCZOS)
                     # A preset's picture only changes with the presets (the address carries their version): kept by the browser.
                     return self.send(png(image), 'image/png', cache=bool(q.get('v')) and q.get('id', '').startswith('preset:'))
+                if path == '/api/simple-assets':   # the library in Simple: what players change, by friendly name, one card each
+                    return self.send(simple_library.listing(designer, q.get('category', ''), q.get('q', '')[:100], int(q.get('offset') or 0), min(120, int(q.get('limit') or 60))))
                 if path == '/api/presets': return self.send({'presets': pictures.presets(), 'game_files': themes.pictures.game_targets(), 'version': pictures.version()})
                 if path == '/api/presets-export':   # presets to send to people: one, a category or a whole group, as a zip
                     ids, name = pictures.chosen(q)
@@ -358,6 +372,14 @@ def server_for(lab, port):
                 if path == '/api/theme-preview': return self.send(themes.preview(clean_plan(data.get('plan')), themes.scope(only)))
                 if path == '/api/theme-apply': return self.send(themes.apply(data.get('plan'), data.get('prompt', ''), only))
                 if path == '/api/theme-undo': return self.send(themes.undo())
+                if path == '/api/client-error':   # an error in the page: kept in the error log (a few per minute at most)
+                    now = time.monotonic()
+                    recent = [t for t in getattr(self.server, 'page_errors', []) if now - t < 60]
+                    if len(recent) < 20:
+                        errors.record('page', text=str(data.get('message', ''))[:500],
+                                      error='\n'.join(str(data.get(k, ''))[:4000] for k in ('source', 'stack') if data.get(k)))
+                    self.server.page_errors = recent + [now]
+                    return self.send({'kept': True})
                 if path == '/api/presets-folder':   # the same as a folder in Downloads, opened in Explorer
                     ids, name = pictures.chosen({k: str(v) for k, v in data.items() if k in ('id', 'group', 'category')})
                     folder = themes.pictures.export_folder(ids, name + ('-game-files' if data.get('target') else ''), str(data.get('target') or ''))
@@ -498,14 +520,26 @@ def main():
     parser.add_argument('--port', type=int, default=8753)
     parser.add_argument('--no-browser', action='store_true')
     args = parser.parse_args()
-    # The settings file is the one the launcher reads, whichever workspace this lab uses.
-    lab = Lab(args.game, args.workspace, args.ledger_dir, settings_file=data_home() / 'settings.json')
-    server = server_for(lab, args.port)
+    errors.install()   # whatever nobody catches is still written to the error log
+    server = None
+    try:
+        # The settings file is the one the launcher reads, whichever workspace this lab uses.
+        lab = Lab(args.game, args.workspace, args.ledger_dir, settings_file=data_home() / 'settings.json')
+        server = server_for(lab, args.port)
+        lab.settings.values()   # reading them also checks settings.json
+    except Exception as exc:
+        # Anything that stops the start opens safe mode in the lab's window (what happened, Try again, Restore
+        # original, the error log) instead of a lab that is simply gone.
+        traceback.print_exception(exc)
+        errors.record('start', exc)
+        if server is not None: server.server_close()
+        import rescue
+        rescue.serve(args.port, exc, args.game)
+        return
     address = f'http://127.0.0.1:{server.server_port}'
     print('Asset Lab: ' + address, flush=True)
     print('Game: ' + str(lab.game), flush=True)
     print('Workspace: ' + str(lab.root), flush=True)
-    lab.settings.values()   # reading them also checks settings.json
     if lab.settings.damaged: print('Settings: settings.json could not be read; using the defaults (the file is kept as settings.json.bad).', flush=True)
     open_page(lab, address, args.no_browser)
     threading.Thread(target=lab.similar.build, daemon=True).start()  # warm the image-search index

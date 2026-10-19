@@ -52,7 +52,7 @@ SCHEMA = [
        'bool', True, restart='app', keywords='launch start desktop window'),
     _s('check_updates', 'general', 'Check for updates when Asset Lab starts', 'Looks for a newer Asset Lab on GitHub and asks before installing it. Your work is never touched.',
        'bool', True, restart='app', keywords='update version release github'),
-    _s('confirm_install', 'general', 'Show the build first', 'Build to Mitosis and Restore original first show what goes in or comes out, with Apply build or Restore original to go ahead. Off: they go straight ahead.',
+    _s('confirm_install', 'general', 'Show the build first', 'Apply to Game and Restore original first show what goes in or comes out, with Apply to Game or Restore original to go ahead. Off: they go straight ahead.',
        'bool', True, keywords='confirm install restore mod game files build preview review'),
     _s('game_open', 'general', 'If Mitosis is open when you install', 'The game has to be closed to change its files. “Close it for me” closes it without asking; a match in progress ends.',
        'choice', 'ask', choices=_pick(('ask', 'Ask me first'), ('close', 'Close it for me')), keywords='running game close quit'),
@@ -469,6 +469,7 @@ def about(lab, version):
     folders = [dict(id='data', label='Your settings and marks', path=str(data)),
                dict(id='workspace', label='Workspace: edits, mod builds, game file backups', path=str(lab.root)),
                dict(id='ledgers', label='Install records', path=str(lab.ledger_dir)),
+               dict(id='logs', label='Error log: send it to the creator if something goes wrong', path=str(data / 'logs')),
                dict(id='runtime', label='Local AI and link helper', path=str(runtime.ROOT)),
                dict(id='app', label='Asset Lab’s program files', path=str(app))]
     if local and (Path(local) / 'AssetLab').is_dir(): folders.append(dict(id='launcher', label='Launcher: Python, downloads, update backups', path=str(Path(local) / 'AssetLab')))

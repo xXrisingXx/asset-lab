@@ -14,10 +14,10 @@ document.querySelector('.top-status').after(pick);
 const dlg=el('dialog','builds');dlg.id='buildsDialog';dlg.setAttribute('aria-label','Your builds');document.body.append(dlg);
 const head=el('div','builds-head');const x=el('button','quiet','✕');x.type='button';x.title='Close';x.onclick=()=>dlg.close();
 head.append(el('h2','', 'Your builds'),x);
-const intro=el('p','hint','Each build is its own version of your mod: edits, sounds, fonts, game colors and Theme AI chats. Switching changes what you edit here; the game keeps what is installed until you press Build to Mitosis.');
+const intro=el('p','hint','Each build is its own version of your mod: edits, sounds, fonts, game colors and Theme AI chats. Switching changes what you edit here; the game keeps what is installed until you press Apply to Game.');
 const list=el('div','builds-list');list.id='buildsList';
 const foot=el('div','builds-foot');
-const startOver=el('button','primary','Start over');startOver.id='startOverButton';startOver.type='button';startOver.title='A new, empty build from the game’s original art. Your current build stays in this list.';
+const startOver=el('button','','New empty build');startOver.id='startOverButton';startOver.type='button';startOver.title='A new, empty build from the game’s original art. Your current build stays in this list.';
 const copy=el('button','', 'Copy this build');copy.id='copyBuildButton';copy.type='button';copy.title='Try something new without changing this build';
 foot.append(startOver,copy);dlg.append(head,intro,list,foot);
 
@@ -57,8 +57,8 @@ async function remove(b){if(!await confirmAction(`Delete “${b.name}”?`,'Its 
 startOver.onclick=run(async()=>{
   const a=B.list.builds.find(b=>b.active);
   const installed=!!S.status?.active;
-  if(!await confirmAction('Start over?',`A new, empty build starts from the game’s original art. “${a.name}” stays in your builds, so you can switch back any time.`+
-    (installed?' Your mod is still installed in Mitosis: Restore original puts the game back to normal too.':''),'Start over'))return;
+  if(!await confirmAction('Start fresh?',`A new, empty build starts from the game’s original art. “${a.name}” stays in your builds, so you can switch back any time.`+
+    (installed?' Your mod is still installed in Mitosis: Restore original puts the game back to normal too.':''),'Start fresh'))return;
   await make('','');});
 copy.onclick=run(()=>make('',B.list.active));
 pick.onclick=run(open);
@@ -82,5 +82,5 @@ const layers=$('resetOriginal');if(layers){layers.textContent='Replace layers wi
 const bar=$('selectionBar');if(bar){const b=el('button','', 'Revert…');b.id='revertSelected';b.type='button';b.title='Put the game’s original art back for every checked asset';$('clearSelected').before(b);
   b.onclick=run(async()=>{const keys=window.LabSelection.keys();await revert(keys,keys.length===1?'Revert this asset to the original?':`Revert ${keys.length} checked assets to the original?`);});
   const sync=()=>{b.hidden=!window.LabSelection?.size();};document.addEventListener('lab-selection',sync);sync();}
-window.LabBuilds={open,load};
+window.LabBuilds={open,load,startOver:startOver.onclick};
 })();

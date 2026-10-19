@@ -73,6 +73,7 @@ class Startup(unittest.TestCase):
     def assertStarts(self, *extra):
         status, out = self.start(*extra)
         self.assertIsNotNone(status, 'the lab stopped at start:\n' + out[-2500:])
+        self.assertFalse(status.get('rescue'), 'the lab opened in safe mode:\n' + out[-2500:])   # the real lab, not its safe mode
         return status
 
     def test_a_first_start(self):
@@ -111,15 +112,42 @@ class Startup(unittest.TestCase):
         lab.ledger.write_text(json.dumps(record), encoding='utf-8')
         self.assertStarts()
 
+    def test_a_damaged_archive_is_left_out(self):
+        # A cut-off zip (it starts like one, the rest is missing): the lab opens without it and says so.
+        good = (self.game / 'assets' / 'bg2.png').read_bytes()
+        (self.game / 'assets' / 'broken.zip').write_bytes(b'PK\x03\x04' + b'\0' * 40)
+        status = self.assertStarts()
+        self.assertTrue(any('broken.zip could not be read' in w for w in status['warnings']))
+        self.assertEqual((self.game / 'assets' / 'bg2.png').read_bytes(), good)
+
     def test_the_game_updated_since_the_workspace_was_made(self):
         self.lab()
         (self.game / 'assets' / 'bg2.png').write_bytes(png(Image.new('RGBA', (64, 64), 'blue')))   # Steam changed a file
         self.assertStarts()
 
-    def test_no_game_says_why(self):
+    def test_a_start_that_fails_opens_safe_mode(self):
+        # No game where it was: instead of a lab that is gone, safe mode answers and says why, in words.
         status, out = self.start('--game', str(Path(self.temp.name) / 'nowhere'), game=False)
-        self.assertIsNone(status)
-        self.assertIn('Mitos.is installation', out.strip().splitlines()[-1])   # the last line is the reason, in words
+        self.assertTrue(status and status.get('rescue'), out[-2500:])
+        self.assertIn('Mitos.is installation', status['error'])
+        self.assertIn('Mitos.is installation', (self.home / 'logs' / 'errors.log').read_text(encoding='utf-8'))   # and in the error log
+
+    def test_safe_mode_puts_the_original_files_back(self):
+        import rescue
+        lab = self.lab()
+        original = (self.game / 'assets' / 'bg2.png').read_bytes()
+        self.edit_and_install(lab)
+        self.assertNotEqual((self.game / 'assets' / 'bg2.png').read_bytes(), original)
+        os.environ['ASSET_LAB_HOME'], saved = str(self.home), os.environ.get('ASSET_LAB_HOME')
+        try:
+            self.assertTrue(rescue.installed(self.game))
+            with self.assertRaisesRegex(ValueError, 'Close every Mitosis'): rescue.restore(self.game, running=lambda: True)
+            self.assertIn('original files back', rescue.restore(self.game, running=lambda: False))
+            self.assertIsNone(rescue.installed(self.game))
+        finally:
+            if saved is None: os.environ.pop('ASSET_LAB_HOME')
+            else: os.environ['ASSET_LAB_HOME'] = saved
+        self.assertEqual((self.game / 'assets' / 'bg2.png').read_bytes(), original)
 
 
 if __name__ == '__main__':

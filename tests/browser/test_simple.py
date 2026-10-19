@@ -17,12 +17,22 @@ class SimpleLayout(EditorTestCase):
         self.assertEqual(b.eval("getComputedStyle(document.getElementById('themeClose')).display"), 'none')
         b.key('Escape')                                                                # Theme AI is the page: it stays open
         b.wait_for("!document.getElementById('themeDrawer').hidden")
+        # Simple's own library: pictures by friendly name, by category; the full file list is not shown.
+        b.wait_for("document.querySelectorAll('#simpleGrid .simple-card').length > 0")
+        self.assertFalse(b.eval("document.getElementById('assetList').checkVisibility()"))
+        self.assertIn('All', b.eval("document.getElementById('simpleCategories').textContent"))
+        self.assertIn('whole game', b.eval("document.querySelector('.theme-scope').textContent"))   # what a request changes, always said
         before = b.eval("S.asset?.key || ''")
-        b.click_selector('#assetList .asset-card .asset-label')
-        b.wait_for("LabSelection.size() === 1")
-        self.assertEqual(b.eval("S.asset?.key || ''"), before)                        # picked, not opened in the hidden editor
-        self.assertIn('1', b.eval("document.querySelector('.theme-scope').textContent"))
-        b.click_selector('#assetList .asset-card .asset-label')                        # again: unpicked
+        b.click_selector('#simpleGrid .simple-card')
+        b.wait_for("LabSelection.size() >= 1")                                          # every copy of that picture
+        self.assertEqual(b.eval("S.asset?.key || ''"), before)                        # checked, not opened in the hidden editor
+        self.assertIn('checked picture', b.eval("document.querySelector('.theme-scope').textContent"))
+        self.assertIn('Checked (1)', b.eval("document.getElementById('simpleChecked').textContent"))   # in sight, with an ✕
+        b.click_selector('#simpleChecked .simple-chip .quiet')                           # unchecked from there
+        b.wait_for("LabSelection.size() === 0")
+        b.click_selector('#simpleGrid .simple-card')
+        b.wait_for("LabSelection.size() >= 1")
+        b.click_selector('#simpleGrid .simple-card')                                     # again: unchecked
         b.wait_for("LabSelection.size() === 0")
         b.click_selector('#viewSwitch [data-view="advanced"]')
         self.assertEqual(b.eval("getComputedStyle(document.querySelector('.studio')).display"), 'flex')
@@ -41,7 +51,7 @@ class SimpleLayout(EditorTestCase):
                 if not b.eval("!!document.querySelector('.tour-box')"): break
                 titles.append(b.eval("document.querySelector('.tour-box h3').textContent"))
                 b.click_selector('.tour-box .primary')
-            self.assertEqual(titles, ['Welcome to Asset Lab', 'Pick what to change', 'Right-click for more', 'Describe it', 'Bring your own picture', 'Put it in the game',
+            self.assertEqual(titles, ['Welcome to Asset Lab', 'Check what to change', 'Right-click for more', 'Describe it', 'Bring your own picture', 'Put it in the game',
                                       'Want more control?', 'You are ready'])
         finally:
             b.eval("sessionStorage.removeItem('tour-test'); localStorage.setItem('lab-tour-done','1'); localStorage.setItem('lab-layout','advanced'); true")
@@ -76,15 +86,21 @@ class ThemeAiComposer(EditorTestCase):
         b.click_selector('#themeButton')
         b.wait_for("!document.getElementById('themeDrawer').hidden")
         labels = b.eval("[...document.querySelectorAll('#themeStarters button')].map(x => x.textContent)")
-        self.assertEqual(labels, ['Colors', 'Whole theme', 'Background', 'Redraw something', 'Text & fonts', 'Presets'])
+        self.assertEqual(labels, ['Colors', 'Whole theme', 'Background', 'Redraw something'])
+        tools = b.eval("[...document.querySelectorAll('.theme-inputbar .theme-tools button')].map(x => x.getAttribute('aria-label'))")
+        self.assertEqual(tools, ['Your picture', 'Presets', 'Text & fonts'])       # the tools are icons in the box
+        self.assertTrue(b.eval("!!document.querySelector('.theme-inputbar #themeInput') && !!document.querySelector('.theme-inputbar #themeSend')"))
         b.click_selector('#themeStarters button')
         self.assertEqual(b.eval("document.getElementById('themeInput').value"), 'Make the buttons and panels ')
+        b.eval("document.getElementById('themeSend').click(); true")                   # the starter's words alone are not sent
+        b.wait_for("document.getElementById('toast')?.textContent.includes('Finish the sentence')")
+        self.assertEqual(b.eval("document.querySelectorAll('#themeLog .theme-bubble.user').length"), 0)
         self.assertFalse(b.eval("!!document.getElementById('gameColorsButton')"))
         self.assertTrue(b.eval("!!document.querySelector('#themeDrawer .theme-head #themeChats')"))   # the chats on the title line
-        for folded in ('themeAuto', 'themeAccelerate', 'themePictureButton', 'themeModel'):          # under More
+        for folded in ('themeAuto', 'themeAccelerate', 'themeModel'):          # under More
             self.assertFalse(b.eval(f"document.getElementById('{folded}').checkVisibility()"), folded)
         b.click_selector('#themeMore summary')
-        for folded in ('themeAuto', 'themeAccelerate', 'themePictureButton', 'themeModel'):
+        for folded in ('themeAuto', 'themeAccelerate', 'themeModel'):
             self.assertTrue(b.eval(f"document.getElementById('{folded}').checkVisibility()"), folded)
         self.assertTrue(b.eval("!!document.querySelector('#themeMore [data-draw=on]')"))
         b.click_selector('#themeMore summary')

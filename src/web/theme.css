@@ -70,7 +70,12 @@ body.lab-simple .theme-drawer{left:var(--lib);width:auto;border-left:1px solid v
 body.lab-simple .theme-starters button{padding:7px 13px;font-size:12px}
 body.lab-simple .asset-card{cursor:pointer}
 body.lab-simple #contextMenu button[data-action]:not([data-action="redraw-ai"]):not([data-action="favorite-toggle"]){display:none}
-@media(max-width:920px){body.lab-simple .theme-drawer{left:0;top:76px}body.lab-simple main{grid-template-columns:1fr!important}}
+/* A narrow window (half a laptop screen): the library above, Theme AI below, both in sight (it used to cover the library). */
+@media(max-width:920px){body.lab-simple main{grid-template-columns:1fr!important;grid-template-rows:42vh}body.lab-simple .library{height:42vh;padding-bottom:6px}
+  body.lab-simple .theme-drawer{left:0;top:calc(76px + 42vh)}body.lab-simple .simple-grid{grid-template-columns:repeat(auto-fill,minmax(96px,1fr))}
+  body.lab-simple .library{width:auto;grid-column:1/-1;border-right:0;border-bottom:1px solid var(--line)}
+  body.lab-simple .simple-library .simple-hint,body.lab-simple .library-head{display:none}body.lab-simple .simple-library h1{font-size:16px}
+  .topbar #tourButton,.topbar #stopButton{display:inline-flex!important}}
 @media(max-width:920px){.theme-drawer{top:0}}
 
 .theme-ideas:not([open]) .theme-idea-list{display:none}
@@ -306,3 +311,64 @@ body.lab-simple #themeModel,body.lab-simple .theme-state,body.lab-simple #themeA
 .theme-more-row{display:flex;flex-wrap:wrap;gap:6px}.theme-more-row button{padding:5px 10px;font-size:11px}
 .theme-more-row .accelerate.active{background:#3a2a17;border-color:var(--orange);color:var(--orange);font-weight:600}
 .theme-head .theme-title{white-space:nowrap;flex-shrink:0}
+
+/* ----- Simple's library (simple.js): big cards by friendly name, what is checked always in sight ----- */
+.simple-library{display:none}
+body.lab-simple .simple-library{display:flex;flex-direction:column;gap:8px;min-height:0;flex:1}
+body.lab-simple .library>:not(.library-head):not(.simple-library){display:none!important}
+body.lab-simple .library-head .section-label{visibility:hidden}
+body.lab-simple:not(.library-min){--lib:clamp(300px,34vw,420px)}   /* a wider library: bigger cards */
+.simple-library h1{margin:2px 0 0;font-size:20px}
+.simple-library .simple-hint{margin:0;font-size:12px;color:var(--muted);line-height:1.45}
+.simple-library input[type=search]{margin:2px 0 0}
+.simple-cats{display:flex;flex-wrap:wrap;gap:5px}
+.simple-checked{display:flex;flex-wrap:wrap;gap:5px;align-items:center;padding:7px;border:1px solid #34515a;border-radius:8px;background:#15222f}
+.simple-checked-title{font-size:11px;font-weight:700;color:var(--cyan);margin-right:2px}
+.simple-chip{display:flex;align-items:center;gap:5px;background:#1d2f3d;border:1px solid #405264;border-radius:14px;padding:2px 3px 2px 3px;font-size:11px;max-width:100%}
+.simple-chip img{width:22px;height:22px;object-fit:contain;border-radius:4px;background:repeating-conic-gradient(#1e2a37 0% 25%,#23303f 0% 50%) 50%/8px 8px}
+.simple-chip .quiet{padding:1px 6px;font-size:10px}.simple-chip.more{padding:3px 9px;color:var(--muted)}
+.simple-clear{margin-left:auto;padding:3px 9px;font-size:11px}
+.simple-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:8px;overflow:auto;align-content:start;flex:1;min-height:0;padding:2px;scrollbar-width:thin}
+.simple-card{position:relative;display:flex;flex-direction:column;gap:5px;padding:6px;border-radius:9px;background:#19222e;white-space:normal;text-align:center}
+.simple-card:hover{border-color:var(--cyan)}
+.simple-card.checked{border-color:var(--cyan);box-shadow:0 0 0 2px var(--cyan) inset}
+.simple-thumb{height:86px;display:flex;align-items:center;justify-content:center;border-radius:6px;background:repeating-conic-gradient(#1e2a37 0% 25%,#23303f 0% 50%) 50%/14px 14px;overflow:hidden}
+.simple-thumb img{max-width:92%;max-height:80px;object-fit:contain}
+.simple-thumb.tile img{max-width:100%;max-height:100%;width:100%;height:100%;object-fit:cover}
+.simple-name{font-size:11px;line-height:1.3}
+.simple-mark{position:absolute;top:8px;right:8px;width:20px;height:20px;border-radius:50%;background:var(--cyan);color:#102b2a;font-weight:800;font-size:12px;line-height:20px;display:none}
+.simple-card.checked .simple-mark{display:block}
+.simple-saved{position:absolute;top:9px;left:9px;width:7px;height:7px;border-radius:50%;background:var(--yellow)}
+.simple-more{align-self:center;padding:6px 16px;font-size:12px}
+.simple-empty{color:var(--muted);font-size:12px;grid-column:1/-1}
+body.lab-simple #selectionBar{display:none!important}
+
+/* Simple: no technical extras (the AI model, Image AI modes, Accelerate, words); ideas are in the chat instead. */
+body.lab-simple .theme-model-row,body.lab-simple #themeMore{display:none!important}
+.theme-idea-cards{margin:12px 0 4px;display:flex;flex-direction:column;gap:8px}
+.theme-idea-title{margin:0;font-size:12px;color:var(--muted)}
+.theme-idea-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:7px}
+.theme-idea-card{text-align:left;white-space:normal;padding:10px 12px;border-radius:9px;background:#19222e;font-size:12px;line-height:1.35}
+.theme-idea-card:hover{border-color:var(--cyan);color:var(--cyan)}
+.theme-timing{margin:0;font-size:11px;color:var(--muted)}
+
+/* Simple: a quieter top bar (no file counts). */
+body.lab-simple .top-status{display:none!important}
+/* The library cards' last line was cut off at the card's edge. */
+.asset-card{min-height:138px}.asset-card .asset-source{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* The composer: one line of starters, then one box holding the tools, the request, Accelerate and Show me. */
+.theme-toolbar .theme-more{flex-shrink:0}
+.theme-inputbar{display:flex;align-items:flex-end;gap:6px;background:#101720;border:1px solid var(--line);border-radius:10px;padding:5px 6px}
+.theme-inputbar:focus-within{border-color:var(--cyan)}
+.theme-inputbar textarea{flex:1;min-width:0;border:0!important;background:transparent!important;padding:7px 4px!important}
+.theme-inputbar textarea:focus{outline:none!important}
+.theme-tools{display:flex;gap:2px;align-self:flex-end;padding-bottom:2px}
+.theme-tool{width:34px;height:34px;padding:0;border:0;background:transparent;border-radius:8px;font-size:16px;line-height:34px;color:var(--muted)}
+.theme-tool:hover{background:#1e2835;color:var(--text)}
+#fontsButton.theme-tool{font-size:13px;font-weight:700;font-family:Georgia,serif}
+.theme-inputbar .theme-send{margin:0!important;gap:5px;align-self:flex-end}
+.theme-inputbar .accelerate{width:34px;height:34px;padding:0!important;margin:0!important;border-radius:8px;border:0;background:transparent;font-size:15px}
+.theme-inputbar .accelerate .accel-label{display:none}
+.theme-inputbar .accelerate.active{background:#3a2a17;color:var(--orange)}
+.theme-inputbar .accelerate:not(.active) .accel-icon{filter:grayscale(1);opacity:.7}

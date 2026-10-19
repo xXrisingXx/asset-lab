@@ -8,6 +8,7 @@ from pathlib import Path, PurePosixPath
 import re
 import xml.etree.ElementTree as ET
 import zipfile
+import zlib
 from PIL import Image
 from packages import safe_member
 from cache_index import visual_names
@@ -106,22 +107,19 @@ class Catalog:
             allowed = self.cache if source.startswith('cache/') else self.game
             if file.is_symlink() or not file.resolve().is_relative_to(allowed.resolve()):
                 continue
-            actual = self.source_path(source)
-            with actual.open('rb') as stream: magic=stream.read(8)
-            self.containers[source] = 'zip' if magic.startswith(b'PK\x03\x04') else 'image' if magic.startswith(b'\x89PNG\r\n\x1a\n') else 'metadata'
-            if self.containers[source] == 'zip':
-                with zipfile.ZipFile(actual) as archive:
-                    infos = archive.infolist()
-                    if len(infos) > 10000 or len({i.filename for i in infos}) != len(infos):
-                        raise ValueError('Unexpected archive inventory')
-                    entries = {}
-                    for info in infos:
-                        safe_member(info.filename)
-                        if not info.is_dir():
-                            entries[info.filename] = (info.file_size, lambda n=info.filename: archive.read(n))
-                    self._container(source, entries)
-            else:
-                self._container(source, {'': (actual.stat().st_size, actual.read_bytes)}, parse_atlases=False)
+            # A damaged or half-written file (a download the game did not finish, a cut-off archive) is left out with a
+            # note: one bad file must never stop the lab from opening (1.0.56 stopped on "File is not a zip file").
+            before = set(self.rows)
+            try: self._read_source(source)
+            except (zipfile.BadZipFile, zlib.error, EOFError, OSError, ValueError, KeyError) as exc:
+                for key in set(self.rows) - before: self.rows.pop(key, None)
+                for key in list(self.children):
+                    if key not in self.rows: self.children.pop(key, None)
+                self.containers.pop(source, None)
+                for key in [k for k in self.files if k[0] == source]: self.files.pop(key)
+                self.warnings.append(f'{source} could not be read ({type(exc).__name__}: {exc}) and was left out. '
+                                     + ('It is a download in the game’s cache: Mitosis downloads it again when it needs it.' if source.startswith('cache/')
+                                        else 'If its art is missing, verify the game files in Steam (right-click Mitos.is > Properties > Installed Files).'))
         # Loose XMLs can refer to other loose files. Matching basename wins over stale imagePath.
         for file, source in sources:
             if file.suffix.lower() in ('.xml', '.fnt'):
@@ -130,6 +128,25 @@ class Catalog:
             self.rows[parent]['sprite_count'] = len(children)
         self.stats = dict(Counter(r['kind'] for r in self.rows.values()))
         self.stats['visuals'] = sum(r['kind'] in ('image', 'sprite', 'glyph') for r in self.rows.values())
+
+    def _read_source(self, source):
+        """Every asset in one file of the game: an archive's entries, or the file itself."""
+        actual = self.source_path(source)
+        with actual.open('rb') as stream: magic=stream.read(8)
+        self.containers[source] = 'zip' if magic.startswith(b'PK\x03\x04') else 'image' if magic.startswith(b'\x89PNG\r\n\x1a\n') else 'metadata'
+        if self.containers[source] == 'zip':
+            with zipfile.ZipFile(actual) as archive:
+                infos = archive.infolist()
+                if len(infos) > 10000 or len({i.filename for i in infos}) != len(infos):
+                    raise ValueError('Unexpected archive inventory')
+                entries = {}
+                for info in infos:
+                    safe_member(info.filename)
+                    if not info.is_dir():
+                        entries[info.filename] = (info.file_size, lambda n=info.filename: archive.read(n))
+                self._container(source, entries)
+        else:
+            self._container(source, {'': (actual.stat().st_size, actual.read_bytes)}, parse_atlases=False)
 
     def _container(self, source, entries, parse_atlases=True):
         for entry, (size, read) in entries.items():

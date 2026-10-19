@@ -22,3 +22,6 @@
 /* The right-click menu shown inside the tour card. */
 .tour-box .tour-demo-menu{position:static;margin:-4px 0 14px;min-width:0;box-shadow:none;pointer-events:none}
 .tour-box .tour-demo-pointer{position:static;display:block;transform:none;font-size:11px;color:var(--cyan);text-shadow:none;margin:0 0 4px 4px}
+
+/* The tour's right-click menu is a picture of one, not a menu: dimmed, nothing to click. */
+.tour-demo-menu{opacity:.72;pointer-events:none;filter:saturate(.7)}

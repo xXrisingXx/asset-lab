@@ -48,7 +48,13 @@ You need a 64-bit Windows PC with **Mitos.is: The Game** installed from Steam.
 
 ## What's new
 
-- **Starts every time.** Asset Lab no longer stops at start when the game has a mod from another workspace (it opens that workspace, or lets you restore), when a record file was damaged (it uses its last good copy), or when the same folder was written differently. Restore original also works after Steam put the files back. If something does go wrong, the launcher now shows the actual cause and saves it to last-error.txt.
+- **A simpler Simple mode.** The library on the left now shows only what players change, by the names they know (Play button, Coin icon, Game floor 2…) in big pictures and categories, one card per thing; what is checked stays in sight with an ✕ to uncheck. The chat starts with ideas to click, says what a request will change, and won't send a half-finished sentence. Clearer buttons: **Show me**, **Keep this**, **Apply to Game**, plus **Preview in game** and **Start fresh**. Simple works in a narrow window too.
+
+- **A tidier Theme AI box.** One line of starters, then one box: 📎 your picture, 🖼 Presets and Aa Text & fonts sit beside what you type, with ⚡ Accelerate and **Show me** at the end. In Simple, Image AI is always on.
+
+- **A safety net for every error.** If something stops Asset Lab from starting, it opens in **safe mode** instead of closing: it says what went wrong, and offers Try again, putting the game's original files back, and the error log. Errors anywhere else (a request, background work, the page) are caught so the lab keeps working, and all of them are kept in **errors.log** (Settings › About › Error log) for you to send to the creator.
+
+- **Starts every time.** Asset Lab no longer stops at start when the game has a mod from another workspace (it opens that workspace, or lets you restore), when a record file was damaged (it uses its last good copy), or when the same folder was written differently. Restore original also works after Steam put the files back. A damaged or half-downloaded game file no longer stops it either ("File is not a zip file"): that file is left out with a note. If something does go wrong, the launcher now shows the actual cause and saves it to last-error.txt.
 
 ### Before that
 
@@ -70,12 +76,12 @@ You need a 64-bit Windows PC with **Mitos.is: The Game** installed from Steam.
 - **40 wild foods** (dragon egg, galaxy donut, kitty mochi, lava cake, treasure cookie…) and **40 creative viruses** (unicorn, dragon, knight, octopus, clockwork…), plus the classic virus in 12 colors.
 - **Export to share.** Right-click any preset or any edited picture in the chat › **Export**. Right-click a category (or a whole kind) to export all of it as a zip or a folder. Backgrounds can be exported as **game files**: the exact files they change, named as in the game, a folder for each background.
 - **A first-time tour of Presets** shows all of this (open it again with **?**).
-- **Fixes:** the Build to Mitosis review now always shows your newest change (it could show the previous picture).
+- **Fixes:** the Apply to Game review now always shows your newest change (it could show the previous picture).
 
 ### Earlier still
 
 - **The Presets window.** 61 backgrounds, 41 viruses and 40 foods, by category. Click one to see it big with its changes, then Use; click any picture in the chat to see it big with its color and placement controls.
-- **Build to Mitosis** shows what goes into the game first, then Apply build; **Restore original** shows what comes out first.
+- **Apply to Game** shows what goes into the game first, then Apply to Game; **Restore original** shows what comes out first.
 - **Simple for everyone** by default, with more room for the chat: chats on the title line, and the AI model, Accelerate and Your picture under More.
 - **Simple mode.** New players get just the pictures and Theme AI: click what to change, describe it, install. Starter buttons (Colors, Whole theme, Background, Redraw something, Text & fonts) mean nobody has to know what to type, and the tour shows examples and the right-click menu.
 - **Your own pictures and presets.** Paste a picture into Theme AI and say “make this dark blue”. Presets are ready-made viruses and about 60 seamless backgrounds to recolor and use; right-click one to make a whole theme from it.
@@ -173,7 +179,7 @@ Be specific about the asset, colors and effect you want. Generated lettering and
 1. Open **Review** or **Review files** to compare the saved changes with the originals.
 2. Use **Remove** beside anything you want to leave out. Your saved work stays available.
 3. Close Mitos.is, or let Asset Lab close it when prompted.
-4. Choose **Build to Mitosis**, check what goes in, then **Apply build** and launch the game to see the result.
+4. Choose **Apply to Game**, check what goes in, then **Apply to Game** and launch the game to see the result.
 
 **Apply and Save change your workspace. Install changes what the game uses.** You can keep editing an existing mod and install the updated version without restoring everything first.
 

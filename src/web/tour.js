@@ -11,7 +11,10 @@ const RIGHT_CLICK={at:'#assetList .asset-card',menu:['Redraw with Image AI…','
   text:'Right-click any picture for quick actions: redraw it with Image AI, change a font (on the letter pictures), or add it to your favorites.'};
 // Pictures: any picture a player pastes or drops, and the presets, recolored in one request.
 const PICTURES={at:'#themePictureButton,#themePresetsButton',theme:true,title:'Bring your own picture',
-  text:'Paste or drop a picture into Theme AI and say what to change, like “make this dark blue”. Presets has ready-made backgrounds, viruses and food: click one to see it big, then Use.'};
+  text:'Your picture: add (or paste, or drop) a picture and say what to change, like “make this dark blue”. Presets has ready-made art: click one to see it big, Use picks it, and Use all adds your picks to your changes.'};
+// Simple's library: big pictures by name; right-click one for more.
+const SIMPLE_RIGHT_CLICK={at:'#simpleGrid .simple-card',menu:['See it big','Check it','Redraw it with Image AI…'],title:'Right-click for more',
+  text:'Right-click a picture to see it big, check it, or redraw it with Image AI.'};
 const STEPS=[
   {title:'Welcome to Asset Lab',text:'Asset Lab lets you restyle Mitos.is: recolor or redraw its art, change its text and sounds, and install it all as a mod. Your game files are backed up first, and Restore original always puts them back. This quick tour shows you around.'},
   {at:'.library',title:'1. Find the art',text:'The library holds every picture in the game. Search by name (“play button”, “coin”), pick a category, or drop an image here to find art that looks like it. Click a card to open it; double-click to check it.'},
@@ -21,20 +24,20 @@ const STEPS=[
   {at:'.inspector',title:'4. Layers and saving',text:'Here you find the layers, the color controls and the history. When you like your edit, click Save edit: it is stored in your workspace, never straight in the game.'},
   {at:'#themeStarters,#themeButton',theme:true,examples:true,title:'5. Theme AI',text:'Describe a look in your own words (“spooky halloween”, “gold buttons with a glow”, “make the player names neon”) and Theme AI changes many assets at once. You see a preview before anything is saved.'},
   PICTURES,
-  {at:'.mod-tray',title:'6. Test it in the game',text:'Close Mitosis, then click Build to Mitosis to see what goes in and put your saved edits in the game. Restore original takes the mod back out and returns every file exactly as it was.'},
+  {at:'.mod-tray',title:'6. Test it in the game',text:'Close Mitosis, then click Apply to Game: it shows what goes in, then puts your saved edits in the game. Once your mod is in, Restore original appears here and puts every file back exactly as it was.'},
   {at:'#launchButton',title:'7. Play',text:'Open Mitosis starts the game through Steam so you can see your mod.'},
   {at:'#settingsButton',title:'8. Settings',text:'Change the language, the look of the lab, the AI and much more. You can open this tour again with the ? button next to it.'},
   {title:'You are ready',text:'Start by searching for something you want to change, or open Theme AI and describe a look. Have fun!'},
 ];
 // Simple (simple.js): the same welcome, then just the four things Simple shows.
 const SIMPLE_STEPS=[STEPS[0],
-  {at:'.library',title:'Pick what to change',text:'Click the pictures you want to change (click again to unpick). Pick nothing and Theme AI changes the whole game. Search by name: “play button”, “coin”, “virus”.'},
-  RIGHT_CLICK,
+  {at:'#simpleLibrary,.library',title:'Check what to change',text:'Click the pictures you want to change to check them (click again to uncheck). Check nothing and Theme AI changes the whole game. Use the categories, or search by name: “play button”, “coin”, “virus”.'},
+  SIMPLE_RIGHT_CLICK,
   {at:'#themeStarters,#themeInput',examples:true,title:'Describe it',text:'Type what you want (“gold buttons with a glow”, “a spooky halloween theme”, “change the font to comic sans”) or click a button above the box to start. You see it before anything is saved.'},
   PICTURES,
-  {at:'#themeInstall',title:'Put it in the game',text:'Close Mitosis, then click Build to Mitosis and Apply build. Restore original takes your changes back out and puts every file back exactly as it was.'},
+  {at:'#themeInstall',title:'Put it in the game',text:'When you like a change, close Mitosis and click Apply to Game: it shows what goes in, then puts it in the game. Once your changes are in, Restore original appears here and puts every file back exactly as it was.'},
   {at:'#viewSwitch',title:'Want more control?',text:'Advanced opens the full image editor: layers, brushes, filters and more. You can switch back any time.'},
-  STEPS[STEPS.length-1]];
+  {title:'You are ready',text:'Check something you want to change, or just describe a look in the box (or click an idea). Have fun!'}];
 let steps=STEPS;
 let index=0,box=null,shade=null,ring=null,target=null,drawerWasOpen=false;
 function target_(step){if(!step.at)return null;for(const s of step.at.split(',')){const e=document.querySelector(s.trim());if(e&&e.offsetParent!==null&&e.getBoundingClientRect().width>0)return e;}return null;}
@@ -80,7 +83,7 @@ function examples(){
 // What the right-click menu looks like, drawn in the tour card (it never covers the card's own words; nothing opens).
 function demoMenu(items){
   const menu=el('div','tour-demo-menu');menu.setAttribute('aria-hidden','true');
-  menu.append(el('span','tour-demo-pointer','🖱 Right-click'));for(const item of items)menu.append(el('div','',item));
+  menu.append(el('span','tour-demo-pointer','🖱 Right-click (example)'));for(const item of items)menu.append(el('div','',item));
   return menu;}
 function start(){
   end(true);index=0;drawerWasOpen=!document.getElementById('themeDrawer')?.hidden;steps=document.body.classList.contains('lab-simple')?SIMPLE_STEPS:STEPS;shade=el('div','tour-shade');ring=el('div','tour-ring');box=el('div','tour-box');box.setAttribute('role','dialog');box.setAttribute('aria-label','Asset Lab tour');
