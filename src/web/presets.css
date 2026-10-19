@@ -58,3 +58,23 @@
 .pv-thumb.loading{background:linear-gradient(100deg,#1d2733 30%,#2a3644 50%,#1d2733 70%) 0 0/300% 100%!important;animation:pv-shimmer 1.2s linear infinite}
 .pv-thumb.loading img{opacity:0}
 @keyframes pv-shimmer{to{background-position:-150% 0}}
+
+/* The big view: the preset beside its settings (color, where it goes, strength or size), then Use now or Pick. */
+.pv-custom{flex:1;min-width:280px;max-width:430px;overflow:auto;display:flex;flex-direction:column;gap:14px;scrollbar-width:thin;padding-right:2px}
+.pv-section h3{margin:0 0 7px;font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted)}
+.pv-colors{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:7px}
+.pv-colors .picture-chip{padding:4px 9px;font-size:11px}
+.pv-places{display:flex;flex-direction:column;gap:5px}
+.pv-place{text-align:left;white-space:normal;padding:8px 11px;font-size:12px;border-radius:8px;line-height:1.35}
+.pv-place.active{border-color:var(--cyan);background:#123336;color:var(--text);box-shadow:0 0 0 1px var(--cyan) inset}
+.pv-places.food{display:grid;grid-template-columns:repeat(2,1fr)}
+.pv-places.food .pv-place{display:flex;flex-direction:column;align-items:center;gap:3px;text-align:center;padding:8px 6px}
+.pv-places.food .pv-place b{font-size:13px}.pv-places.food .pv-place small{font-size:10px;color:var(--muted)}
+.pv-food-pics{display:flex;gap:4px;align-items:center;justify-content:center;height:40px}
+.pv-food-pics img{max-height:40px;max-width:40px;object-fit:contain}
+.pv-size{display:flex;align-items:center;gap:10px}.pv-size input{flex:1}
+.pv-size-text{min-width:40px;text-align:right;color:var(--text)}
+.pv-section input[type=range]{width:100%}
+.pv-custom .pv-note{margin:6px 0 0;max-width:none}
+.pv-pick b{display:flex;flex-direction:column;font-size:10px;color:var(--cyan);line-height:1.15}
+.pv-pick b small{color:var(--muted);font-weight:400}

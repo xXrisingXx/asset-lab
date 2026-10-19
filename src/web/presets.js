@@ -1,7 +1,8 @@
 'use strict';
 // Presets: ready-made backgrounds, viruses and food, in a window like Game preview. Pick a group and a category, click a
 // picture to see it big (a background as the tiled floor it becomes, a virus or food on the game's light and dark floor),
-// then Use puts it in Theme AI's chat to recolor and put on the game. The same big view shows any picture card's picture.
+// choose its color and where it goes there, and Use now puts it in your changes (or Pick it, and Use all puts every pick
+// in at once). Typing something that isn't a color hands it to Theme AI. The same big view shows any picture card's picture.
 // Uses app.js globals: $, api, run, message. Talks to Theme AI through window.LabThemeChat.
 (()=>{
 const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
@@ -9,7 +10,29 @@ const btn=(text,cls,title)=>{const b=el('button',cls||'',text);b.type='button';i
 // A preset's picture carries the presets' version: the browser keeps it, so switching categories shows it at once.
 const url=(id,color,small)=>`/api/picture?id=${encodeURIComponent(id)}${color?'&color='+encodeURIComponent(color):''}${small?'&small=1':''}${String(id).startsWith('preset:')&&P.version?'&v='+encodeURIComponent(P.version):''}`;
 const GROUPS=['Backgrounds','Viruses','Food','Menu buttons','In-game buttons','Title'];
-const P={list:null,group:'Backgrounds',category:'',scroll:0,picks:{}};
+const P={list:null,group:'Backgrounds',category:'',scroll:0,picks:{},custom:{},places:{}};
+const CHIPS=[['Dark blue','#1e3a8a'],['Blue','#3b82f6'],['Red','#e53935'],['Gold','#f5c542'],['Green','#2ecc71'],['Pink','#ff6fb5'],['Purple','#9b5de5'],['Black','#101216'],['White','#ffffff']];
+// Where a preset goes, when it can go on more than one place: what each place covers (a pick on a place takes over any
+// pick it overlaps), and its short name in the picks.
+const COVER={'set:everywhere':['menu','light','dark'],'set:menu':['menu'],'set:arena':['light','dark'],'set:arena-light':['light'],'set:arena-dark':['dark'],
+  'set:viruses':['light','dark'],'set:virus-light':['light'],'set:virus-dark':['dark'],
+  'set:food:all':[0,1,2],'set:food:0':[0],'set:food:1':[1],'set:food:2':[2],
+  'set:ingame-buttons':['phone','pc'],'set:ingame-phone':['phone'],'set:ingame-pc':['pc']};
+const SHORT={'set:everywhere':'everywhere','set:menu':'main menu','set:arena':'in game','set:arena-light':'in game, light mode','set:arena-dark':'in game, dark mode',
+  'set:viruses':'light and dark mode','set:virus-light':'light mode','set:virus-dark':'dark mode',
+  'set:food:all':'all foods','set:food:0':'food 1','set:food:1':'food 2','set:food:2':'food 3',
+  'set:ingame-buttons':'phones and PCs','set:ingame-phone':'phones','set:ingame-pc':'PCs'};
+// Food: the game's three foods by number, smallest first, each shown with the game's own picture.
+const FOOD={'set:food:all':['All foods','every size at once'],'set:food:0':['Food 1','the smallest'],'set:food:1':['Food 2','the middle one'],'set:food:2':['Food 3','the biggest']};
+const places=p=>P.places?.[p.kind]||[];
+// How a preset is customized in its big view: its color, where it goes, a background's strength, a title's size.
+const custom=p=>P.custom[p.id]||(P.custom[p.id]={color:'',where:places(p)[0]?.[0]||'',strength:1,scale:1});
+/* A preset into your changes as customized (q: the preset with its color, place, strength and size): no chat needed. */
+async function put(q){
+  if(q.kind==='hide')return hideNow(q);
+  const key=q.where||places(q)[0]?.[0]||'';   // none: the lab finds the best place for it
+  return api('/api/picture-apply',{id:q.id,key,color:q.color||'',strength:q.kind==='background'?q.strength??1:1,scale:q.kind==='logo'?q.scale??1:1});}
+async function refreshLab(){S.build=null;await status();await library();if(S.asset&&!S.dirty)await select(S.asset.key,true);}
 
 // ----- the big view (also for a picture card's picture) -----------------------------------------------------------
 /* A background is shown as the tiled floor it becomes; anything else on the game's light and dark floor. */
@@ -44,7 +67,8 @@ window.LabViewer={open:view,close:shut};
 const dlg=el('dialog','pv-dialog presets-dialog');dlg.id='presetsDialog';dlg.setAttribute('aria-label','Presets');document.body.append(dlg);
 // Clean up presets hide clutter in one step (no color to pick): straight into the build.
 async function hideNow(p){const r=await api('/api/picture-apply',{id:p.id,key:'set:cleanup'});message(`${p.name}: hidden in your build (${r.count} picture${r.count===1?'':'s'} made see-through). Apply to Game to see it.`);}
-function use(p){dlg.close();if(p.kind==='hide')return run(()=>hideNow(p))();window.LabThemeChat?.ask(`Use the ${p.name} preset`,{picture:p.id});}
+async function use(p){await put({...p,...custom(p)});await refreshLab();
+  message(p.kind==='hide'?`${p.name}: hidden in your changes. Apply to Game to see it.`:`${p.name} is in your changes. Apply to Game to put it in the game.`);}
 function whole(p){dlg.close();window.LabThemeChat?.ask(`Make a whole theme from ${p.name}`,{theme_from:p.id});}
 const themeable=p=>p.kind==='background'||p.kind==='virus';
 const sets=p=>p.kind==='menu'||p.kind==='ingame';
@@ -62,21 +86,32 @@ const kindOf=group=>({Backgrounds:'background',Viruses:'virus'})[group];
 const gameTargets=kind=>P.gameFiles?.[kind]||[];
 function gameFiles(q,label,name,kind,x,y){const t=gameTargets(kind);
   return t.length?[[`Export ${label} as game files ▸`,()=>popup([...t.map(([key,where])=>[`${where} (zip)`,()=>exportSet({...q,target:key},name+' game files')])],x,y)]]:[];}
-/* Picks: Use picks a preset (one of each kind: a background, a virus, a food, menu buttons, in-game buttons), then Use all
-   puts every pick in the game at once. */
-// One pick of each kind; a Clean up pick goes with a button set, not instead of it.
-const slot=p=>p.kind==='hide'?'Clean up':p.group;
+/* Picks: Pick keeps a preset (with its color and place) to use with others, then Use all puts every pick in your changes
+   at once. One pick of each kind, or one per place: a background for the menu and others for the light and dark floors,
+   a virus for each mode, a food for each size. A Clean up pick goes with a button set, not instead of it. */
+const slot=(p,where)=>p.kind==='hide'?'Clean up':COVER[where]?`${p.group} · ${where}`:p.group;
 const SLOTS=[...GROUPS,'Clean up'];
-const isPicked=p=>P.picks[slot(p)]?.id===p.id;
-function pick(p){if(isPicked(p))delete P.picks[slot(p)];else P.picks[slot(p)]=p;}
-async function useAll(){const list=SLOTS.map(g=>P.picks[g]).filter(Boolean);if(!list.length)return;P.picks={};dlg.close();
-  for(const p of list){if(p.kind==='hide')await hideNow(p);else await window.LabThemeChat?.ask(`Use the ${p.name} preset`,{picture:p.id,apply:true});}}
+const rank=q=>SLOTS.indexOf(q.kind==='hide'?'Clean up':q.group)*10+Math.max(0,places(q).findIndex(x=>x[0]===q.where));
+const picked=()=>Object.values(P.picks).sort((a,b)=>rank(a)-rank(b));
+const isPicked=(p,where)=>Object.values(P.picks).some(q=>q.id===p.id&&(where===undefined||q.where===where));
+function pick(p){const c=custom(p),key=slot(p,c.where);
+  if(P.picks[key]?.id===p.id){delete P.picks[key];return;}
+  if(COVER[c.where])for(const [k,q] of Object.entries(P.picks))if(q.group===p.group&&COVER[q.where]?.some(x=>COVER[c.where].includes(x)))delete P.picks[k];   // that place is taken over
+  P.picks[key]={...p,...c};}
+async function useAll(){const list=picked();if(!list.length)return;P.picks={};dlg.close();
+  const failed=[];let done=0;   // one that cannot go in (this game has nowhere for it) never stops the others
+  for(const q of list){try{await put(q);done++;}catch(e){failed.push(`${q.name}: ${e.message}`);}}
+  if(done)await refreshLab();
+  if(failed.length)message(failed.join(' · '),true);
+  else message(done===1?`${list[0].name} is in your changes. Apply to Game to put it in the game.`:`${done} presets are in your changes. Apply to Game to put them in the game.`);}
 function tray(){
-  const list=SLOTS.map(g=>P.picks[g]).filter(Boolean);const box=el('div','pv-tray');box.id='presetsTray';
-  if(!list.length){box.append(el('span','pv-tray-empty','Use picks a preset. Pick a background, a virus, food and buttons, then use them all at once.'));return box;}
+  const list=picked();const box=el('div','pv-tray');box.id='presetsTray';
+  if(!list.length){box.append(el('span','pv-tray-empty','Pick a few presets (a background for the menu and another for the game, a virus, food, buttons), then Use all puts them in at once.'));return box;}
   const chips=el('div','pv-tray-picks');
-  for(const p of list){const c=el('span','pv-pick');const im=el('img');im.src=url(p.id,'',true);im.alt='';const x=btn('✕','quiet','Unpick '+p.name);
-    x.onclick=()=>{delete P.picks[slot(p)];render();};c.append(im,el('span','',`${slot(p)}: ${p.name}`),x);chips.append(c);}
+  for(const q of list){const c=el('span','pv-pick');const im=el('img');im.src=url(q.id,q.color,true);im.alt='';const x=btn('✕','quiet','Unpick '+q.name);
+    x.onclick=()=>{delete P.picks[slot(q,q.where)];render();};
+    const what=el('b','',q.kind==='hide'?'Clean up':q.group);if(places(q).length>1&&SHORT[q.where])what.append(el('small','',SHORT[q.where]));
+    c.append(im,what,el('span','',q.name),x);chips.append(c);}
   const clear=btn('Clear');clear.onclick=()=>{P.picks={};render();};
   const go=btn(`Use all (${list.length})`,'primary','Put every pick in the game');go.id='presetsUseAll';go.onclick=run(useAll);
   box.append(chips,clear,go);return box;}
@@ -110,14 +145,63 @@ function render(){
   const hint=el('p','pv-hint','Click a picture to see it big. Right-click a picture or a category to export it.');
   dlg.append(head,groups,chips,hint,grid,tray());grid.scrollTop=P.scroll;grid.onscroll=()=>{P.scroll=grid.scrollTop;};
 }
-// A preset big: Use picks it (or unpicks it), a whole theme from it, Export, or Back to the list.
+// A preset big, customized beside it (color, where it goes, a background's strength, a title's size): Use now puts it in
+// your changes, Pick keeps it for Use all. Also a whole theme from it, Export, or Back to the list.
 function detail(p){
-  dlg.replaceChildren();
+  dlg.replaceChildren();const c=custom(p);
   const head=el('div','pv-head');const x=btn('✕','quiet','Close');x.onclick=()=>dlg.close();
   head.append(el('h2','',p.name),el('span','pv-sub',`${p.group} · ${p.category}`),x);
-  const on=isPicked(p);
-  const go=btn(on?'Picked ✓':'Use','primary',on?'Click to unpick it':'Pick it, then pick more (a background, a virus, food, buttons) and use them all');go.id='presetUse';
-  go.onclick=()=>{pick(p);render();};
+  const pic=stage(url(p.id,c.color),onMenu(p)?'menu':p.kind,p.name);pic.dataset.exportName=p.name;
+  const side=el('div','pv-custom');side.id='presetCustom';
+  const section=(title,...parts)=>{const box=el('div','pv-section');box.append(el('h3','',title),...parts);side.append(box);return box;};
+  // A pick follows what is changed here, and the buttons say whether this place already has it.
+  const now=btn('Use now','primary','Put it in your changes now, as set up here');now.id='presetUseNow';
+  const keep=btn('','', '');keep.id='presetUse';
+  const state=()=>{const on=isPicked(p,c.where);keep.textContent=on?'Picked ✓':'Pick';keep.title=on?'Click to unpick it':'Keep it with your other picks, then Use all puts them all in at once';};
+  const sync=()=>{const key=slot(p,c.where);if(P.picks[key]?.id===p.id)P.picks[key]={...p,...c};state();};
+  if(p.kind!=='hide'){
+    // Color: one click, or typed. Anything that is not just a color goes to Theme AI with this preset.
+    const chips=el('div','pv-colors');
+    const paint=()=>{pic.show(url(p.id,c.color));pic.dataset.exportName=[p.name,(c.color||'').replace('#','')].filter(Boolean).join(' ');chips.querySelectorAll('button').forEach(b=>b.classList.toggle('active',(b.dataset.color||'')===(c.color||'')));sync();};
+    for(const [label,color] of [['Original',''],...CHIPS]){const b=btn('','picture-chip',label);b.dataset.color=color;
+      if(color){const dot=el('i');dot.style.background=color;b.append(dot);}b.append(el('span','',label));b.onclick=()=>{c.color=color;paint();};chips.append(b);}
+    const words=el('input','picture-words');words.id='presetWords';words.placeholder='Type a color (“dark purple”, “darker”) or ask Theme AI';
+    const change=btn('Change it');change.id='presetChange';
+    change.onclick=run(async()=>{const said=words.value.trim();if(!said)return words.focus();
+      const r=await api('/api/picture-color',{id:p.id,words:said});
+      if(r.color&&said.split(/\s+/).length<=4){c.color=r.color;words.value='';paint();return;}
+      dlg.close();window.LabThemeChat?.ask(said,{picture:p.id});});   // "make it a pirate flag", "use it with a glow": Theme AI's job
+    words.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();change.click();}};
+    const row=el('div','design-refine-row');row.append(words,change);
+    section('Color',chips,row);paint();}
+  // Where it goes, when there is a choice: the main menu or the game (light or dark mode), a virus mode, which food.
+  const spots=places(p);
+  if(spots.length>1){
+    const list=el('div','pv-places'+(p.kind==='food'?' food':''));list.id='presetPlaces';list.setAttribute('role','radiogroup');list.setAttribute('aria-label','Where it goes');
+    const mark=()=>{list.querySelectorAll('button').forEach(b=>{const on=b.dataset.place===c.where;b.classList.toggle('active',on);b.setAttribute('aria-checked',on);});};
+    for(const [key,name,look] of spots){const b=btn('','pv-place');b.dataset.place=key;b.setAttribute('role','radio');
+      if(p.kind==='food'&&FOOD[key]){const pics=el('span','pv-food-pics');
+        for(const k of key==='set:food:all'?spots.filter(s=>s[2]).map(s=>s[2]):[look]){if(!k)continue;const im=el('img');im.alt='';im.src=`/api/thumb?key=${encodeURIComponent(k)}`;pics.append(im);}
+        b.append(pics,el('b','',FOOD[key][0]),el('small','',FOOD[key][1]));}
+      else b.append(el('span','',name));
+      b.onclick=()=>{c.where=key;mark();more();state();};list.append(b);}
+    section(p.kind==='food'?'Which food':'Where it goes',list);mark();}
+  // A background: how much of the game's own color shows through. A title: its size in the title's place.
+  const strength=el('input');strength.type='range';strength.min=0.2;strength.max=1;strength.step=0.05;strength.value=c.strength;strength.id='presetStrength';
+  strength.oninput=()=>{c.strength=+strength.value;sync();};
+  const dark=el('p','pv-note','In dark mode the game lays its own dark color over the in-game floor, so it looks darker there than here.');
+  const size=el('input');size.type='range';size.min=0.5;size.max=1.5;size.step=0.05;size.value=c.scale;size.id='presetSize';
+  const sizeText=el('small','pv-size-text');const sized=()=>{sizeText.textContent=Math.round(c.scale*100)+'%';};
+  size.oninput=()=>{c.scale=+size.value;sized();sync();};sized();
+  let strengthBox=null;
+  if(p.kind==='background'){strengthBox=section('Strength',strength,el('p','pv-note','Full covers the game’s own color. Lower lets it show through.'),dark);}
+  if(p.kind==='logo'){const line=el('div','pv-size');line.append(size,sizeText);
+    section('Size',line,el('p','pv-note','100% fits the whole title in its place, nothing cut off. Bigger fills more of the menu, but may cut off what sticks out.'));}
+  const more=()=>{dark.hidden=!/^set:(?:everywhere|arena$|arena-dark)/.test(c.where);};more();
+  if(p.kind==='hide')side.append(el('p','pv-note','Hidden by making these pictures see-through: the game itself is not changed, and the empty spot can still be clicked.'));
+  if(sets(p))side.append(el('p','pv-note',p.kind==='menu'?'Some menu icons are colored by the game itself (the teal and pink ones): they keep that color, with this set’s shine and outline.':'Phone and PC buttons: split, eject and the joystick.'));
+  now.onclick=run(async()=>{now.disabled=true;try{await use(p);render();}finally{now.disabled=false;}});
+  keep.onclick=()=>{pick(p);render();};state();
   const back=btn('Back');back.onclick=render;
   const bar=el('div','pv-actions');bar.append(back);
   if(themeable(p)){const t=btn('Make a whole theme from this','','Draw the rest of the game in its colors and style');t.onclick=()=>whole(p);bar.append(t);}
@@ -128,11 +212,9 @@ function detail(p){
     as.append(new Option('The picture (PNG)',''),...targets.map(([key,where])=>new Option(`Game files: ${where}`,key)));
     as.title='Game files are the game’s own files this changes, named as in the game: drop them in, no renaming';
     out.onclick=()=>as.value?exportSet({id:p.id,target:as.value},p.name+' game files'):exportOne(p);bar.append(as);}
-  bar.append(out);
-  const pic=stage(url(p.id),onMenu(p)?'menu':p.kind,p.name);pic.dataset.exportName=p.name;
-  if(p.kind==='hide')bar.prepend(el('p','pv-note','Hidden by making these pictures see-through: the game itself is not changed, and the empty spot can still be clicked.'));
-  if(sets(p))bar.prepend(el('p','pv-note',p.kind==='menu'?'Some menu icons are colored by the game itself (the teal and pink ones): they keep that color, with this set’s shine and outline.':'Phone and PC buttons: split, eject and the joystick.'));
-  bar.append(go);dlg.append(head,pic,bar);go.focus();
+  bar.append(out,keep,now);
+  const body=el('div','pv-body');body.append(pic,side);
+  dlg.append(head,body,bar);now.focus();
 }
 const pmenu=el('div','context preset-menu');pmenu.hidden=true;document.body.append(pmenu);
 /* A right-click menu of [text, fn] entries. In the top layer's dialog when one is open, or it would show behind it. */
@@ -140,7 +222,7 @@ function popup(items,x,y){pmenu.replaceChildren();
   for(const [text,fn] of items){const b=btn(text);b.onclick=()=>{pmenu.hidden=true;fn();};pmenu.append(b);}
   const home=[...document.querySelectorAll('dialog[open]')].pop()||document.body;if(pmenu.parentNode!==home)home.append(pmenu);
   pmenu.hidden=false;pmenu.style.left=Math.min(innerWidth-260,x)+'px';pmenu.style.top=Math.min(innerHeight-40*items.length-10,y)+'px';}
-function menu(p,x,y){const items=[['See it big',()=>detail(p)],[isPicked(p)?'Unpick it':'Pick it',()=>{pick(p);render();}],['Use this preset now',()=>use(p)]];
+function menu(p,x,y){const items=[['See it big',()=>detail(p)],[isPicked(p,custom(p).where)?'Unpick it':'Pick it',()=>{pick(p);render();}],['Use this preset now',run(()=>use(p))]];
   if(themeable(p))items.push(['Make a whole theme from this',()=>whole(p)]);
   if(sets(p))items.push(...exportItems({id:p.id},'all its buttons',p.name));else items.push(['Export picture (PNG)',()=>exportOne(p)],...gameFiles({id:p.id},'it',p.name,p.kind,x,y));
   popup(items,x,y);}
@@ -177,13 +259,13 @@ const TOUR_KEY='lab-presets-tour-done';
 const TOUR=[
   {at:'.pv-groups',title:'Pick a kind',text:'Backgrounds, viruses, food, menu buttons and in-game buttons. Each kind has its own categories.'},
   {at:'.pv-cats',title:'Then a category',text:'Narrow it down by category. All shows everything in the kind.'},
-  {at:'.pv-card',title:'Click a picture to see it big',text:'A background shows as the floor it becomes, a virus or food on the game’s light and dark floor. There, Use picks it.'},
+  {at:'.pv-card',title:'Click a picture to see it big',text:'There you choose its color and where it goes (the main menu, the game in light or dark mode, which food), then Use now puts it in your changes.'},
   {at:'.pv-card',menu:['See it big','Pick it','Use this preset now','Make a whole theme from this','Export picture (PNG)'],title:'Right-click a picture',
    text:'Export saves it as a PNG to send to people. Make a whole theme draws the rest of the game to match it.'},
   {at:'.pv-cats .picture-chip:nth-child(2),.pv-cats .picture-chip',menu:['Export all in this category as a zip','Export all in this category as a folder'],title:'Right-click a category',
    text:'Export a whole category as one zip or as a folder, ready to send. Right-click a kind at the top to export all of it.'},
-  {at:'.pv-groups button[data-group="Food"],.pv-groups',title:'Food: all at once',text:'The game has three foods, from small to big. A food preset goes on all of them at once (All foods), or pick just one in the chat.'},
-  {at:'#presetsTray',title:'Pick a few, then use them all',text:'Pick a background, a virus, food and buttons: your picks wait down here. Use all adds every one to your changes at once, and Apply to Game puts them in the game.'},
+  {at:'.pv-groups button[data-group="Food"],.pv-groups',title:'Food 1, 2 and 3',text:'The game has three foods, from the smallest (Food 1) to the biggest (Food 3). In a food’s big view, put it on all of them at once or on just one.'},
+  {at:'#presetsTray',title:'Pick a few, then use them all',text:'Pick keeps a preset down here with its color and place: one background for the menu and another for the dark-mode floor, a virus, food, buttons. Use all puts every pick in your changes at once, and Apply to Game puts them in the game.'},
   {title:'That’s it',text:'See this again any time with the ? button at the top. Have fun!'}];
 let coach=null;
 function tour(force){
@@ -213,10 +295,14 @@ function tour(force){
     card.style.top=Math.max(10,Math.min(box.height-200,below))+'px';
     next.focus();};
   show();}
+function take(r){P.list=r.presets||[];P.gameFiles=r.game_files||{};P.places=r.places||{};P.version=r.version||'';}
+let loading=null;
+const load=()=>loading||(loading=api('/api/presets').then(take).catch(e=>{loading=null;throw e;}));
 async function open(group){
-  if(!P.list){const r=await api('/api/presets');P.list=r.presets||[];P.gameFiles=r.game_files||{};P.version=r.version||'';}
+  if(!P.list)await load();
   if(group&&GROUPS.includes(group))P.group=group;
   if(!P.list.some(p=>p.group===P.group))P.group=P.list[0]?.group||'Backgrounds';
   render();if(!dlg.open)dlg.showModal();tour(false);}
-window.LabPresets={open:run(open)};
+window.LabPresets={open:run(open),get total(){return P.list?.length||0;}};
+setTimeout(()=>{if(!P.list)load().catch(()=>{});},300);   // ready before the tour and the first click
 })();

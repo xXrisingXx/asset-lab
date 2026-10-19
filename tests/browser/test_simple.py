@@ -51,7 +51,7 @@ class SimpleLayout(EditorTestCase):
                 if not b.eval("!!document.querySelector('.tour-box')"): break
                 titles.append(b.eval("document.querySelector('.tour-box h3').textContent"))
                 b.click_selector('.tour-box .primary')
-            self.assertEqual(titles, ['Welcome to Asset Lab', 'Check what to change', 'Right-click for more', 'Describe it', 'Bring your own picture', 'Put it in the game',
+            self.assertEqual(titles, ['Welcome to Asset Lab', 'Check what to change', 'Right-click for more', 'Describe it', 'Presets', 'Bring your own picture', 'Put it in the game',
                                       'Want more control?', 'You are ready'])
         finally:
             b.eval("sessionStorage.removeItem('tour-test'); localStorage.setItem('lab-tour-done','1'); localStorage.setItem('lab-layout','advanced'); true")
@@ -120,36 +120,59 @@ class PicturesAndPresets(EditorTestCase):
         b.click_selector('#themePresetsButton')
         b.wait_for("document.getElementById('presetsDialog').open && !!document.querySelector('#presetsDialog .pv-card')")
 
+    def staged(self): return {x['key'] for x in self.server.get('/api/status')['staged']}
+
+    def big(self, group, name=None):
+        """A preset of a group seen big (the first one, or by name)."""
+        b = self.browser
+        b.eval(f"[...document.querySelectorAll('#presetsDialog .pv-groups button')].find(x => x.dataset.group === {group!r}).click(); true")
+        b.eval("[...document.querySelectorAll('#presetsDialog .pv-card')].find(x => %s).click(); true" % (f"x.textContent === {name!r}" if name else 'true'))
+        b.wait_for("!!document.getElementById('presetUseNow')")
+
     def test_a_preset_is_seen_big_then_used_recolored_and_put_in_the_game(self):
+        # Seen big, recolored there (a click or typed), then Use now puts it in your changes: no chat in between.
         b = self.browser
         self.open_presets()
         groups = b.eval("[...document.querySelectorAll('#presetsDialog .pv-groups button')].map(x => x.dataset.group)")
         self.assertEqual(groups[0], 'Backgrounds')
         self.assertIn('Viruses', groups)
-        b.eval("[...document.querySelectorAll('#presetsDialog .pv-groups button')].find(x => x.dataset.group === 'Viruses').click(); true")
-        b.eval("[...document.querySelectorAll('#presetsDialog .pv-card')].find(x => x.textContent === 'Purple virus').click(); true")
-        b.wait_for("!!document.getElementById('presetUse')")                               # seen big first: two game floors
-        self.assertEqual(b.eval("document.querySelectorAll('#presetsDialog .pv-floor').length"), 2)
-        b.click_selector('#presetUse')                                                       # Use picks it: back to the list
-        b.wait_for("!!document.getElementById('presetsUseAll')")
-        self.assertEqual(b.eval("document.querySelector('#presetsDialog .pv-card.picked').textContent"), 'Purple virus')
-        b.click_selector('#presetsUseAll')
-        b.wait_for("!document.getElementById('presetsDialog').open && !!document.querySelector('#themeLog .picture-card')", timeout=20)
-        card = "[...document.querySelectorAll('#themeLog .picture-card')].at(-1)"
-        self.assertNotIn('color=', b.eval(f"{card}.querySelector('.picture-view').src"))     # a preset starts in its own colors
-        b.eval(f"[...{card}.querySelectorAll('.picture-chip')].find(x => x.title === 'Dark blue').click(); true")
-        b.wait_for(f"{card}.querySelector('.picture-view').src.includes('color=%231e3a8a')")
-        b.wait_for(f"{card}.querySelector('.picture-view').complete && {card}.querySelector('.picture-view').naturalWidth === 512")
-        b.eval(f"{card}.querySelector('.picture-view').click(); true")                      # the picture big
-        b.wait_for("document.getElementById('pictureViewer').open")
-        b.eval("document.getElementById('pictureViewer').close(); true")
-        if b.eval(f"{card}.querySelectorAll('.picture-target option').length"):
-            b.eval(f"{card}.querySelector('.theme-actions .primary').click(); true")
-            b.wait_for(f"{card}.querySelector('.theme-actions .primary').textContent === 'Applied ✓'", timeout=20)
-        b.eval("LabThemeChat.reset(); true")
+        self.big('Viruses', 'Purple virus')
+        self.assertEqual(b.eval("document.querySelectorAll('#presetsDialog .pv-floor').length"), 2)   # on the game's two floors
+        floor = "document.querySelector('#presetsDialog .pv-floor img')"
+        self.assertNotIn('color=', b.eval(f"{floor}.src"))                                        # a preset starts in its own colors
+        b.eval("[...document.querySelectorAll('#presetCustom .picture-chip')].find(x => x.title === 'Dark blue').click(); true")
+        b.wait_for(f"{floor}.src.includes('color=%231e3a8a')")
+        b.set_value('#presetWords', 'gold')                                                       # typed: recolored right here
+        b.click_selector('#presetChange')
+        b.wait_for(f"!{floor}.src.includes('color=%231e3a8a') && {floor}.src.includes('color=')")
+        self.assertEqual(b.eval("document.getElementById('presetWords').value"), '')
+        b.eval("[...document.querySelectorAll('#presetsDialog .pv-actions button')].find(x => x.textContent === 'Back').click(); true")
+        before = self.staged()
+        self.big('Backgrounds')                                                                   # (this test game has backgrounds, no virus)
+        b.click_selector('#presetUseNow')
+        b.wait_for("!!document.querySelector('#presetsDialog .pv-grid')", timeout=20)              # in, and back to the list
+        b.wait_for("document.getElementById('toast')?.textContent.includes('is in your changes')")
+        self.assertTrue(self.staged() - before)
+        b.eval("document.getElementById('presetsDialog').close(); true")
         b.click_selector('#themeClose')
 
-    def test_right_click_exports_a_preset_and_a_picture_in_the_chat(self):
+    def test_typing_more_than_a_color_asks_theme_ai(self):
+        b = self.browser
+        self.open_presets()
+        b.eval("""window.__asked=[];window.__realAsk=LabThemeChat.ask;LabThemeChat.ask=(t,o)=>{__asked.push([t,o]);return Promise.resolve();};true""")
+        try:
+            self.big('Viruses', 'Purple virus')
+            b.set_value('#presetWords', 'make it a pirate flag with a skull')
+            b.click_selector('#presetChange')
+            b.wait_for("window.__asked.length === 1")
+            self.assertEqual(b.eval("__asked[0][0]"), 'make it a pirate flag with a skull')
+            self.assertEqual(b.eval("__asked[0][1].picture"), 'preset:purple-virus')
+            self.assertFalse(b.eval("document.getElementById('presetsDialog').open"))
+        finally:
+            b.eval("LabThemeChat.ask=window.__realAsk; document.getElementById('presetsDialog').close(); true")
+            b.click_selector('#themeClose')
+
+    def test_right_click_exports_a_preset_in_its_colors(self):
         # Requests for assets: right-click, Export, and the PNG is ready to send. Full size, named, in its new colors.
         b = self.browser
         b.eval("""window.__saved=[];HTMLAnchorElement.prototype.click=function(){if(this.download)__saved.push([this.getAttribute('href'),this.download]);};true""")
@@ -163,16 +186,11 @@ class PicturesAndPresets(EditorTestCase):
             b.eval("[...document.querySelectorAll('.preset-menu button')].find(x => x.textContent === 'Export picture (PNG)').click(); true")
             href, name = b.eval("__saved.at(-1)")
             self.assertEqual((href.split('&v=')[0], name), ('/api/picture?id=preset%3Apurple-virus', 'Purple-virus.png'))
-            b.eval("[...document.querySelectorAll('#presetsDialog .pv-card')].find(x => x.textContent === 'Purple virus').click(); true")
-            b.wait_for("!!document.getElementById('presetUse')")
-            b.click_selector('#presetUse')
-            b.wait_for("!!document.getElementById('presetsUseAll')")
-            b.click_selector('#presetsUseAll')
-            b.wait_for("!document.getElementById('presetsDialog').open && !!document.querySelector('#themeLog .picture-card')", timeout=20)
-            card = "[...document.querySelectorAll('#themeLog .picture-card')].at(-1)"
-            b.eval(f"[...{card}.querySelectorAll('.picture-chip')].find(x => x.title === 'Dark blue').click(); true")
-            b.wait_for(f"{card}.querySelector('.picture-view').src.includes('color=%231e3a8a')")
-            b.eval(f"""{card}.querySelector('.picture-view').dispatchEvent(new MouseEvent('contextmenu',{{bubbles:true,cancelable:true,clientX:40,clientY:40}}));true""")
+            self.big('Viruses', 'Purple virus')
+            b.eval("[...document.querySelectorAll('#presetCustom .picture-chip')].find(x => x.title === 'Dark blue').click(); true")
+            img = "document.querySelector('#presetsDialog .pv-floor img')"
+            b.wait_for(f"{img}.src.includes('color=%231e3a8a')")
+            b.eval(f"""{img}.dispatchEvent(new MouseEvent('contextmenu',{{bubbles:true,cancelable:true,clientX:40,clientY:40}}));true""")
             b.wait_for("!document.querySelector('.preset-menu').hidden")
             self.assertTrue(b.eval("document.getElementById('contextMenu').hidden"))   # only the Export menu
             b.eval("document.querySelector('.preset-menu button').click(); true")
@@ -180,22 +198,19 @@ class PicturesAndPresets(EditorTestCase):
             self.assertEqual(name, 'Purple-virus-1e3a8a.png')
             self.assertIn('color=%231e3a8a', href)
             self.assertNotIn('small', href)
-            b.eval("LabThemeChat.reset(); true")
+            b.eval("document.getElementById('presetsDialog').close(); true")
             b.click_selector('#themeClose')
         finally:
             b.eval("delete HTMLAnchorElement.prototype.click; true")
 
     def test_picks_from_each_kind_are_used_all_at_once(self):
-        # Use picks (one of each kind); Use all puts every pick in the chat and on the game, one after the other.
+        # Pick keeps a preset (one of each kind); Use all puts every pick in your changes at once.
         b = self.browser
         self.open_presets()
-        b.eval("""window.__asked=[];window.__realAsk=LabThemeChat.ask;LabThemeChat.ask=(t,o)=>{__asked.push([t,o]);return Promise.resolve();};true""")
         try:
             groups = b.eval("[...document.querySelectorAll('#presetsDialog .pv-groups button')].map(x => x.dataset.group)")
             for g in groups[:3]:
-                b.eval(f"[...document.querySelectorAll('#presetsDialog .pv-groups button')].find(x => x.dataset.group === {g!r}).click(); true")
-                b.eval("document.querySelector('#presetsDialog .pv-card').click(); true")
-                b.wait_for("!!document.getElementById('presetUse')")
+                self.big(g)
                 b.click_selector('#presetUse')
                 b.wait_for("!!document.getElementById('presetsTray')")
             self.assertEqual(b.eval("document.querySelectorAll('#presetsTray .pv-pick').length"), len(groups[:3]))
@@ -203,12 +218,46 @@ class PicturesAndPresets(EditorTestCase):
             b.wait_for("document.getElementById('presetUse').textContent === 'Picked ✓'")
             b.click_selector('#presetUse')
             b.wait_for("document.querySelectorAll('#presetsTray .pv-pick').length === %d" % (len(groups[:3]) - 1))
+            names = b.eval("[...document.querySelectorAll('#presetsTray .pv-pick > span')].map(x => x.textContent)")
             b.click_selector('#presetsUseAll')
-            b.wait_for("window.__asked.length === %d" % (len(groups[:3]) - 1))
-            self.assertTrue(all(o['apply'] and o['picture'].startswith('preset:') for _, o in b.eval("__asked")))
-            self.assertFalse(b.eval("document.getElementById('presetsDialog').open"))
+            b.wait_for("!document.getElementById('presetsDialog').open")
+            # This test game has only a menu background: the background goes in, the other picks are named as not.
+            b.wait_for("document.getElementById('toast')?.classList.contains('error')", timeout=30)
+            toast = b.eval("document.getElementById('toast').textContent")
+            self.assertNotIn(names[0], toast)
+            self.assertTrue(all(n in toast for n in names[1:]), toast)
+            b.clear_errors()   # the 400s for the picks with nowhere to go
         finally:
-            b.eval("LabThemeChat.ask=window.__realAsk; document.getElementById('presetsDialog').close(); true")
+            b.eval("document.getElementById('presetsDialog').close(); true")
+            b.click_selector('#themeClose')
+
+    def test_a_background_for_each_place_and_food_by_number(self):
+        # Where it goes: one background on the menu and another on the dark-mode floor; one covering both takes over.
+        b = self.browser
+        places = self.server.get('/api/presets')['places']
+        self.open_presets()
+        try:
+            spots = [k for k, *_ in places['background']]
+            if {'set:menu', 'set:arena-dark', 'set:everywhere'} <= set(spots):
+                cards = b.eval("[...document.querySelectorAll('#presetsDialog .pv-card')].slice(0,3).map(x => x.textContent)")
+                for name, spot in zip(cards, ('set:menu', 'set:arena-dark', 'set:everywhere')):
+                    self.big('Backgrounds', name)
+                    b.eval(f"document.querySelector('#presetPlaces [data-place=\"{spot}\"]').click(); true")
+                    b.click_selector('#presetUse')
+                    b.wait_for("!!document.getElementById('presetsTray')")
+                    if spot == 'set:arena-dark':
+                        self.assertEqual(b.eval("document.querySelectorAll('#presetsTray .pv-pick').length"), 2)   # both kept
+                self.assertEqual(b.eval("document.querySelectorAll('#presetsTray .pv-pick').length"), 1)           # everywhere took over
+                self.assertIn('everywhere', b.eval("document.querySelector('#presetsTray .pv-pick b').textContent"))
+            food = [k for k, *_ in places['food']]
+            if len(food) > 1:
+                self.big('Food')
+                labels = b.eval("[...document.querySelectorAll('#presetPlaces .pv-place b')].map(x => x.textContent)")
+                self.assertEqual(labels[0], 'All foods')
+                self.assertEqual(labels[1:], [f'Food {i + 1}' for i in range(len(food) - 1)])
+                self.assertEqual(b.eval("document.querySelector('#presetPlaces .active').dataset.place"), 'set:food:all')
+        finally:
+            b.eval("document.getElementById('presetsDialog').close(); true")
             b.click_selector('#themeClose')
 
     def test_a_category_exports_as_a_zip_or_a_folder(self):

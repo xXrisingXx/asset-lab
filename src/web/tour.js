@@ -9,9 +9,11 @@ const KEY='lab-tour-done',ASKED='lab-suggest-asked';
 const EXAMPLES=['gold buttons with a glow','a spooky halloween theme','turn the coin into a diamond','change the font to comic sans','make the player names out of lava'];
 const RIGHT_CLICK={at:'#assetList .asset-card',menu:['Redraw with Image AI…','Change this font…','Add to favorites'],title:'Right-click for more',
   text:'Right-click any picture for quick actions: redraw it with Image AI, change a font (on the letter pictures), or add it to your favorites.'};
-// Pictures: any picture a player pastes or drops, and the presets, recolored in one request.
-const PICTURES={at:'#themePictureButton,#themePresetsButton',theme:true,title:'Bring your own picture',
-  text:'Your picture: add (or paste, or drop) a picture and say what to change, like “make this dark blue”. Presets has ready-made art: click one to see it big, Use picks it, and Use all adds your picks to your changes.'};
+// Pictures: any picture a player pastes or drops, recolored in one request. Presets: the ready-made art, with how many.
+const PICTURES={at:'#themePictureButton',theme:true,title:'Bring your own picture',
+  text:'Add (or paste, or drop) a picture and say what to change, like “make this dark blue”.'};
+const PRESETS={at:'#themePresetsButton',theme:true,count:true,title:'Presets',
+  text:'{n} ready-made looks: backgrounds, viruses, food, menu and in-game buttons and titles. Click one to see it big, choose its color and where it goes, then Use now. Or pick a few and Use all.'};
 // Simple's library: big pictures by name; right-click one for more.
 const SIMPLE_RIGHT_CLICK={at:'#simpleGrid .simple-card',menu:['See it big','Check it','Redraw it with Image AI…'],title:'Right-click for more',
   text:'Right-click a picture to see it big, check it, or redraw it with Image AI.'};
@@ -24,6 +26,7 @@ const STEPS=[
   {at:'.inspector',title:'4. Layers and saving',text:'Here you find the layers, the color controls and the history. When you like your edit, click Save edit: it is stored in your workspace, never straight in the game.'},
   {at:'#themeStarters,#themeButton',theme:true,examples:true,title:'5. Theme AI',text:'Describe a look in your own words (“spooky halloween”, “gold buttons with a glow”, “make the player names neon”) and Theme AI changes many assets at once. You see a preview before anything is saved.'},
   PICTURES,
+  PRESETS,
   {at:'.mod-tray',title:'6. Test it in the game',text:'Close Mitosis, then click Apply to Game: it shows what goes in, then puts your saved edits in the game. Once your mod is in, Restore original appears here and puts every file back exactly as it was.'},
   {at:'#launchButton',title:'7. Play',text:'Open Mitosis starts the game through Steam so you can see your mod.'},
   {at:'#settingsButton',title:'8. Settings',text:'Change the language, the look of the lab, the AI and much more. You can open this tour again with the ? button next to it.'},
@@ -34,6 +37,7 @@ const SIMPLE_STEPS=[STEPS[0],
   {at:'#simpleLibrary,.library',title:'Check what to change',text:'Click the pictures you want to change to check them (click again to uncheck). Check nothing and Theme AI changes the whole game. Use the categories, or search by name: “play button”, “coin”, “virus”.'},
   SIMPLE_RIGHT_CLICK,
   {at:'#themeStarters,#themeInput',examples:true,title:'Describe it',text:'Type what you want (“gold buttons with a glow”, “a spooky halloween theme”, “change the font to comic sans”) or click a button above the box to start. You see it before anything is saved.'},
+  PRESETS,
   PICTURES,
   {at:'#themeInstall',title:'Put it in the game',text:'When you like a change, close Mitosis and click Apply to Game: it shows what goes in, then puts it in the game. Once your changes are in, Restore original appears here and puts every file back exactly as it was.'},
   {at:'#viewSwitch',title:'Want more control?',text:'Advanced opens the full image editor: layers, brushes, filters and more. You can switch back any time.'},
@@ -60,7 +64,7 @@ function show(i){
   target=target_(step);
   if(step.at&&!target&&index>0&&index<steps.length-1)return show(forward?index+1:index-1);   // a part that is hidden right now (e.g. a folded panel) is skipped
   box.replaceChildren();
-  const count=el('div','tour-count',`${index+1} / ${steps.length}`);const h=el('h3','',step.title);const p=el('p','',step.text);
+  const count=el('div','tour-count',`${index+1} / ${steps.length}`);const h=el('h3','',step.title);const p=el('p','',step.count?(window.LabPresets?.total?step.text.replace('{n}',LabPresets.total):step.text.replace('{n} ready-made','Ready-made')):step.text);
   const actions=el('div','tour-actions');const skip=el('button','quiet',index===steps.length-1?'Close':'Skip the tour');skip.type='button';
   const back=el('button','','Back');back.type='button';back.disabled=index===0;const next=el('button','primary',index===steps.length-1?'Let’s go':'Next');next.type='button';
   skip.onclick=end;back.onclick=()=>show(index-1);next.onclick=()=>index===steps.length-1?end():show(index+1);

@@ -48,6 +48,11 @@ You need a 64-bit Windows PC with **Mitos.is: The Game** installed from Steam.
 
 ## What's new
 
+- **Presets: customize, then Use now.** Click a preset to see it big and set it up right there: its color (a click, or type one), **where it goes** (the main menu, the game in light or dark mode, a virus's light or dark mode, phones or PCs), a background's strength, and a title's size. **Use now** puts it in your changes, no chat needed. Want a different background on the menu and in game, or for light and dark mode? Pick one for each place, then **Use all**. Typing something that isn't a color asks Theme AI about that preset.
+- **Food 1, 2 and 3.** The game's three foods, smallest to biggest, shown with the game's own pictures: put a food on all of them or just one.
+- **Whole titles.** The 60 creative MITOSIS titles now fit whole in the game (no more cut-off moons, crowns or flames), with a **Size** slider to make one bigger.
+- **Fixes:** renaming a build works again; in Advanced, the AI activity no longer covers New chat. Presets is a labeled button again, and the tour shows it with how many presets there are.
+
 - **Get the local AI from Settings.** Said "Not now" at the first start? Settings › Theme AI & drawing › **Get the local AI** downloads it (about 7 GB, one time, checked like the first-start download) while you keep working, and a stopped download continues where it stopped.
 
 - **A simpler Simple mode.** The library on the left now shows only what players change, by the names they know (Play button, Coin icon, Game floor 2…) in big pictures and categories, one card per thing; what is checked stays in sight with an ✕ to uncheck. The chat starts with ideas to click, says what a request will change, and won't send a half-finished sentence. Clearer buttons: **Show me**, **Keep this**, **Apply to Game**, plus **Preview in game** and **Start fresh**. Simple works in a narrow window too.

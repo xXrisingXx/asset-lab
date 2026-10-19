@@ -117,6 +117,7 @@ BACKGROUND_SETS = ['set:everywhere', 'set:menu', 'set:arena', 'set:arena-light',
 SETS = {'set:everywhere': 'Everywhere: main menu and in game (light and dark mode)', 'set:menu': 'Main menu',
         'set:arena': 'In game, light and dark mode', 'set:arena-light': 'In game, light mode only', 'set:arena-dark': 'In game, dark mode only',
         'set:viruses': 'Both viruses (light and dark mode)',
+        'set:virus-light': 'The virus in light mode only', 'set:virus-dark': 'The virus in dark mode only',
         'set:food:all': 'All foods (every size, at once)',
         'set:food:0': 'The smallest food (least mass)', 'set:food:1': 'The middle food', 'set:food:2': 'The biggest food (most mass)',
         **{k: name for k, (name, _) in button_sets.SETS.items()}}
@@ -126,6 +127,9 @@ GROUPS = {'background': 'Backgrounds', 'virus': 'Viruses', 'food': 'Food', 'menu
 # transparent: Mitosis.exe is never touched, and the empty spot can still be clicked).
 SETS['set:logo'] = 'The MITOSIS title on the main menu'
 SETS['set:cleanup'] = 'The main menu'
+# A virus goes on both (the default), or on the light-mode one (virus.png) or the dark-mode one (light_virus.png) alone.
+VIRUS_SETS = ['set:viruses', 'set:virus-light', 'set:virus-dark']
+VIRUS_FILES = {'set:virus-light': 'virus.png', 'set:virus-dark': 'light_virus.png'}
 BUTTON_KINDS = {'menu': ['set:menu-buttons'], 'ingame': ['set:ingame-buttons', 'set:ingame-phone', 'set:ingame-pc']}
 
 
@@ -380,10 +384,7 @@ class Pictures:
         if preset and preset['kind'] in ('background', 'virus', 'food'):
             # A background goes on a whole set (menu or arena), a virus on both viruses or one, a food on one of the
             # game's three foods (each with its small copies).
-            if preset['kind'] == 'background':
-                sets = [k for k in BACKGROUND_SETS if self.background_rows(k)]
-                if sets == ['set:everywhere', 'set:menu']: sets = ['set:menu']   # no in-game floor here: just the menu
-            elif preset['kind'] == 'virus': sets = ['set:viruses'] if self.set_rows('set:viruses') else []
+            if preset['kind'] in ('background', 'virus'): sets = [k for k, *_ in self.places()[preset['kind']]]
             else:   # all the game's foods at once first (what most players want), then each one
                 sets = [f'set:food:{i}' for i in range(3) if self.set_rows(f'set:food:{i}')]
                 if len(sets) > 1: sets.insert(0, 'set:food:all')
@@ -409,7 +410,24 @@ class Pictures:
         the game folder (a menu background is its own PNG), so they can be dropped in as they are."""
         with self.lab.lock:
             return {'background': [[k, SETS[k]] for k in BACKGROUND_SETS if self.loose(self.background_rows(k))],
-                    'virus': [['set:viruses', SETS['set:viruses']]] if self.loose(self.set_rows('set:viruses')) else []}
+                    'virus': [[k, SETS[k]] for k in VIRUS_SETS if self.loose(self.set_rows(k))]}
+
+    def places(self):
+        """Where each kind of preset can go in this game (kind -> [[set, name, picture key]], the usual place first): the
+        Presets window offers them, so one background can go on the menu and others on the light and dark in-game floors,
+        a food on one of the game's three foods (shown with the game's own picture), buttons on phones or PCs only."""
+        with self.lab.lock:
+            background = [k for k in BACKGROUND_SETS if self.background_rows(k)]
+            if background == ['set:everywhere', 'set:menu']: background = ['set:menu']   # no in-game floor here: just the menu
+            virus = [k for k in VIRUS_SETS if self.set_rows(k)]
+            if virus[1:] and len(self.set_rows('set:viruses')) == len(self.set_rows(virus[1])): virus = virus[:1]   # one virus only: no modes to tell apart
+            food = [f'set:food:{i}' for i in range(3) if self.set_rows(f'set:food:{i}')]
+            if len(food) > 1: food.insert(0, 'set:food:all')
+            look = lambda k: (self.set_rows(k) or [{}])[0].get('key', '') if k.startswith('set:food:') and k != 'set:food:all' else ''
+            out = {'background': background, 'virus': virus, 'food': food,
+                   **{kind: [k for k in sets if self.button_rows(k)] for kind, sets in BUTTON_KINDS.items()},
+                   'logo': ['set:logo'] if self.logo_rows() else []}
+            return {kind: [[k, SETS[k], look(k)] for k in keys] for kind, keys in out.items()}
 
     @staticmethod
     def loose(rows):
@@ -505,9 +523,10 @@ class Pictures:
     def set_rows(self, key):
         """The game art a set of sprites is: both viruses (the red one the game puts back itself is left out), or one food."""
         from lab_core import LOCKED
-        if key == 'set:viruses':
+        if key in VIRUS_SETS:
             import design
-            return [r for r in self.lab.catalog.rows.values() if r['name'] in design.VIRUSES and r['name'] not in LOCKED and r['editable']
+            names = {VIRUS_FILES[key]} if key in VIRUS_FILES else set(design.VIRUSES)
+            return [r for r in self.lab.catalog.rows.values() if r['name'] in names and r['name'] not in LOCKED and r['editable']
                     and not r.get('legacy') and not r.get('removed')]
         if key.startswith('set:food:') and 'food' in self.sets:
             kinds = list(self.sets['food']())
@@ -516,16 +535,23 @@ class Pictures:
             return list(kinds[i]) if i < len(kinds) else []
         return []
 
-    def apply(self, pid, key, color='', strength=1.0):
+    def apply(self, pid, key, color='', strength=1.0, scale=1.0):
         """Put the picture (recolored) on a game sprite: fitted to its frame, centered, its shape kept. On a set of
-        backgrounds (BACKGROUND_SETS): tiled to every one of them, so the copies the game lays side by side meet."""
+        backgrounds (BACKGROUND_SETS): tiled to every one of them, so the copies the game lays side by side meet.
+        No key: the best place for it (Use now in Presets, when this game has none of the usual places)."""
         import design
+        if not key:
+            found = self.targets(pid, limit=1)
+            if not found: raise ValueError('This game has nowhere to put that picture.')
+            key = found[0]['key']
         if key == 'set:logo':   # every copy of the title, the new one fitted to each, centered
             rows = self.logo_rows()
             if not rows: raise ValueError('This game has no title to change.')
             picture = self.render(pid, color)
             with self.lab.lock:
-                for row in rows: self.lab.commit(row['key'], design.fit(picture, (row['width'], row['height']), 1.0, 0.0, 0.0), dict(picture=pid, color=color or ''), persist=False)
+                # Size: 1 fits all of it in the title's place; bigger may cut off what stands out, smaller leaves room around it.
+                scale = max(0.4, min(2.0, float(scale or 1)))
+                for row in rows: self.lab.commit(row['key'], design.fit(picture, (row['width'], row['height']), scale, 0.0, 0.0), dict(picture=pid, color=color or '', scale=round(scale, 2)), persist=False)
                 self.lab.persist()
             return dict(key=key, name=SETS[key], count=len(rows))
         if key == 'set:cleanup':   # gone from the menu: the art made fully transparent

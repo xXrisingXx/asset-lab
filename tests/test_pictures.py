@@ -298,6 +298,40 @@ class WholeNewButtons(unittest.TestCase):
         self.assertEqual(out.size, (128, 128))
         self.assertTrue(abs(px[64, 64, 0] - px[64, 64, 2]) < 3)              # back-icon is tinted by the game: kept gray
 
+    def test_where_each_preset_can_go_and_the_titles_size(self):
+        # The Presets window's places: the menu or the game's floors (light, dark), a virus mode, Food 1-2-3 with the
+        # game's own pictures. One virus mode alone; a title fitted whole, or bigger or smaller with Size.
+        listed = pictures.presets()
+        virus = next((p for p in listed if p['kind'] == 'virus'), None)
+        logo = next((p for p in listed if p['kind'] == 'logo'), None)
+        if not (virus and logo): self.skipTest('presets not made yet')
+        lab = unittest.mock.MagicMock()
+        rows = {k: dict(key=k, name=n, width=w, height=h, editable=True, kind='sprite') for k, n, w, h in (
+            ('v', 'virus.png', 64, 64), ('lv', 'light_virus.png', 64, 64), ('l1', 'logo', 500, 110),
+            ('m', 'menu_bg.png', 32, 32), ('aw', 'worldbg1_w.png', 32, 32), ('ad', 'worldbg1.png', 32, 32),
+            ('f0', 'food0', 16, 16), ('f1', 'food1', 20, 20), ('f2', 'food2', 24, 24))}
+        lab.catalog.rows = rows
+        pics = pictures.Pictures(lab)
+        pics.sets = {'menu': lambda: [rows['m']], 'arena': lambda: [rows['aw'], rows['ad']], 'food': lambda: [[rows['f0']], [rows['f1']], [rows['f2']]]}
+        places = {kind: [x[0] for x in spots] for kind, spots in pics.places().items()}
+        self.assertEqual(places['background'], ['set:everywhere', 'set:menu', 'set:arena', 'set:arena-light', 'set:arena-dark'])
+        self.assertEqual(places['virus'], ['set:viruses', 'set:virus-light', 'set:virus-dark'])
+        self.assertEqual(places['food'], ['set:food:all', 'set:food:0', 'set:food:1', 'set:food:2'])
+        self.assertEqual([x[2] for x in pics.places()['food']], ['', 'f0', 'f1', 'f2'])          # each food with the game's picture
+        self.assertEqual(places['logo'], ['set:logo'])
+        self.assertEqual([r['key'] for r in pics.set_rows('set:virus-light')], ['v'])           # virus.png is the light-mode one
+        self.assertEqual([r['key'] for r in pics.set_rows('set:virus-dark')], ['lv'])
+        self.assertEqual(pics.apply(virus['id'], 'set:virus-dark')['count'], 1)
+        self.assertEqual(lab.commit.call_args.args[0], 'lv')
+        self.assertEqual(pics.apply(virus['id'], '')['name'], pictures.SETS['set:viruses'])    # no place given: the usual one
+        width = lambda: lab.commit.call_args.args[1].getchannel('A').getbbox()
+        pics.apply(logo['id'], 'set:logo')
+        whole = width()
+        pics.apply(logo['id'], 'set:logo', scale=0.5)
+        half = width()
+        self.assertLess(half[2] - half[0], (whole[2] - whole[0]) * 0.6)
+        self.assertEqual(lab.commit.call_args.args[2]['scale'], 0.5)
+
     def test_the_title_and_clean_up_go_on_the_menu(self):
         listed = pictures.presets()
         logo = next((p for p in listed if p['kind'] == 'logo'), None)

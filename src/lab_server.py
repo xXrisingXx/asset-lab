@@ -195,7 +195,7 @@ def server_for(lab, port):
                     return self.send(png(image), 'image/png', cache=bool(q.get('v')) and q.get('id', '').startswith('preset:'))
                 if path == '/api/simple-assets':   # the library in Simple: what players change, by friendly name, one card each
                     return self.send(simple_library.listing(designer, q.get('category', ''), q.get('q', '')[:100], int(q.get('offset') or 0), min(120, int(q.get('limit') or 60))))
-                if path == '/api/presets': return self.send({'presets': pictures.presets(), 'game_files': themes.pictures.game_targets(), 'version': pictures.version()})
+                if path == '/api/presets': return self.send({'presets': pictures.presets(), 'game_files': themes.pictures.game_targets(), 'places': themes.pictures.places(), 'version': pictures.version()})
                 if path == '/api/presets-export':   # presets to send to people: one, a category or a whole group, as a zip
                     ids, name = pictures.chosen(q)
                     return self.send(themes.pictures.export(ids, q.get('target', '')), 'application/zip', filename=f"{name}{'-game-files' if q.get('target') else ''}.zip")
@@ -368,7 +368,7 @@ def server_for(lab, port):
                     return self.send({'color': pictures.wanted_color(str(data.get('words', ''))[:200], themes.pictures.image(str(data.get('id', ''))))})
                 if path == '/api/picture-apply':
                     return self.send(themes.pictures.apply(str(data.get('id', '')), str(data.get('key', '')), str(data.get('color', '') or ''),
-                                                           float(data.get('strength', 1) or 1)))
+                                                           float(data.get('strength', 1) or 1), float(data.get('scale', 1) or 1)))
                 if path == '/api/theme-preview': return self.send(themes.preview(clean_plan(data.get('plan')), themes.scope(only)))
                 if path == '/api/theme-apply': return self.send(themes.apply(data.get('plan'), data.get('prompt', ''), only))
                 if path == '/api/theme-undo': return self.send(themes.undo())
