@@ -417,7 +417,9 @@ class Lab:
         if kept.is_file(): return kept
         job, index = name.split('-')
         drawn = self.root / 'designs' / job / f'variant-{int(index)}.png'
-        return drawn if drawn.is_file() else None
+        if drawn.is_file(): return drawn
+        made = ROOT / 'presets' / 'font-textures' / f'{name}.webp'   # a Fonts preset's: drawn by Image AI once, ships with the app
+        return made if made.is_file() else None
 
     def font_apply(self, fid, style):
         """Render the whole font in a style, keep it in the workspace and put it in the mod."""

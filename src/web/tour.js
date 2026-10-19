@@ -13,7 +13,7 @@ const RIGHT_CLICK={at:'#assetList .asset-card',menu:['Redraw with Image AI…','
 const PICTURES={at:'#themePictureButton',theme:true,title:'Bring your own picture',
   text:'Add (or paste, or drop) a picture and say what to change, like “make this dark blue”.'};
 const PRESETS={at:'#themePresetsButton',theme:true,count:true,title:'Presets',
-  text:'{n} ready-made looks: backgrounds, viruses, food, menu and in-game buttons and titles. Click one to see it big, choose its color and where it goes, then Use now. Or pick a few and Use all.'};
+  text:'{n} ready-made looks: backgrounds, viruses, food, menu and in-game buttons, titles and fonts. Click one to see it big, choose its color and where it goes, then Use now. Or pick a few and Use all.'};
 // Simple's library: big pictures by name; right-click one for more.
 const SIMPLE_RIGHT_CLICK={at:'#simpleGrid .simple-card',menu:['See it big','Check it','Redraw it with Image AI…'],title:'Right-click for more',
   text:'Right-click a picture to see it big, check it, or redraw it with Image AI.'};

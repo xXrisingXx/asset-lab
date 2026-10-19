@@ -634,6 +634,25 @@ class NewFontsFromTheAI(Base):
         with self.assertRaises(ValueError):                                  # a texture that is gone is said, not dropped silently
             self.lab.font_apply('nicktext', dict(texture=('cd' * 16) + '-0'))
 
+    def test_the_fonts_presets_ship_their_textures_and_go_on_the_game_text(self):
+        # Presets › Fonts: 100 styles and 50 made by Image AI, whose textures ship with the app (no drawing needed here).
+        import pictures
+        listed = [p for p in pictures.presets() if p['kind'] == 'font']
+        if not listed: self.skipTest('font presets not made yet')
+        self.assertEqual({p['group'] for p in listed}, {'Fonts'})
+        made = [p for p in listed if p['category'] == 'Made by Image AI']
+        self.assertEqual(len(listed) - len(made), len(fonts.PRESETS) - 1)                # every style but the game's own
+        self.assertIn('Black in white fog', [p['name'] for p in listed])
+        self.assertEqual(len([p for p in listed if p['category'] == 'Classic virus']), 13)
+        for p in made:
+            name = p['style']['texture']
+            self.assertTrue(fonts.TEXTURE.fullmatch(name), p['name'])
+            self.assertTrue(str(self.lab.font_texture(name)).endswith('.webp'), p['name'])   # the copy in the app
+        if made:
+            with patch.object(self.lab, 'typefaces', return_value=[]):
+                self.assertEqual(self.lab.font_apply('nicktext', made[0]['style'])['characters'], 3)
+        self.assertEqual(pictures.Pictures(self.lab).places()['font'], [['nicktext', 'Player names', '']])
+
     def chat(self, text, designer=None, planner=None):
         self.themes.designer = designer
         with patch.object(self.lab, 'typefaces', return_value=[]), patch.object(theme, 'models', return_value=planner or []):

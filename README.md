@@ -48,6 +48,9 @@ You need a 64-bit Windows PC with **Mitos.is: The Game** installed from Steam.
 
 ## What's new
 
+- **Fonts in Presets: 150 text styles.** A new **Fonts** tab: 50 made by Image AI (letters of lava, marble, galaxy, candy, dragon scales…), 13 **Classic virus** styles that glow like the classic viruses, clean ones like the game's friend list, **Black in white fog**, and every Text & fonts look. See one on your own name, pick which text it changes (player names, menu text…), then **Use now**, or **Fine-tune…** it in Text & fonts.
+- **Restyled fonts match the game's own layout.** Every character, even the space, now gets a real spot on a square letter sheet, like the game's own fonts (a player's game crashed with a restyled font).
+
 - **Presets: customize, then Use now.** Click a preset to see it big and set it up right there: its color (a click, or type one), **where it goes** (the main menu, the game in light or dark mode, a virus's light or dark mode, phones or PCs), a background's strength, and a title's size. **Use now** puts it in your changes, no chat needed. Want a different background on the menu and in game, or for light and dark mode? Pick one for each place, then **Use all**. Typing something that isn't a color asks Theme AI about that preset.
 - **Food 1, 2 and 3.** The game's three foods, smallest to biggest, shown with the game's own pictures: put a food on all of them or just one.
 - **Whole titles.** The 60 creative MITOSIS titles now fit whole in the game (no more cut-off moons, crowns or flames), with a **Size** slider to make one bigger.

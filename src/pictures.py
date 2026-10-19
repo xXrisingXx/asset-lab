@@ -121,7 +121,7 @@ SETS = {'set:everywhere': 'Everywhere: main menu and in game (light and dark mod
         'set:food:all': 'All foods (every size, at once)',
         'set:food:0': 'The smallest food (least mass)', 'set:food:1': 'The middle food', 'set:food:2': 'The biggest food (most mass)',
         **{k: name for k, (name, _) in button_sets.SETS.items()}}
-GROUPS = {'background': 'Backgrounds', 'virus': 'Viruses', 'food': 'Food', 'menu': 'Menu buttons', 'ingame': 'In-game buttons', 'logo': 'Title',
+GROUPS = {'background': 'Backgrounds', 'virus': 'Viruses', 'food': 'Food', 'menu': 'Menu buttons', 'ingame': 'In-game buttons', 'logo': 'Title', 'font': 'Fonts',
           'hide': 'Menu buttons'}   # the Presets window's top level
 # The title (the MITOSIS logo, every copy of it) and the menu clutter a Clean up preset hides (its art made fully
 # transparent: Mitosis.exe is never touched, and the empty spot can still be clicked).
@@ -164,7 +164,8 @@ def _presets(data):
     return [dict(id='preset:' + p['id'], name=p['name'], category=p.get('category') or 'Other', kind=p.get('kind') or 'sprite',
                  group=p.get('group') or GROUPS.get(p.get('kind'), 'Other'), **{'for': list(p.get('for') or [])},
                  **({'look': dict(p.get('look') or {}), 'base': str(p.get('base') or ''), 'redrawn': str(p.get('redrawn') or '')} if p.get('kind') in BUTTON_KINDS else {}),
-                 **({'hide': [str(n) for n in p.get('hide') or []]} if p.get('kind') == 'hide' else {})) for p in data
+                 **({'hide': [str(n) for n in p.get('hide') or []]} if p.get('kind') == 'hide' else {}),
+                 **({'style': dict(p.get('style') or {})} if p.get('kind') == 'font' else {})) for p in data
             if isinstance(p, dict) and re.fullmatch(r'[a-z0-9-]{1,40}', str(p.get('id', ''))) and (PRESETS / str(p.get('file', ''))).is_file()]
 
 
@@ -427,7 +428,12 @@ class Pictures:
             out = {'background': background, 'virus': virus, 'food': food,
                    **{kind: [k for k in sets if self.button_rows(k)] for kind, sets in BUTTON_KINDS.items()},
                    'logo': ['set:logo'] if self.logo_rows() else []}
-            return {kind: [[k, SETS[k], look(k)] for k in keys] for kind, keys in out.items()}
+            out = {kind: [[k, SETS[k], look(k)] for k in keys] for kind, keys in out.items()}
+            # A font preset goes on one of the game's fonts: the player names, the menu text...
+            import fonts as fontlab
+            try: out['font'] = [[fid, f['label'], ''] for fid, f in fontlab.game_fonts(self.lab.game).items()]
+            except (TypeError, OSError): out['font'] = []
+            return out
 
     @staticmethod
     def loose(rows):

@@ -81,12 +81,27 @@ def neon(tube, core='#ffffff', size=12, strength=1.8, font='Segoe UI|Bold, Arial
     return dict(font=font, fill=core, outline=tube, outline_width=3, glow=tube, glow_size=size, glow_strength=strength)
 
 
+
+def mix(a, b, t):
+    """Color a moved t of the way to color b."""
+    x, y = ([int(c[i:i + 2], 16) for i in (1, 3, 5)] for c in (a, b))
+    return '#' + ''.join(f'{int(round(u + (v - u) * t)):02x}' for u, v in zip(x, y))
+
+
+def classic(color):
+    """The classic virus look in letters: a white heart glowing out to its color, a darker rim, its color's glow."""
+    return dict(font=ROUND, stops=[[0, '#ffffff'], [0.45, mix(color, '#ffffff', 0.45)], [1, color]], outline=mix(color, '#000000', 0.55), outline_width=2,
+                glow=color, glow_size=10, glow_strength=1.6)
+
+
 PRESET_GROUPS = {
     'Classic': {
         'Game font': {},
         'Clean white': dict(font=HEAVY, fill='#ffffff', shadow='#000000', shadow_y=3, shadow_blur=2, shadow_opacity=0.55),
         'Bold outline': dict(font=BLACK, fill='#ffffff', outline='#000000', outline_width=4),
         'Black with a white glow': dict(font=CONDENSED, fill='#000000', outline='#ffffff', outline_width=2, glow='#ffffff', glow_size=8, glow_strength=1.4, caps=True),
+        # A player's request: black letters in white fog, every letter as typed (not all capitals).
+        'Black in white fog': dict(font=CONDENSED, fill='#000000', outline='#ffffff', outline_width=1.5, glow='#ffffff', glow_size=7, glow_strength=1.6),
         'Soft shadow': dict(font='Segoe UI|Bold, Arial|Bold', fill='#ffffff', shadow='#000000', shadow_x=2, shadow_y=4, shadow_blur=5, shadow_opacity=0.85),
         'Sports jersey': dict(font=CONDENSED, caps=True, spacing=2, fill='#ffffff', outline='#0b1f3a', outline_width=3, outline2='#f5b700', outline2_width=3),
         'Poster': dict(font='Impact|Regular, Arial|Black', caps=True, spacing=3, fill='#f2f2f2', outline='#111111', outline_width=2,
@@ -97,6 +112,33 @@ PRESET_GROUPS = {
         'Hollow': dict(font=BLACK, fill='#ffffff', fill_opacity=0.0, outline='#ffffff', outline_width=3, outline2='#111111', outline2_width=1),
         'Wide & loud': dict(font=BLACK, stretch=1.35, caps=True, fill='#ffe14d', outline='#000000', outline_width=4),
         'Tall & thin': dict(font='Bahnschrift|SemiBold Condensed, Arial|Bold', stretch=0.8, caps=True, spacing=3, fill='#ffffff', outline='#000000', outline_width=2),
+    },
+    # The 13 classic viruses' colors (the purple one first), in the same glow.
+    'Classic virus': {
+        'Classic purple': classic('#b300ff'), 'Classic crimson': classic('#c8102e'), 'Classic orange': classic('#ff7a1a'),
+        'Classic golden': classic('#f5c542'), 'Classic toxic': classic('#5fd61a'), 'Classic teal': classic('#14b8a6'),
+        'Classic ocean': classic('#1e6bd6'), 'Classic frost': classic('#9fdcff'), 'Classic pink': classic('#ff5fb0'),
+        'Classic shadow': dict(font=ROUND, stops=even('#5a5a70', '#20202a'), outline='#b0b0c8', outline_width=2, glow='#000000', glow_size=10, glow_strength=1.6),
+        'Classic white': dict(font=ROUND, stops=even('#ffffff', '#d8d8e0'), outline='#6a6a80', outline_width=2, glow='#ffffff', glow_size=10, glow_strength=1.6),
+        'Classic dark blue': classic('#1e3a8a'),
+        'Classic rainbow': dict(font=ROUND, stops=even('#ff2d55', '#ff9500', '#ffe600', '#34d058', '#00c7ff', '#b300ff'), outline='#2a0a3a', outline_width=2,
+                                glow='#b300ff', glow_size=10, glow_strength=1.4),
+    },
+    'Clean & simple': {
+        'Friend list': dict(font='Bahnschrift|SemiBold, Segoe UI|Semibold', fill='#ffffff', outline='#000000', outline_width=2, glow='#ffffff', glow_size=6, glow_strength=1.1),
+        'Friend list outline': dict(font='Bahnschrift|SemiBold, Segoe UI|Semibold', fill='#ffffff', outline='#000000', outline_width=2.5),
+        'Teal menu': dict(font='Bahnschrift|SemiBold, Segoe UI|Semibold', fill='#5fd4d0', outline='#06201f', outline_width=2),
+        'Minimal white': dict(font='Segoe UI|Semibold, Arial|Bold', fill='#ffffff'),
+        'Minimal black': dict(font='Segoe UI|Bold, Arial|Bold', fill='#111111', outline='#ffffff', outline_width=2),
+        'Code green': dict(font='Consolas|Bold, Cascadia Code|Bold, Courier New|Bold', fill='#39ff14', glow='#39ff14', glow_size=6, glow_strength=0.9),
+        'Stencil': dict(font=CONDENSED, caps=True, spacing=2, fill='#c7c28a', outline='#2b2a12', outline_width=2),
+        'Glass': dict(font=HEAVY, fill='#ffffff', fill_opacity=0.35, outline='#ffffff', outline_width=2, glow='#bfefff', glow_size=6, glow_strength=0.8),
+        'Deep night': dict(font=HEAVY, fill='#0a1a3a', outline='#7fb3ff', outline_width=2, glow='#3b6cff', glow_size=8, glow_strength=1.2),
+        'Gold outline': dict(font=HEAVY, fill='#111111', outline='#ffd54a', outline_width=2, glow='#ffb300', glow_size=4, glow_strength=0.8),
+        'Pastel glow': dict(font=ROUND, fill='#ffffff', glow='#ffb3ec', glow_size=10, glow_strength=1.5),
+        'Sticker': dict(font=ROUND, fill='#ffffff', outline='#222222', outline_width=3, outline2='#ffffff', outline2_width=4, **SHADE),
+        'Block shadow': dict(font=BLACK, fill='#ffffff', outline='#000000', outline_width=2, shadow='#000000', shadow_x=4, shadow_y=4, shadow_opacity=1.0),
+        'Speed': dict(font=CONDENSED, italic=0.2, caps=True, fill='#ffe14d', outline='#000000', outline_width=3),
     },
     'Metal & gems': {
         'Gold': metal('#fffbe0', '#ffd54a', '#c98a12', '#ffe08a', '#4a2a00'),
@@ -748,14 +790,15 @@ def build(fnt_text, page, style, fonts):
         for cid in ids:
             img, xoff, yoff, adv = r.glyph(cid)
             metrics[cid] = (xoff, yoff, adv)
-            if img is not None: glyphs[cid] = img
+            # A character with nothing to draw (the space) still gets a small empty box on the page, as in the game's own
+            # fonts: a 0 x 0 piece can stop the game when it loads the font.
+            glyphs[cid] = img if img is not None else Image.new('RGBA', (4, 4), (0, 0, 0, 0))
         kerns = r.kernings(set(ids))
     for size in (1024, 2048, 4096):
         spots, used = pack(glyphs, size)
         if spots is not None and used <= size: break
     else: raise ValueError('These letters do not fit in one font page; lower the size, glow or outlines.')
-    height = 1 << max(8, (used - 1).bit_length())   # power-of-two page, as the game's own
-    sheet = Image.new('RGBA', (size, min(size, height)), (0, 0, 0, 0))
+    sheet = Image.new('RGBA', (size, size), (0, 0, 0, 0))   # a square power-of-two page, as the game's own (1024 x 1024)
     for cid, img in glyphs.items(): sheet.paste(img, spots[cid])
     src = r.src
     info = dict(src['info'], face=r.face, padding=f'{r.pad},{r.pad},{r.pad},{r.pad}', spacing='2,2', outline='0')

@@ -9,7 +9,7 @@ const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className
 const btn=(text,cls,title)=>{const b=el('button',cls||'',text);b.type='button';if(title)b.title=title;return b;};
 // A preset's picture carries the presets' version: the browser keeps it, so switching categories shows it at once.
 const url=(id,color,small)=>`/api/picture?id=${encodeURIComponent(id)}${color?'&color='+encodeURIComponent(color):''}${small?'&small=1':''}${String(id).startsWith('preset:')&&P.version?'&v='+encodeURIComponent(P.version):''}`;
-const GROUPS=['Backgrounds','Viruses','Food','Menu buttons','In-game buttons','Title'];
+const GROUPS=['Backgrounds','Viruses','Food','Menu buttons','In-game buttons','Title','Fonts'];
 const P={list:null,group:'Backgrounds',category:'',scroll:0,picks:{},custom:{},places:{}};
 const CHIPS=[['Dark blue','#1e3a8a'],['Blue','#3b82f6'],['Red','#e53935'],['Gold','#f5c542'],['Green','#2ecc71'],['Pink','#ff6fb5'],['Purple','#9b5de5'],['Black','#101216'],['White','#ffffff']];
 // Where a preset goes, when it can go on more than one place: what each place covers (a pick on a place takes over any
@@ -30,6 +30,7 @@ const custom=p=>P.custom[p.id]||(P.custom[p.id]={color:'',where:places(p)[0]?.[0
 /* A preset into your changes as customized (q: the preset with its color, place, strength and size): no chat needed. */
 async function put(q){
   if(q.kind==='hide')return hideNow(q);
+  if(q.kind==='font')return api('/api/font-apply',{font:q.where||places(q)[0]?.[0]||'nicktext',style:q.style||{}});
   const key=q.where||places(q)[0]?.[0]||'';   // none: the lab finds the best place for it
   return api('/api/picture-apply',{id:q.id,key,color:q.color||'',strength:q.kind==='background'?q.strength??1:1,scale:q.kind==='logo'?q.scale??1:1});}
 async function refreshLab(){S.build=null;await status();await library();if(S.asset&&!S.dirty)await select(S.asset.key,true);}
@@ -42,6 +43,11 @@ function stage(src,kind,name){
   else{const ims=[];for(const mode of kind==='menu'?['menu']:['light','dark']){/* menu buttons: on the menu's own color */const pane=el('div','pv-floor '+mode);const im=el('img');im.alt=name||'';ims.push(im);pane.append(im);box.append(pane);}
     box.show=s=>{for(const im of ims)im.src=s;};}
   box.show(src);return box;}
+function fontStage(p,c){
+  const box=el('div','pv-stage pv-font-stage');const im=el('img');im.alt=p.name;box.append(im);let seq=0;
+  box.refresh=async()=>{const n=++seq;try{const r=await api('/api/font-preview',{font:c.where||places(p)[0]?.[0]||'nicktext',style:p.style||{},text:c.text||'Mitosis Player'});if(n===seq)im.src=r.png;}
+    catch(e){if(n===seq){box.replaceChildren(el('p','pv-note',e.message));}}};
+  box.show=()=>{};box.refresh();return box;}
 const viewer=el('dialog','pv-dialog');viewer.id='pictureViewer';document.body.append(viewer);
 let closing=null;   // gives borrowed controls back when the big view closes
 const giveBack=()=>{const f=closing;closing=null;f?.();};
@@ -72,7 +78,7 @@ async function use(p){await put({...p,...custom(p)});await refreshLab();
 function whole(p){dlg.close();window.LabThemeChat?.ask(`Make a whole theme from ${p.name}`,{theme_from:p.id});}
 const themeable=p=>p.kind==='background'||p.kind==='virus';
 const sets=p=>p.kind==='menu'||p.kind==='ingame';
-const onMenu=p=>p.kind==='menu'||p.kind==='logo'||p.kind==='hide';   // shown on the menu's own color   // button sets: many buttons, exported as a zip of them all
+const onMenu=p=>p.kind==='menu'||p.kind==='logo'||p.kind==='hide'||p.kind==='font';   // shown on the menu's own color   // button sets: many buttons, exported as a zip of them all
 const zipUrl=q=>'/api/presets-export?'+new URLSearchParams(q);
 function exportSet(q,name){const a=document.createElement('a');a.href=zipUrl(q);a.download=fileName(name).replace(/\.png$/,'.zip');document.body.append(a);a.click();a.remove();
   message(`Saved ${a.download} in your Downloads folder, ready to send.`);}
@@ -89,7 +95,7 @@ function gameFiles(q,label,name,kind,x,y){const t=gameTargets(kind);
 /* Picks: Pick keeps a preset (with its color and place) to use with others, then Use all puts every pick in your changes
    at once. One pick of each kind, or one per place: a background for the menu and others for the light and dark floors,
    a virus for each mode, a food for each size. A Clean up pick goes with a button set, not instead of it. */
-const slot=(p,where)=>p.kind==='hide'?'Clean up':COVER[where]?`${p.group} · ${where}`:p.group;
+const slot=(p,where)=>p.kind==='hide'?'Clean up':COVER[where]||(p.kind==='font'&&where)?`${p.group} · ${where}`:p.group;
 const SLOTS=[...GROUPS,'Clean up'];
 const rank=q=>SLOTS.indexOf(q.kind==='hide'?'Clean up':q.group)*10+Math.max(0,places(q).findIndex(x=>x[0]===q.where));
 const picked=()=>Object.values(P.picks).sort((a,b)=>rank(a)-rank(b));
@@ -110,7 +116,8 @@ function tray(){
   const chips=el('div','pv-tray-picks');
   for(const q of list){const c=el('span','pv-pick');const im=el('img');im.src=url(q.id,q.color,true);im.alt='';const x=btn('✕','quiet','Unpick '+q.name);
     x.onclick=()=>{delete P.picks[slot(q,q.where)];render();};
-    const what=el('b','',q.kind==='hide'?'Clean up':q.group);if(places(q).length>1&&SHORT[q.where])what.append(el('small','',SHORT[q.where]));
+    const what=el('b','',q.kind==='hide'?'Clean up':q.group);const spot=SHORT[q.where]||(q.kind==='font'&&places(q).find(x=>x[0]===q.where)?.[1]);
+    if(places(q).length>1&&spot)what.append(el('small','',spot));
     c.append(im,what,el('span','',q.name),x);chips.append(c);}
   const clear=btn('Clear');clear.onclick=()=>{P.picks={};render();};
   const go=btn(`Use all (${list.length})`,'primary','Put every pick in the game');go.id='presetsUseAll';go.onclick=run(useAll);
@@ -151,7 +158,7 @@ function detail(p){
   dlg.replaceChildren();const c=custom(p);
   const head=el('div','pv-head');const x=btn('✕','quiet','Close');x.onclick=()=>dlg.close();
   head.append(el('h2','',p.name),el('span','pv-sub',`${p.group} · ${p.category}`),x);
-  const pic=stage(url(p.id,c.color),onMenu(p)?'menu':p.kind,p.name);pic.dataset.exportName=p.name;
+  const pic=p.kind==='font'?fontStage(p,c):stage(url(p.id,c.color),onMenu(p)?'menu':p.kind,p.name);pic.dataset.exportName=p.name;
   const side=el('div','pv-custom');side.id='presetCustom';
   const section=(title,...parts)=>{const box=el('div','pv-section');box.append(el('h3','',title),...parts);side.append(box);return box;};
   // A pick follows what is changed here, and the buttons say whether this place already has it.
@@ -159,7 +166,11 @@ function detail(p){
   const keep=btn('','', '');keep.id='presetUse';
   const state=()=>{const on=isPicked(p,c.where);keep.textContent=on?'Picked ✓':'Pick';keep.title=on?'Click to unpick it':'Keep it with your other picks, then Use all puts them all in at once';};
   const sync=()=>{const key=slot(p,c.where);if(P.picks[key]?.id===p.id)P.picks[key]={...p,...c};state();};
-  if(p.kind!=='hide'){
+  if(p.kind==='font'){   // a name to see it on, as it will look on the cells and in lists
+    const name=el('input','picture-words');name.id='presetFontText';name.placeholder='Type a name to try it';name.maxLength=40;
+    let wait=0;name.oninput=()=>{clearTimeout(wait);wait=setTimeout(()=>{c.text=name.value.trim();pic.refresh();},250);};
+    section('Try it',name);}
+  if(p.kind!=='hide'&&p.kind!=='font'){
     // Color: one click, or typed. Anything that is not just a color goes to Theme AI with this preset.
     const chips=el('div','pv-colors');
     const paint=()=>{pic.show(url(p.id,c.color));pic.dataset.exportName=[p.name,(c.color||'').replace('#','')].filter(Boolean).join(' ');chips.querySelectorAll('button').forEach(b=>b.classList.toggle('active',(b.dataset.color||'')===(c.color||'')));sync();};
@@ -184,8 +195,8 @@ function detail(p){
         for(const k of key==='set:food:all'?spots.filter(s=>s[2]).map(s=>s[2]):[look]){if(!k)continue;const im=el('img');im.alt='';im.src=`/api/thumb?key=${encodeURIComponent(k)}`;pics.append(im);}
         b.append(pics,el('b','',FOOD[key][0]),el('small','',FOOD[key][1]));}
       else b.append(el('span','',name));
-      b.onclick=()=>{c.where=key;mark();more();state();};list.append(b);}
-    section(p.kind==='food'?'Which food':'Where it goes',list);mark();}
+      b.onclick=()=>{c.where=key;mark();more();state();pic.refresh?.();};list.append(b);}
+    section(p.kind==='food'?'Which food':p.kind==='font'?'Which text':'Where it goes',list);mark();}
   // A background: how much of the game's own color shows through. A title: its size in the title's place.
   const strength=el('input');strength.type='range';strength.min=0.2;strength.max=1;strength.step=0.05;strength.value=c.strength;strength.id='presetStrength';
   strength.oninput=()=>{c.strength=+strength.value;sync();};
@@ -206,13 +217,15 @@ function detail(p){
   const bar=el('div','pv-actions');bar.append(back);
   if(themeable(p)){const t=btn('Make a whole theme from this','','Draw the rest of the game in its colors and style');t.onclick=()=>whole(p);bar.append(t);}
   const out=btn('Export','',sets(p)?'Save every button in this set as PNGs (a zip) to send to people':'Save this picture as a PNG to send to people');out.onclick=()=>exportOne(p);
+  if(p.kind==='font'){const tune=btn('Fine-tune…','','Open it in Text & fonts to change the typeface, colors, outline and glow');
+    tune.onclick=()=>{dlg.close();window.openFonts?.(c.where||places(p)[0]?.[0],p.style);};if(window.openFonts)bar.append(tune);}
   const targets=gameTargets(p.kind);
   if(targets.length){   // what to export: the picture, or the game files it changes in one place (ready to drop in)
     const as=el('select','pv-export-as');as.id='presetExportAs';as.setAttribute('aria-label','What to export');
     as.append(new Option('The picture (PNG)',''),...targets.map(([key,where])=>new Option(`Game files: ${where}`,key)));
     as.title='Game files are the game’s own files this changes, named as in the game: drop them in, no renaming';
     out.onclick=()=>as.value?exportSet({id:p.id,target:as.value},p.name+' game files'):exportOne(p);bar.append(as);}
-  bar.append(out,keep,now);
+  if(p.kind==='font')bar.append(keep,now);else bar.append(out,keep,now);
   const body=el('div','pv-body');body.append(pic,side);
   dlg.append(head,body,bar);now.focus();
 }
@@ -257,7 +270,7 @@ dlg.addEventListener('close',()=>{pmenu.hidden=true;});
 // ----- First time in Presets: a short tour of what it can do, inside the window (a page tour would sit behind it) -----
 const TOUR_KEY='lab-presets-tour-done';
 const TOUR=[
-  {at:'.pv-groups',title:'Pick a kind',text:'Backgrounds, viruses, food, menu buttons and in-game buttons. Each kind has its own categories.'},
+  {at:'.pv-groups',title:'Pick a kind',text:'Backgrounds, viruses, food, menu and in-game buttons, titles and fonts. Each kind has its own categories.'},
   {at:'.pv-cats',title:'Then a category',text:'Narrow it down by category. All shows everything in the kind.'},
   {at:'.pv-card',title:'Click a picture to see it big',text:'There you choose its color and where it goes (the main menu, the game in light or dark mode, which food), then Use now puts it in your changes.'},
   {at:'.pv-card',menu:['See it big','Pick it','Use this preset now','Make a whole theme from this','Export picture (PNG)'],title:'Right-click a picture',

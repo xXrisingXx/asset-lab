@@ -357,3 +357,45 @@ class PicturesAndPresets(EditorTestCase):
         self.assertTrue(b.eval("document.querySelector('.preset-menu').hidden && !document.getElementById('presetsDialog').open"))
         b.eval("window.fetch=window.__realFetch; LabThemeChat.reset(); true")
         b.click_selector('#themeClose')
+
+
+def font_game(root):
+    """The editor game plus the player names' font (nicktext), so a font preset has the game's text to go on."""
+    from fakegame import make_editor_game
+    from test_fonts import FNT, page as font_page
+    game = make_editor_game(root)
+    font_page().save(game / 'assets' / 'nicktext_0.png')
+    (game / 'assets' / 'nicktext.fnt').write_text(FNT, encoding='utf-8')
+    return game
+
+
+class FontPresets(EditorTestCase):
+    """Presets › Fonts: a style seen on the game's own text (and a name typed to try it), then Use now restyles that text."""
+    game_maker = staticmethod(font_game)
+
+    def test_a_font_preset_is_tried_on_a_name_and_put_on_the_player_names(self):
+        b = self.browser
+        if not any(p['kind'] == 'font' for p in self.server.get('/api/presets')['presets']): self.skipTest('font presets not made yet')
+        b.click_selector('#themeButton')
+        b.wait_for("!document.getElementById('themeDrawer').hidden")
+        b.click_selector('#themePresetsButton')
+        b.wait_for("document.getElementById('presetsDialog').open && !!document.querySelector('#presetsDialog .pv-card')")
+        try:
+            b.eval("[...document.querySelectorAll('#presetsDialog .pv-groups button')].find(x => x.dataset.group === 'Fonts').click(); true")
+            cats = b.eval("[...document.querySelectorAll('#presetsDialog .pv-cats button')].map(x => x.dataset.cat)")
+            self.assertIn('Classic virus', cats)
+            self.assertIn('Made by Image AI', cats)
+            b.eval("[...document.querySelectorAll('#presetsDialog .pv-card')].find(x => x.textContent === 'Black in white fog').click(); true")
+            b.wait_for("document.querySelector('#presetsDialog .pv-font-stage img')?.src.startsWith('data:image/png')", timeout=20)
+            self.assertEqual(b.eval("document.querySelector('#presetPlaces .active')?.dataset.place || ''"), '')   # one text only here: no choice to make
+            first = b.eval("document.querySelector('#presetsDialog .pv-font-stage img').src")
+            b.set_value('#presetFontText', 'AB')                                               # a name typed: seen on it
+            b.wait_for(f"document.querySelector('#presetsDialog .pv-font-stage img').src !== {first!r}", timeout=20)
+            b.click_selector('#presetUseNow')
+            b.wait_for("document.getElementById('toast')?.textContent.includes('Black in white fog is in your changes')", timeout=30)
+            fonts = self.server.get('/api/fonts')['game']
+            self.assertEqual(fonts[0]['id'], 'nicktext')
+            self.assertEqual(fonts[0]['style']['fill'], '#000000')
+        finally:
+            b.eval("document.getElementById('presetsDialog').close(); true")
+            b.click_selector('#themeClose')

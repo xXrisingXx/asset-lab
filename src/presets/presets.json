@@ -10176,6 +10176,3673 @@
     "bevel": 0.9
    },
    "for": []
+  },
+  {
+   "id": "font-clean-white",
+   "name": "Clean white",
+   "group": "Fonts",
+   "category": "Classic",
+   "kind": "font",
+   "file": "fonts/font-clean-white.webp",
+   "style": {
+    "font": "Segoe UI|Black, Arial|Black",
+    "fill": "#ffffff",
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 2,
+    "shadow_opacity": 0.55
+   },
+   "for": []
+  },
+  {
+   "id": "font-bold-outline",
+   "name": "Bold outline",
+   "group": "Fonts",
+   "category": "Classic",
+   "kind": "font",
+   "file": "fonts/font-bold-outline.webp",
+   "style": {
+    "font": "Arial|Black, Segoe UI|Black",
+    "fill": "#ffffff",
+    "outline": "#000000",
+    "outline_width": 4
+   },
+   "for": []
+  },
+  {
+   "id": "font-black-with-a-white-glow",
+   "name": "Black with a white glow",
+   "group": "Fonts",
+   "category": "Classic",
+   "kind": "font",
+   "file": "fonts/font-black-with-a-white-glow.webp",
+   "style": {
+    "font": "Bahnschrift|Bold Condensed, Impact|Regular",
+    "fill": "#000000",
+    "outline": "#ffffff",
+    "outline_width": 2,
+    "glow": "#ffffff",
+    "glow_size": 8,
+    "glow_strength": 1.4,
+    "caps": true
+   },
+   "for": []
+  },
+  {
+   "id": "font-black-in-white-fog",
+   "name": "Black in white fog",
+   "group": "Fonts",
+   "category": "Classic",
+   "kind": "font",
+   "file": "fonts/font-black-in-white-fog.webp",
+   "style": {
+    "font": "Bahnschrift|Bold Condensed, Impact|Regular",
+    "fill": "#000000",
+    "outline": "#ffffff",
+    "outline_width": 1.5,
+    "glow": "#ffffff",
+    "glow_size": 7,
+    "glow_strength": 1.6
+   },
+   "for": []
+  },
+  {
+   "id": "font-soft-shadow",
+   "name": "Soft shadow",
+   "group": "Fonts",
+   "category": "Classic",
+   "kind": "font",
+   "file": "fonts/font-soft-shadow.webp",
+   "style": {
+    "font": "Segoe UI|Bold, Arial|Bold",
+    "fill": "#ffffff",
+    "shadow": "#000000",
+    "shadow_x": 2,
+    "shadow_y": 4,
+    "shadow_blur": 5,
+    "shadow_opacity": 0.85
+   },
+   "for": []
+  },
+  {
+   "id": "font-sports-jersey",
+   "name": "Sports jersey",
+   "group": "Fonts",
+   "category": "Classic",
+   "kind": "font",
+   "file": "fonts/font-sports-jersey.webp",
+   "style": {
+    "font": "Bahnschrift|Bold Condensed, Impact|Regular",
+    "caps": true,
+    "spacing": 2,
+    "fill": "#ffffff",
+    "outline": "#0b1f3a",
+    "outline_width": 3,
+    "outline2": "#f5b700",
+    "outline2_width": 3
+   },
+   "for": []
+  },
+  {
+   "id": "font-poster",
+   "name": "Poster",
+   "group": "Fonts",
+   "category": "Classic",
+   "kind": "font",
+   "file": "fonts/font-poster.webp",
+   "style": {
+    "font": "Impact|Regular, Arial|Black",
+    "caps": true,
+    "spacing": 3,
+    "fill": "#f2f2f2",
+    "outline": "#111111",
+    "outline_width": 2,
+    "shadow": "#000000",
+    "shadow_x": 4,
+    "shadow_y": 4,
+    "shadow_opacity": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "font-typewriter",
+   "name": "Typewriter",
+   "group": "Fonts",
+   "category": "Classic",
+   "kind": "font",
+   "file": "fonts/font-typewriter.webp",
+   "style": {
+    "font": "Consolas|Bold, Cascadia Code|Bold, Courier New|Bold",
+    "fill": "#f4ecd8",
+    "outline": "#2a2118",
+    "outline_width": 2,
+    "shadow": "#000000",
+    "shadow_y": 2,
+    "shadow_blur": 2,
+    "shadow_opacity": 0.6
+   },
+   "for": []
+  },
+  {
+   "id": "font-storybook",
+   "name": "Storybook",
+   "group": "Fonts",
+   "category": "Classic",
+   "kind": "font",
+   "file": "fonts/font-storybook.webp",
+   "style": {
+    "font": "Georgia|Bold, Palatino Linotype|Bold, Sitka|Banner Bold",
+    "fill": "#fff4d6",
+    "outline": "#3b2412",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_x": 1,
+    "shadow_y": 3,
+    "shadow_blur": 2,
+    "shadow_opacity": 0.6
+   },
+   "for": []
+  },
+  {
+   "id": "font-hollow",
+   "name": "Hollow",
+   "group": "Fonts",
+   "category": "Classic",
+   "kind": "font",
+   "file": "fonts/font-hollow.webp",
+   "style": {
+    "font": "Arial|Black, Segoe UI|Black",
+    "fill": "#ffffff",
+    "fill_opacity": 0.0,
+    "outline": "#ffffff",
+    "outline_width": 3,
+    "outline2": "#111111",
+    "outline2_width": 1
+   },
+   "for": []
+  },
+  {
+   "id": "font-wide-loud",
+   "name": "Wide & loud",
+   "group": "Fonts",
+   "category": "Classic",
+   "kind": "font",
+   "file": "fonts/font-wide-loud.webp",
+   "style": {
+    "font": "Arial|Black, Segoe UI|Black",
+    "stretch": 1.35,
+    "caps": true,
+    "fill": "#ffe14d",
+    "outline": "#000000",
+    "outline_width": 4
+   },
+   "for": []
+  },
+  {
+   "id": "font-tall-thin",
+   "name": "Tall & thin",
+   "group": "Fonts",
+   "category": "Classic",
+   "kind": "font",
+   "file": "fonts/font-tall-thin.webp",
+   "style": {
+    "font": "Bahnschrift|SemiBold Condensed, Arial|Bold",
+    "stretch": 0.8,
+    "caps": true,
+    "spacing": 3,
+    "fill": "#ffffff",
+    "outline": "#000000",
+    "outline_width": 2
+   },
+   "for": []
+  },
+  {
+   "id": "font-classic-purple",
+   "name": "Classic purple",
+   "group": "Fonts",
+   "category": "Classic virus",
+   "kind": "font",
+   "file": "fonts/font-classic-purple.webp",
+   "style": {
+    "font": "Arial Rounded MT Bold|Regular, Segoe UI|Black, Arial|Black",
+    "stops": [
+     [
+      0,
+      "#ffffff"
+     ],
+     [
+      0.45,
+      "#d573ff"
+     ],
+     [
+      1,
+      "#b300ff"
+     ]
+    ],
+    "outline": "#510073",
+    "outline_width": 2,
+    "glow": "#b300ff",
+    "glow_size": 10,
+    "glow_strength": 1.6
+   },
+   "for": []
+  },
+  {
+   "id": "font-classic-crimson",
+   "name": "Classic crimson",
+   "group": "Fonts",
+   "category": "Classic virus",
+   "kind": "font",
+   "file": "fonts/font-classic-crimson.webp",
+   "style": {
+    "font": "Arial Rounded MT Bold|Regular, Segoe UI|Black, Arial|Black",
+    "stops": [
+     [
+      0,
+      "#ffffff"
+     ],
+     [
+      0.45,
+      "#e17c8c"
+     ],
+     [
+      1,
+      "#c8102e"
+     ]
+    ],
+    "outline": "#5a0715",
+    "outline_width": 2,
+    "glow": "#c8102e",
+    "glow_size": 10,
+    "glow_strength": 1.6
+   },
+   "for": []
+  },
+  {
+   "id": "font-classic-orange",
+   "name": "Classic orange",
+   "group": "Fonts",
+   "category": "Classic virus",
+   "kind": "font",
+   "file": "fonts/font-classic-orange.webp",
+   "style": {
+    "font": "Arial Rounded MT Bold|Regular, Segoe UI|Black, Arial|Black",
+    "stops": [
+     [
+      0,
+      "#ffffff"
+     ],
+     [
+      0.45,
+      "#ffb681"
+     ],
+     [
+      1,
+      "#ff7a1a"
+     ]
+    ],
+    "outline": "#73370c",
+    "outline_width": 2,
+    "glow": "#ff7a1a",
+    "glow_size": 10,
+    "glow_strength": 1.6
+   },
+   "for": []
+  },
+  {
+   "id": "font-classic-golden",
+   "name": "Classic golden",
+   "group": "Fonts",
+   "category": "Classic virus",
+   "kind": "font",
+   "file": "fonts/font-classic-golden.webp",
+   "style": {
+    "font": "Arial Rounded MT Bold|Regular, Segoe UI|Black, Arial|Black",
+    "stops": [
+     [
+      0,
+      "#ffffff"
+     ],
+     [
+      0.45,
+      "#fadf97"
+     ],
+     [
+      1,
+      "#f5c542"
+     ]
+    ],
+    "outline": "#6e591e",
+    "outline_width": 2,
+    "glow": "#f5c542",
+    "glow_size": 10,
+    "glow_strength": 1.6
+   },
+   "for": []
+  },
+  {
+   "id": "font-classic-toxic",
+   "name": "Classic toxic",
+   "group": "Fonts",
+   "category": "Classic virus",
+   "kind": "font",
+   "file": "fonts/font-classic-toxic.webp",
+   "style": {
+    "font": "Arial Rounded MT Bold|Regular, Segoe UI|Black, Arial|Black",
+    "stops": [
+     [
+      0,
+      "#ffffff"
+     ],
+     [
+      0.45,
+      "#a7e881"
+     ],
+     [
+      1,
+      "#5fd61a"
+     ]
+    ],
+    "outline": "#2b600c",
+    "outline_width": 2,
+    "glow": "#5fd61a",
+    "glow_size": 10,
+    "glow_strength": 1.6
+   },
+   "for": []
+  },
+  {
+   "id": "font-classic-teal",
+   "name": "Classic teal",
+   "group": "Fonts",
+   "category": "Classic virus",
+   "kind": "font",
+   "file": "fonts/font-classic-teal.webp",
+   "style": {
+    "font": "Arial Rounded MT Bold|Regular, Segoe UI|Black, Arial|Black",
+    "stops": [
+     [
+      0,
+      "#ffffff"
+     ],
+     [
+      0.45,
+      "#7ed8ce"
+     ],
+     [
+      1,
+      "#14b8a6"
+     ]
+    ],
+    "outline": "#09534b",
+    "outline_width": 2,
+    "glow": "#14b8a6",
+    "glow_size": 10,
+    "glow_strength": 1.6
+   },
+   "for": []
+  },
+  {
+   "id": "font-classic-ocean",
+   "name": "Classic ocean",
+   "group": "Fonts",
+   "category": "Classic virus",
+   "kind": "font",
+   "file": "fonts/font-classic-ocean.webp",
+   "style": {
+    "font": "Arial Rounded MT Bold|Regular, Segoe UI|Black, Arial|Black",
+    "stops": [
+     [
+      0,
+      "#ffffff"
+     ],
+     [
+      0.45,
+      "#83aee8"
+     ],
+     [
+      1,
+      "#1e6bd6"
+     ]
+    ],
+    "outline": "#0e3060",
+    "outline_width": 2,
+    "glow": "#1e6bd6",
+    "glow_size": 10,
+    "glow_strength": 1.6
+   },
+   "for": []
+  },
+  {
+   "id": "font-classic-frost",
+   "name": "Classic frost",
+   "group": "Fonts",
+   "category": "Classic virus",
+   "kind": "font",
+   "file": "fonts/font-classic-frost.webp",
+   "style": {
+    "font": "Arial Rounded MT Bold|Regular, Segoe UI|Black, Arial|Black",
+    "stops": [
+     [
+      0,
+      "#ffffff"
+     ],
+     [
+      0.45,
+      "#caecff"
+     ],
+     [
+      1,
+      "#9fdcff"
+     ]
+    ],
+    "outline": "#486373",
+    "outline_width": 2,
+    "glow": "#9fdcff",
+    "glow_size": 10,
+    "glow_strength": 1.6
+   },
+   "for": []
+  },
+  {
+   "id": "font-classic-pink",
+   "name": "Classic pink",
+   "group": "Fonts",
+   "category": "Classic virus",
+   "kind": "font",
+   "file": "fonts/font-classic-pink.webp",
+   "style": {
+    "font": "Arial Rounded MT Bold|Regular, Segoe UI|Black, Arial|Black",
+    "stops": [
+     [
+      0,
+      "#ffffff"
+     ],
+     [
+      0.45,
+      "#ffa7d4"
+     ],
+     [
+      1,
+      "#ff5fb0"
+     ]
+    ],
+    "outline": "#732b4f",
+    "outline_width": 2,
+    "glow": "#ff5fb0",
+    "glow_size": 10,
+    "glow_strength": 1.6
+   },
+   "for": []
+  },
+  {
+   "id": "font-classic-shadow",
+   "name": "Classic shadow",
+   "group": "Fonts",
+   "category": "Classic virus",
+   "kind": "font",
+   "file": "fonts/font-classic-shadow.webp",
+   "style": {
+    "font": "Arial Rounded MT Bold|Regular, Segoe UI|Black, Arial|Black",
+    "stops": [
+     [
+      0.0,
+      "#5a5a70"
+     ],
+     [
+      1.0,
+      "#20202a"
+     ]
+    ],
+    "outline": "#b0b0c8",
+    "outline_width": 2,
+    "glow": "#000000",
+    "glow_size": 10,
+    "glow_strength": 1.6
+   },
+   "for": []
+  },
+  {
+   "id": "font-classic-white",
+   "name": "Classic white",
+   "group": "Fonts",
+   "category": "Classic virus",
+   "kind": "font",
+   "file": "fonts/font-classic-white.webp",
+   "style": {
+    "font": "Arial Rounded MT Bold|Regular, Segoe UI|Black, Arial|Black",
+    "stops": [
+     [
+      0.0,
+      "#ffffff"
+     ],
+     [
+      1.0,
+      "#d8d8e0"
+     ]
+    ],
+    "outline": "#6a6a80",
+    "outline_width": 2,
+    "glow": "#ffffff",
+    "glow_size": 10,
+    "glow_strength": 1.6
+   },
+   "for": []
+  },
+  {
+   "id": "font-classic-dark-blue",
+   "name": "Classic dark blue",
+   "group": "Fonts",
+   "category": "Classic virus",
+   "kind": "font",
+   "file": "fonts/font-classic-dark-blue.webp",
+   "style": {
+    "font": "Arial Rounded MT Bold|Regular, Segoe UI|Black, Arial|Black",
+    "stops": [
+     [
+      0,
+      "#ffffff"
+     ],
+     [
+      0.45,
+      "#8393bf"
+     ],
+     [
+      1,
+      "#1e3a8a"
+     ]
+    ],
+    "outline": "#0e1a3e",
+    "outline_width": 2,
+    "glow": "#1e3a8a",
+    "glow_size": 10,
+    "glow_strength": 1.6
+   },
+   "for": []
+  },
+  {
+   "id": "font-classic-rainbow",
+   "name": "Classic rainbow",
+   "group": "Fonts",
+   "category": "Classic virus",
+   "kind": "font",
+   "file": "fonts/font-classic-rainbow.webp",
+   "style": {
+    "font": "Arial Rounded MT Bold|Regular, Segoe UI|Black, Arial|Black",
+    "stops": [
+     [
+      0.0,
+      "#ff2d55"
+     ],
+     [
+      0.2,
+      "#ff9500"
+     ],
+     [
+      0.4,
+      "#ffe600"
+     ],
+     [
+      0.6,
+      "#34d058"
+     ],
+     [
+      0.8,
+      "#00c7ff"
+     ],
+     [
+      1.0,
+      "#b300ff"
+     ]
+    ],
+    "outline": "#2a0a3a",
+    "outline_width": 2,
+    "glow": "#b300ff",
+    "glow_size": 10,
+    "glow_strength": 1.4
+   },
+   "for": []
+  },
+  {
+   "id": "font-friend-list",
+   "name": "Friend list",
+   "group": "Fonts",
+   "category": "Clean & simple",
+   "kind": "font",
+   "file": "fonts/font-friend-list.webp",
+   "style": {
+    "font": "Bahnschrift|SemiBold, Segoe UI|Semibold",
+    "fill": "#ffffff",
+    "outline": "#000000",
+    "outline_width": 2,
+    "glow": "#ffffff",
+    "glow_size": 6,
+    "glow_strength": 1.1
+   },
+   "for": []
+  },
+  {
+   "id": "font-friend-list-outline",
+   "name": "Friend list outline",
+   "group": "Fonts",
+   "category": "Clean & simple",
+   "kind": "font",
+   "file": "fonts/font-friend-list-outline.webp",
+   "style": {
+    "font": "Bahnschrift|SemiBold, Segoe UI|Semibold",
+    "fill": "#ffffff",
+    "outline": "#000000",
+    "outline_width": 2.5
+   },
+   "for": []
+  },
+  {
+   "id": "font-teal-menu",
+   "name": "Teal menu",
+   "group": "Fonts",
+   "category": "Clean & simple",
+   "kind": "font",
+   "file": "fonts/font-teal-menu.webp",
+   "style": {
+    "font": "Bahnschrift|SemiBold, Segoe UI|Semibold",
+    "fill": "#5fd4d0",
+    "outline": "#06201f",
+    "outline_width": 2
+   },
+   "for": []
+  },
+  {
+   "id": "font-minimal-white",
+   "name": "Minimal white",
+   "group": "Fonts",
+   "category": "Clean & simple",
+   "kind": "font",
+   "file": "fonts/font-minimal-white.webp",
+   "style": {
+    "font": "Segoe UI|Semibold, Arial|Bold",
+    "fill": "#ffffff"
+   },
+   "for": []
+  },
+  {
+   "id": "font-minimal-black",
+   "name": "Minimal black",
+   "group": "Fonts",
+   "category": "Clean & simple",
+   "kind": "font",
+   "file": "fonts/font-minimal-black.webp",
+   "style": {
+    "font": "Segoe UI|Bold, Arial|Bold",
+    "fill": "#111111",
+    "outline": "#ffffff",
+    "outline_width": 2
+   },
+   "for": []
+  },
+  {
+   "id": "font-code-green",
+   "name": "Code green",
+   "group": "Fonts",
+   "category": "Clean & simple",
+   "kind": "font",
+   "file": "fonts/font-code-green.webp",
+   "style": {
+    "font": "Consolas|Bold, Cascadia Code|Bold, Courier New|Bold",
+    "fill": "#39ff14",
+    "glow": "#39ff14",
+    "glow_size": 6,
+    "glow_strength": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "font-stencil",
+   "name": "Stencil",
+   "group": "Fonts",
+   "category": "Clean & simple",
+   "kind": "font",
+   "file": "fonts/font-stencil.webp",
+   "style": {
+    "font": "Bahnschrift|Bold Condensed, Impact|Regular",
+    "caps": true,
+    "spacing": 2,
+    "fill": "#c7c28a",
+    "outline": "#2b2a12",
+    "outline_width": 2
+   },
+   "for": []
+  },
+  {
+   "id": "font-glass",
+   "name": "Glass",
+   "group": "Fonts",
+   "category": "Clean & simple",
+   "kind": "font",
+   "file": "fonts/font-glass.webp",
+   "style": {
+    "font": "Segoe UI|Black, Arial|Black",
+    "fill": "#ffffff",
+    "fill_opacity": 0.35,
+    "outline": "#ffffff",
+    "outline_width": 2,
+    "glow": "#bfefff",
+    "glow_size": 6,
+    "glow_strength": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "font-deep-night",
+   "name": "Deep night",
+   "group": "Fonts",
+   "category": "Clean & simple",
+   "kind": "font",
+   "file": "fonts/font-deep-night.webp",
+   "style": {
+    "font": "Segoe UI|Black, Arial|Black",
+    "fill": "#0a1a3a",
+    "outline": "#7fb3ff",
+    "outline_width": 2,
+    "glow": "#3b6cff",
+    "glow_size": 8,
+    "glow_strength": 1.2
+   },
+   "for": []
+  },
+  {
+   "id": "font-gold-outline",
+   "name": "Gold outline",
+   "group": "Fonts",
+   "category": "Clean & simple",
+   "kind": "font",
+   "file": "fonts/font-gold-outline.webp",
+   "style": {
+    "font": "Segoe UI|Black, Arial|Black",
+    "fill": "#111111",
+    "outline": "#ffd54a",
+    "outline_width": 2,
+    "glow": "#ffb300",
+    "glow_size": 4,
+    "glow_strength": 0.8
+   },
+   "for": []
+  },
+  {
+   "id": "font-pastel-glow",
+   "name": "Pastel glow",
+   "group": "Fonts",
+   "category": "Clean & simple",
+   "kind": "font",
+   "file": "fonts/font-pastel-glow.webp",
+   "style": {
+    "font": "Arial Rounded MT Bold|Regular, Segoe UI|Black, Arial|Black",
+    "fill": "#ffffff",
+    "glow": "#ffb3ec",
+    "glow_size": 10,
+    "glow_strength": 1.5
+   },
+   "for": []
+  },
+  {
+   "id": "font-sticker",
+   "name": "Sticker",
+   "group": "Fonts",
+   "category": "Clean & simple",
+   "kind": "font",
+   "file": "fonts/font-sticker.webp",
+   "style": {
+    "font": "Arial Rounded MT Bold|Regular, Segoe UI|Black, Arial|Black",
+    "fill": "#ffffff",
+    "outline": "#222222",
+    "outline_width": 3,
+    "outline2": "#ffffff",
+    "outline2_width": 4,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.6
+   },
+   "for": []
+  },
+  {
+   "id": "font-block-shadow",
+   "name": "Block shadow",
+   "group": "Fonts",
+   "category": "Clean & simple",
+   "kind": "font",
+   "file": "fonts/font-block-shadow.webp",
+   "style": {
+    "font": "Arial|Black, Segoe UI|Black",
+    "fill": "#ffffff",
+    "outline": "#000000",
+    "outline_width": 2,
+    "shadow": "#000000",
+    "shadow_x": 4,
+    "shadow_y": 4,
+    "shadow_opacity": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "font-speed",
+   "name": "Speed",
+   "group": "Fonts",
+   "category": "Clean & simple",
+   "kind": "font",
+   "file": "fonts/font-speed.webp",
+   "style": {
+    "font": "Bahnschrift|Bold Condensed, Impact|Regular",
+    "italic": 0.2,
+    "caps": true,
+    "fill": "#ffe14d",
+    "outline": "#000000",
+    "outline_width": 3
+   },
+   "for": []
+  },
+  {
+   "id": "font-gold",
+   "name": "Gold",
+   "group": "Fonts",
+   "category": "Metal & gems",
+   "kind": "font",
+   "file": "fonts/font-gold.webp",
+   "style": {
+    "font": "Segoe UI|Black, Arial|Black",
+    "stops": [
+     [
+      0,
+      "#fffbe0"
+     ],
+     [
+      0.46,
+      "#ffd54a"
+     ],
+     [
+      0.54,
+      "#c98a12"
+     ],
+     [
+      1,
+      "#ffe08a"
+     ]
+    ],
+    "outline": "#4a2a00",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.6
+   },
+   "for": []
+  },
+  {
+   "id": "font-silver",
+   "name": "Silver",
+   "group": "Fonts",
+   "category": "Metal & gems",
+   "kind": "font",
+   "file": "fonts/font-silver.webp",
+   "style": {
+    "font": "Segoe UI|Black, Arial|Black",
+    "stops": [
+     [
+      0,
+      "#ffffff"
+     ],
+     [
+      0.46,
+      "#d5dce4"
+     ],
+     [
+      0.54,
+      "#7d8794"
+     ],
+     [
+      1,
+      "#eef2f6"
+     ]
+    ],
+    "outline": "#1f252d",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.6
+   },
+   "for": []
+  },
+  {
+   "id": "font-chrome",
+   "name": "Chrome",
+   "group": "Fonts",
+   "category": "Metal & gems",
+   "kind": "font",
+   "file": "fonts/font-chrome.webp",
+   "style": {
+    "font": "Bahnschrift|Bold, Arial|Black",
+    "caps": true,
+    "stops": [
+     [
+      0,
+      "#bfe3ff"
+     ],
+     [
+      0.48,
+      "#ffffff"
+     ],
+     [
+      0.5,
+      "#2f3742"
+     ],
+     [
+      0.66,
+      "#7f8b9b"
+     ],
+     [
+      1,
+      "#f2f6fa"
+     ]
+    ],
+    "outline": "#0f1318",
+    "outline_width": 2,
+    "outline2": "#cfd8e3",
+    "outline2_width": 2
+   },
+   "for": []
+  },
+  {
+   "id": "font-bronze",
+   "name": "Bronze",
+   "group": "Fonts",
+   "category": "Metal & gems",
+   "kind": "font",
+   "file": "fonts/font-bronze.webp",
+   "style": {
+    "font": "Segoe UI|Black, Arial|Black",
+    "stops": [
+     [
+      0,
+      "#ffe2c0"
+     ],
+     [
+      0.46,
+      "#e0975a"
+     ],
+     [
+      0.54,
+      "#9a531f"
+     ],
+     [
+      1,
+      "#f2b680"
+     ]
+    ],
+    "outline": "#2e1405",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.6
+   },
+   "for": []
+  },
+  {
+   "id": "font-rose-gold",
+   "name": "Rose gold",
+   "group": "Fonts",
+   "category": "Metal & gems",
+   "kind": "font",
+   "file": "fonts/font-rose-gold.webp",
+   "style": {
+    "font": "Segoe UI|Black, Arial|Black",
+    "stops": [
+     [
+      0,
+      "#fff1ec"
+     ],
+     [
+      0.46,
+      "#f6c0b3"
+     ],
+     [
+      0.54,
+      "#c97b6c"
+     ],
+     [
+      1,
+      "#ffd9cf"
+     ]
+    ],
+    "outline": "#4a2420",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.6
+   },
+   "for": []
+  },
+  {
+   "id": "font-ruby",
+   "name": "Ruby",
+   "group": "Fonts",
+   "category": "Metal & gems",
+   "kind": "font",
+   "file": "fonts/font-ruby.webp",
+   "style": {
+    "font": "Segoe UI|Black, Arial|Black",
+    "stops": [
+     [
+      0.0,
+      "#ff9fb5"
+     ],
+     [
+      0.5,
+      "#e0115f"
+     ],
+     [
+      1.0,
+      "#7a0026"
+     ]
+    ],
+    "outline": "#2b0010",
+    "outline_width": 3,
+    "glow": "#ff2a6d",
+    "glow_size": 8,
+    "glow_strength": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "font-emerald",
+   "name": "Emerald",
+   "group": "Fonts",
+   "category": "Metal & gems",
+   "kind": "font",
+   "file": "fonts/font-emerald.webp",
+   "style": {
+    "font": "Segoe UI|Black, Arial|Black",
+    "stops": [
+     [
+      0.0,
+      "#b4ffdf"
+     ],
+     [
+      0.5,
+      "#10b981"
+     ],
+     [
+      1.0,
+      "#065f46"
+     ]
+    ],
+    "outline": "#022c22",
+    "outline_width": 3,
+    "glow": "#34d399",
+    "glow_size": 8,
+    "glow_strength": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "font-sapphire",
+   "name": "Sapphire",
+   "group": "Fonts",
+   "category": "Metal & gems",
+   "kind": "font",
+   "file": "fonts/font-sapphire.webp",
+   "style": {
+    "font": "Segoe UI|Black, Arial|Black",
+    "stops": [
+     [
+      0.0,
+      "#b3d4ff"
+     ],
+     [
+      0.5,
+      "#2563eb"
+     ],
+     [
+      1.0,
+      "#1e1b6b"
+     ]
+    ],
+    "outline": "#0a0f2e",
+    "outline_width": 3,
+    "glow": "#3b82f6",
+    "glow_size": 8,
+    "glow_strength": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "font-amethyst",
+   "name": "Amethyst",
+   "group": "Fonts",
+   "category": "Metal & gems",
+   "kind": "font",
+   "file": "fonts/font-amethyst.webp",
+   "style": {
+    "font": "Segoe UI|Black, Arial|Black",
+    "stops": [
+     [
+      0.0,
+      "#efd6ff"
+     ],
+     [
+      0.5,
+      "#9b5de5"
+     ],
+     [
+      1.0,
+      "#4c1d95"
+     ]
+    ],
+    "outline": "#1e0b3a",
+    "outline_width": 3,
+    "glow": "#a855f7",
+    "glow_size": 8,
+    "glow_strength": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "font-diamond",
+   "name": "Diamond",
+   "group": "Fonts",
+   "category": "Metal & gems",
+   "kind": "font",
+   "file": "fonts/font-diamond.webp",
+   "style": {
+    "font": "Segoe UI|Black, Arial|Black",
+    "stops": [
+     [
+      0,
+      "#ffffff"
+     ],
+     [
+      0.45,
+      "#d6f6ff"
+     ],
+     [
+      0.55,
+      "#9fe3ff"
+     ],
+     [
+      1,
+      "#ffffff"
+     ]
+    ],
+    "angle": 45.0,
+    "outline": "#2a6f9a",
+    "outline_width": 2,
+    "glow": "#ffffff",
+    "glow_size": 10,
+    "glow_strength": 1.2
+   },
+   "for": []
+  },
+  {
+   "id": "font-neon-pink",
+   "name": "Neon pink",
+   "group": "Fonts",
+   "category": "Neon & glow",
+   "kind": "font",
+   "file": "fonts/font-neon-pink.webp",
+   "style": {
+    "font": "Segoe UI|Bold, Arial|Bold",
+    "fill": "#ffffff",
+    "outline": "#ff2ec4",
+    "outline_width": 3,
+    "glow": "#ff2ec4",
+    "glow_size": 12,
+    "glow_strength": 1.8
+   },
+   "for": []
+  },
+  {
+   "id": "font-neon-blue",
+   "name": "Neon blue",
+   "group": "Fonts",
+   "category": "Neon & glow",
+   "kind": "font",
+   "file": "fonts/font-neon-blue.webp",
+   "style": {
+    "font": "Segoe UI|Bold, Arial|Bold",
+    "fill": "#ffffff",
+    "outline": "#1fa2ff",
+    "outline_width": 3,
+    "glow": "#1fa2ff",
+    "glow_size": 12,
+    "glow_strength": 1.8
+   },
+   "for": []
+  },
+  {
+   "id": "font-neon-green",
+   "name": "Neon green",
+   "group": "Fonts",
+   "category": "Neon & glow",
+   "kind": "font",
+   "file": "fonts/font-neon-green.webp",
+   "style": {
+    "font": "Segoe UI|Bold, Arial|Bold",
+    "fill": "#f4fff0",
+    "outline": "#39ff14",
+    "outline_width": 3,
+    "glow": "#39ff14",
+    "glow_size": 12,
+    "glow_strength": 1.6
+   },
+   "for": []
+  },
+  {
+   "id": "font-ultraviolet",
+   "name": "Ultraviolet",
+   "group": "Fonts",
+   "category": "Neon & glow",
+   "kind": "font",
+   "file": "fonts/font-ultraviolet.webp",
+   "style": {
+    "font": "Segoe UI|Bold, Arial|Bold",
+    "fill": "#ffffff",
+    "outline": "#8f3dff",
+    "outline_width": 3,
+    "glow": "#8f3dff",
+    "glow_size": 14,
+    "glow_strength": 1.9
+   },
+   "for": []
+  },
+  {
+   "id": "font-neon-sign",
+   "name": "Neon sign",
+   "group": "Fonts",
+   "category": "Neon & glow",
+   "kind": "font",
+   "file": "fonts/font-neon-sign.webp",
+   "style": {
+    "font": "Segoe UI|Semilight, Segoe UI|Light, Arial|Regular",
+    "fill": "#fff2fc",
+    "outline": "#ff3fd2",
+    "outline_width": 3,
+    "glow": "#ff3fd2",
+    "glow_size": 14,
+    "glow_strength": 2.2
+   },
+   "for": []
+  },
+  {
+   "id": "font-synthwave",
+   "name": "Synthwave",
+   "group": "Fonts",
+   "category": "Neon & glow",
+   "kind": "font",
+   "file": "fonts/font-synthwave.webp",
+   "style": {
+    "font": "Segoe UI|Black, Arial|Black",
+    "stops": [
+     [
+      0.0,
+      "#fff275"
+     ],
+     [
+      0.5,
+      "#ff2ec4"
+     ],
+     [
+      1.0,
+      "#6a00f4"
+     ]
+    ],
+    "outline": "#12003a",
+    "outline_width": 3,
+    "glow": "#ff2ec4",
+    "glow_size": 10,
+    "glow_strength": 1.2
+   },
+   "for": []
+  },
+  {
+   "id": "font-cyber",
+   "name": "Cyber",
+   "group": "Fonts",
+   "category": "Neon & glow",
+   "kind": "font",
+   "file": "fonts/font-cyber.webp",
+   "style": {
+    "font": "Bahnschrift|SemiBold SemiCondensed, Bahnschrift|Bold, Arial|Bold",
+    "caps": true,
+    "spacing": 3,
+    "stops": [
+     [
+      0.0,
+      "#00f0ff"
+     ],
+     [
+      1.0,
+      "#ff00a0"
+     ]
+    ],
+    "angle": 0.0,
+    "outline": "#0d0221",
+    "outline_width": 2,
+    "glow": "#00e5ff",
+    "glow_size": 8,
+    "glow_strength": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "font-laser-red",
+   "name": "Laser red",
+   "group": "Fonts",
+   "category": "Neon & glow",
+   "kind": "font",
+   "file": "fonts/font-laser-red.webp",
+   "style": {
+    "font": "Segoe UI|Bold, Arial|Bold",
+    "fill": "#fff0f0",
+    "outline": "#ff1f1f",
+    "outline_width": 3,
+    "glow": "#ff1f1f",
+    "glow_size": 12,
+    "glow_strength": 2.0
+   },
+   "for": []
+  },
+  {
+   "id": "font-electric",
+   "name": "Electric",
+   "group": "Fonts",
+   "category": "Neon & glow",
+   "kind": "font",
+   "file": "fonts/font-electric.webp",
+   "style": {
+    "font": "Bahnschrift|Bold Condensed, Impact|Regular",
+    "fill": "#ffffff",
+    "outline": "#ffd000",
+    "outline_width": 3,
+    "glow": "#ffd000",
+    "glow_size": 12,
+    "glow_strength": 1.8
+   },
+   "for": []
+  },
+  {
+   "id": "font-hologram",
+   "name": "Hologram",
+   "group": "Fonts",
+   "category": "Neon & glow",
+   "kind": "font",
+   "file": "fonts/font-hologram.webp",
+   "style": {
+    "font": "Segoe UI|Black, Arial|Black",
+    "stops": [
+     [
+      0.0,
+      "#ffb3ec"
+     ],
+     [
+      0.25,
+      "#c9b6ff"
+     ],
+     [
+      0.5,
+      "#a8d8ff"
+     ],
+     [
+      0.75,
+      "#a9fff1"
+     ],
+     [
+      1.0,
+      "#f3ffb0"
+     ]
+    ],
+    "angle": 45.0,
+    "fill_opacity": 0.9,
+    "outline": "#ffffff",
+    "outline_width": 1,
+    "glow": "#c9b6ff",
+    "glow_size": 10,
+    "glow_strength": 1.2
+   },
+   "for": []
+  },
+  {
+   "id": "font-fire",
+   "name": "Fire",
+   "group": "Fonts",
+   "category": "Elements",
+   "kind": "font",
+   "file": "fonts/font-fire.webp",
+   "style": {
+    "font": "Segoe UI|Black, Arial|Black",
+    "stops": [
+     [
+      0,
+      "#c1121f"
+     ],
+     [
+      0.4,
+      "#ff5a1f"
+     ],
+     [
+      0.75,
+      "#ffb703"
+     ],
+     [
+      1,
+      "#fff3b0"
+     ]
+    ],
+    "outline": "#3b0000",
+    "outline_width": 2,
+    "glow": "#ff5a00",
+    "glow_size": 10,
+    "glow_strength": 1.4
+   },
+   "for": []
+  },
+  {
+   "id": "font-ice",
+   "name": "Ice",
+   "group": "Fonts",
+   "category": "Elements",
+   "kind": "font",
+   "file": "fonts/font-ice.webp",
+   "style": {
+    "font": "Segoe UI|Black, Arial|Black",
+    "stops": [
+     [
+      0.0,
+      "#ffffff"
+     ],
+     [
+      1.0,
+      "#7fd8ff"
+     ]
+    ],
+    "outline": "#0b3a5c",
+    "outline_width": 3,
+    "glow": "#bfefff",
+    "glow_size": 10,
+    "glow_strength": 1.2
+   },
+   "for": []
+  },
+  {
+   "id": "font-lava",
+   "name": "Lava",
+   "group": "Fonts",
+   "category": "Elements",
+   "kind": "font",
+   "file": "fonts/font-lava.webp",
+   "style": {
+    "font": "Arial|Black, Segoe UI|Black",
+    "stops": [
+     [
+      0.0,
+      "#ffe066"
+     ],
+     [
+      0.5,
+      "#ff6a00"
+     ],
+     [
+      1.0,
+      "#b80000"
+     ]
+    ],
+    "outline": "#1a0500",
+    "outline_width": 4,
+    "glow": "#ff3c00",
+    "glow_size": 12,
+    "glow_strength": 1.5
+   },
+   "for": []
+  },
+  {
+   "id": "font-ocean",
+   "name": "Ocean",
+   "group": "Fonts",
+   "category": "Elements",
+   "kind": "font",
+   "file": "fonts/font-ocean.webp",
+   "style": {
+    "font": "Segoe UI|Black, Arial|Black",
+    "stops": [
+     [
+      0,
+      "#e0fbfc"
+     ],
+     [
+      0.45,
+      "#48cae4"
+     ],
+     [
+      1,
+      "#0077b6"
+     ]
+    ],
+    "outline": "#03045e",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.6
+   },
+   "for": []
+  },
+  {
+   "id": "font-toxic",
+   "name": "Toxic",
+   "group": "Fonts",
+   "category": "Elements",
+   "kind": "font",
+   "file": "fonts/font-toxic.webp",
+   "style": {
+    "font": "Segoe UI|Black, Arial|Black",
+    "stops": [
+     [
+      0.0,
+      "#eaff7b"
+     ],
+     [
+      1.0,
+      "#3fae1a"
+     ]
+    ],
+    "outline": "#0b2a05",
+    "outline_width": 3,
+    "glow": "#7dff2e",
+    "glow_size": 8,
+    "glow_strength": 1.2
+   },
+   "for": []
+  },
+  {
+   "id": "font-storm",
+   "name": "Storm",
+   "group": "Fonts",
+   "category": "Elements",
+   "kind": "font",
+   "file": "fonts/font-storm.webp",
+   "style": {
+    "font": "Bahnschrift|Bold, Arial|Black",
+    "caps": true,
+    "italic": 0.12,
+    "fill": "#f5f9ff",
+    "outline": "#3d5afe",
+    "outline_width": 2,
+    "glow": "#8ab4ff",
+    "glow_size": 12,
+    "glow_strength": 1.6
+   },
+   "for": []
+  },
+  {
+   "id": "font-galaxy",
+   "name": "Galaxy",
+   "group": "Fonts",
+   "category": "Elements",
+   "kind": "font",
+   "file": "fonts/font-galaxy.webp",
+   "style": {
+    "font": "Segoe UI|Black, Arial|Black",
+    "stops": [
+     [
+      0.0,
+      "#9be7ff"
+     ],
+     [
+      0.3333,
+      "#b06cff"
+     ],
+     [
+      0.6667,
+      "#6a3df0"
+     ],
+     [
+      1.0,
+      "#ff6ec7"
+     ]
+    ],
+    "angle": 45.0,
+    "outline": "#0b0033",
+    "outline_width": 3,
+    "glow": "#a46bff",
+    "glow_size": 10,
+    "glow_strength": 1.2
+   },
+   "for": []
+  },
+  {
+   "id": "font-forest",
+   "name": "Forest",
+   "group": "Fonts",
+   "category": "Elements",
+   "kind": "font",
+   "file": "fonts/font-forest.webp",
+   "style": {
+    "font": "Trebuchet MS|Bold, Georgia|Bold",
+    "stops": [
+     [
+      0.0,
+      "#d8f3a5"
+     ],
+     [
+      1.0,
+      "#4f772d"
+     ]
+    ],
+    "outline": "#1b2a10",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.6
+   },
+   "for": []
+  },
+  {
+   "id": "font-stone",
+   "name": "Stone",
+   "group": "Fonts",
+   "category": "Elements",
+   "kind": "font",
+   "file": "fonts/font-stone.webp",
+   "style": {
+    "font": "Impact|Regular, Arial|Black",
+    "caps": true,
+    "spacing": 2,
+    "stops": [
+     [
+      0.0,
+      "#e2dfd8"
+     ],
+     [
+      1.0,
+      "#7a756c"
+     ]
+    ],
+    "outline": "#1f1d1a",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_x": 2,
+    "shadow_y": 3,
+    "shadow_opacity": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "font-rainbow",
+   "name": "Rainbow",
+   "group": "Fonts",
+   "category": "Color blends",
+   "kind": "font",
+   "file": "fonts/font-rainbow.webp",
+   "style": {
+    "font": "Segoe UI|Black, Arial|Black",
+    "stops": [
+     [
+      0.0,
+      "#ff2d55"
+     ],
+     [
+      0.1667,
+      "#ff9500"
+     ],
+     [
+      0.3333,
+      "#ffe600"
+     ],
+     [
+      0.5,
+      "#34d058"
+     ],
+     [
+      0.6667,
+      "#00c7ff"
+     ],
+     [
+      0.8333,
+      "#5e5ce6"
+     ],
+     [
+      1.0,
+      "#d83bff"
+     ]
+    ],
+    "outline": "#1a1a2e",
+    "outline_width": 3
+   },
+   "for": []
+  },
+  {
+   "id": "font-sunset",
+   "name": "Sunset",
+   "group": "Fonts",
+   "category": "Color blends",
+   "kind": "font",
+   "file": "fonts/font-sunset.webp",
+   "style": {
+    "font": "Segoe UI|Black, Arial|Black",
+    "stops": [
+     [
+      0.0,
+      "#ffd166"
+     ],
+     [
+      0.5,
+      "#ff6a3d"
+     ],
+     [
+      1.0,
+      "#a4148f"
+     ]
+    ],
+    "outline": "#2b1055",
+    "outline_width": 3
+   },
+   "for": []
+  },
+  {
+   "id": "font-cotton-candy",
+   "name": "Cotton candy",
+   "group": "Fonts",
+   "category": "Color blends",
+   "kind": "font",
+   "file": "fonts/font-cotton-candy.webp",
+   "style": {
+    "font": "Arial Rounded MT Bold|Regular, Segoe UI|Black, Arial|Black",
+    "stops": [
+     [
+      0.0,
+      "#ff9ad5"
+     ],
+     [
+      1.0,
+      "#8fd3ff"
+     ]
+    ],
+    "angle": 0.0,
+    "outline": "#ffffff",
+    "outline_width": 3,
+    "outline2": "#ff6fb5",
+    "outline2_width": 2
+   },
+   "for": []
+  },
+  {
+   "id": "font-pastel",
+   "name": "Pastel",
+   "group": "Fonts",
+   "category": "Color blends",
+   "kind": "font",
+   "file": "fonts/font-pastel.webp",
+   "style": {
+    "font": "Arial Rounded MT Bold|Regular, Segoe UI|Black, Arial|Black",
+    "stops": [
+     [
+      0.0,
+      "#ffc6ff"
+     ],
+     [
+      0.3333,
+      "#bdb2ff"
+     ],
+     [
+      0.6667,
+      "#a0c4ff"
+     ],
+     [
+      1.0,
+      "#caffbf"
+     ]
+    ],
+    "angle": 0.0,
+    "outline": "#5a4b7a",
+    "outline_width": 2
+   },
+   "for": []
+  },
+  {
+   "id": "font-aurora",
+   "name": "Aurora",
+   "group": "Fonts",
+   "category": "Color blends",
+   "kind": "font",
+   "file": "fonts/font-aurora.webp",
+   "style": {
+    "font": "Segoe UI|Black, Arial|Black",
+    "stops": [
+     [
+      0.0,
+      "#00f5d4"
+     ],
+     [
+      0.5,
+      "#7bf1a8"
+     ],
+     [
+      1.0,
+      "#9b5de5"
+     ]
+    ],
+    "angle": 45.0,
+    "outline": "#001d3d",
+    "outline_width": 3,
+    "glow": "#00f5d4",
+    "glow_size": 8,
+    "glow_strength": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "font-vaporwave",
+   "name": "Vaporwave",
+   "group": "Fonts",
+   "category": "Color blends",
+   "kind": "font",
+   "file": "fonts/font-vaporwave.webp",
+   "style": {
+    "font": "Segoe UI|Black, Arial|Black",
+    "stops": [
+     [
+      0.0,
+      "#ff71ce"
+     ],
+     [
+      0.5,
+      "#01cdfe"
+     ],
+     [
+      1.0,
+      "#05ffa1"
+     ]
+    ],
+    "outline": "#2d1b4e",
+    "outline_width": 3
+   },
+   "for": []
+  },
+  {
+   "id": "font-fire-ice",
+   "name": "Fire & ice",
+   "group": "Fonts",
+   "category": "Color blends",
+   "kind": "font",
+   "file": "fonts/font-fire-ice.webp",
+   "style": {
+    "font": "Arial|Black, Segoe UI|Black",
+    "stops": [
+     [
+      0,
+      "#ffb703"
+     ],
+     [
+      0.5,
+      "#ff3d00"
+     ],
+     [
+      0.5,
+      "#4fc3ff"
+     ],
+     [
+      1,
+      "#1565c0"
+     ]
+    ],
+    "outline": "#0d0d1a",
+    "outline_width": 3
+   },
+   "for": []
+  },
+  {
+   "id": "font-peach",
+   "name": "Peach",
+   "group": "Fonts",
+   "category": "Color blends",
+   "kind": "font",
+   "file": "fonts/font-peach.webp",
+   "style": {
+    "font": "Arial Rounded MT Bold|Regular, Segoe UI|Black, Arial|Black",
+    "stops": [
+     [
+      0.0,
+      "#ffe5b4"
+     ],
+     [
+      1.0,
+      "#ff8c69"
+     ]
+    ],
+    "outline": "#5a2a1a",
+    "outline_width": 2
+   },
+   "for": []
+  },
+  {
+   "id": "font-mint",
+   "name": "Mint",
+   "group": "Fonts",
+   "category": "Color blends",
+   "kind": "font",
+   "file": "fonts/font-mint.webp",
+   "style": {
+    "font": "Arial Rounded MT Bold|Regular, Segoe UI|Black, Arial|Black",
+    "stops": [
+     [
+      0.0,
+      "#e0fff4"
+     ],
+     [
+      1.0,
+      "#3ddc97"
+     ]
+    ],
+    "outline": "#0f3d2e",
+    "outline_width": 3
+   },
+   "for": []
+  },
+  {
+   "id": "font-half-half",
+   "name": "Half & half",
+   "group": "Fonts",
+   "category": "Color blends",
+   "kind": "font",
+   "file": "fonts/font-half-half.webp",
+   "style": {
+    "font": "Arial|Black, Segoe UI|Black",
+    "stops": [
+     [
+      0,
+      "#ffffff"
+     ],
+     [
+      0.5,
+      "#ffffff"
+     ],
+     [
+      0.5,
+      "#ffcc00"
+     ],
+     [
+      1,
+      "#ffcc00"
+     ]
+    ],
+    "angle": 45.0,
+    "outline": "#000000",
+    "outline_width": 3
+   },
+   "for": []
+  },
+  {
+   "id": "font-comic",
+   "name": "Comic",
+   "group": "Fonts",
+   "category": "Fun & handwritten",
+   "kind": "font",
+   "file": "fonts/font-comic.webp",
+   "style": {
+    "font": "Comic Sans MS|Bold",
+    "fill": "#ffe14d",
+    "outline": "#000000",
+    "outline_width": 4,
+    "shadow": "#000000",
+    "shadow_x": 3,
+    "shadow_y": 4,
+    "shadow_blur": 0,
+    "shadow_opacity": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "font-bubble",
+   "name": "Bubble",
+   "group": "Fonts",
+   "category": "Fun & handwritten",
+   "kind": "font",
+   "file": "fonts/font-bubble.webp",
+   "style": {
+    "font": "Arial Rounded MT Bold|Regular, Segoe UI|Black, Arial|Black",
+    "stops": [
+     [
+      0.0,
+      "#c9efff"
+     ],
+     [
+      1.0,
+      "#3aa0ff"
+     ]
+    ],
+    "outline": "#ffffff",
+    "outline_width": 3,
+    "outline2": "#1d4e89",
+    "outline2_width": 3
+   },
+   "for": []
+  },
+  {
+   "id": "font-bubblegum",
+   "name": "Bubblegum",
+   "group": "Fonts",
+   "category": "Fun & handwritten",
+   "kind": "font",
+   "file": "fonts/font-bubblegum.webp",
+   "style": {
+    "font": "Comic Sans MS|Bold",
+    "stops": [
+     [
+      0.0,
+      "#ffc2e6"
+     ],
+     [
+      1.0,
+      "#ff5fb8"
+     ]
+    ],
+    "outline": "#ffffff",
+    "outline_width": 3,
+    "outline2": "#c2185b",
+    "outline2_width": 2
+   },
+   "for": []
+  },
+  {
+   "id": "font-marker",
+   "name": "Marker",
+   "group": "Fonts",
+   "category": "Fun & handwritten",
+   "kind": "font",
+   "file": "fonts/font-marker.webp",
+   "style": {
+    "font": "Ink Free|Regular, Segoe Print|Bold",
+    "size": 1.1,
+    "bold": 1,
+    "fill": "#ffffff",
+    "shadow": "#000000",
+    "shadow_x": 2,
+    "shadow_y": 3,
+    "shadow_blur": 1,
+    "shadow_opacity": 0.7
+   },
+   "for": []
+  },
+  {
+   "id": "font-handwritten",
+   "name": "Handwritten",
+   "group": "Fonts",
+   "category": "Fun & handwritten",
+   "kind": "font",
+   "file": "fonts/font-handwritten.webp",
+   "style": {
+    "font": "Segoe Print|Bold, Ink Free|Regular, Comic Sans MS|Bold",
+    "fill": "#fff7e6",
+    "outline": "#2b2b2b",
+    "outline_width": 2
+   },
+   "for": []
+  },
+  {
+   "id": "font-signature",
+   "name": "Signature",
+   "group": "Fonts",
+   "category": "Fun & handwritten",
+   "kind": "font",
+   "file": "fonts/font-signature.webp",
+   "style": {
+    "font": "Segoe Script|Bold, Gabriola|Regular",
+    "size": 1.1,
+    "fill": "#ffffff",
+    "glow": "#ffd27a",
+    "glow_size": 8,
+    "glow_strength": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "font-graffiti",
+   "name": "Graffiti",
+   "group": "Fonts",
+   "category": "Fun & handwritten",
+   "kind": "font",
+   "file": "fonts/font-graffiti.webp",
+   "style": {
+    "font": "Jokerman|Regular, Ink Free|Regular, Comic Sans MS|Bold",
+    "size": 1.05,
+    "bold": 1,
+    "stops": [
+     [
+      0.0,
+      "#a6ff00"
+     ],
+     [
+      1.0,
+      "#00c2ff"
+     ]
+    ],
+    "angle": 45.0,
+    "outline": "#000000",
+    "outline_width": 4,
+    "outline2": "#ffffff",
+    "outline2_width": 2
+   },
+   "for": []
+  },
+  {
+   "id": "font-chalk",
+   "name": "Chalk",
+   "group": "Fonts",
+   "category": "Fun & handwritten",
+   "kind": "font",
+   "file": "fonts/font-chalk.webp",
+   "style": {
+    "font": "Segoe Print|Regular, Ink Free|Regular",
+    "fill": "#f5f5f0",
+    "fill_opacity": 0.85,
+    "glow": "#ffffff",
+    "glow_size": 4,
+    "glow_strength": 0.5,
+    "shadow": "#000000",
+    "shadow_y": 2,
+    "shadow_blur": 2,
+    "shadow_opacity": 0.5
+   },
+   "for": []
+  },
+  {
+   "id": "font-retro-arcade",
+   "name": "Retro arcade",
+   "group": "Fonts",
+   "category": "Fun & handwritten",
+   "kind": "font",
+   "file": "fonts/font-retro-arcade.webp",
+   "style": {
+    "font": "Bahnschrift|Bold, Impact|Regular",
+    "caps": true,
+    "spacing": 2,
+    "stops": [
+     [
+      0,
+      "#fff200"
+     ],
+     [
+      0.5,
+      "#ff8c00"
+     ],
+     [
+      0.5,
+      "#ff3d00"
+     ],
+     [
+      1,
+      "#ff007b"
+     ]
+    ],
+    "outline": "#1a0033",
+    "outline_width": 3,
+    "outline2": "#00e5ff",
+    "outline2_width": 2
+   },
+   "for": []
+  },
+  {
+   "id": "font-royal",
+   "name": "Royal",
+   "group": "Fonts",
+   "category": "Fun & handwritten",
+   "kind": "font",
+   "file": "fonts/font-royal.webp",
+   "style": {
+    "font": "Georgia|Bold, Palatino Linotype|Bold, Sitka|Banner Bold",
+    "stops": [
+     [
+      0,
+      "#fff6c2"
+     ],
+     [
+      0.5,
+      "#ffd54a"
+     ],
+     [
+      1,
+      "#c98b00"
+     ]
+    ],
+    "outline": "#3d0a5c",
+    "outline_width": 3,
+    "outline2": "#ffd54a",
+    "outline2_width": 1
+   },
+   "for": []
+  },
+  {
+   "id": "font-wild-west",
+   "name": "Wild west",
+   "group": "Fonts",
+   "category": "Fun & handwritten",
+   "kind": "font",
+   "file": "fonts/font-wild-west.webp",
+   "style": {
+    "font": "Rockwell Extra Bold|Regular, Georgia|Bold",
+    "caps": true,
+    "spacing": 1,
+    "fill": "#f3d9a4",
+    "outline": "#3b2412",
+    "outline_width": 3,
+    "shadow": "#1a0f05",
+    "shadow_x": 3,
+    "shadow_y": 3,
+    "shadow_opacity": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "font-spooky",
+   "name": "Spooky",
+   "group": "Fonts",
+   "category": "Spooky & seasonal",
+   "kind": "font",
+   "file": "fonts/font-spooky.webp",
+   "style": {
+    "font": "Chiller|Regular, Ink Free|Regular",
+    "size": 1.15,
+    "bold": 1,
+    "stops": [
+     [
+      0.0,
+      "#ff8a1a"
+     ],
+     [
+      1.0,
+      "#b31b00"
+     ]
+    ],
+    "outline": "#1a0000",
+    "outline_width": 3,
+    "glow": "#ff5a00",
+    "glow_size": 10,
+    "glow_strength": 1.3,
+    "caps": true
+   },
+   "for": []
+  },
+  {
+   "id": "font-pumpkin",
+   "name": "Pumpkin",
+   "group": "Fonts",
+   "category": "Spooky & seasonal",
+   "kind": "font",
+   "file": "fonts/font-pumpkin.webp",
+   "style": {
+    "font": "Segoe UI|Black, Arial|Black",
+    "stops": [
+     [
+      0.0,
+      "#ffc46b"
+     ],
+     [
+      1.0,
+      "#ff6a00"
+     ]
+    ],
+    "outline": "#2a0a3d",
+    "outline_width": 3,
+    "glow": "#b6ff3b",
+    "glow_size": 8,
+    "glow_strength": 0.9
+   },
+   "for": []
+  },
+  {
+   "id": "font-slime",
+   "name": "Slime",
+   "group": "Fonts",
+   "category": "Spooky & seasonal",
+   "kind": "font",
+   "file": "fonts/font-slime.webp",
+   "style": {
+    "font": "Comic Sans MS|Bold",
+    "stops": [
+     [
+      0.0,
+      "#d4ff6b"
+     ],
+     [
+      1.0,
+      "#57c21b"
+     ]
+    ],
+    "outline": "#173300",
+    "outline_width": 3,
+    "glow": "#9dff3b",
+    "glow_size": 10,
+    "glow_strength": 1.2
+   },
+   "for": []
+  },
+  {
+   "id": "font-ghost",
+   "name": "Ghost",
+   "group": "Fonts",
+   "category": "Spooky & seasonal",
+   "kind": "font",
+   "file": "fonts/font-ghost.webp",
+   "style": {
+    "font": "Segoe Print|Bold, Ink Free|Regular, Comic Sans MS|Bold",
+    "fill": "#ffffff",
+    "fill_opacity": 0.55,
+    "glow": "#e8f6ff",
+    "glow_size": 12,
+    "glow_strength": 1.6,
+    "shadow": "#0b1020",
+    "shadow_y": 5,
+    "shadow_blur": 4,
+    "shadow_opacity": 0.45
+   },
+   "for": []
+  },
+  {
+   "id": "font-blood",
+   "name": "Blood",
+   "group": "Fonts",
+   "category": "Spooky & seasonal",
+   "kind": "font",
+   "file": "fonts/font-blood.webp",
+   "style": {
+    "font": "Chiller|Regular, Ink Free|Regular",
+    "size": 1.15,
+    "bold": 1,
+    "stops": [
+     [
+      0.0,
+      "#ff7070"
+     ],
+     [
+      0.5,
+      "#c00000"
+     ],
+     [
+      1.0,
+      "#6a0000"
+     ]
+    ],
+    "outline": "#140000",
+    "outline_width": 3,
+    "glow": "#ff1a1a",
+    "glow_size": 6,
+    "glow_strength": 0.7
+   },
+   "for": []
+  },
+  {
+   "id": "font-candy-cane",
+   "name": "Candy cane",
+   "group": "Fonts",
+   "category": "Spooky & seasonal",
+   "kind": "font",
+   "file": "fonts/font-candy-cane.webp",
+   "style": {
+    "font": "Arial Rounded MT Bold|Regular, Segoe UI|Black, Arial|Black",
+    "stops": [
+     [
+      0,
+      "#e01e37"
+     ],
+     [
+      0.25,
+      "#e01e37"
+     ],
+     [
+      0.25,
+      "#ffffff"
+     ],
+     [
+      0.5,
+      "#ffffff"
+     ],
+     [
+      0.5,
+      "#e01e37"
+     ],
+     [
+      0.75,
+      "#e01e37"
+     ],
+     [
+      0.75,
+      "#ffffff"
+     ],
+     [
+      1,
+      "#ffffff"
+     ]
+    ],
+    "angle": 45.0,
+    "outline": "#7a0010",
+    "outline_width": 3
+   },
+   "for": []
+  },
+  {
+   "id": "font-christmas",
+   "name": "Christmas",
+   "group": "Fonts",
+   "category": "Spooky & seasonal",
+   "kind": "font",
+   "file": "fonts/font-christmas.webp",
+   "style": {
+    "font": "Georgia|Bold, Palatino Linotype|Bold, Sitka|Banner Bold",
+    "stops": [
+     [
+      0.0,
+      "#ff4d4d"
+     ],
+     [
+      1.0,
+      "#a4161a"
+     ]
+    ],
+    "outline": "#ffffff",
+    "outline_width": 3,
+    "outline2": "#1a7f37",
+    "outline2_width": 3
+   },
+   "for": []
+  },
+  {
+   "id": "font-frost",
+   "name": "Frost",
+   "group": "Fonts",
+   "category": "Spooky & seasonal",
+   "kind": "font",
+   "file": "fonts/font-frost.webp",
+   "style": {
+    "font": "Segoe UI|Black, Arial|Black",
+    "stops": [
+     [
+      0.0,
+      "#ffffff"
+     ],
+     [
+      1.0,
+      "#cdefff"
+     ]
+    ],
+    "outline": "#5fb8e8",
+    "outline_width": 2,
+    "glow": "#ffffff",
+    "glow_size": 10,
+    "glow_strength": 1.3
+   },
+   "for": []
+  },
+  {
+   "id": "font-valentine",
+   "name": "Valentine",
+   "group": "Fonts",
+   "category": "Spooky & seasonal",
+   "kind": "font",
+   "file": "fonts/font-valentine.webp",
+   "style": {
+    "font": "Segoe UI|Black, Comic Sans MS|Bold",
+    "stops": [
+     [
+      0.0,
+      "#ffd1e3"
+     ],
+     [
+      1.0,
+      "#ff2d6f"
+     ]
+    ],
+    "outline": "#ffffff",
+    "outline_width": 2,
+    "outline2": "#c2185b",
+    "outline2_width": 2,
+    "glow": "#ff6fa5",
+    "glow_size": 8,
+    "glow_strength": 1.0
+   },
+   "for": []
+  },
+  {
+   "id": "font-lucky",
+   "name": "Lucky",
+   "group": "Fonts",
+   "category": "Spooky & seasonal",
+   "kind": "font",
+   "file": "fonts/font-lucky.webp",
+   "style": {
+    "font": "Segoe UI|Black, Arial|Black",
+    "stops": [
+     [
+      0.0,
+      "#7dff9b"
+     ],
+     [
+      1.0,
+      "#0f9d58"
+     ]
+    ],
+    "outline": "#ffd700",
+    "outline_width": 2,
+    "outline2": "#0b3d1a",
+    "outline2_width": 2
+   },
+   "for": []
+  },
+  {
+   "id": "font-spring",
+   "name": "Spring",
+   "group": "Fonts",
+   "category": "Spooky & seasonal",
+   "kind": "font",
+   "file": "fonts/font-spring.webp",
+   "style": {
+    "font": "Arial Rounded MT Bold|Regular, Segoe UI|Black, Arial|Black",
+    "stops": [
+     [
+      0.0,
+      "#fff6a3"
+     ],
+     [
+      0.5,
+      "#ffc6e0"
+     ],
+     [
+      1.0,
+      "#b5e8ff"
+     ]
+    ],
+    "outline": "#7a5c99",
+    "outline_width": 2
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-lava",
+   "name": "Lava",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-lava.webp",
+   "style": {
+    "font": "Arial|Black, Segoe UI|Black",
+    "texture": "86a177f337ae472b94b6770ae70110ae-0",
+    "texture_scale": 1.0,
+    "outline": "#1a0500",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5,
+    "glow": "#ff4d00",
+    "glow_size": 8,
+    "glow_strength": 1.1
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-ice",
+   "name": "Ice crystal",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-ice.webp",
+   "style": {
+    "font": "Segoe UI|Black, Arial|Black",
+    "texture": "101c73d577a34abfa61c24f8f5c1a5bc-0",
+    "texture_scale": 1.0,
+    "outline": "#0b3a5c",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5,
+    "glow": "#bfefff",
+    "glow_size": 8,
+    "glow_strength": 1.1
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-galaxy",
+   "name": "Galaxy",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-galaxy.webp",
+   "style": {
+    "font": "Segoe UI|Black, Arial|Black",
+    "texture": "2ce1fe577ab247b684343cb61b5ded6b-0",
+    "texture_scale": 1.0,
+    "outline": "#0b0033",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5,
+    "glow": "#a46bff",
+    "glow_size": 8,
+    "glow_strength": 1.1
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-gold-leaf",
+   "name": "Gold leaf",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-gold-leaf.webp",
+   "style": {
+    "font": "Arial|Black, Segoe UI|Black",
+    "texture": "49be163a83e948e29b5b43773bfc6d4d-0",
+    "texture_scale": 1.0,
+    "outline": "#4a2a00",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-marble",
+   "name": "Marble",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-marble.webp",
+   "style": {
+    "font": "Segoe UI|Black, Arial|Black",
+    "texture": "d0c893ecd0ab4a7d8065eb2aae429dfb-0",
+    "texture_scale": 1.0,
+    "outline": "#2b2b2b",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-wood",
+   "name": "Wood",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-wood.webp",
+   "style": {
+    "font": "Arial|Black, Segoe UI|Black",
+    "texture": "b762e7f6d2b2430ba34dd7524bc07695-0",
+    "texture_scale": 1.0,
+    "outline": "#2a1405",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-candy",
+   "name": "Candy swirl",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-candy.webp",
+   "style": {
+    "font": "Arial Rounded MT Bold|Regular, Segoe UI|Black, Arial|Black",
+    "texture": "ef31497eb6164dcca19566c4bc1d193c-0",
+    "texture_scale": 1.0,
+    "outline": "#8a1050",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-chocolate",
+   "name": "Chocolate",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-chocolate.webp",
+   "style": {
+    "font": "Arial Rounded MT Bold|Regular, Segoe UI|Black, Arial|Black",
+    "texture": "5b2eed97acea48038522d8443e137f92-0",
+    "texture_scale": 1.0,
+    "outline": "#1e0d05",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-camo",
+   "name": "Camo",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-camo.webp",
+   "style": {
+    "font": "Bahnschrift|Bold Condensed, Impact|Regular",
+    "texture": "a63866885c904544ab51b9d6ba46b241-0",
+    "texture_scale": 1.0,
+    "outline": "#141a0a",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-circuit",
+   "name": "Circuit board",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-circuit.webp",
+   "style": {
+    "font": "Bahnschrift|Bold Condensed, Impact|Regular",
+    "texture": "f65ca07d7e344e96813d027bf30216bc-0",
+    "texture_scale": 1.0,
+    "outline": "#001a0a",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5,
+    "glow": "#39ff14",
+    "glow_size": 8,
+    "glow_strength": 1.1
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-dragon",
+   "name": "Dragon scales",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-dragon.webp",
+   "style": {
+    "font": "Arial|Black, Segoe UI|Black",
+    "texture": "11c601f6995a49b8a40f9b40287e2b34-0",
+    "texture_scale": 1.0,
+    "outline": "#2a0005",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5,
+    "glow": "#ff3a1a",
+    "glow_size": 8,
+    "glow_strength": 1.1
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-leopard",
+   "name": "Leopard",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-leopard.webp",
+   "style": {
+    "font": "Segoe UI|Black, Arial|Black",
+    "texture": "deb6c4891f474545aa7221253c8b72b6-0",
+    "texture_scale": 1.0,
+    "outline": "#2a1a05",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-denim",
+   "name": "Denim",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-denim.webp",
+   "style": {
+    "font": "Arial|Black, Segoe UI|Black",
+    "texture": "8fba1a866d2448daada19237ca87a702-0",
+    "texture_scale": 1.0,
+    "outline": "#0a1a3a",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-grass",
+   "name": "Grass",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-grass.webp",
+   "style": {
+    "font": "Arial|Black, Segoe UI|Black",
+    "texture": "b07240fb50964712a8be27a386758e97-0",
+    "texture_scale": 1.0,
+    "outline": "#0f2a05",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-ocean",
+   "name": "Ocean water",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-ocean.webp",
+   "style": {
+    "font": "Segoe UI|Black, Arial|Black",
+    "texture": "8b6e3bddf3044e9fbea788a5b020b628-0",
+    "texture_scale": 1.0,
+    "outline": "#03304e",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5,
+    "glow": "#7fe0ff",
+    "glow_size": 8,
+    "glow_strength": 1.1
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-flames",
+   "name": "Flames",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-flames.webp",
+   "style": {
+    "font": "Arial|Black, Segoe UI|Black",
+    "texture": "025a5b56b44a4968b38304d00c36dafe-0",
+    "texture_scale": 1.0,
+    "outline": "#3b0000",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5,
+    "glow": "#ff7a00",
+    "glow_size": 8,
+    "glow_strength": 1.1
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-lightning",
+   "name": "Lightning",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-lightning.webp",
+   "style": {
+    "font": "Bahnschrift|Bold Condensed, Impact|Regular",
+    "texture": "7584b7c56bb24ed8bdbc5512d7fe1975-0",
+    "texture_scale": 1.0,
+    "outline": "#10003a",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5,
+    "glow": "#4fc3ff",
+    "glow_size": 8,
+    "glow_strength": 1.1
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-slime",
+   "name": "Slime",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-slime.webp",
+   "style": {
+    "font": "Arial Rounded MT Bold|Regular, Segoe UI|Black, Arial|Black",
+    "texture": "ca00bdb758bd481abe295f44a22841ad-0",
+    "texture_scale": 1.0,
+    "outline": "#0f2a00",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5,
+    "glow": "#9dff3b",
+    "glow_size": 8,
+    "glow_strength": 1.1
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-glitter",
+   "name": "Rainbow glitter",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-glitter.webp",
+   "style": {
+    "font": "Segoe UI|Black, Arial|Black",
+    "texture": "eeecd27607fb46e6aba5c2e20e16c70c-0",
+    "texture_scale": 1.0,
+    "outline": "#2a1050",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5,
+    "glow": "#ffffff",
+    "glow_size": 8,
+    "glow_strength": 1.1
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-pink-glitter",
+   "name": "Pink glitter",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-pink-glitter.webp",
+   "style": {
+    "font": "Arial Rounded MT Bold|Regular, Segoe UI|Black, Arial|Black",
+    "texture": "fb10f187dedb4bb38ae8afe6b48d8056-0",
+    "texture_scale": 1.0,
+    "outline": "#6a0a3a",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5,
+    "glow": "#ff9ad5",
+    "glow_size": 8,
+    "glow_strength": 1.1
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-holo",
+   "name": "Holographic",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-holo.webp",
+   "style": {
+    "font": "Segoe UI|Black, Arial|Black",
+    "texture": "272817d4d2de4395b5d86af7aa2dcbf5-0",
+    "texture_scale": 1.0,
+    "outline": "#3a2a6a",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5,
+    "glow": "#c9b6ff",
+    "glow_size": 8,
+    "glow_strength": 1.1
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-rust",
+   "name": "Rusty metal",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-rust.webp",
+   "style": {
+    "font": "Arial|Black, Segoe UI|Black",
+    "texture": "80f8a3b68b7e48bd99c595f0a9881f2e-0",
+    "texture_scale": 1.0,
+    "outline": "#2a1005",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-mossy-stone",
+   "name": "Mossy stone",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-mossy-stone.webp",
+   "style": {
+    "font": "Arial|Black, Segoe UI|Black",
+    "texture": "1d5eaeb297a643b9b48933700ec99215-0",
+    "texture_scale": 1.0,
+    "outline": "#151a10",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-brick",
+   "name": "Brick wall",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-brick.webp",
+   "style": {
+    "font": "Bahnschrift|Bold Condensed, Impact|Regular",
+    "texture": "1ff51b617fa041e29e0965b56713ee24-0",
+    "texture_scale": 1.0,
+    "outline": "#2a0a05",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-pixel",
+   "name": "Pixel blocks",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-pixel.webp",
+   "style": {
+    "font": "Arial|Black, Segoe UI|Black",
+    "texture": "06655c1f52484730bcc373d755ca1bf7-0",
+    "texture_scale": 1.0,
+    "outline": "#101020",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-cheese",
+   "name": "Cheese",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-cheese.webp",
+   "style": {
+    "font": "Arial Rounded MT Bold|Regular, Segoe UI|Black, Arial|Black",
+    "texture": "6c640818185743f1bba07efba3912de4-0",
+    "texture_scale": 1.0,
+    "outline": "#5a3a00",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-pizza",
+   "name": "Pizza",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-pizza.webp",
+   "style": {
+    "font": "Arial Rounded MT Bold|Regular, Segoe UI|Black, Arial|Black",
+    "texture": "c4f3ffa8aab94abcb89eddcc3cc042e4-0",
+    "texture_scale": 1.0,
+    "outline": "#4a1a00",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-watermelon",
+   "name": "Watermelon",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-watermelon.webp",
+   "style": {
+    "font": "Arial Rounded MT Bold|Regular, Segoe UI|Black, Arial|Black",
+    "texture": "3476b989886042d9bf7e95e1dcd02daf-0",
+    "texture_scale": 1.0,
+    "outline": "#0a4a1a",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-strawberry",
+   "name": "Strawberry",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-strawberry.webp",
+   "style": {
+    "font": "Arial Rounded MT Bold|Regular, Segoe UI|Black, Arial|Black",
+    "texture": "12a8cc5777f04bf29bfaaf9f944c0135-0",
+    "texture_scale": 1.0,
+    "outline": "#5a0010",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-cookie",
+   "name": "Cookie",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-cookie.webp",
+   "style": {
+    "font": "Arial Rounded MT Bold|Regular, Segoe UI|Black, Arial|Black",
+    "texture": "c11df72633874a8184f2dc60ab8cf90e-0",
+    "texture_scale": 1.0,
+    "outline": "#3a1a05",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-clouds",
+   "name": "Clouds",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-clouds.webp",
+   "style": {
+    "font": "Arial Rounded MT Bold|Regular, Segoe UI|Black, Arial|Black",
+    "texture": "d1fee99dcc4945ecb91839835e279e58-0",
+    "texture_scale": 1.0,
+    "outline": "#1a4a8a",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5,
+    "glow": "#ffffff",
+    "glow_size": 8,
+    "glow_strength": 1.1
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-sunset",
+   "name": "Sunset sky",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-sunset.webp",
+   "style": {
+    "font": "Segoe UI|Black, Arial|Black",
+    "texture": "76c26837ef224f78a8f595715e69e1d2-0",
+    "texture_scale": 1.0,
+    "outline": "#2a0a3a",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5,
+    "glow": "#ff8a3d",
+    "glow_size": 8,
+    "glow_strength": 1.1
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-sakura",
+   "name": "Cherry blossom",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-sakura.webp",
+   "style": {
+    "font": "Arial Rounded MT Bold|Regular, Segoe UI|Black, Arial|Black",
+    "texture": "b42e7358469949948a11eefe98ee5ed2-0",
+    "texture_scale": 1.0,
+    "outline": "#6a1a40",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5,
+    "glow": "#ffc0dc",
+    "glow_size": 8,
+    "glow_strength": 1.1
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-autumn",
+   "name": "Autumn leaves",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-autumn.webp",
+   "style": {
+    "font": "Arial|Black, Segoe UI|Black",
+    "texture": "ec5a3c65ff634ea1bf592cf378e70114-0",
+    "texture_scale": 1.0,
+    "outline": "#3a1500",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-snow",
+   "name": "Snow",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-snow.webp",
+   "style": {
+    "font": "Arial Rounded MT Bold|Regular, Segoe UI|Black, Arial|Black",
+    "texture": "97911817c9e645588daab34716e6a7b0-0",
+    "texture_scale": 1.0,
+    "outline": "#3a5a7a",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5,
+    "glow": "#ffffff",
+    "glow_size": 8,
+    "glow_strength": 1.1
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-zebra",
+   "name": "Zebra",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-zebra.webp",
+   "style": {
+    "font": "Arial|Black, Segoe UI|Black",
+    "texture": "186aaaf5a3a04e158466aa8bf2238961-0",
+    "texture_scale": 1.0,
+    "outline": "#000000",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-tiger",
+   "name": "Tiger",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-tiger.webp",
+   "style": {
+    "font": "Arial|Black, Segoe UI|Black",
+    "texture": "36e355d84c104e5099c5fb55466d1bde-0",
+    "texture_scale": 1.0,
+    "outline": "#1a0a00",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-snakeskin",
+   "name": "Snakeskin",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-snakeskin.webp",
+   "style": {
+    "font": "Bahnschrift|Bold Condensed, Impact|Regular",
+    "texture": "dddaef93705a4b7cbcf9c845c353a572-0",
+    "texture_scale": 1.0,
+    "outline": "#0a1a05",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-carbon",
+   "name": "Carbon fiber",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-carbon.webp",
+   "style": {
+    "font": "Bahnschrift|Bold Condensed, Impact|Regular",
+    "texture": "79bdd13401e244a6b897bd16235ababc-0",
+    "texture_scale": 1.0,
+    "outline": "#000000",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5,
+    "glow": "#5fd4ff",
+    "glow_size": 8,
+    "glow_strength": 1.1
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-neon-grid",
+   "name": "Neon grid",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-neon-grid.webp",
+   "style": {
+    "font": "Bahnschrift|Bold Condensed, Impact|Regular",
+    "texture": "c42344bf7fde417c99d443de220ef2e7-0",
+    "texture_scale": 1.0,
+    "outline": "#12003a",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5,
+    "glow": "#ff2ec4",
+    "glow_size": 8,
+    "glow_strength": 1.1
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-amethyst",
+   "name": "Amethyst",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-amethyst.webp",
+   "style": {
+    "font": "Segoe UI|Black, Arial|Black",
+    "texture": "650f09bae3624b96b46b117ac7be898b-0",
+    "texture_scale": 1.0,
+    "outline": "#1e0b3a",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5,
+    "glow": "#a855f7",
+    "glow_size": 8,
+    "glow_strength": 1.1
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-emerald",
+   "name": "Emerald",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-emerald.webp",
+   "style": {
+    "font": "Segoe UI|Black, Arial|Black",
+    "texture": "921b88ad75134fe5bd0700cdc4a0eb99-0",
+    "texture_scale": 1.0,
+    "outline": "#022c22",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5,
+    "glow": "#34d399",
+    "glow_size": 8,
+    "glow_strength": 1.1
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-pearl",
+   "name": "Pearl",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-pearl.webp",
+   "style": {
+    "font": "Arial Rounded MT Bold|Regular, Segoe UI|Black, Arial|Black",
+    "texture": "7cfbfbf0c1c043d1b5417b8b3ac7f37f-0",
+    "texture_scale": 1.0,
+    "outline": "#4a4a6a",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5,
+    "glow": "#ffffff",
+    "glow_size": 8,
+    "glow_strength": 1.1
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-bubbles",
+   "name": "Bubbles",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-bubbles.webp",
+   "style": {
+    "font": "Arial Rounded MT Bold|Regular, Segoe UI|Black, Arial|Black",
+    "texture": "1d80af31ed4d49a2916d472f4824b775-0",
+    "texture_scale": 1.0,
+    "outline": "#0a3a6a",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5,
+    "glow": "#bfefff",
+    "glow_size": 8,
+    "glow_strength": 1.1
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-honeycomb",
+   "name": "Honeycomb",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-honeycomb.webp",
+   "style": {
+    "font": "Arial|Black, Segoe UI|Black",
+    "texture": "2a8a7ac36535436386c82207d5a20d13-0",
+    "texture_scale": 1.0,
+    "outline": "#4a2a00",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5,
+    "glow": "#ffc23a",
+    "glow_size": 8,
+    "glow_strength": 1.1
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-treasure",
+   "name": "Treasure",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-treasure.webp",
+   "style": {
+    "font": "Arial|Black, Segoe UI|Black",
+    "texture": "e168a6bfc43346349bb18fbb33fb6cd1-0",
+    "texture_scale": 1.0,
+    "outline": "#3a2000",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5,
+    "glow": "#ffd54a",
+    "glow_size": 8,
+    "glow_strength": 1.1
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-graffiti",
+   "name": "Graffiti",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-graffiti.webp",
+   "style": {
+    "font": "Arial|Black, Segoe UI|Black",
+    "texture": "9f437411733f49eb9dc6b7e2cb743a7e-0",
+    "texture_scale": 1.0,
+    "outline": "#000000",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-pop-art",
+   "name": "Pop art",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-pop-art.webp",
+   "style": {
+    "font": "Arial|Black, Segoe UI|Black",
+    "texture": "8f0c9c932e0a4f4cb1641d2099a8e7d2-0",
+    "texture_scale": 1.0,
+    "outline": "#000000",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-radioactive",
+   "name": "Radioactive",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-radioactive.webp",
+   "style": {
+    "font": "Arial Rounded MT Bold|Regular, Segoe UI|Black, Arial|Black",
+    "texture": "d06bd0cad69f47cda996583c066a6b79-0",
+    "texture_scale": 1.0,
+    "outline": "#0a2a00",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5,
+    "glow": "#7dff2e",
+    "glow_size": 8,
+    "glow_strength": 1.1
+   },
+   "for": []
+  },
+  {
+   "id": "font-ai-blood-moon",
+   "name": "Blood moon",
+   "group": "Fonts",
+   "category": "Made by Image AI",
+   "kind": "font",
+   "file": "fonts/font-ai-blood-moon.webp",
+   "style": {
+    "font": "Segoe UI|Black, Arial|Black",
+    "texture": "64842821f4d54cd688870ab42775654b-0",
+    "texture_scale": 1.0,
+    "outline": "#2a0000",
+    "outline_width": 3,
+    "shadow": "#000000",
+    "shadow_y": 3,
+    "shadow_blur": 3,
+    "shadow_opacity": 0.5,
+    "glow": "#ff2a2a",
+    "glow_size": 8,
+    "glow_strength": 1.1
+   },
+   "for": []
   }
  ]
 }
