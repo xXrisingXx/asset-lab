@@ -5,6 +5,7 @@
 (()=>{
 const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
 const B={list:null};
+const t=text=>window.LabI18n?LabI18n.t(text):text;   // native dialogs (Rename's prompt) are not in the page, so they are translated here
 
 // ----- the picker in the top bar ------------------------------------------------------------------------------
 const pick=el('button','build-pick');pick.id='buildButton';pick.type='button';pick.title='Your builds: switch, copy, rename or start over';

@@ -88,7 +88,9 @@ class ThemeAiComposer(EditorTestCase):
         labels = b.eval("[...document.querySelectorAll('#themeStarters button')].map(x => x.textContent)")
         self.assertEqual(labels, ['Colors', 'Whole theme', 'Background', 'Redraw something'])
         tools = b.eval("[...document.querySelectorAll('.theme-inputbar .theme-tools button')].map(x => x.getAttribute('aria-label'))")
-        self.assertEqual(tools, ['Your picture', 'Presets', 'Text & fonts'])       # the tools are icons in the box
+        self.assertEqual(tools, ['Your picture', 'Text & fonts'])                  # the tools are icons in the box
+        self.assertTrue(b.eval("document.querySelector('.theme-toolbar #themePresetsButton').checkVisibility()"))   # Presets, labelled, on the starters' line
+        self.assertEqual(b.eval("[...document.querySelectorAll('.theme-dock-actions button')].slice(-2).map(x => x.textContent)"), ['Undo theme', 'Start fresh'])
         self.assertTrue(b.eval("!!document.querySelector('.theme-inputbar #themeInput') && !!document.querySelector('.theme-inputbar #themeSend')"))
         b.click_selector('#themeStarters button')
         self.assertEqual(b.eval("document.getElementById('themeInput').value"), 'Make the buttons and panels ')

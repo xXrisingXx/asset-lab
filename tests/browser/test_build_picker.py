@@ -40,6 +40,20 @@ class Builds(EditorTestCase):
         b.wait_for("document.querySelector('#buildButton b').textContent === 'My build'")
         self.assertEqual([s['key'] for s in self.server.get('/api/status')['staged']], [key])
 
+    def test_ab_rename_a_build(self):
+        # Rename asks for the name (the browser's own prompt, answered here) and the picker shows it.
+        b = self.browser
+        b.click_selector('#buildButton')
+        b.wait_for("document.getElementById('buildsDialog').open && !!document.querySelector('.build-row.active [data-act=rename]')")
+        b.eval("window.prompt = () => 'Spooky test'; true")
+        b.click_selector('.build-row.active [data-act=rename]')
+        b.wait_for("document.querySelector('#buildButton b').textContent === 'Spooky test'")
+        self.assertTrue(b.eval("[...document.querySelectorAll('.build-row')].some(r => r.textContent.includes('Spooky test'))"))
+        b.eval("window.prompt = () => 'My build'; true")                           # and back, for the other tests
+        b.click_selector('.build-row.active [data-act=rename]')
+        b.wait_for("document.querySelector('#buildButton b').textContent === 'My build'")
+        b.eval("document.getElementById('buildsDialog').close(); true")
+
     def test_b_revert_the_open_asset(self):
         b = self.browser
         key = self.sprite()

@@ -372,3 +372,10 @@ body.lab-simple .top-status{display:none!important}
 .theme-inputbar .accelerate .accel-label{display:none}
 .theme-inputbar .accelerate.active{background:#3a2a17;color:var(--orange)}
 .theme-inputbar .accelerate:not(.active) .accel-icon{filter:grayscale(1);opacity:.7}
+
+/* Presets: a labelled button at the end of the starters' line. Undo theme and Start fresh sit together at the dock's right. */
+.theme-toolbar .theme-presets{flex-shrink:0;padding:5px 12px;font-size:11px;border-radius:14px;background:#2a2140;border-color:#6d4fa3;color:#e9ddff}
+.theme-toolbar .theme-presets:hover{border-color:#f472b6;color:#fff}
+.theme-presets-icon{font-size:12px;margin-right:5px}
+body.lab-simple .theme-toolbar .theme-presets{padding:7px 14px;font-size:12px}
+.theme-dock-actions .quiet+.quiet{margin-left:0}

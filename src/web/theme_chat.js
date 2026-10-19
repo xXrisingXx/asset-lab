@@ -91,9 +91,10 @@ for(const [label,start,tip] of [['Colors','Make the buttons and panels ','Recolo
   ['Redraw something','Turn the coin into ','Draw new art for one part of the game (name it, or check it in the library first)']]){
   const b=el('button','',label);b.type='button';b.title=tip;b.dataset.start=start;b.onclick=()=>{input.value=start;input.focus();input.setSelectionRange(start.length,start.length);};starters.append(b);}
 const pictureButton=el('button','theme-tool','📎');pictureButton.setAttribute('aria-label','Your picture');pictureButton.id='themePictureButton';pictureButton.type='button';pictureButton.title='Add a picture (or paste or drop one here), then say what to change: “make this dark blue”';
-const presetsButton=el('button','theme-tool','🖼');presetsButton.setAttribute('aria-label','Presets');presetsButton.id='themePresetsButton';presetsButton.type='button';presetsButton.title='Ready-made art you can recolor and put in the game';
-// The tools (a picture of yours, Presets, Text & fonts) are icons in the box; the chips above only start a sentence.
-const tools=el('div','theme-tools');tools.append(pictureButton,presetsButton,fontsButton);
+const presetsButton=el('button','theme-presets');presetsButton.append(el('span','theme-presets-icon','🖼'),el('span','','Presets'));presetsButton.id='themePresetsButton';presetsButton.type='button';presetsButton.title='Ready-made art you can recolor and put in the game';
+// The tools (a picture of yours, Text & fonts) are icons in the box; the chips above only start a sentence, and Presets
+// sits at the end of their line.
+const tools=el('div','theme-tools');tools.append(pictureButton,fontsButton);
 // More: the extras most requests never need, folded away.
 const more=el('details','theme-more');more.id='themeMore';more.append(el('summary','','More'));const moreBody=el('div','theme-more-body');
 const modelRow=el('label','theme-model-row');modelRow.append(el('span','section-label','AI MODEL'),model,state);
@@ -120,7 +121,7 @@ drawer.addEventListener('drop',e=>{const file=[...(e.dataTransfer?.files||[])].f
 presetsButton.onclick=()=>window.LabPresets?.open();
 // More and Plan on the starters' line, at its right end, above the box.
 // One line of sentence starters (and More, in Advanced), then one box: the tools, the request, Accelerate (Simple) and Show me.
-const toolbar=el('div','theme-toolbar');toolbar.append(starters,more);
+const toolbar=el('div','theme-toolbar');toolbar.append(starters,presetsButton,more);
 const inputBar=el('div','theme-inputbar');inputBar.append(tools,input,row);row.replaceChildren(send);
 form.append(toolbar,attached,inputBar,filePick);
 
@@ -132,10 +133,9 @@ const review=el('button','', 'Review');review.title='List the game files the ins
 const install=el('button','primary','Apply to Game');install.id='themeInstall';
 const restore=el('button','', 'Restore original');
 const undo=el('button','quiet','Undo theme');undo.id='themeUndo';undo.title='Take the last theme back off';
-// See it the way the game shows it before putting it in; and a fresh start that keeps the current build to go back to.
-const previewGame=el('button','quiet','Preview in game');previewGame.title='See your changes the way the game shows them, without opening Mitosis';previewGame.onclick=()=>window.LabPreview?.open();
+// A fresh start that keeps the current build to go back to, beside Undo theme at the right.
 const startFresh=el('button','quiet','Start fresh');startFresh.title='Start again from the game’s original art (your current changes are kept as a build you can switch back to)';startFresh.onclick=()=>window.LabBuilds?.startOver?.();
-actions.append(review,install,restore,previewGame,undo,startFresh);dock.append(modLine,actions);
+actions.append(review,install,restore,undo,startFresh);dock.append(modLine,actions);
 
 drawer.append(head,scopeLine,log,form,dock);document.body.append(drawer);
 
