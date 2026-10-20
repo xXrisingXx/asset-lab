@@ -3131,7 +3131,15 @@
   "Pop art": "Pop art",
   "Radioactive": "Radiactivo",
   "Blood moon": "Luna de sangre",
-  "Deep night": "Noche profunda"
+  "Deep night": "Noche profunda",
+  "Remove the pictures": "Quitar las imágenes",
+  "Your pictures: say where they go, like “these sunglasses on the eyes and this mustache below”.": "Tus imágenes: di dónde van, como “estas gafas de sol en los ojos y este bigote debajo”.",
+  "Your picture: say what to change, like “make this dark blue”, or where it goes: “put these goggles on top of the virus”.": "Tu imagen: di qué cambiar, como “ponla azul oscuro”, o dónde va: “pon estas gafas encima del virus”.",
+  "Put these on it": "Pon esto encima",
+  "Drawing with your pictures needs the image model, which is not installed.": "Dibujar con tus imágenes necesita el modelo de imagen, que no está instalado.",
+  "Which art should I draw this on? Check it in the library, or name it (the virus, the coin, the play button), and ask again with your pictures.": "¿En qué arte lo dibujo? Márcalo en la biblioteca o nómbralo (el virus, la moneda, el botón de jugar) y vuelve a pedirlo con tus imágenes.",
+  "I'll draw it with your picture as a reference, so it uses the real thing.": "Lo dibujaré con tu imagen como referencia, para que use lo real.",
+  "I'll draw it with your pictures as references, so it uses the real thing.": "Lo dibujaré con tus imágenes como referencias, para que use lo real."
  },
  "patterns": {
   "{n} visuals": "{n} gráficos",
@@ -3567,7 +3575,10 @@
   "{s} is in your changes. Apply to Game to put it in the game.": "{s} está en tus cambios. Aplicar al juego lo pone en el juego.",
   "{n} presets are in your changes. Apply to Game to put them in the game.": "{n} plantillas están en tus cambios. Aplicar al juego las pone en el juego.",
   "{s}: hidden in your changes. Apply to Game to see it.": "{s}: oculto en tus cambios. Aplicar al juego para verlo.",
-  "{n} ready-made looks: backgrounds, viruses, food, menu and in-game buttons, titles and fonts. Click one to see it big, choose its color and where it goes, then Use now. Or pick a few and Use all.": "{n} estilos listos: fondos, virus, comida, botones del menú y del juego, títulos y fuentes. Haz clic en uno para verlo en grande, elige su color y dónde va, y luego Usar ahora. O elige varios y Usar todo."
+  "{n} ready-made looks: backgrounds, viruses, food, menu and in-game buttons, titles and fonts. Click one to see it big, choose its color and where it goes, then Use now. Or pick a few and Use all.": "{n} estilos listos: fondos, virus, comida, botones del menú y del juego, títulos y fuentes. Haz clic en uno para verlo en grande, elige su color y dónde va, y luego Usar ahora. O elige varios y Usar todo.",
+  "{s} ball": "Bola de {s}",
+  "Goes on: {s}.": "Va en: {s}.",
+  "{s} can't be changed.": "{s} no se puede cambiar."
  },
  "keys": {
   "Shift": "Mayús",

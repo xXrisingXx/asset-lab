@@ -669,7 +669,7 @@ class Designer:
         return rows[:limit]
 
     # ----- generating ---------------------------------------------------------------------------
-    def start(self, prompt, keys=None, count=None, base=None, direction=None, inspiration=None):
+    def start(self, prompt, keys=None, count=None, base=None, direction=None, inspiration=None, refs=None):
         """base: (job id, variant index) to refine a variant instead of the current art. count: variants to draw
         (Settings > Theme AI & drawing > Drawings per request when not given)."""
         prompt = str(prompt or '').strip()[:800]
@@ -710,6 +710,13 @@ class Designer:
             if inspiration and re.fullmatch(r'[0-9a-f]{20}\.png', str(inspiration)) and (self.lab.root / 'inspiration' / inspiration).is_file():
                 job['inspiration'] = str(inspiration)
             if job['title'] and wording(request): job['text'] = wording(request)
+            # Reference pictures: what the player added ("these goggles", "this mustache"), and the exact flag a request names
+            # ("the Norway flag"), so the drawing uses the real thing instead of the model's idea of it.
+            mine = [str(r) for r in (refs or []) if re.fullmatch(r'[0-9a-f]{20}', str(r)) and (self.lab.root / 'pictures' / f'{r}.png').is_file()]
+            if mine: job['refs'] = list(dict.fromkeys(mine))[:3]
+            import flags
+            flag = flags.find(prompt)
+            if flag: job['flag'] = flag
             if restyles(job): job['restyle'] = True   # a theme on the game's own sprite: its outline is kept (render)
             # One theme, one set of colors: the ones the request names, or else those of the first piece applied (render).
             job['palette_key'] = parent.get('palette_key', '') if base else palette_key(prompt)
@@ -753,6 +760,25 @@ class Designer:
         # "Play button (Main menu)" -> "play button"; "icon-crown" -> "icon crown".
         name = re.sub(r'[-_]+', ' ', re.sub(r'\.png$|\s*\([^)]*\)\s*$', '', job['names'][0])).strip()
         return f'a game sprite: {name}'
+
+    @staticmethod
+    def references_note(job):
+        """Which reference picture is which: the art first, then the inspiration board, the exact flag, the player's pictures."""
+        n = 1 + (1 if job.get('inspiration') else 0)
+        nth = lambda k: {1: 'first', 2: 'second', 3: 'third', 4: 'fourth', 5: 'fifth', 6: 'sixth'}.get(k, f'{k}th')
+        out = ''
+        if job.get('flag'):
+            n += 1
+            out += (f" The {nth(n)} reference picture is the exact flag of {job['flag'].title()}: copy its pattern, colors and layout "
+                    'exactly (the same stripes, crosses or emblems in the same places), wrapped onto the art as the request says.')
+        refs = job.get('refs') or []
+        if refs:
+            first, last = n + 1, n + len(refs)
+            which = f'The {nth(first)} reference picture was' if first == last else f'The {nth(first)} to {nth(last)} reference pictures were'
+            out += (f' {which} added by the player to show exactly what they mean: take each thing from its picture as it looks '
+                    '(its shape, colors and details), not a look-alike, and put it on the art where and how the request says. '
+                    'Leave out anything else in those pictures (backgrounds, faces, hands).')
+        return out
 
     def instruction(self, job):
         text = self._instruction(job)
@@ -808,7 +834,10 @@ class Designer:
                     'colors that are not too bright.'
                     + (' Take the look from the reference picture: its emblem, colors, patterns and style, repeated as a background motif.' if job.get('inspiration') else ''))
         what = self.subject(job)
-        if job.get('text'): keep = f'Change the word MITOSIS so it reads exactly "{job["text"]}", in the same lettering style, on one line, centered.'
+        if job.get('refs') or job.get('flag'):
+            keep = ('It must still be the same thing as in the first reference picture, with the same outline, pose, size and position, '
+                    'centered: only change or add what the request says, nothing else.')
+        elif job.get('text'): keep = f'Change the word MITOSIS so it reads exactly "{job["text"]}", in the same lettering style, on one line, centered.'
         elif job['title']: keep = 'Keep the exact word MITOSIS, spelled the same, in the same layout and size, centered.'
         elif job.get('food'):
             keep = ('Draw it as one simple object that fills most of the square, centered; its shape may change completely. '
@@ -827,6 +856,7 @@ class Designer:
             small += (' Style it after the second reference picture: its emblem, colors and finish, as fan art'
                       + (' (the round O of MITOSIS can become its emblem).' if job['title'] else
                          '. Draw what is asked above, not a copy of the reference picture.'))
+        small += self.references_note(job)
         color = {'green': 'pure green (#00FF00)', 'magenta': 'pure magenta (#FF00FF)', 'blue': 'pure blue (#0040FF)'}[job['key']]
         return (f'{job.get("direction") or job["prompt"]}. Edit {what}. {keep}{small} Crisp, high quality game UI art. '
                 f'The background must stay a perfectly flat solid {color} with nothing else on it: no scenery, no shadow or floor under the art, no frame, no extra text.'
@@ -856,9 +886,17 @@ class Designer:
                 size = canvas_size(source.width, source.height)
                 ref = reference(source, job['key'], size)
             if ref is not None: ref.save(folder / 'reference.png')
+            for i, pid in enumerate(job.get('refs') or []):
+                with Image.open(self.lab.root / 'pictures' / f'{pid}.png') as pic:
+                    pic = pic.convert('RGBA'); pic.thumbnail((512, 512), Image.Resampling.LANCZOS)
+                    flat = Image.new('RGB', pic.size, (255, 255, 255)); flat.paste(pic, mask=pic.getchannel('A')); flat.save(folder / f'ref-{i}.png')
+            if job.get('flag'):
+                import flags
+                flags.draw(job['flag'], 240).convert('RGB').save(folder / 'ref-flag.png')
             runs = []   # (art direction, variants drawn with it)
             brief = job['prompt'] + (PICTURES_NOTE if job.get('inspiration') else '') + (RESTYLE_NOTE if restyles(job) else '')
-            if not job['base'] and not job.get('direction') and job['total'] > 1 and getattr(self, 'concepts', None):
+            literal = bool(job.get('refs') or job.get('flag'))   # pictures or a flag to follow: the request as said
+            if not literal and not job['base'] and not job.get('direction') and job['total'] > 1 and getattr(self, 'concepts', None):
                 # Several variants: a different idea for each (mummy wraps / chains and a graveyard...), not near-copies.
                 job['message'] = 'Coming up with ideas…'
                 try: ideas = [i.strip()[:700] for i in (self.concepts(brief, self.subject(job), job['total']) or []) if i.strip()]
@@ -866,7 +904,7 @@ class Designer:
                 if len(ideas) >= 2:
                     job['directions'] = ideas; job['direction'] = ideas[0]   # "More variants" keeps the first idea's style
                     runs = [(idea, 1) for idea in ideas]
-            if not runs and not job['base'] and not job.get('direction') and getattr(self, 'director', None):
+            if not literal and not runs and not job['base'] and not job.get('direction') and getattr(self, 'director', None):
                 # A short request ("spooky") becomes a concrete art direction the image model can follow.
                 job['message'] = 'Writing the art direction…'
                 try: job['direction'] = (self.director(brief, self.subject(job)) or '').strip()[:700]
@@ -892,6 +930,8 @@ class Designer:
                         '--threads', str(os.cpu_count() or 4) if fast else str(max(1, min(6, (os.cpu_count() or 2) // 2))),
                         *(['-r', str(folder / 'reference.png')] if (folder / 'reference.png').is_file() else []),
                         *(['-r', str(self.lab.root / 'inspiration' / job['inspiration'])] if job.get('inspiration') else []),   # the look, as pictures
+                        *(['-r', str(folder / 'ref-flag.png')] if (folder / 'ref-flag.png').is_file() else []),                      # the exact flag
+                        *[a for i in range(len(job.get('refs') or [])) for a in ('-r', str(folder / f'ref-{i}.png'))],                # the player's pictures
                         # A background is drawn as a true tile: the model wraps its picture around the edges while it draws
                         # (circular padding), so the copies the game lays side by side meet with no seam, at no extra cost.
                         *(['--circular'] if job.get('circular') else []),

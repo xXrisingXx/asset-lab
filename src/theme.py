@@ -1591,13 +1591,17 @@ class Themes:
 
     _turn = threading.local()   # what one chat request learns on the way (parts it could not find), per server thread
 
-    def chat(self, message, model='', history=None, only=None, language='', draw='auto', picture='', theme_from=''):
+    def chat(self, message, model='', history=None, only=None, language='', draw='auto', picture='', theme_from='', pictures=None):
         """The reply to a request, with a word about server-only art when the request names some (see ServerArt), and
         inspiration from Wikipedia when it names someone or something ("a Post Malone theme"; Settings can turn it off).
         draw: the Image AI switch in the chat. 'auto' draws when the request needs it, 'on' always draws new art (the
         main pieces of the game when nothing is named), 'off' only recolors and shades. picture: a picture the player
         added (pasted, dropped or a preset): the request is about it ("make this dark blue")."""
         if theme_from: return self.preset_theme(theme_from, only)   # right-click a preset › Make a whole theme from this
+        added = [p for p in (pictures or []) if p] or ([picture] if picture else [])
+        # Pictures with a request ("make the virus the Norway flag with these goggles"): Image AI draws it with them as
+        # reference pictures. One picture with only a color ("make this dark blue"): that picture recolored, as before.
+        if added and self.uses_references(str(message or ''), added): return self.reference_request(str(message or ''), added, only)
         if picture: return self.picture_request(str(message or ''), picture, only)
         draw = draw if draw in ('auto', 'on', 'off') else 'auto'
         self.inspiration = None
@@ -1622,6 +1626,34 @@ class Themes:
                 plan['reply'] = SERVER_NOTE
             else: result['note'] = ((result.get('note') or '') + ' ' + SERVER_NOTE).strip()
         return result
+
+    DRAW_WITH = (r'\b(?:put|add|stick|place|wear(?:ing)?|give|with|on top|on (?:the|its|his|her|my)|make (?:the|my|it|him|her)|turn (?:the|my)'
+                 r'|draw|redraw|into|like (?:this|these|that|those|the)|use (?:this|these|it|them) (?:as|for|on))\b')
+
+    @staticmethod
+    def uses_references(message, pictures):
+        """Several pictures, or one with words that put it to use ("put these goggles on top", "make the coin like this"):
+        a drawing that follows them. One picture with only a color or a preset to open: recolored, as before."""
+        low = message.lower().strip()
+        if re.fullmatch(r'use the .* preset', low): return False
+        return len(pictures) > 1 or bool(re.search(Themes.DRAW_WITH, low))
+
+    def reference_request(self, message, pictures, only=None):
+        """Image AI draws what is asked with the player's pictures as references (and the exact flag a request names), on
+        the art the words name or the checked pictures."""
+        designer = getattr(self, 'designer', None)
+        if designer is None:
+            return dict(plan=dict(reply='Drawing with your pictures needs the image model, which is not installed.', operations=[], ui_colors={}, hide=[]),
+                        source='picture', note='', preview=None)
+        try: rows = designer.targets(message, only)
+        except ValueError: rows = []
+        if not rows:
+            reply = 'Which art should I draw this on? Check it in the library, or name it (the virus, the coin, the play button), and ask again with your pictures.'
+            return dict(plan=dict(reply=reply, operations=[], ui_colors={}, hide=[]), source='picture', note='', preview=None)
+        offer = dict(self.design_offer(designer, message, rows), refs=list(pictures)[:3])
+        n = len(offer['refs'])
+        reply = f"I'll draw it with your picture{'s' if n > 1 else ''} as {'references' if n > 1 else 'a reference'}, so it uses the real thing."
+        return dict(plan=dict(reply=reply, operations=[], ui_colors={}, hide=[]), source='design', note='', preview=None, design=offer)
 
     def picture_request(self, message, pid, only=None):
         """A picture the player added, recolored as asked ("make this dark blue", "gold", "darker"), with the game art it

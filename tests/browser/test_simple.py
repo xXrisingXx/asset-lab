@@ -399,3 +399,30 @@ class FontPresets(EditorTestCase):
         finally:
             b.eval("document.getElementById('presetsDialog').close(); true")
             b.click_selector('#themeClose')
+
+
+class SeveralPictures(EditorTestCase):
+    """Pictures for the next request ("these goggles on top and this mustache below"): up to 4, all sent with it."""
+
+    def test_several_pictures_wait_for_the_request(self):
+        b = self.browser
+        b.click_selector('#themeButton')
+        b.wait_for("!document.getElementById('themeDrawer').hidden")
+        try:
+            b.eval("""(async () => {
+                const file = async (color) => { const c = document.createElement('canvas'); c.width = c.height = 20; const x = c.getContext('2d');
+                  x.fillStyle = '#fff'; x.fillRect(0, 0, 20, 20); x.fillStyle = color; x.fillRect(5, 5, 10, 10);
+                  return new File([await new Promise(r => c.toBlob(r))], color.slice(1) + '.png', {type: 'image/png'}); };
+                const dt = new DataTransfer(); dt.items.add(await file('#2050e0')); dt.items.add(await file('#5a3010'));
+                document.getElementById('themeDrawer').dispatchEvent(new DragEvent('drop', {dataTransfer: dt, bubbles: true, cancelable: true}));
+              })(); true""")
+            b.wait_for("document.querySelectorAll('#themeAttached .theme-attached-pics img').length === 2")
+            self.assertIn('where they go', b.eval("document.querySelector('#themeAttached .theme-attached-text').textContent"))
+            key = next(r['key'] for r in self.server.assets('', all='1') if r['name'] == 'bg2.png')
+            b.eval(f"LabThemeChat.ask('put these on it', {{only: [{key!r}]}}); true")                 # both go with the request
+            b.wait_for("document.getElementById('themeAttached').hidden")
+            b.wait_for("[...document.querySelectorAll('#themeLog .theme-bubble.user .theme-thumb')].length === 2")
+            b.wait_for("[...document.querySelectorAll('#themeLog .theme-bubble.bot')].some(x => /references|image model/.test(x.textContent))", timeout=20)   # a drawing offer (this test lab has no image model)
+            b.eval("LabThemeChat.reset(); true")
+        finally:
+            b.click_selector('#themeClose')

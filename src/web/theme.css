@@ -384,3 +384,7 @@ body.lab-simple .theme-toolbar .theme-presets{padding:7px 14px;font-size:12px}
 body:not(.lab-simple) .theme-head{flex-wrap:wrap;row-gap:4px}
 body:not(.lab-simple) .theme-head .theme-activity{order:10;flex-basis:100%;padding:0 0 4px}
 body:not(.lab-simple) .theme-head .theme-activity .act-text{flex:0 1 auto;min-width:0}
+
+/* Several pictures waiting for the next request. */
+.theme-attached-pics{display:flex;gap:4px}.theme-attached-pics img{width:36px;height:36px;object-fit:contain;border-radius:5px;background:repeating-conic-gradient(#1e2a37 0% 25%,#23303f 0% 50%) 50%/10px 10px}
+.theme-attached-text{flex:1}

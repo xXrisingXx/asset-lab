@@ -159,6 +159,44 @@ class ChatRoutingTests(Base):
             finally:
                 release.set(); killed.set(); stopper.join(3)
 
+    def test_reference_pictures_and_an_exact_flag_go_to_the_drawing(self):
+        # "Make the virus the Norway flag with these goggles": the player's picture and the real flag are given to the model.
+        import io
+        buf = io.BytesIO(); Image.new('RGBA', (40, 20), (30, 90, 220, 255)).save(buf, 'PNG')
+        pid = self.themes.pictures.save(buf.getvalue())
+        key = self.rows('virus-pale')[0]['key']
+        launched = []
+        def launch(args, **kwargs): launched.append(args); raise OSError('not drawing in a test')
+        with patch.object(design.runtime, 'missing', return_value=[]), patch.object(design.runtime.OLLAMA, 'unload'), \
+             patch.object(design.subprocess, 'Popen', side_effect=launch):
+            job = self.designer.start('make the virus the Norway flag with these goggles on top', [key], count=1, refs=[pid, 'f' * 20])
+            deadline = time.monotonic() + 5
+            while self.designer.job(job['id'])['state'] == 'running' and time.monotonic() < deadline: time.sleep(.02)
+        self.assertEqual((job['refs'], job['flag']), ([pid], 'norway'))                    # a picture that is not here is left out
+        args = launched[0]
+        refs = [args[i + 1] for i, a in enumerate(args) if a == '-r']
+        self.assertEqual([r.rsplit('\\', 1)[-1].rsplit('/', 1)[-1] for r in refs], ['reference.png', 'ref-flag.png', 'ref-0.png'])
+        words = args[args.index('-p') + 1]
+        self.assertIn('second reference picture is the exact flag of Norway', words)
+        self.assertIn('third reference picture was added by the player', words)
+        self.assertIn('only change or add what the request says', words)
+
+    def test_pictures_with_a_request_are_drawn_with_them(self):
+        import io
+        buf = io.BytesIO(); Image.new('RGBA', (40, 20), (30, 90, 220, 255)).save(buf, 'PNG')
+        pid = self.themes.pictures.save(buf.getvalue())
+        key = self.rows('virus-pale')[0]['key']
+        uses = theme.Themes.uses_references
+        self.assertTrue(uses('put these goggles on top', [pid]))
+        self.assertTrue(uses('anything at all', [pid, pid]))                                  # several pictures: always
+        self.assertFalse(uses('make this dark blue', [pid]))                                   # one picture recolored, as before
+        self.assertFalse(uses('Use the Purple virus preset', [pid]))
+        with patch.object(design.runtime, 'missing', return_value=[]):
+            result = self.themes.chat('make it wear these goggles', only=[key], pictures=[pid])
+        self.assertEqual((result['design']['refs'], [t['key'] for t in result['design']['targets']]), ([pid], [key]))
+        self.assertIn('reference', result['plan']['reply'])
+        self.assertEqual(self.themes.chat('make this dark blue', picture=pid)['source'], 'picture')
+
     def test_help_and_undo_are_chat_commands(self):
         self.assertIn('image model', self.themes.chat('what can you do?')['plan']['reply'])
         with self.assertRaisesRegex(ValueError, 'no theme to undo'): self.themes.chat('undo')

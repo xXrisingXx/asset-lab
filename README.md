@@ -48,6 +48,8 @@ You need a 64-bit Windows PC with **Mitos.is: The Game** installed from Steam.
 
 ## What's new
 
+- **Draw with your own pictures.** Attach up to 4 pictures and ask for something specific: "make the virus the Norway flag with these goggles on top and this mustache below". Image AI uses your pictures as references, so it draws the real thing, and when a request names a country's flag it gets the exact flag as a reference too (86 flags), instead of guessing it.
+
 - **Fonts in Presets: 150 text styles.** A new **Fonts** tab: 50 made by Image AI (letters of lava, marble, galaxy, candy, dragon scales…), 13 **Classic virus** styles that glow like the classic viruses, clean ones like the game's friend list, **Black in white fog**, and every Text & fonts look. See one on your own name, pick which text it changes (player names, menu text…), then **Use now**, or **Fine-tune…** it in Text & fonts.
 - **Restyled fonts match the game's own layout.** Every character, even the space, now gets a real spot on a square letter sheet, like the game's own fonts (a player's game crashed with a restyled font).
 

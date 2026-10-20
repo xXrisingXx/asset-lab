@@ -348,7 +348,7 @@ def server_for(lab, port):
                 if path == '/api/design-start':
                     base = data.get('base') if isinstance(data.get('base'), list) and len(data['base']) == 2 else None
                     return self.send(designer.start(data.get('prompt', ''), only, int(data.get('count') or labsettings.value(lab, 'drawings')), base, data.get('direction') or None,
-                                                    data.get('inspiration') or None))
+                                                    data.get('inspiration') or None, refs=[str(r) for r in (data.get('refs') or [])][:3]))
                 if path == '/api/font-texture':   # a new font: Image AI draws what its letters are made of
                     return self.send(designer.start_texture(data.get('prompt', ''), int(data.get('count') or labsettings.value(lab, 'drawings'))))
                 if path == '/api/design-apply':
@@ -362,7 +362,8 @@ def server_for(lab, port):
                 if path == '/api/font-apply': return self.send(lab.font_apply(str(data.get('font', '')), data.get('style') or {}))
                 if path == '/api/font-remove': return self.send(lab.font_remove(str(data.get('font', ''))))
                 if path == '/api/theme-chat': return self.send(themes.chat(data.get('message'), data.get('model', ''), data.get('history'), only, language=str(data.get('language') or ''), draw=str(data.get('draw') or 'auto'),
-                                                                     picture=str(data.get('picture') or ''), theme_from=str(data.get('theme_from') or '')))
+                                                                     picture=str(data.get('picture') or ''), theme_from=str(data.get('theme_from') or ''),
+                                                                     pictures=[str(p) for p in (data.get('pictures') or [])][:4]))
                 if path == '/api/picture': return self.send({'id': themes.pictures.save(data.get('image', ''))})
                 if path == '/api/picture-color':   # "dark blue", "darker", "#ff8800" for a picture -> the color
                     return self.send({'color': pictures.wanted_color(str(data.get('words', ''))[:200], themes.pictures.image(str(data.get('id', ''))))})

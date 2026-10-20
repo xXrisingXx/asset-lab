@@ -103,19 +103,24 @@ moreBody.append(drawRow,modelRow,extras,auto,ideas,tags);more.append(moreBody);
 row.append(more,send);
 // A picture for the next request ("make this dark blue"): pasted, dropped or picked with Your picture.
 const attached=el('div','theme-attached');attached.id='themeAttached';attached.hidden=true;
-const attachedImg=el('img');attachedImg.alt='Your picture';const unattach=el('button','quiet','✕');unattach.type='button';unattach.title='Remove the picture';
-attached.append(attachedImg,el('span','','Your picture: say what to change, like “make this dark blue”.'),unattach);
-const filePick=el('input');filePick.type='file';filePick.accept='image/*';filePick.hidden=true;
-let picture=null;   // {data: data URL, id: once uploaded}
+const attachedPics=el('span','theme-attached-pics');const unattach=el('button','quiet','✕');unattach.type='button';unattach.title='Remove the pictures';
+const attachedText=el('span','theme-attached-text','');attached.append(attachedPics,attachedText,unattach);
+const filePick=el('input');filePick.type='file';filePick.accept='image/*';filePick.multiple=true;filePick.hidden=true;
+// Up to 4 pictures for the next request: one to recolor ("make this dark blue"), or things to put on art ("these
+// sunglasses on the eyes and this mustache below"). {data: data URL, id: once uploaded}
+let pictures=[];
+function showAttached(){attachedPics.replaceChildren(...pictures.map(p=>{const im=el('img');im.src=p.data;im.alt='Your picture';return im;}));attached.hidden=!pictures.length;
+  attachedText.textContent=pictures.length>1?'Your pictures: say where they go, like “these sunglasses on the eyes and this mustache below”.'
+    :'Your picture: say what to change, like “make this dark blue”, or where it goes: “put these goggles on top of the virus”.';}
 function attach(file){if(!file||!/^image\//.test(file.type))return;if(file.size>16*1024*1024){message('Use a picture under 16 MB.',true);return;}
-  const reader=new FileReader();reader.onload=()=>{picture={data:reader.result};attachedImg.src=reader.result;attached.hidden=false;
+  const reader=new FileReader();reader.onload=()=>{if(pictures.length>=4)pictures.shift();pictures.push({data:reader.result});showAttached();
     if(!input.value.trim())input.placeholder='Say what to change… e.g. “make this dark blue”';input.focus();};reader.readAsDataURL(file);}
-function unattachPicture(){picture=null;attached.hidden=true;attachedImg.removeAttribute('src');filePick.value='';input.placeholder=PLACEHOLDER;}
-unattach.onclick=unattachPicture;pictureButton.onclick=()=>filePick.click();filePick.onchange=()=>attach(filePick.files[0]);
+function unattachPicture(){pictures=[];showAttached();filePick.value='';input.placeholder=PLACEHOLDER;}
+unattach.onclick=unattachPicture;pictureButton.onclick=()=>filePick.click();filePick.onchange=()=>{for(const f of [...filePick.files].slice(0,4))attach(f);};
 input.addEventListener('paste',e=>{const item=[...(e.clipboardData?.items||[])].find(i=>i.type.startsWith('image/'));if(item){e.preventDefault();attach(item.getAsFile());}});
 drawer.addEventListener('dragover',e=>{if([...(e.dataTransfer?.items||[])].some(i=>i.type.startsWith('image/'))){e.preventDefault();drawer.classList.add('dropping');}});
 drawer.addEventListener('dragleave',e=>{if(e.target===drawer)drawer.classList.remove('dropping');});
-drawer.addEventListener('drop',e=>{const file=[...(e.dataTransfer?.files||[])].find(f=>f.type.startsWith('image/'));drawer.classList.remove('dropping');if(file){e.preventDefault();attach(file);}});
+drawer.addEventListener('drop',e=>{const files=[...(e.dataTransfer?.files||[])].filter(f=>f.type.startsWith('image/')).slice(0,4);drawer.classList.remove('dropping');if(files.length){e.preventDefault();files.forEach(attach);}});
 // Presets: ready-made art in the chat, by category. A click starts its card; right-click (or ⋯) also offers a whole theme
 // made from it.
 presetsButton.onclick=()=>window.LabPresets?.open();
@@ -223,17 +228,17 @@ restore.onclick=()=>$('restoreButton').click();
 
 // ----- asking and applying -----------------------------------------------------------------------
 async function ask(text,opts={}){   // opts: {only: keys, draw: 'on'} for "Redraw with Image AI" from the right-click menu; {picture: id}
-  if(T.busy||!(text.trim()||picture))return;
-  if(picture&&!opts.picture){   // the attached picture: kept by the lab, then the request is about it
-    try{picture.id=picture.id||(await api('/api/picture',{image:picture.data})).id;}catch(e){message(e.message,true);return;}
-    opts={...opts,picture:picture.id};text=text.trim()||'Recolor this picture';unattachPicture();}
+  if(T.busy||!(text.trim()||pictures.length))return;
+  if(pictures.length&&!opts.picture){   // the attached pictures: kept by the lab, then the request is about them
+    try{for(const p of pictures)p.id=p.id||(await api('/api/picture',{image:p.data})).id;}catch(e){message(e.message,true);return;}
+    opts={...opts,picture:pictures[0].id,pictures:pictures.map(p=>p.id)};text=text.trim()||(pictures.length>1?'Put these on it':'Recolor this picture');unattachPicture();}
   document.getElementById('themeIdeaCards')?.remove();   // the chat has started
-  const said=bubble('user',text);if(opts.picture)said.prepend(pictureThumb(opts.picture));
-  record({t:'user',text,...(opts.picture?{picture:opts.picture}:{})});input.value='';setBusy(true);
+  const said=bubble('user',text);for(const id of [...(opts.pictures||(opts.picture?[opts.picture]:[]))].reverse())said.prepend(pictureThumb(id));
+  record({t:'user',text,...(opts.picture?{picture:opts.picture}:{}),...(opts.pictures?.length>1?{pictures:opts.pictures}:{})});input.value='';setBusy(true);
   const wait=bubble('bot','Thinking…');const started=Date.now();const tick=setInterval(()=>{wait.firstChild.textContent=`Thinking… ${Math.round((Date.now()-started)/1000)}s`+(Date.now()-started>12000?' (the first request loads the model)':'');},1000);
   try{
     const keys=opts.only||only();
-    const result=await api('/api/theme-chat',{message:text,model:model.value,history:T.history,only:keys,language:window.LabI18n?.lang||'en',draw:opts.draw||(document.body.classList.contains('lab-simple')?'on':drawMode)/* Simple: Image AI always on */,picture:opts.picture||'',theme_from:opts.theme_from||''});   // the model replies in the lab's language
+    const result=await api('/api/theme-chat',{message:text,model:model.value,history:T.history,only:keys,language:window.LabI18n?.lang||'en',draw:opts.draw||(document.body.classList.contains('lab-simple')?'on':drawMode)/* Simple: Image AI always on */,picture:opts.picture||'',pictures:opts.pictures||[],theme_from:opts.theme_from||''});   // the model replies in the lab's language
     clearInterval(tick);wait.firstChild.textContent=result.plan.reply||'Here is the plan.';
     if(result.plan.operations.length||Object.keys(result.plan.ui_colors||{}).length||result.plan.hide?.length){T.history.push({role:'user',content:text},{role:'assistant',content:JSON.stringify(result.plan)});T.history=T.history.slice(-8);}
     if(opts.apply&&result.picture)result.picture.autoApply=true;
@@ -291,7 +296,7 @@ function showDesign(box,d,keys,base,offer,entry,restoring){
   // A big set: one variant each, except the pieces worth choosing between (the title and the viruses get two). The queue
   // window sets each piece on its own, leaves pieces out and puts them in the order to draw them.
   const big=groups.length>6,star=g=>isTitle(g[0])||g[0].set==='background'||g[0].set==='arena'||/virus/i.test(g[0].name);
-  const Q=newQueue({prompt:d.prompt,base,entry,box,optional:d.optional,each:+d.seconds_per_drawing||45,inspiration:d.inspiration||entry?.batch?.inspiration||'',
+  const Q=newQueue({prompt:d.prompt,base,entry,box,optional:d.optional,each:+d.seconds_per_drawing||45,inspiration:d.inspiration||entry?.batch?.inspiration||'',refs:d.refs||entry?.batch?.refs||[],
     items:groups.map(g=>({keys:g.map(t=>t.key),prompt:g.map(t=>d.prompts?.[t.key]).find(Boolean)||'',rep:showKey(g),pieces:distinctPieces(g),label:groups.length>1?label(g):'',count:big?(star(g)?2:1):drawings(),on:true,state:'queued',job:'',applied:false}))});
   if(big)count.value='1';
   Q.go=el('button','primary','');Q.estimate=el('small','hint');
@@ -324,7 +329,7 @@ function showKey(g){return (g.find(t=>/^food\d+$/.test(t.file||''))||g.find(t=>t
 function distinctPieces(g){const seen=new Set(),out=[];for(const t of g){const id=t.file||t.name;if(seen.has(id))continue;seen.add(id);out.push({key:t.key,name:id});}return out.slice(0,12);}
 function newQueue(o){const Q=Object.assign({items:[],direction:null,running:false,stopped:false,spent:0,variantsDone:0,cards:new Map(),dialog:null},o);
   if(Q.items.length>1)remembered(Q);return Q;}
-function keepQueue(Q){if(Q.entry){Q.entry.batch={items:Q.items,direction:Q.direction,inspiration:Q.inspiration||''};keepChat();}if(Q.items.length>1)remember(Q);}
+function keepQueue(Q){if(Q.entry){Q.entry.batch={items:Q.items,direction:Q.direction,inspiration:Q.inspiration||'',refs:Q.refs||[]};keepChat();}if(Q.items.length>1)remember(Q);}
 // The player's queue choices, kept for next time (on this PC): pieces left out stay unticked but listed, their variants,
 // and the order to draw them. Keyed by the piece's name, which stays the same from one request to the next.
 const PREFS='lab-draw-queue';
@@ -371,7 +376,7 @@ async function runQueue(Q){
       const part=el('details','design-part');part.open=true;const head=el('summary','design-part-title',item.label||'This piece');head.append(el('small','design-part-state',''));
       part.append(head);Q.box.append(part);for(const [other,p] of Q.cards)if(p!==part&&other.state!=='drawing')p.open=false;Q.cards.set(item,part);
       const t0=Date.now();
-      const job=await drawDesign(part,item.prompt||Q.prompt,item.keys,item.count,Q.base,Q.direction,Q.entry,item.label,item.prompt?'':Q.inspiration).catch(e=>{part.append(el('p','theme-note error',e.message));return null;});
+      const job=await drawDesign(part,item.prompt||Q.prompt,item.keys,item.count,Q.base,Q.direction,Q.entry,item.label,item.prompt?'':Q.inspiration,Q.refs).catch(e=>{part.append(el('p','theme-note error',e.message));return null;});
       Q.spent+=(Date.now()-t0)/1000;Q.variantsDone+=item.count;
       item.state=job?.state==='complete'?'done':'failed';item.job=job?.id||'';
       head.lastChild.textContent=item.state==='done'?' · drawn':' · not drawn';
@@ -481,8 +486,8 @@ function zoomPiece(Q,item){
 // What a drawing starts with (also what "Apply all" uses): zoomed and calmed for a background, the outline kept for a
 // stretched button, the frame filled for the title, and kept white where the game colors the art itself.
 function designDefaults(job){return {scale:job.scene&&!job.circular?2.5:1,...(job.arena?{pale:0.55}:job.scene?{calm:0.5}:{}),dx:0,dy:0,tolerance:1,shape:job.stretched||job.restyle?1:0,fill:job.title?1:0,match:1,white:job.spawner||!job.food&&(job.tint||job.tinted)&&setting('keep_white')?1:0};}   /* food keeps the drawing's colors */
-async function drawDesign(box,prompt,keys,count,base,direction,entry,label,inspiration){
-  let job=await api('/api/design-start',{prompt,only:keys||null,count,base:base||null,direction:direction||null,inspiration:inspiration||null});
+async function drawDesign(box,prompt,keys,count,base,direction,entry,label,inspiration,refs){
+  let job=await api('/api/design-start',{prompt,only:keys||null,count,base:base||null,direction:direction||null,inspiration:inspiration||null,refs:refs||[]});
   const info={id:job.id,keys:keys||null,label:label||''};if(entry){(entry.jobs||(entry.jobs=[])).push(info);keepChat();}
   return watchDesign(box,job,keys,entry,info);
 }
@@ -656,7 +661,7 @@ function designCard(box,job,keys,entry,info){
     const inst=el('button','primary','Apply to Game');inst.onclick=install.onclick;actions.append(undoD,inst);});
   if(info?.applied){apply.disabled=true;apply.textContent='Applied ✓';S2.live=true;}
   card.addEventListener('applied',()=>{S2.live=true;apply.disabled=true;apply.textContent='Applied ✓';if(info){info.applied=true;keepChat();}});   /* by the queue's Apply finished */
-  more.onclick=run(()=>drawDesign(box,job.prompt,job.targets,drawings(),null,job.direction,entry,'',job.inspiration));   // same art direction: the new variants match
+  more.onclick=run(()=>drawDesign(box,job.prompt,job.targets,drawings(),null,job.direction,entry,'',job.inspiration,job.refs));   // same art direction: the new variants match
   again.onclick=run(()=>{const extra=refine.value.trim();if(!extra)return refine.focus();return drawDesign(box,extra,null,drawings(),[job.id,S2.variant],null,entry);});
   refine.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();again.click();}};
   const refineRow=el('div','design-refine-row');refineRow.append(refine,again);
@@ -709,7 +714,7 @@ button.onclick=()=>toggle(!T.open);close.onclick=()=>toggle(false);model.addEven
 function restoreChat(saved){
   log.replaceChildren();J.entries=saved?.entries||[];T.history=saved?.history||[];bubble('bot',WELCOME);if(!J.entries.length){showIdeas();return;}
   J.entries.forEach((entry,i)=>{
-    if(entry.t==='user'){const said=bubble('user',entry.text);if(entry.picture)said.prepend(pictureThumb(entry.picture));if(J.entries[i+1]?.t!=='bot')bubble('bot','This request was interrupted by a reload. Send it again if you still want it.').classList.add('error');return;}
+    if(entry.t==='user'){const said=bubble('user',entry.text);for(const id of [...(entry.pictures||(entry.picture?[entry.picture]:[]))].reverse())said.prepend(pictureThumb(id));if(J.entries[i+1]?.t!=='bot')bubble('bot','This request was interrupted by a reload. Send it again if you still want it.').classList.add('error');return;}
     const b=bubble('bot',entry.error||entry.text);if(entry.error){b.classList.add('error');return;}
     if(entry.result)try{renderResult(b,entry,true);}catch(e){b.append(el('p','theme-note','This part of the chat could not be shown again.'));}});
   scroll();}
