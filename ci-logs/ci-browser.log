@@ -1,0 +1,492 @@
+test_01_menus_follow_photoshop_and_nothing_unverified_is_listed (test_adjust.AdjustTests.test_01_menus_follow_photoshop_and_nothing_unverified_is_listed) ... ok
+test_02_levels_typed_and_dragged_matches_the_formula (test_adjust.AdjustTests.test_02_levels_typed_and_dragged_matches_the_formula) ... ok
+test_03_curves_points_clicked_dragged_and_typed_match_a_natural_spline (test_adjust.AdjustTests.test_03_curves_points_clicked_dragged_and_typed_match_a_natural_spline) ... ok
+test_04_channel_mixer_invert_posterize_threshold_desaturate (test_adjust.AdjustTests.test_04_channel_mixer_invert_posterize_threshold_desaturate) ... ok
+test_05_black_and_white_gives_each_pure_colour_its_slider (test_adjust.AdjustTests.test_05_black_and_white_gives_each_pure_colour_its_slider) ... ok
+test_06_gradient_map_selective_color_and_equalize (test_adjust.AdjustTests.test_06_gradient_map_selective_color_and_equalize) ... ok
+test_07_brightness_contrast_exposure_vibrance (test_adjust.AdjustTests.test_07_brightness_contrast_exposure_vibrance) ... ok
+test_08_hue_saturation_master_ranges_and_colorize (test_adjust.AdjustTests.test_08_hue_saturation_master_ranges_and_colorize) ... ok
+test_09_color_balance_and_photo_filter (test_adjust.AdjustTests.test_09_color_balance_and_photo_filter) ... ok
+test_10_auto_tone_contrast_color (test_adjust.AdjustTests.test_10_auto_tone_contrast_color) ... ok
+test_11_soft_selection_lock_transparency_and_layer_mask (test_adjust.AdjustTests.test_11_soft_selection_lock_transparency_and_layer_mask) ... ok
+test_12_every_adjustment_layer_gives_the_same_pixels_as_its_command (test_adjust.AdjustTests.test_12_every_adjustment_layer_gives_the_same_pixels_as_its_command) ... ok
+test_13_adjustment_layer_edited_in_properties_and_painted_through_its_mask (test_adjust.AdjustTests.test_13_adjustment_layer_edited_in_properties_and_painted_through_its_mask) ... ok
+test_14_adjustment_layers_survive_save_and_reopen (test_adjust.AdjustTests.test_14_adjustment_layers_survive_save_and_reopen) ... ok
+test_15_levels_and_curves_eyedroppers_pick_from_the_picture (test_adjust.AdjustTests.test_15_levels_and_curves_eyedroppers_pick_from_the_picture) ... ok
+test_16_hue_saturation_range_handles_drag (test_adjust.AdjustTests.test_16_hue_saturation_range_handles_drag) ... ok
+test_17_equalize_with_a_selection_asks_like_photoshop (test_adjust.AdjustTests.test_17_equalize_with_a_selection_asks_like_photoshop) ... ok
+test_18_properties_for_a_pixel_layer_adds_adjustment_layers (test_adjust.AdjustTests.test_18_properties_for_a_pixel_layer_adds_adjustment_layers) ... ok
+test_19_dialogs_and_properties_fit_at_1366_and_1920 (test_adjust.AdjustTests.test_19_dialogs_and_properties_fit_at_1366_and_1920) ... ok
+test_20_properties_auto_eyedropper_and_mask_buttons (test_adjust.AdjustTests.test_20_properties_auto_eyedropper_and_mask_buttons) ... ok
+test_21_every_adjustment_layer_in_a_row_with_properties_showing (test_adjust.AdjustTests.test_21_every_adjustment_layer_in_a_row_with_properties_showing)
+Regression: creating every type through the menu, one after another, with Properties showing, logs nothing. ... ok
+test_1_load_trim_preview_save_and_review (test_audio.SoundEditorTests.test_1_load_trim_preview_save_and_review) ... ok
+test_2_a_long_sound_in_a_short_effect_is_flagged_and_trimmed (test_audio.SoundEditorTests.test_2_a_long_sound_in_a_short_effect_is_flagged_and_trimmed) ... ok
+test_3_links_are_checked_before_anything_is_fetched (test_audio.SoundEditorTests.test_3_links_are_checked_before_anything_is_fetched) ... ok
+test_4_save_stays_in_sight_on_a_laptop_screen (test_audio.SoundEditorTests.test_4_save_stays_in_sight_on_a_laptop_screen)
+At 1366 x 768 the panel scrolls, but Save to mod and Use the original sound stay at its bottom. ... ok
+test_a_start_over_and_switch_back (test_build_picker.Builds.test_a_start_over_and_switch_back) ... ok
+test_ab_rename_a_build (test_build_picker.Builds.test_ab_rename_a_build) ... ok
+test_b_revert_the_open_asset (test_build_picker.Builds.test_b_revert_the_open_asset) ... ok
+test_c_focus_editor_folds_edit_and_inspect (test_build_picker.Builds.test_c_focus_editor_folds_edit_and_inspect) ... ok
+test_both_hide_options_can_be_picked_and_applied_together (test_cleanup_presets.HidePresetsBrowser.test_both_hide_options_can_be_picked_and_applied_together) ... ok
+test_01_hsb_and_lab_math_match_independent_references (test_color.ColorTests.test_01_hsb_and_lab_math_match_independent_references) ... ok
+test_10_picker_from_the_chip_shows_every_field_and_the_square (test_color.ColorTests.test_10_picker_from_the_chip_shows_every_field_and_the_square) ... ok
+test_11_picker_samples_the_picture_with_the_eyedropper_settings (test_color.ColorTests.test_11_picker_samples_the_picture_with_the_eyedropper_settings) ... ok
+test_12_color_fields_in_dialogs_open_the_picker_live (test_color.ColorTests.test_12_color_fields_in_dialogs_open_the_picker_live) ... ok
+test_13_add_to_swatches_and_moving_the_picker (test_color.ColorTests.test_13_add_to_swatches_and_moving_the_picker) ... ok
+test_20_eyedropper_sample_size_and_sample_against_numpy (test_color.ColorTests.test_20_eyedropper_sample_size_and_sample_against_numpy) ... ok
+test_30_swatches_click_ctrl_click_add_rename_delete_and_keep (test_color.ColorTests.test_30_swatches_click_ctrl_click_add_rename_delete_and_keep) ... ok
+test_31_this_asset_lists_the_pixel_art_palette_exactly (test_color.ColorTests.test_31_this_asset_lists_the_pixel_art_palette_exactly) ... ok
+test_32_recent_colors_do_not_interrupt_a_swatch_click (test_color.ColorTests.test_32_recent_colors_do_not_interrupt_a_swatch_click) ... ok
+test_40_history_click_a_state_and_delete_states (test_color.ColorTests.test_40_history_click_a_state_and_delete_states) ... ok
+test_41_snapshots_restore_exactly_undo_and_feed_the_history_brush (test_color.ColorTests.test_41_snapshots_restore_exactly_undo_and_feed_the_history_brush) ... ok
+test_42_the_history_brush_paints_from_the_chosen_source (test_color.ColorTests.test_42_the_history_brush_paints_from_the_chosen_source) ... ok
+test_90_layout_at_1366_and_1920 (test_color.ColorTests.test_90_layout_at_1366_and_1920) ... ok
+test_community_theme_credit_food_choices_and_build (test_community_presets.CommunityPresets.test_community_theme_credit_food_choices_and_build) ... ok
+test_z_community_tab_fits_narrow_viewport (test_community_presets.CommunityPresets.test_z_community_tab_fits_narrow_viewport) ... ok
+test_01_editor_loads_without_errors (test_core.EditorCore.test_01_editor_loads_without_errors) ... ok
+test_02_an_opened_asset_is_one_layer_named_after_it (test_core.EditorCore.test_02_an_opened_asset_is_one_layer_named_after_it) ... ok
+test_03_layers_api_add_duplicate_delete_reorder_visibility_opacity (test_core.EditorCore.test_03_layers_api_add_duplicate_delete_reorder_visibility_opacity) ... ok
+test_04_layers_panel_buttons_eye_opacity_blend_rename_and_drag (test_core.EditorCore.test_04_layers_panel_buttons_eye_opacity_blend_rename_and_drag) ... ok
+test_05_native_blend_modes_opacity_and_fill_match_the_w3c_formulas (test_core.EditorCore.test_05_native_blend_modes_opacity_and_fill_match_the_w3c_formulas) ... ok
+test_06_extension_points_custom_blend_adjustment_effects_and_clipping (test_core.EditorCore.test_06_extension_points_custom_blend_adjustment_effects_and_clipping) ... ok
+test_07_history_undo_redo_and_jump_restore_exact_pixels_and_structure (test_core.EditorCore.test_07_history_undo_redo_and_jump_restore_exact_pixels_and_structure) ... ok
+test_08_selection_commands_ants_and_a_brush_clipped_to_a_rectangle (test_core.EditorCore.test_08_selection_commands_ants_and_a_brush_clipped_to_a_rectangle) ... ok
+test_09_lock_transparency_keeps_alpha_for_brush_and_eraser (test_core.EditorCore.test_09_lock_transparency_keeps_alpha_for_brush_and_eraser) ... ok
+test_10_painting_on_a_layer_mask (test_core.EditorCore.test_10_painting_on_a_layer_mask) ... ok
+test_11_save_and_reopen_restores_the_layers (test_core.EditorCore.test_11_save_and_reopen_restores_the_layers) ... ok
+test_12_import_adds_a_layer_fitted_to_the_asset (test_core.EditorCore.test_12_import_adds_a_layer_fitted_to_the_asset) ... ok
+test_13_existing_features_still_work (test_core.EditorCore.test_13_existing_features_still_work) ... ok
+test_14_tool_shortcuts_size_opacity_and_colors (test_core.EditorCore.test_14_tool_shortcuts_size_opacity_and_colors) ... ok
+test_15_eyedropper_alt_sampling_hand_space_zoom_and_wheel (test_core.EditorCore.test_15_eyedropper_alt_sampling_hand_space_zoom_and_wheel) ... ok
+test_16_color_and_surface_revert_selection_modes_grid_and_layer_keys (test_core.EditorCore.test_16_color_and_surface_revert_selection_modes_grid_and_layer_keys) ... ok
+test_17_menubar_keyboard_and_menu_run (test_core.EditorCore.test_17_menubar_keyboard_and_menu_run) ... ok
+test_18_dialog_preview_ok_cancel_and_reset (test_core.EditorCore.test_18_dialog_preview_ok_cancel_and_reset) ... ok
+test_19_focus_mode_and_the_folding_mod_tray (test_core.EditorCore.test_19_focus_mode_and_the_folding_mod_tray) ... ok
+test_20_test_hooks_and_view_mapping (test_core.EditorCore.test_20_test_hooks_and_view_mapping) ... ok
+test_21_stroke_frame_times_on_a_2048_sheet_with_three_layers (test_core.EditorCore.test_21_stroke_frame_times_on_a_2048_sheet_with_three_layers) ... ok
+test_22_screenshots_at_common_sizes (test_core.EditorCore.test_22_screenshots_at_common_sizes) ... ok
+test_23_tool_groups_flyout_cycling_and_errors_in_tools (test_core.EditorCore.test_23_tool_groups_flyout_cycling_and_errors_in_tools) ... ok
+test_24_panels_and_layer_badges_from_modules (test_core.EditorCore.test_24_panels_and_layer_badges_from_modules) ... ok
+test_01_ready_doc_and_test_hooks (test_core_verify.EditorCoreVerify.test_01_ready_doc_and_test_hooks) ... ok
+test_02_tools_and_options_contract (test_core_verify.EditorCoreVerify.test_02_tools_and_options_contract) ... ok
+test_03_menu_and_history_contract (test_core_verify.EditorCoreVerify.test_03_menu_and_history_contract) ... ok
+test_04_view_to_client_matches_the_screen_at_several_zooms_and_pans (test_core_verify.EditorCoreVerify.test_04_view_to_client_matches_the_screen_at_several_zooms_and_pans) ... ok
+test_04b_brush_outline_and_marching_ants_line_up_with_the_picture (test_core_verify.EditorCoreVerify.test_04b_brush_outline_and_marching_ants_line_up_with_the_picture) ... ok
+test_05_every_native_mode_with_alpha_on_both_layers_opacity_fill_and_a_soft_mask (test_core_verify.EditorCoreVerify.test_05_every_native_mode_with_alpha_on_both_layers_opacity_fill_and_a_soft_mask) ... ok
+test_06_stack_hidden_layers_opacity_and_masks (test_core_verify.EditorCoreVerify.test_06_stack_hidden_layers_opacity_and_masks) ... ok
+test_07_clipping_groups (test_core_verify.EditorCoreVerify.test_07_clipping_groups) ... ok
+test_08_adjustment_layer_with_soft_mask_and_opacity (test_core_verify.EditorCoreVerify.test_08_adjustment_layer_with_soft_mask_and_opacity) ... ok
+test_09_effects_fade_with_the_layer_and_ignore_fill (test_core_verify.EditorCoreVerify.test_09_effects_fade_with_the_layer_and_ignore_fill)
+Photoshop fades a layer and its effects together by the layer opacity (the effect under an opaque layer stays ... ok
+test_10_a_live_property_change_during_a_stroke_preview_shows_at_once (test_core_verify.EditorCoreVerify.test_10_a_live_property_change_during_a_stroke_preview_shows_at_once)
+A stroke preview caches the layers below; a change to one of them (history:false, e.g. a live slider) must not ... ok
+test_11_layer_commands_keep_an_adjustment_layer_on_its_mask (test_core_verify.EditorCoreVerify.test_11_layer_commands_keep_an_adjustment_layer_on_its_mask) ... ok
+test_12_random_history_sequences_restore_every_state_exactly (test_core_verify.EditorCoreVerify.test_12_random_history_sequences_restore_every_state_exactly) ... ok
+test_13_history_memory_cap_and_state_limit (test_core_verify.EditorCoreVerify.test_13_history_memory_cap_and_state_limit) ... ok
+test_20_fast_drags_leave_no_gaps_hard_soft_and_pen (test_core_verify.EditorCoreVerify.test_20_fast_drags_leave_no_gaps_hard_soft_and_pen) ... ok
+test_21_selection_soft_values_lock_transparency_and_the_mask_target (test_core_verify.EditorCoreVerify.test_21_selection_soft_values_lock_transparency_and_the_mask_target) ... ok
+test_22_alt_eyedropper_space_hand_brackets_and_digits (test_core_verify.EditorCoreVerify.test_22_alt_eyedropper_space_hand_brackets_and_digits) ... ok
+test_23_shortcuts_are_ignored_while_typing (test_core_verify.EditorCoreVerify.test_23_shortcuts_are_ignored_while_typing) ... ok
+test_30_save_and_reload_restore_every_layer_exactly (test_core_verify.EditorCoreVerify.test_30_save_and_reload_restore_every_layer_exactly) ... ERROR
+test_30_save_and_reload_restore_every_layer_exactly (test_core_verify.EditorCoreVerify.test_30_save_and_reload_restore_every_layer_exactly) ... FAIL
+[browser tests] failure screenshot: D:\a\asset-lab\asset-lab\tests\browser\output\failure-test_core_verify.EditorCoreVerify.test_30_save_and_reload_restore_every_layer_exactly.png
+[browser tests] failure state: {"visibility":"visible","audio":{"key":"","source":null,"set":null,"saved":false,"playing":null,"mode":"new","preview":false,"report":null,"job":null,"loop":false,"time":0,"visible":false,"edit":null},"focus":"<body><div class=\"update-banner\" hidden=\"\"><span>The lab was updated after it started, so some features are not loaded yet.</span><button class=\"primary\">Restart lab now</button></div>\n<header class=\"topbar\"><div class=\"brand\"><img class=\"brand-logo\" src=\"icon.svg\" alt=\"\"><div><b>ASSET LAB</b></div></div><div class=\"top-status\"><span class=\"dot\"></span><span id=\"inventory\">45 visuals · local workspace</span></div><button class=\"build-pick\" id=\"buildButton\" type=\"button\" title=\"Your builds: switc"}
+test_31_the_server_refuses_damaged_and_oversized_documents_and_writes_nothing (test_core_verify.EditorCoreVerify.test_31_the_server_refuses_damaged_and_oversized_documents_and_writes_nothing) ... ok
+test_32_install_uses_the_flat_png_and_restore_puts_the_original_back (test_core_verify.EditorCoreVerify.test_32_install_uses_the_flat_png_and_restore_puts_the_original_back) ... skipped 'needs the layered save from test_30'
+test_33_a_document_using_a_missing_module_opens_flat_with_a_message (test_core_verify.EditorCoreVerify.test_33_a_document_using_a_missing_module_opens_flat_with_a_message) ... ok
+test_34_work_done_while_saved_layers_are_still_loading_is_kept (test_core_verify.EditorCoreVerify.test_34_work_done_while_saved_layers_are_still_loading_is_kept) ... FAIL
+[browser tests] failure screenshot: D:\a\asset-lab\asset-lab\tests\browser\output\failure-test_core_verify.EditorCoreVerify.test_34_work_done_while_saved_layers_are_still_loading_is_kept.png
+[browser tests] failure state: {"visibility":"visible","audio":{"key":"","source":null,"set":null,"saved":false,"playing":null,"mode":"new","preview":false,"report":null,"job":null,"loop":false,"time":0,"visible":false,"edit":null},"focus":"<body><div class=\"update-banner\" hidden=\"\"><span>The lab was updated after it started, so some features are not loaded yet.</span><button class=\"primary\">Restart lab now</button></div>\n<header class=\"topbar\"><div class=\"brand\"><img class=\"brand-logo\" src=\"icon.svg\" alt=\"\"><div><b>ASSET LAB</b></div></div><div class=\"top-status\"><span class=\"dot\"></span><span id=\"inventory\">45 visuals · local workspace</span></div><button class=\"build-pick\" id=\"buildButton\" type=\"button\" title=\"Your builds: switc"}
+test_40_view_modes_original_compare_export_and_recipe (test_core_verify.EditorCoreVerify.test_40_view_modes_original_compare_export_and_recipe) ... ok
+test_41_theme_ai_review_and_fonts_open_without_errors (test_core_verify.EditorCoreVerify.test_41_theme_ai_review_and_fonts_open_without_errors) ... ok
+test_42_inspector_saved_history_include_in_mod_and_revert (test_core_verify.EditorCoreVerify.test_42_inspector_saved_history_include_in_mod_and_revert) ... ok
+test_50_layout_at_three_window_sizes_and_focus_mode (test_core_verify.EditorCoreVerify.test_50_layout_at_three_window_sizes_and_focus_mode) ... ok
+test_60_stroke_frame_times_on_2048_with_six_layers (test_core_verify.EditorCoreVerify.test_60_stroke_frame_times_on_2048_with_six_layers) ... ok
+test_a_quick_second_question_is_not_answered_by_the_first (test_dialog.ConfirmDialog.test_a_quick_second_question_is_not_answered_by_the_first) ... ok
+test_fonts_closed_while_loading_stays_closed (test_dialog.ConfirmDialog.test_fonts_closed_while_loading_stays_closed) ... ok
+test_a_tools (test_editor_modules.EditorFrench.test_a_tools) ... ok
+test_b_menus (test_editor_modules.EditorFrench.test_b_menus) ... ok
+test_c_dialogs (test_editor_modules.EditorFrench.test_c_dialogs) ... ok
+test_d_panels (test_editor_modules.EditorFrench.test_d_panels) ... ok
+test_a_tools (test_editor_modules.EditorGerman.test_a_tools) ... ok
+test_b_menus (test_editor_modules.EditorGerman.test_b_menus) ... ok
+test_c_dialogs (test_editor_modules.EditorGerman.test_c_dialogs) ... ok
+test_d_panels (test_editor_modules.EditorGerman.test_d_panels) ... ok
+test_1_every_module_loads_without_errors (test_editor_modules.EditorModules.test_1_every_module_loads_without_errors) ... ok
+test_2_every_tool_options_bar_fits (test_editor_modules.EditorModules.test_2_every_tool_options_bar_fits) ... ok
+test_3_menus_and_dock_fit (test_editor_modules.EditorModules.test_3_menus_and_dock_fit) ... ok
+test_4_every_menu_command_runs_without_errors (test_editor_modules.EditorModules.test_4_every_menu_command_runs_without_errors) ... ok
+test_01_gradient_sample_matches_the_reference (test_fill.FillTests.test_01_gradient_sample_matches_the_reference) ... ok
+test_02_gradient_tool_draws_all_five_styles_with_a_real_drag (test_fill.FillTests.test_02_gradient_tool_draws_all_five_styles_with_a_real_drag) ... ok
+test_03_gradient_multi_stop_reverse_opacity_mode_shift_selection_dither (test_fill.FillTests.test_03_gradient_multi_stop_reverse_opacity_mode_shift_selection_dither) ... ok
+test_04_gradient_editor_stops_midpoints_presets_and_new (test_fill.FillTests.test_04_gradient_editor_stops_midpoints_presets_and_new) ... ok
+test_05_gradient_lock_transparency_mask_and_soft_selection (test_fill.FillTests.test_05_gradient_lock_transparency_mask_and_soft_selection) ... ok
+test_06_options_bar_gradient_editor_and_presets_fit (test_fill.FillTests.test_06_options_bar_gradient_editor_and_presets_fit) ... ok
+test_01_bucket_tolerance_contiguous_antialias_and_undo (test_fill_bucket.BucketTests.test_01_bucket_tolerance_contiguous_antialias_and_undo) ... ok
+test_02_bucket_options_from_the_bar_mode_opacity_and_selection (test_fill_bucket.BucketTests.test_02_bucket_options_from_the_bar_mode_opacity_and_selection) ... ok
+test_03_bucket_transparency_lock_all_layers_pattern_and_mask (test_fill_bucket.BucketTests.test_03_bucket_transparency_lock_all_layers_pattern_and_mask) ... ok
+test_04_edit_fill_dialog_and_quick_fills (test_fill_bucket.BucketTests.test_04_edit_fill_dialog_and_quick_fills) ... ok
+test_05_edit_fill_special_modes_pattern_preserve_and_refusals (test_fill_bucket.BucketTests.test_05_edit_fill_special_modes_pattern_preserve_and_refusals) ... ok
+test_06_edit_stroke_inside_center_outside (test_fill_bucket.BucketTests.test_06_edit_stroke_inside_center_outside) ... ok
+test_07_define_pattern_then_fill_with_it (test_fill_bucket.BucketTests.test_07_define_pattern_then_fill_with_it) ... ok
+test_08_options_bar_and_dialogs_fit (test_fill_bucket.BucketTests.test_08_options_bar_and_dialogs_fit) ... ok
+test_01_rectangle_new_layer_radius_stroke_and_undo (test_fill_shapes.ShapeTests.test_01_rectangle_new_layer_radius_stroke_and_undo) ... ok
+test_02_ellipse_polygon_line_with_shift_and_alt (test_fill_shapes.ShapeTests.test_02_ellipse_polygon_line_with_shift_and_alt) ... ok
+test_03_pixels_mode_selection_lock_transparency_and_no_antialias (test_fill_shapes.ShapeTests.test_03_pixels_mode_selection_lock_transparency_and_no_antialias) ... ok
+test_04_fill_and_stroke_pickers_shared_options_cancel_and_layout (test_fill_shapes.ShapeTests.test_04_fill_and_stroke_pickers_shared_options_cancel_and_layout) ... ok
+test_01_click_type_and_enter_make_a_type_layer (test_fill_type.TypeTests.test_01_click_type_and_enter_make_a_type_layer) ... ok
+test_02_alignment_style_size_antialias_and_options_while_typing (test_fill_type.TypeTests.test_02_alignment_style_size_antialias_and_options_while_typing) ... ok
+test_03_edit_again_cancel_click_away_and_undo (test_fill_type.TypeTests.test_03_edit_again_cancel_click_away_and_undo) ... ok
+test_04_a_moved_layer_follows_and_a_painted_layer_asks (test_fill_type.TypeTests.test_04_a_moved_layer_follows_and_a_painted_layer_asks) ... ok
+test_05_save_reload_rasterize_and_fill_tools_ask (test_fill_type.TypeTests.test_05_save_reload_rasterize_and_fill_tools_ask) ... ok
+test_06_options_bar_fonts_and_screenshot (test_fill_type.TypeTests.test_06_options_bar_fonts_and_screenshot) ... ok
+test_00_menu_has_exactly_the_verified_filters (test_filters.FilterTests.test_00_menu_has_exactly_the_verified_filters) ... ok
+test_01_gaussian_blur_typed_radius_is_sigma_on_premultiplied_colors_and_undo (test_filters.FilterTests.test_01_gaussian_blur_typed_radius_is_sigma_on_premultiplied_colors_and_undo) ... ok
+test_02_gaussian_blur_on_a_sprite_has_no_dark_fringe (test_filters.FilterTests.test_02_gaussian_blur_on_a_sprite_has_no_dark_fringe) ... ok
+test_03_box_blur_with_a_dragged_slider_blur_and_blur_more (test_filters.FilterTests.test_03_box_blur_with_a_dragged_slider_blur_and_blur_more) ... ok
+test_04_average_and_motion_blur (test_filters.FilterTests.test_04_average_and_motion_blur) ... ok
+test_05_sharpen_sharpen_more_sharpen_edges (test_filters.FilterTests.test_05_sharpen_sharpen_more_sharpen_edges) ... ok
+test_06_unsharp_mask_amount_radius_threshold (test_filters.FilterTests.test_06_unsharp_mask_amount_radius_threshold) ... ok
+test_07_median_and_dust_and_scratches (test_filters.FilterTests.test_07_median_and_dust_and_scratches) ... ok
+test_08_add_noise_statistics (test_filters.FilterTests.test_08_add_noise_statistics) ... ok
+test_09_mosaic_exact_cell_averages (test_filters.FilterTests.test_09_mosaic_exact_cell_averages) ... ok
+test_10_maximum_and_minimum_are_exact_morphology (test_filters.FilterTests.test_10_maximum_and_minimum_are_exact_morphology) ... ok
+test_11_high_pass (test_filters.FilterTests.test_11_high_pass) ... ok
+test_12_offset_wrap_repeat_transparent_and_in_a_selection (test_filters.FilterTests.test_12_offset_wrap_repeat_transparent_and_in_a_selection) ... ok
+test_13_emboss_find_edges_solarize (test_filters.FilterTests.test_13_emboss_find_edges_solarize) ... ok
+test_14_twirl_pinch_spherize_ripple (test_filters.FilterTests.test_14_twirl_pinch_spherize_ripple) ... ok
+test_15_clouds_and_difference_clouds (test_filters.FilterTests.test_15_clouds_and_difference_clouds) ... ok
+test_20_soft_selection_lock_transparency_and_layer_mask (test_filters.FilterTests.test_20_soft_selection_lock_transparency_and_layer_mask) ... ok
+test_21_preview_box_zoom_pan_original_and_canvas_preview (test_filters.FilterTests.test_21_preview_box_zoom_pan_original_and_canvas_preview) ... ok
+test_22_last_filter_repeats_with_ctrl_f_and_alt_ctrl_f (test_filters.FilterTests.test_22_last_filter_repeats_with_ctrl_f_and_alt_ctrl_f) ... ok
+test_23_fade_opacity_and_mode (test_filters.FilterTests.test_23_fade_opacity_and_mode) ... ok
+test_24_workers_under_the_page_csp_and_the_in_page_fallback (test_filters.FilterTests.test_24_workers_under_the_page_csp_and_the_in_page_fallback) ... ok
+test_25_big_sheet_gaussian_blur_with_progress (test_filters.FilterTests.test_25_big_sheet_gaussian_blur_with_progress) ... ok
+test_30_every_dialog_fits_1366x768_and_1920x1080 (test_filters.FilterTests.test_30_every_dialog_fits_1366x768_and_1920x1080) ... ok
+test_01_page_loads_without_errors (test_harness_smoke.HarnessSmoke.test_01_page_loads_without_errors) ... ok
+test_02_catalog_lists_the_editor_images_as_editable (test_harness_smoke.HarnessSmoke.test_02_catalog_lists_the_editor_images_as_editable) ... ok
+test_03_select_asset_shows_the_sprite_on_the_canvas (test_harness_smoke.HarnessSmoke.test_03_select_asset_shows_the_sprite_on_the_canvas) ... ok
+test_04_brush_drag_paints_only_along_the_stroke_and_ctrl_z_restores (test_harness_smoke.HarnessSmoke.test_04_brush_drag_paints_only_along_the_stroke_and_ctrl_z_restores) ... ok
+test_05_pen_strokes_arrive_as_pen_pointer_events_with_their_pressure (test_harness_smoke.HarnessSmoke.test_05_pen_strokes_arrive_as_pen_pointer_events_with_their_pressure) ... ok
+test_06_keyboard_shortcuts_switch_tools (test_harness_smoke.HarnessSmoke.test_06_keyboard_shortcuts_switch_tools) ... ok
+test_07_keys_reach_the_page_with_real_codes (test_harness_smoke.HarnessSmoke.test_07_keys_reach_the_page_with_real_codes) ... ok
+test_08_wheel_zooms_and_right_or_middle_drag_pans (test_harness_smoke.HarnessSmoke.test_08_wheel_zooms_and_right_or_middle_drag_pans) ... ok
+test_09_screenshots_and_viewport_size (test_harness_smoke.HarnessSmoke.test_09_screenshots_and_viewport_size) ... ok
+test_10_pixel_reads_are_exact_for_tiny_and_big_images (test_harness_smoke.HarnessSmoke.test_10_pixel_reads_are_exact_for_tiny_and_big_images) ... ok
+test_11_comparison_tools (test_harness_smoke.HarnessSmoke.test_11_comparison_tools) ... ok
+test_12_reload_drops_an_unsaved_draft (test_harness_smoke.HarnessSmoke.test_12_reload_drops_an_unsaved_draft) ... ok
+test_13_file_input_imports_an_image (test_harness_smoke.HarnessSmoke.test_13_file_input_imports_an_image) ... ok
+test_14_editor_core_hooks_are_used_when_present (test_harness_smoke.HarnessSmoke.test_14_editor_core_hooks_are_used_when_present) ... ok
+test_toolbar_removals_and_black_override_can_join_a_complete_button_set (test_hud_presets.ToolbarPresetsBrowser.test_toolbar_removals_and_black_override_can_join_a_complete_button_set) ... ok
+test_1_page_starts_in_the_language (test_i18n.French.test_1_page_starts_in_the_language) ... ok
+test_2_editor_menus_tools_and_panels (test_i18n.French.test_2_editor_menus_tools_and_panels) ... ok
+test_3_theme_ai (test_i18n.French.test_3_theme_ai) ... ok
+test_4_review (test_i18n.French.test_4_review) ... ok
+test_5_fonts (test_i18n.French.test_5_fonts) ... ok
+test_6_sound_editor (test_i18n.French.test_6_sound_editor) ... ok
+test_7_settings (test_i18n.French.test_7_settings) ... ok
+test_8_composed_text (test_i18n.French.test_8_composed_text)
+Text the lab puts together from pieces, numbers and names comes out translated around the names. ... ok
+test_1_page_starts_in_the_language (test_i18n.German.test_1_page_starts_in_the_language) ... ok
+test_2_editor_menus_tools_and_panels (test_i18n.German.test_2_editor_menus_tools_and_panels) ... ok
+test_3_theme_ai (test_i18n.German.test_3_theme_ai) ... ok
+test_4_review (test_i18n.German.test_4_review) ... ok
+test_5_fonts (test_i18n.German.test_5_fonts) ... ok
+test_6_sound_editor (test_i18n.German.test_6_sound_editor) ... ok
+test_7_settings (test_i18n.German.test_7_settings) ... ok
+test_8_composed_text (test_i18n.German.test_8_composed_text)
+Text the lab puts together from pieces, numbers and names comes out translated around the names. ... ok
+test_1_page_starts_in_the_language (test_i18n.Portuguese.test_1_page_starts_in_the_language) ... ok
+test_2_editor_menus_tools_and_panels (test_i18n.Portuguese.test_2_editor_menus_tools_and_panels) ... ok
+test_3_theme_ai (test_i18n.Portuguese.test_3_theme_ai) ... ok
+test_4_review (test_i18n.Portuguese.test_4_review) ... ok
+test_5_fonts (test_i18n.Portuguese.test_5_fonts) ... ok
+test_6_sound_editor (test_i18n.Portuguese.test_6_sound_editor) ... ok
+test_7_settings (test_i18n.Portuguese.test_7_settings) ... ok
+test_8_composed_text (test_i18n.Portuguese.test_8_composed_text)
+Text the lab puts together from pieces, numbers and names comes out translated around the names. ... ok
+test_1_page_starts_in_the_language (test_i18n.Spanish.test_1_page_starts_in_the_language) ... ok
+test_2_editor_menus_tools_and_panels (test_i18n.Spanish.test_2_editor_menus_tools_and_panels) ... ok
+test_3_theme_ai (test_i18n.Spanish.test_3_theme_ai) ... ok
+test_4_review (test_i18n.Spanish.test_4_review) ... ok
+test_5_fonts (test_i18n.Spanish.test_5_fonts) ... ok
+test_6_sound_editor (test_i18n.Spanish.test_6_sound_editor) ... ok
+test_7_settings (test_i18n.Spanish.test_7_settings) ... ok
+test_8_composed_text (test_i18n.Spanish.test_8_composed_text)
+Text the lab puts together from pieces, numbers and names comes out translated around the names. ... ok
+test_01_panel_layout_at_1366_and_1920 (test_layers.LayersModule.test_01_panel_layout_at_1366_and_1920) ... ok
+test_02_core_panel_behaviours_buttons_eye_opacity_blend_rename_drag (test_layers.LayersModule.test_02_core_panel_behaviours_buttons_eye_opacity_blend_rename_drag)
+test_core.py test_04 with the module loaded. ... ok
+test_03_extra_blend_modes_match_photoshops_formulas (test_layers.LayersModule.test_03_extra_blend_modes_match_photoshops_formulas) ... ok
+test_04_blend_keys_fill_digits_and_layer_steps (test_layers.LayersModule.test_04_blend_keys_fill_digits_and_layer_steps) ... ok
+test_05_multi_select_arrange_hide_lock_duplicate_delete (test_layers.LayersModule.test_05_multi_select_arrange_hide_lock_duplicate_delete) ... ok
+test_06_eyes_solo_drag_rows_onto_buttons_and_context_menus (test_layers.LayersModule.test_06_eyes_solo_drag_rows_onto_buttons_and_context_menus) ... ok
+test_07_masks_add_disable_apply_from_transparency_and_selections (test_layers.LayersModule.test_07_masks_add_disable_apply_from_transparency_and_selections) ... ok
+test_08_mask_view_alone_and_ruby_overlay (test_layers.LayersModule.test_08_mask_view_alone_and_ruby_overlay) ... ok
+test_09_clipping_masks_by_key_menu_and_alt_click (test_layers.LayersModule.test_09_clipping_masks_by_key_menu_and_alt_click) ... ok
+test_10_merge_down_layers_visible_and_flatten_keep_the_composite (test_layers.LayersModule.test_10_merge_down_layers_visible_and_flatten_keep_the_composite) ... ok
+test_11_merges_with_clipping_groups_adjustments_and_effects (test_layers.LayersModule.test_11_merges_with_clipping_groups_adjustments_and_effects) ... ok
+test_12_layer_via_copy_and_cut_delete_hidden_and_rename (test_layers.LayersModule.test_12_layer_via_copy_and_cut_delete_hidden_and_rename) ... ok
+test_13_double_click_opens_blending_options_or_properties_when_present (test_layers.LayersModule.test_13_double_click_opens_blending_options_or_properties_when_present) ... ok
+test_14_layer_menu_has_no_dead_items (test_layers.LayersModule.test_14_layer_menu_has_no_dead_items) ... ok
+test_a_picture_without_sprites_offers_no_sheet_to_browse (test_library.LibraryFilters.test_a_picture_without_sprites_offers_no_sheet_to_browse) ... ok
+test_an_empty_combination_moves_the_type_to_one_with_assets (test_library.LibraryFilters.test_an_empty_combination_moves_the_type_to_one_with_assets) ... ok
+test_audio_category_lists_sounds_and_a_picture_category_lists_pictures (test_library.LibraryFilters.test_audio_category_lists_sounds_and_a_picture_category_lists_pictures) ... ok
+test_browsing_a_sheet_shows_a_chip_and_keeps_search_and_paging (test_library.LibraryFilters.test_browsing_a_sheet_shows_a_chip_and_keeps_search_and_paging) ... ok
+test_type_options_are_plain_words_and_list_what_they_say (test_library.LibraryFilters.test_type_options_are_plain_words_and_list_what_they_say) ... ok
+test_01_hard_brush_stroke_matches_the_dab_model_and_undo_is_exact (test_paint.PaintTests.test_01_hard_brush_stroke_matches_the_dab_model_and_undo_is_exact) ... ok
+test_02_soft_brush_flow_and_opacity_follow_photoshops_buildup (test_paint.PaintTests.test_02_soft_brush_flow_and_opacity_follow_photoshops_buildup) ... ok
+test_03_opacity_caps_a_stroke_crossing_itself_and_flow_builds_up_to_it (test_paint.PaintTests.test_03_opacity_caps_a_stroke_crossing_itself_and_flow_builds_up_to_it) ... ok
+test_04_spacing_places_dabs_along_the_path (test_paint.PaintTests.test_04_spacing_places_dabs_along_the_path) ... ok
+test_05_pen_pressure_controls_size_by_default_and_opacity_when_asked (test_paint.PaintTests.test_05_pen_pressure_controls_size_by_default_and_opacity_when_asked) ... ok
+test_06_smoothing_steadies_the_line_and_catches_up_at_the_end (test_paint.PaintTests.test_06_smoothing_steadies_the_line_and_catches_up_at_the_end) ... ok
+test_07_shift_click_draws_a_straight_line_and_shift_drag_keeps_an_axis (test_paint.PaintTests.test_07_shift_click_draws_a_straight_line_and_shift_drag_keeps_an_axis) ... ok
+test_08_painting_modes_against_the_w3c_formulas (test_paint.PaintTests.test_08_painting_modes_against_the_w3c_formulas) ... ok
+test_09_selection_lock_transparency_and_mask_target (test_paint.PaintTests.test_09_selection_lock_transparency_and_mask_target)
+The core's own checks (test_core_verify test_21) with this module's Brush and Eraser. ... ok
+test_10_fast_drags_leave_no_gaps (test_paint.PaintTests.test_10_fast_drags_leave_no_gaps)
+test_core_verify test_20's fast zigzag and soft line, with this module's Brush. ... ok
+test_11_keys_brackets_digits_and_shift_digits (test_paint.PaintTests.test_11_keys_brackets_digits_and_shift_digits) ... ok
+test_12_brush_tip_popover_edits_size_hardness_spacing_and_smoothing (test_paint.PaintTests.test_12_brush_tip_popover_edits_size_hardness_spacing_and_smoothing) ... ok
+test_20_pencil_pixel_perfect_removes_l_corners_on_pixel_art (test_paint.PaintTests.test_20_pencil_pixel_perfect_removes_l_corners_on_pixel_art) ... ok
+test_21_pencil_freehand_curves_are_gap_free_and_thin (test_paint.PaintTests.test_21_pencil_freehand_curves_are_gap_free_and_thin) ... ok
+test_22_pencil_tips_auto_erase_and_opacity (test_paint.PaintTests.test_22_pencil_tips_auto_erase_and_opacity) ... ok
+test_30_eraser_brush_mode_matches_the_dab_model (test_paint.PaintTests.test_30_eraser_brush_mode_matches_the_dab_model) ... ok
+test_31_eraser_pencil_and_block_modes (test_paint.PaintTests.test_31_eraser_pencil_and_block_modes) ... ok
+test_32_eraser_on_a_mask_and_with_a_selection (test_paint.PaintTests.test_32_eraser_on_a_mask_and_with_a_selection) ... ok
+test_40_clone_stamp_copies_exact_pixels_with_alt_click_source (test_paint.PaintTests.test_40_clone_stamp_copies_exact_pixels_with_alt_click_source) ... ok
+test_41_clone_stamp_samples_layers_and_respects_selection_lock_and_mask (test_paint.PaintTests.test_41_clone_stamp_samples_layers_and_respects_selection_lock_and_mask) ... ok
+test_50_history_brush_paints_back_the_opened_image (test_paint.PaintTests.test_50_history_brush_paints_back_the_opened_image) ... ok
+test_60_every_paint_tools_options_bar_fits_at_1366_and_1920 (test_paint.PaintTests.test_60_every_paint_tools_options_bar_fits_at_1366_and_1920) ... ok
+test_70_stroke_frame_times_on_a_2048_sheet (test_paint.PaintTests.test_70_stroke_frame_times_on_a_2048_sheet) ... ok
+test_a_font_picture_opens_the_fonts_tool_instead (test_redraw_menu.RedrawMenu.test_a_font_picture_opens_the_fonts_tool_instead) ... ok
+test_right_click_redraw_asks_theme_ai_to_draw_it (test_redraw_menu.RedrawMenu.test_right_click_redraw_asks_theme_ai_to_draw_it) ... ok
+test_a_remove_keeps_the_place_in_the_list (test_review_preview.ReviewAndPreview.test_a_remove_keeps_the_place_in_the_list) ... ok
+test_b_remove_all_and_put_all_back (test_review_preview.ReviewAndPreview.test_b_remove_all_and_put_all_back) ... ok
+test_c_game_preview_shows_both_screens (test_review_preview.ReviewAndPreview.test_c_game_preview_shows_both_screens) ... ok
+test_d_automatic_canvas_background (test_review_preview.ReviewAndPreview.test_d_automatic_canvas_background) ... ok
+test_01_tools_keys_and_options_bar (test_select.SelectTools.test_01_tools_keys_and_options_bar) ... ok
+test_02_rectangular_marquee_is_exact_and_one_history_state (test_select.SelectTools.test_02_rectangular_marquee_is_exact_and_one_history_state) ... ok
+test_03_marquee_modifier_keys_held_on_the_keyboard (test_select.SelectTools.test_03_marquee_modifier_keys_held_on_the_keyboard) ... ok
+test_04_space_moves_the_marquee_while_drawing_and_escape_cancels (test_select.SelectTools.test_04_space_moves_the_marquee_while_drawing_and_escape_cancels) ... ok
+test_05_click_deselects_drag_inside_moves_the_outline_and_arrows_nudge (test_select.SelectTools.test_05_click_deselects_drag_inside_moves_the_outline_and_arrows_nudge) ... ok
+test_06_elliptical_marquee_antialias_matches_analytic_coverage (test_select.SelectTools.test_06_elliptical_marquee_antialias_matches_analytic_coverage) ... ok
+test_07_feather_is_a_gaussian_with_sigma_equal_to_the_radius (test_select.SelectTools.test_07_feather_is_a_gaussian_with_sigma_equal_to_the_radius) ... ok
+test_08_fixed_ratio_fixed_size_and_single_row_column (test_select.SelectTools.test_08_fixed_ratio_fixed_size_and_single_row_column) ... ok
+test_09_lasso_freehand_matches_the_polygon_area (test_select.SelectTools.test_09_lasso_freehand_matches_the_polygon_area) ... ok
+test_10_polygonal_lasso_clicks_closes_and_keys (test_select.SelectTools.test_10_polygonal_lasso_clicks_closes_and_keys) ... ok
+test_11_magic_wand_tolerance_contiguous_sample_size (test_select.SelectTools.test_11_magic_wand_tolerance_contiguous_sample_size) ... ok
+test_12_magic_wand_antialias_transparency_and_sample_all_layers (test_select.SelectTools.test_12_magic_wand_antialias_transparency_and_sample_all_layers) ... ok
+test_13_modify_expand_contract_smooth_border (test_select.SelectTools.test_13_modify_expand_contract_smooth_border) ... ok
+test_14_grow_and_similar_use_the_wand_options (test_select.SelectTools.test_14_grow_and_similar_use_the_wand_options) ... ok
+test_15_marching_ants_show_while_drawing_and_after (test_select.SelectTools.test_15_marching_ants_show_while_drawing_and_after) ... ok
+test_16_options_bars_fit_at_1366_and_screenshots (test_select.SelectTools.test_16_options_bars_fit_at_1366_and_screenshots) ... ok
+test_17_speed_on_a_2048_sheet (test_select.SelectTools.test_17_speed_on_a_2048_sheet) ... ok
+test_18_options_bars_fit_in_every_language (test_select.SelectTools.test_18_options_bars_fit_in_every_language)
+The lab is translated (es, pt, fr, de): the longest labels must still fit the options bar at 1366 px. ... ok
+test_accent_color (test_settings.AppearanceTests.test_accent_color) ... ok
+test_canvas_background (test_settings.AppearanceTests.test_canvas_background) ... ok
+test_compact_library_cards (test_settings.AppearanceTests.test_compact_library_cards) ... ok
+test_interface_size (test_settings.AppearanceTests.test_interface_size) ... ok
+test_reduce_motion (test_settings.AppearanceTests.test_reduce_motion) ... ok
+test_crisp_pixels (test_settings.EditorTests.test_crisp_pixels) ... ok
+test_pixel_grid (test_settings.EditorTests.test_pixel_grid) ... ok
+test_remember_tool_settings (test_settings.EditorTests.test_remember_tool_settings) ... ok
+test_start_in_focus_mode (test_settings.EditorTests.test_start_in_focus_mode) ... ok
+test_undo_memory (test_settings.EditorTests.test_undo_memory) ... ok
+test_undo_steps (test_settings.EditorTests.test_undo_steps) ... ok
+test_1_language_is_saved_and_the_page_reloads (test_settings.GeneralTests.test_1_language_is_saved_and_the_page_reloads) ... ok
+test_2_ask_before_installing_or_restoring (test_settings.GeneralTests.test_2_ask_before_installing_or_restoring) ... ok
+test_3_if_mitosis_is_open (test_settings.GeneralTests.test_3_if_mitosis_is_open) ... ok
+test_4_open_mitosis_after_installing (test_settings.GeneralTests.test_4_open_mitosis_after_installing) ... ok
+test_assets_per_page (test_settings.LibraryTests.test_assets_per_page) ... ok
+test_reopen_the_last_asset (test_settings.LibraryTests.test_reopen_the_last_asset) ... ok
+test_show_copies (test_settings.LibraryTests.test_show_copies) ... ok
+test_link_helper_buttons (test_settings.SoundTests.test_link_helper_buttons) ... ok
+test_longest_sound (test_settings.SoundTests.test_longest_sound) ... ok
+test_new_sounds_start_with_the_sound_settings (test_settings.SoundTests.test_new_sounds_start_with_the_sound_settings) ... ok
+test_page_links (test_settings.SoundTests.test_page_links) ... ok
+test_novu_credit_animation_and_reduced_motion (test_settings.StorageTests.test_novu_credit_animation_and_reduced_motion) ... ok
+test_storage_privacy_and_about (test_settings.StorageTests.test_storage_privacy_and_about) ... ok
+test_example_text (test_settings.TextTests.test_example_text) ... ok
+test_preload_look_previews (test_settings.TextTests.test_preload_look_previews) ... ok
+test_a_new_font_is_drawn_once_and_its_texture_picked (test_settings.ThemeAiTests.test_a_new_font_is_drawn_once_and_its_texture_picked) ... ok
+test_a_piece_with_its_own_words_is_drawn_from_them (test_settings.ThemeAiTests.test_a_piece_with_its_own_words_is_drawn_from_them) ... ok
+test_accelerate_warns_then_turns_on (test_settings.ThemeAiTests.test_accelerate_warns_then_turns_on) ... ok
+test_apply_plans_automatically (test_settings.ThemeAiTests.test_apply_plans_automatically) ... ok
+test_auto_apply_starts_a_drawing_by_itself (test_settings.ThemeAiTests.test_auto_apply_starts_a_drawing_by_itself) ... ok
+test_drawings_per_request_and_keep_it_white (test_settings.ThemeAiTests.test_drawings_per_request_and_keep_it_white) ... ok
+test_planner_model (test_settings.ThemeAiTests.test_planner_model) ... ok
+test_the_drawing_card_is_simple_first (test_settings.ThemeAiTests.test_the_drawing_card_is_simple_first) ... ok
+test_the_inspiration_pictures_are_shown_and_sent_with_the_drawing (test_settings.ThemeAiTests.test_the_inspiration_pictures_are_shown_and_sent_with_the_drawing) ... ok
+test_the_three_foods_are_drawn_one_by_one (test_settings.ThemeAiTests.test_the_three_foods_are_drawn_one_by_one) ... ok
+test_1_gear_categories_search_and_keys (test_settings.WindowTests.test_1_gear_categories_search_and_keys) ... ok
+test_2_looks_clean_at_1366_and_1920 (test_settings.WindowTests.test_2_looks_clean_at_1366_and_1920) ... ok
+test_3_live_saving_resets_and_next_start_tags (test_settings.WindowTests.test_3_live_saving_resets_and_next_start_tags) ... ok
+test_4_values_that_do_not_fit_never_reach_the_file (test_settings.WindowTests.test_4_values_that_do_not_fit_never_reach_the_file) ... ok
+test_5_saved_values_survive_a_reload (test_settings.WindowTests.test_5_saved_values_survive_a_reload) ... ok
+test_6_a_damaged_settings_file (test_settings.WindowTests.test_6_a_damaged_settings_file) ... ok
+test_a_font_preset_is_tried_on_a_name_and_put_on_the_player_names (test_simple.FontPresets.test_a_font_preset_is_tried_on_a_name_and_put_on_the_player_names) ... ok
+test_a_background_for_each_place_and_food_by_number (test_simple.PicturesAndPresets.test_a_background_for_each_place_and_food_by_number) ... ok
+test_a_category_exports_as_a_zip_or_a_folder (test_simple.PicturesAndPresets.test_a_category_exports_as_a_zip_or_a_folder) ... ok
+test_a_dropped_picture_and_make_this_red (test_simple.PicturesAndPresets.test_a_dropped_picture_and_make_this_red) ... ok
+test_a_preset_is_seen_big_then_used_recolored_and_put_in_the_game (test_simple.PicturesAndPresets.test_a_preset_is_seen_big_then_used_recolored_and_put_in_the_game) ... ok
+test_picks_from_each_kind_are_used_all_at_once (test_simple.PicturesAndPresets.test_picks_from_each_kind_are_used_all_at_once) ... ok
+test_presets_by_category_and_a_whole_theme_from_one (test_simple.PicturesAndPresets.test_presets_by_category_and_a_whole_theme_from_one) ... ok
+test_presets_shows_how_it_works_the_first_time (test_simple.PicturesAndPresets.test_presets_shows_how_it_works_the_first_time) ... ok
+test_right_click_exports_a_preset_in_its_colors (test_simple.PicturesAndPresets.test_right_click_exports_a_preset_in_its_colors) ... ok
+test_typing_more_than_a_color_asks_theme_ai (test_simple.PicturesAndPresets.test_typing_more_than_a_color_asks_theme_ai) ... ok
+test_several_pictures_wait_for_the_request (test_simple.SeveralPictures.test_several_pictures_wait_for_the_request) ... ok
+test_everyone_starts_in_simple_and_a_switch_is_remembered (test_simple.SimpleLayout.test_everyone_starts_in_simple_and_a_switch_is_remembered) ... ok
+test_simple_shows_the_library_and_theme_ai_and_a_click_picks (test_simple.SimpleLayout.test_simple_shows_the_library_and_theme_ai_and_a_click_picks) ... ok
+test_the_tour_shows_examples_and_the_right_click_menu (test_simple.SimpleLayout.test_the_tour_shows_examples_and_the_right_click_menu) ... ok
+test_starters_fill_the_box_and_more_holds_the_extras (test_simple.ThemeAiComposer.test_starters_fill_the_box_and_more_holds_the_extras) ... ok
+test_right_click_a_sound_and_loop_it (test_sound_menu.SoundMenu.test_right_click_a_sound_and_loop_it) ... ok
+test_01_stroke_outside_inside_center_on_pixel_art (test_styles.StyleTests.test_01_stroke_outside_inside_center_on_pixel_art) ... ok
+test_02_stroke_on_an_antialiased_shape_over_a_background (test_styles.StyleTests.test_02_stroke_on_an_antialiased_shape_over_a_background) ... ok
+test_03_outer_glow_and_drop_shadow (test_styles.StyleTests.test_03_outer_glow_and_drop_shadow) ... ok
+test_04_color_and_gradient_overlay (test_styles.StyleTests.test_04_color_and_gradient_overlay) ... ok
+test_05_inner_shadow_and_inner_glow (test_styles.StyleTests.test_05_inner_shadow_and_inner_glow) ... ok
+test_06_every_effect_at_once_on_a_masked_layer (test_styles.StyleTests.test_06_every_effect_at_once_on_a_masked_layer) ... ok
+test_07_layers_in_other_blend_modes_and_clipping_bases_get_the_effects_on_top (test_styles.StyleTests.test_07_layers_in_other_blend_modes_and_clipping_bases_get_the_effects_on_top) ... ok
+test_08_layer_opacity_fades_the_layer_and_its_effects_as_one (test_styles.StyleTests.test_08_layer_opacity_fades_the_layer_and_its_effects_as_one) ... ok
+test_10_dialog_live_preview_ok_undo_and_cancel (test_styles.StyleTests.test_10_dialog_live_preview_ok_undo_and_cancel) ... ok
+test_11_copy_paste_clear_and_hide_all_from_the_menu (test_styles.StyleTests.test_11_copy_paste_clear_and_hide_all_from_the_menu) ... ok
+test_12_painting_on_a_styled_layer_redraws_its_effects (test_styles.StyleTests.test_12_painting_on_a_styled_layer_redraws_its_effects) ... ok
+test_13_a_styled_document_is_saved_and_reopens_with_its_layers (test_styles.StyleTests.test_13_a_styled_document_is_saved_and_reopens_with_its_layers) ... ok
+test_14_speed_on_a_2048_sheet (test_styles.StyleTests.test_14_speed_on_a_2048_sheet)
+A 2048 x 2048 transparent sheet of icons with five effects: a full redraw and the frames of a brush stroke. ... ok
+test_15_duplicate_rasterize_and_merge_keep_the_picture (test_styles.StyleTests.test_15_duplicate_rasterize_and_merge_keep_the_picture) ... ok
+test_16_commands_with_params_skip_the_dialog (test_styles.StyleTests.test_16_commands_with_params_skip_the_dialog) ... ok
+test_20_dialog_layout_at_1366_and_1920 (test_styles.StyleTests.test_20_dialog_layout_at_1366_and_1920) ... ok
+test_21_gradient_field_in_the_dialog (test_styles.StyleTests.test_21_gradient_field_in_the_dialog) ... ok
+test_a_drawing_reconnects_to_its_job (test_theme_history.ThemeChatHistory.test_a_drawing_reconnects_to_its_job) ... ok
+test_a_request_cut_off_by_a_reload_says_so_and_new_chat_keeps_it (test_theme_history.ThemeChatHistory.test_a_request_cut_off_by_a_reload_says_so_and_new_chat_keeps_it) ... ok
+test_the_chat_comes_back_after_a_reload (test_theme_history.ThemeChatHistory.test_the_chat_comes_back_after_a_reload) ... ok
+test_the_chat_list_renames_searches_and_deletes (test_theme_history.ThemeChatHistory.test_the_chat_list_renames_searches_and_deletes) ... ok
+test_escape_closes_it_and_the_help_button_reopens_it (test_tour.Tour.test_escape_closes_it_and_the_help_button_reopens_it) ... ok
+test_the_first_tour_ends_at_suggestions_once (test_tour.Tour.test_the_first_tour_ends_at_suggestions_once) ... ok
+test_the_tour_walks_every_step_and_is_remembered (test_tour.Tour.test_the_tour_walks_every_step_and_is_remembered) ... ok
+test_01_move_drags_the_layer_exactly_one_state_and_undo (test_transform.TransformTests.test_01_move_drags_the_layer_exactly_one_state_and_undo) ... ok
+test_02_move_selected_pixels_leaves_a_transparent_hole_and_moves_the_selection (test_transform.TransformTests.test_02_move_selected_pixels_leaves_a_transparent_hole_and_moves_the_selection) ... ok
+test_03_alt_drag_copies_the_selection_and_the_layer (test_transform.TransformTests.test_03_alt_drag_copies_the_selection_and_the_layer) ... ok
+test_04_arrow_keys_nudge_1_and_10_pixels (test_transform.TransformTests.test_04_arrow_keys_nudge_1_and_10_pixels) ... ok
+test_05_locks_and_hidden_layers_refuse (test_transform.TransformTests.test_05_locks_and_hidden_layers_refuse) ... ok
+test_06_the_layer_mask_moves_with_the_layer (test_transform.TransformTests.test_06_the_layer_mask_moves_with_the_layer) ... ok
+test_07_auto_select_and_ctrl_click_pick_the_layer_under_the_pointer (test_transform.TransformTests.test_07_auto_select_and_ctrl_click_pick_the_layer_under_the_pointer) ... ok
+test_08_align_buttons_to_canvas_and_selection (test_transform.TransformTests.test_08_align_buttons_to_canvas_and_selection) ... ok
+test_09_move_options_bar_fits_at_1366 (test_transform.TransformTests.test_09_move_options_bar_fits_at_1366) ... ok
+test_10_free_transform_options_bar_fits_and_strip_has_no_extra_button (test_transform.TransformTests.test_10_free_transform_options_bar_fits_and_strip_has_no_extra_button) ... ok
+test_11_numeric_scale_nearest_neighbour_is_exact_and_one_state (test_transform.TransformTests.test_11_numeric_scale_nearest_neighbour_is_exact_and_one_state) ... ok
+test_12_numeric_rotation_nearest_is_exact_for_90_and_matches_reference_for_30 (test_transform.TransformTests.test_12_numeric_rotation_nearest_is_exact_for_90_and_matches_reference_for_30) ... ok
+test_13_reference_point_and_xy_fields (test_transform.TransformTests.test_13_reference_point_and_xy_fields) ... ok
+test_14_escape_cancels_and_enter_applies (test_transform.TransformTests.test_14_escape_cancels_and_enter_applies) ... ok
+test_15_drag_corner_scales_proportionally_shift_freely (test_transform.TransformTests.test_15_drag_corner_scales_proportionally_shift_freely) ... ok
+test_16_drag_outside_rotates_shift_snaps_to_15_degrees (test_transform.TransformTests.test_16_drag_outside_rotates_shift_snaps_to_15_degrees) ... ok
+test_17_inside_drag_moves_and_arrows_nudge_inside_the_transform (test_transform.TransformTests.test_17_inside_drag_moves_and_arrows_nudge_inside_the_transform) ... ok
+test_18_bilinear_and_bicubic_match_pillow (test_transform.TransformTests.test_18_bilinear_and_bicubic_match_pillow) ... ok
+test_19_transform_selected_pixels_and_the_selection (test_transform.TransformTests.test_19_transform_selected_pixels_and_the_selection) ... ok
+test_20_linked_mask_transforms_with_the_layer_and_locks_refuse (test_transform.TransformTests.test_20_linked_mask_transforms_with_the_layer_and_locks_refuse) ... ok
+test_21_distort_skew_and_perspective_match_a_numpy_homography (test_transform.TransformTests.test_21_distort_skew_and_perspective_match_a_numpy_homography) ... ok
+test_22_edit_transform_flips_and_quarter_turns_are_exact (test_transform.TransformTests.test_22_edit_transform_flips_and_quarter_turns_are_exact) ... ok
+test_23_image_rotation_turns_every_layer_mask_and_the_selection (test_transform.TransformTests.test_23_image_rotation_turns_every_layer_mask_and_the_selection) ... ok
+test_24_transform_again_repeats_the_last_transform (test_transform.TransformTests.test_24_transform_again_repeats_the_last_transform) ... ok
+test_25_copy_paste_cut_copy_merged_in_place_and_into (test_transform.TransformTests.test_25_copy_paste_cut_copy_merged_in_place_and_into) ... ok
+test_26_a_picture_bigger_than_the_canvas_is_fitted_and_opens_in_free_transform (test_transform.TransformTests.test_26_a_picture_bigger_than_the_canvas_is_fitted_and_opens_in_free_transform) ... ok
+test_27_system_clipboard_round_trip (test_transform.TransformTests.test_27_system_clipboard_round_trip) ... ok
+test_28_export_layered_psd_reads_back_with_independent_readers (test_transform.TransformTests.test_28_export_layered_psd_reads_back_with_independent_readers) ... ok
+test_29_import_psd_from_an_independent_writer_and_round_trip (test_transform.TransformTests.test_29_import_psd_from_an_independent_writer_and_round_trip) ... ok
+test_30_import_psd_through_the_file_menu (test_transform.TransformTests.test_30_import_psd_through_the_file_menu) ... ok
+test_31_move_shift_constrains_alt_arrow_copies_lock_transparency_and_mask_target (test_transform.TransformTests.test_31_move_shift_constrains_alt_arrow_copies_lock_transparency_and_mask_target) ... ok
+test_32_transform_undo_inside_tool_return_modes_and_selection_outline (test_transform.TransformTests.test_32_transform_undo_inside_tool_return_modes_and_selection_outline) ... ok
+test_33_free_transform_on_a_2048_sheet (test_transform.TransformTests.test_33_free_transform_on_a_2048_sheet) ... ok
+test_34_dropped_pictures_become_layers (test_transform.TransformTests.test_34_dropped_pictures_become_layers) ... ok
+test_35_buttons_double_click_alt_scale_flip_in_session_and_align_menu (test_transform.TransformTests.test_35_buttons_double_click_alt_scale_flip_in_session_and_align_menu) ... ok
+test_double_click_checks_and_checked_come_first (test_ui_polish.UiPolish.test_double_click_checks_and_checked_come_first) ... ok
+test_inspector_minimizes_and_is_remembered (test_ui_polish.UiPolish.test_inspector_minimizes_and_is_remembered) ... ok
+test_library_minimizes_too (test_ui_polish.UiPolish.test_library_minimizes_too) ... ok
+test_ui_text_does_not_highlight (test_ui_polish.UiPolish.test_ui_text_does_not_highlight) ... ok
+
+======================================================================
+ERROR: test_30_save_and_reload_restore_every_layer_exactly (test_core_verify.EditorCoreVerify.test_30_save_and_reload_restore_every_layer_exactly)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\a\asset-lab\asset-lab\tests\browser\test_core_verify.py", line 871, in test_30_save_and_reload_restore_every_layer_exactly
+    b = self.fresh('edit-sprite.png')
+  File "D:\a\asset-lab\asset-lab\tests\browser\test_core_verify.py", line 193, in fresh
+    b.select_asset(name)
+    ~~~~~~~~~~~~~~^^^^^^
+  File "D:\a\asset-lab\asset-lab\tests\browser\harness.py", line 771, in select_asset
+    key = self.eval(f"const rows=(await (await fetch('/api/assets?'+new URLSearchParams({{q:{q},kind:'visual',all:'1'}}))).json()).items.filter(r=>r.name==={q});"
+                    f"rows.sort((a,b)=>(b.source==='assets/'+{q})-(a.source==='assets/'+{q}));rows.length?rows[0].key:null")
+  File "D:\a\asset-lab\asset-lab\tests\browser\harness.py", line 693, in eval
+    if r.get('exceptionDetails') or 'objectId' not in res: return self._value(r, expression)
+                                                                  ~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\a\asset-lab\asset-lab\tests\browser\harness.py", line 679, in _value
+    raise JSError(((d.get('exception') or {}).get('description') or d.get('text') or 'JavaScript error') + f'\n  while running: {what[:300]}')
+harness.JSError: TypeError: Failed to fetch
+    at <anonymous>:2:26
+  while running: const rows=(await (await fetch('/api/assets?'+new URLSearchParams({q:"edit-sprite.png",kind:'visual',all:'1'}))).json()).items.filter(r=>r.name==="edit-sprite.png");rows.sort((a,b)=>(b.source==='assets/'+"edit-sprite.png")-(a.source==='assets/'+"edit-sprite.png"));rows.length?rows[0].key:null
+
+======================================================================
+FAIL: test_30_save_and_reload_restore_every_layer_exactly (test_core_verify.EditorCoreVerify.test_30_save_and_reload_restore_every_layer_exactly)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\a\asset-lab\asset-lab\tests\browser\harness.py", line 1110, in tearDown
+    if self.check_errors: self.assertNoBrowserErrors()
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\a\asset-lab\asset-lab\tests\browser\harness.py", line 1133, in assertNoBrowserErrors
+    if bad: self.fail(f'{len(bad)} browser error(s):\n' + self.browser.error_report(bad))
+            ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 browser error(s):
+
+[blend modes] worst channel difference vs W3C formulas: {'normal': 1, 'darken': 1, 'multiply': 1, 'color-burn': 3, 'lighten': 1, 'screen': 1, 'color-dodge': 2, 'linear-dodge': 1, 'overlay': 1, 'soft-light': 1, 'hard-light': 1, 'difference': 1, 'exclusion': 1, 'hue': 2, 'saturation': 1, 'color': 1, 'luminosity': 1}
+
+[stroke frame times, 2048 x 2048, 3 layers, size 40 brush] 79 frames while painting: median 46.9 ms, 95th percentile 48.5 ms, worst 125.0 ms (an idle frame is 15.6 ms here; compositing JavaScript per move: median 0.3 ms); committing the stroke 1.1 ms, undoing it 0.5 ms of JavaScript; SwiftShader software GPU
+
+  [network] net::ERR_NO_BUFFER_SPACE (http://127.0.0.1:50628/api/assets?q=edit-sprite.png&kind=visual&all=1:None)
+  [log] Failed to load resource: net::ERR_NO_BUFFER_SPACE (http://127.0.0.1:50628/api/assets?q=edit-sprite.png&kind=visual&all=1:None)
+
+======================================================================
+FAIL: test_34_work_done_while_saved_layers_are_still_loading_is_kept (test_core_verify.EditorCoreVerify.test_34_work_done_while_saved_layers_are_still_loading_is_kept)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\a\asset-lab\asset-lab\tests\browser\test_core_verify.py", line 1008, in test_34_work_done_while_saved_layers_are_still_loading_is_kept
+    self.assertGreater(len(self.state()['layers']), 1, 'the sprite reopens with the layers saved in test_30')
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 1 not greater than 1 : the sprite reopens with the layers saved in test_30
+[verify] blend modes, worst per mode (ideal max, mean | 8-bit-mask model max, mean): {'normal': (1, 0.117, 1, 0.053), 'darken': (1, 0.096, 1, 0.047), 'multiply': (1, 0.097, 1, 0.05), 'color-burn': (2, 0.106, 1, 0.049), 'lighten': (1, 0.088, 1, 0.049), 'screen': (1, 0.085, 1, 0.05), 'color-dodge': (5, 0.092, 1, 0.053), 'linear-dodge': (2, 0.124, 2, 0.124), 'overlay': (1, 0.092, 1, 0.047), 'soft-light': (1, 0.088, 1, 0.046), 'hard-light': (2, 0.127, 1, 0.055), 'difference': (1, 0.087, 1, 0.048), 'exclusion': (1, 0.082, 1, 0.049), 'hue': (4, 0.086, 1, 0.048), 'saturation': (1, 0.081, 1, 0.047), 'color': (1, 0.093, 1, 0.046), 'luminosity': (3, 0.106, 1, 0.047)}
+
+[verify speed] SwiftShader software GPU; 2048 x 2048, 6 layers (multiply tint with a soft mask, the painted layer, a linear-dodge layer at 70% with a clipped layer, a hidden one)
+one move per frame: median 62.5 ms, 95th percentile 78.2 ms, worst 187.5 ms; idle frame 15.6 ms
+commit 0.7 ms, undo 247.8 ms, redo 157.1 ms, full re-composite 548.0 ms
+real mouse drag (80 moves): 5.89 s, page frames median 78.1 ms, worst 328.2 ms
+
+
+----------------------------------------------------------------------
+Ran 392 tests in 1599.240s
+
+FAILED (failures=2, errors=1, skipped=1)
+[fr] commands with "..." that opened no dialog here: ['Layer/New Adjustment Layer/Brightness-Contrast...', 'Layer/New Adjustment Layer/Levels...', 'Layer/New Adjustment Layer/Curves...', 'Layer/New Adjustment Layer/Exposure...', 'Layer/New Adjustment Layer/Vibrance...', 'Layer/New Adjustment Layer/Hue-Saturation...', 'Layer/New Adjustment Layer/Color Balance...', 'Layer/New Adjustment Layer/Black & White...', 'Layer/New Adjustment Layer/Photo Filter...', 'Layer/New Adjustment Layer/Channel Mixer...', 'Layer/New Adjustment Layer/Invert...', 'Layer/New Adjustment Layer/Posterize...', 'Layer/New Adjustment Layer/Threshold...', 'Layer/New Adjustment Layer/Gradient Map...', 'Layer/New Adjustment Layer/Selective Color...', 'Layer/Rename Layer...']
+
+[de] commands with "..." that opened no dialog here: ['Layer/New Adjustment Layer/Brightness-Contrast...', 'Layer/New Adjustment Layer/Levels...', 'Layer/New Adjustment Layer/Curves...', 'Layer/New Adjustment Layer/Exposure...', 'Layer/New Adjustment Layer/Vibrance...', 'Layer/New Adjustment Layer/Hue-Saturation...', 'Layer/New Adjustment Layer/Color Balance...', 'Layer/New Adjustment Layer/Black & White...', 'Layer/New Adjustment Layer/Photo Filter...', 'Layer/New Adjustment Layer/Channel Mixer...', 'Layer/New Adjustment Layer/Invert...', 'Layer/New Adjustment Layer/Posterize...', 'Layer/New Adjustment Layer/Threshold...', 'Layer/New Adjustment Layer/Gradient Map...', 'Layer/New Adjustment Layer/Selective Color...', 'Layer/Rename Layer...']
+
+[layers] extra blend modes, worst premultiplied difference: {'linear-burn': 1, 'darker-color': 1, 'lighter-color': 1, 'vivid-light': 1, 'linear-light': 1, 'pin-light': 1, 'hard-mix': 1, 'subtract': 1, 'divide': 1, 'multiply': 1}
+
+[layers] merges, composite change in premultiplied levels: [('Merge Down', 0), ('Merge Down, transparent', 0), ('Merge Layers', 0), ('Merge Visible', 0), ('Flatten', 0)]
+
+[paint speed] SwiftShader; 2048 x 2048, 3 layers; idle frame 15.6 ms
+brush 40 px hard: frames median 31.2 ms, 95th percentile 31.4 ms; work per move (dabs + composite) median 0.6 ms, worst 12.3 ms; press 0.7 ms, commit 2.3 ms
+brush 200 px soft: frames median 15.6 ms, 95th percentile 31.3 ms; work per move (dabs + composite) median 5.7 ms, worst 28.3 ms; press 13.5 ms, commit 20.5 ms
+eraser 60 px: frames median 31.3 ms, 95th percentile 46.9 ms; work per move (dabs + composite) median 1.2 ms, worst 14.9 ms; press 0.5 ms, commit 1.8 ms
+pencil 3 px: frames median 46.9 ms, 95th percentile 47.0 ms; work per move (dabs + composite) median 0.4 ms, worst 0.6 ms; press 0.3 ms, commit 1.1 ms
+clone stamp 40 px: frames median 31.3 ms, 95th percentile 46.9 ms; work per move (dabs + composite) median 1.2 ms, worst 13.1 ms; press 249.3 ms, commit 1.7 ms
+history brush 40 px: frames median 31.3 ms, 95th percentile 46.8 ms; work per move (dabs + composite) median 0.7 ms, worst 15.7 ms; press 268.0 ms, commit 1.3 ms
+
+  selection speed on 2048 x 2048: magic wand 0.34 s, magic wand (not contiguous) 0.50 s, ellipse 0.44 s, feather 40 0.92 s, feather 8 0.73 s, expand 30 0.62 s, contract 30 0.66 s, smooth 20 0.72 s, border 20 0.74 s, similar 0.83 s, grow 0.91 s, lasso 3.38 s
+
+[clipboard] system clipboard write: ok
+
+[transform 2048] open 0.30 s, apply 50 % bilinear 8.04 s

@@ -1,0 +1,24 @@
+Collecting numpy==2.5.4
+  Downloading numpy-2.5.4-cp313-cp313-win_amd64.whl.metadata (6.6 kB)
+Collecting pillow==12.3.0
+  Downloading pillow-12.3.0-cp313-cp313-win_amd64.whl.metadata (9.3 kB)
+Collecting soundfile==0.14.0
+  Downloading soundfile-0.14.0-py2.py3-none-win_amd64.whl.metadata (18 kB)
+Collecting cffi>=1.0 (from soundfile==0.14.0)
+  Downloading cffi-2.1.1-cp313-cp313-win_amd64.whl.metadata (2.6 kB)
+Collecting typing-extensions (from soundfile==0.14.0)
+  Downloading typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+Collecting pycparser (from cffi>=1.0->soundfile==0.14.0)
+  Downloading pycparser-3.12-py3-none-any.whl.metadata (9.7 kB)
+Downloading numpy-2.5.4-cp313-cp313-win_amd64.whl (12.6 MB)
+   ---------------------------------------- 12.6/12.6 MB 100.2 MB/s  0:00:00
+Downloading pillow-12.3.0-cp313-cp313-win_amd64.whl (7.2 MB)
+   ---------------------------------------- 7.2/7.2 MB 101.8 MB/s  0:00:00
+Downloading soundfile-0.14.0-py2.py3-none-win_amd64.whl (1.0 MB)
+   ---------------------------------------- 1.0/1.0 MB 21.4 MB/s  0:00:00
+Downloading cffi-2.1.1-cp313-cp313-win_amd64.whl (185 kB)
+Downloading pycparser-3.12-py3-none-any.whl (62 kB)
+Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+Installing collected packages: typing-extensions, pycparser, pillow, numpy, cffi, soundfile
+
+Successfully installed cffi-2.1.1 numpy-2.5.4 pillow-12.3.0 pycparser-3.12 soundfile-0.14.0 typing-extensions-4.16.0
