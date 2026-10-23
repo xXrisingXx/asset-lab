@@ -326,7 +326,7 @@ class Pictures:
         if not folder or not folder.is_dir(): return None
         out = {}
         for path in folder.glob('*.webp'):
-            if path.stem in button_sets.KEEP_GAME_SYMBOL: continue
+            if path.stem in button_sets.KEEP_GAME_SYMBOL and not preset.get('look', {}).get('exact_symbols'): continue
             with Image.open(path) as im: art = im.convert('RGBA')
             out[path.stem] = recolor(art, color) if color else art
         return out

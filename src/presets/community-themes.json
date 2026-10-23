@@ -1,0 +1,62 @@
+{
+  "themes": [
+    {
+      "id": "tron-delta",
+      "name": "TRON",
+      "credit": "Delta",
+      "cover": "preset:delta-tron-grid",
+      "description": "Black glass, cyan light and identity discs inspired by TRON: Legacy.",
+      "note": "Community fan theme. Some controls retain colors applied by the game. Store badges and server-managed art are unchanged.",
+      "parts": [
+        {
+          "name": "Grid backgrounds",
+          "preset": "preset:delta-tron-grid",
+          "target": "set:everywhere",
+          "status": "approved"
+        },
+        {
+          "name": "Identity-disc viruses",
+          "preset": "preset:delta-tron-virus",
+          "target": "set:viruses",
+          "status": "approved"
+        },
+        {
+          "name": "Menu buttons",
+          "preset": "preset:delta-tron-menu",
+          "target": "set:menu-buttons",
+          "status": "approved"
+        },
+        {
+          "name": "In-game buttons",
+          "preset": "preset:delta-tron-ingame",
+          "target": "set:ingame-buttons",
+          "status": "approved"
+        },
+        {
+          "name": "Food 1",
+          "preset": "preset:delta-tron-food-1",
+          "target": "set:food:0",
+          "status": "approved"
+        },
+        {
+          "name": "Food 2",
+          "preset": "preset:delta-tron-food-2",
+          "target": "set:food:1",
+          "status": "approved"
+        },
+        {
+          "name": "Food 3",
+          "preset": "preset:delta-tron-food-3",
+          "target": "set:food:2",
+          "status": "approved"
+        },
+        {
+          "name": "MITOSIS title",
+          "preset": "preset:delta-tron-title",
+          "target": "set:logo",
+          "status": "approved"
+        }
+      ]
+    }
+  ]
+}

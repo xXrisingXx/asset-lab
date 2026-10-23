@@ -13,6 +13,7 @@ docs/
 tools/*
 !tools/build_release.ps1
 !tools/make_logo.py
+!tools/tron_symbols.py
 !tools/test_desktop.ps1
 !tools/test_single_instance.ps1
 !tools/test_update_recovery.py

@@ -13843,6 +13843,98 @@
     "glow_strength": 1.1
    },
    "for": []
+  },
+  {
+   "id": "delta-tron-grid",
+   "name": "TRON grid · Delta",
+   "kind": "background",
+   "file": "community/tron-delta/grid.png",
+   "for": [
+    "menu",
+    "arena"
+   ],
+   "category": "Community · Delta"
+  },
+  {
+   "id": "delta-tron-virus",
+   "name": "TRON identity disc · Delta",
+   "kind": "virus",
+   "file": "community/tron-delta/virus.png",
+   "for": [
+    "virus.png",
+    "light_virus.png"
+   ],
+   "category": "Community · Delta"
+  },
+  {
+   "id": "delta-tron-menu",
+   "name": "TRON menu · Delta",
+   "kind": "menu",
+   "file": "community/tron-delta/material.png",
+   "base": "community/tron-delta/base.png",
+   "redrawn": "community/tron-delta/drawn",
+   "look": {
+    "ink": "#d7fcff",
+    "outline": "#145463",
+    "glow": "#53e8f5",
+    "bevel": 0.6,
+    "exact_symbols": true,
+    "art_revision": 2
+   },
+   "for": [],
+   "category": "Community · Delta"
+  },
+  {
+   "id": "delta-tron-ingame",
+   "name": "TRON in-game · Delta",
+   "kind": "ingame",
+   "file": "community/tron-delta/material.png",
+   "base": "community/tron-delta/base.png",
+   "redrawn": "community/tron-delta/drawn",
+   "look": {
+    "ink": "#d7fcff",
+    "outline": "#145463",
+    "glow": "#53e8f5",
+    "bevel": 0.6,
+    "exact_symbols": true,
+    "art_revision": 2
+   },
+   "for": [],
+   "category": "Community · Delta"
+  },
+  {
+   "id": "delta-tron-food-1",
+   "name": "TRON Energy bead · Delta",
+   "kind": "food",
+   "file": "community/tron-delta/food-1.png",
+   "for": [],
+   "category": "Community · Delta"
+  },
+  {
+   "id": "delta-tron-food-2",
+   "name": "TRON Chevron shard · Delta",
+   "kind": "food",
+   "file": "community/tron-delta/food-2.png",
+   "for": [],
+   "category": "Community · Delta"
+  },
+  {
+   "id": "delta-tron-food-3",
+   "name": "TRON X energy node · Delta",
+   "kind": "food",
+   "file": "community/tron-delta/food-3.png",
+   "for": [],
+   "category": "Community · Delta"
+  },
+  {
+   "id": "delta-tron-title",
+   "name": "TRON MITOSIS · Delta",
+   "kind": "logo",
+   "file": "community/tron-delta/title.png",
+   "for": [
+    "logo"
+   ],
+   "category": "Community · Delta"
   }
  ]
 }

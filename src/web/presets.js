@@ -9,7 +9,7 @@ const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className
 const btn=(text,cls,title)=>{const b=el('button',cls||'',text);b.type='button';if(title)b.title=title;return b;};
 // A preset's picture carries the presets' version: the browser keeps it, so switching categories shows it at once.
 const url=(id,color,small)=>`/api/picture?id=${encodeURIComponent(id)}${color?'&color='+encodeURIComponent(color):''}${small?'&small=1':''}${String(id).startsWith('preset:')&&P.version?'&v='+encodeURIComponent(P.version):''}`;
-const GROUPS=['Backgrounds','Viruses','Food','Menu buttons','In-game buttons','Title','Fonts'];
+const GROUPS=['Backgrounds','Viruses','Food','Menu buttons','In-game buttons','Title','Fonts','Community themes'];
 const P={list:null,group:'Backgrounds',category:'',scroll:0,picks:{},custom:{},places:{}};
 const CHIPS=[['Dark blue','#1e3a8a'],['Blue','#3b82f6'],['Red','#e53935'],['Gold','#f5c542'],['Green','#2ecc71'],['Pink','#ff6fb5'],['Purple','#9b5de5'],['Black','#101216'],['White','#ffffff']];
 // Where a preset goes, when it can go on more than one place: what each place covers (a pick on a place takes over any
@@ -128,9 +128,10 @@ function render(){
   const help=btn('?','quiet pv-help','Show how Presets works');help.onclick=()=>tour(true);
   head.append(el('h2','','Presets'),help,x);
   const groups=el('div','segmented pv-groups');
-  for(const g of GROUPS){const n=P.list.filter(p=>p.group===g).length;if(!n)continue;
+  for(const g of GROUPS){const n=g==='Community themes'?(P.community||[]).length:P.list.filter(p=>p.group===g).length;if(!n)continue;
     const b=btn(`${g} · ${n}`);b.dataset.group=g;b.classList.toggle('active',g===P.group);b.onclick=()=>{P.group=g;P.category='';P.scroll=0;render();};
-    b.oncontextmenu=e=>{e.preventDefault();e.stopPropagation();popup([...exportItems({group:g},`all ${n} ${g}`,g),...gameFiles({group:g},`all ${n}`,g,kindOf(g),e.clientX,e.clientY)],e.clientX,e.clientY);};groups.append(b);}
+    b.oncontextmenu=e=>{if(g==='Community themes')return;e.preventDefault();e.stopPropagation();popup([...exportItems({group:g},`all ${n} ${g}`,g),...gameFiles({group:g},`all ${n}`,g,kindOf(g),e.clientX,e.clientY)],e.clientX,e.clientY);};groups.append(b);}
+  if(P.group==='Community themes'){renderCommunity(head,groups);return;}
   const mine=P.list.filter(p=>p.group===P.group),cats=[...new Set(mine.map(p=>p.category))];
   const chips=el('div','pv-cats');
   for(const c of ['',...cats]){const b=btn(c||'All','picture-chip');b.dataset.cat=c;b.classList.toggle('active',c===P.category);b.onclick=()=>{P.category=c;P.scroll=0;render();};
@@ -152,6 +153,55 @@ function render(){
   const hint=el('p','pv-hint','Click a picture to see it big. Right-click a picture or a category to export it.');
   dlg.append(head,groups,chips,hint,grid,tray());grid.scrollTop=P.scroll;grid.onscroll=()=>{P.scroll=grid.scrollTop;};
 }
+// Curated community bundles retain attribution and open as a separate build.
+function renderCommunity(head,groups){
+  const grid=el('div','pv-grid pv-community');
+  for(const theme of P.community||[]){
+    const card=btn('','pv-card');card.dataset.theme=theme.id;
+    const cover=el('div','pv-community-cover');cover.style.backgroundImage=`url("${url(theme.cover)}")`;
+    for(const part of theme.parts.filter(p=>p.status==='approved'&&!p.target.startsWith('set:food:')&&p.preset!==theme.cover&&p.target!=='set:logo')){
+      const im=el('img');im.src=url(part.preset,'',true);im.alt=part.name;cover.append(im);
+    }
+    card.append(cover,el('strong','',theme.name),el('span','pv-credit','Credit: '+theme.credit),el('p','',theme.description));
+    card.onclick=()=>communityDetail(theme);grid.append(card);
+  }
+  dlg.append(head,groups,el('p','pv-hint','Curated themes from the community. Preview every part, then add one as a separate build.'),grid);
+}
+function communityDetail(theme){
+  dlg.replaceChildren();const head=el('div','pv-head'),x=btn('✕','quiet','Close');x.onclick=()=>dlg.close();
+  head.append(el('h2','',theme.name),el('span','pv-credit','Credit: '+theme.credit),x);
+  const body=el('div','pv-community-detail');body.append(el('p','',theme.description));
+  const parts=el('div','pv-community-parts');
+  for(const part of theme.parts){
+    const p=P.list.find(p=>p.id===part.preset),card=btn('','pv-card');
+    card.disabled=part.status!=='approved'||!p;
+    if(p){const im=el('img');im.src=url(p.id,'',true);im.alt=part.name;card.append(im);}
+    card.append(el('span','',part.name));
+    if(card.disabled)card.append(el('small','','Awaiting review'));
+    card.onclick=()=>detail(p);parts.append(card);
+  }
+  body.append(parts);
+  const foodParts=theme.parts.filter(p=>p.status==='approved'&&p.target.startsWith('set:food:'));
+  const foods={};
+  if(foodParts.length){const box=el('div','pv-community-foods');box.append(el('h3','','Choose each food'));
+    for(const part of foodParts){const label=el('label','',part.name),select=el('select');select.setAttribute('aria-label',part.name+' artwork');
+      for(const choice of foodParts){const o=el('option','',P.list.find(p=>p.id===choice.preset)?.name||choice.name);o.value=choice.preset;select.append(o);}
+      select.value=part.preset;foods[part.target]=part.preset;select.onchange=()=>{foods[part.target]=select.value;};label.append(select);box.append(label);
+    }body.append(box,el('p','pv-note','You can also open any food above to put it on all foods or one food using its usual placement controls.'));
+  }
+  body.append(el('p','pv-note',theme.note));
+  const bar=el('div','pv-actions'),back=btn('Back'),exportButton=btn('Export theme'),use=btn('Create theme build','primary');
+  back.onclick=render;exportButton.onclick=()=>{const a=el('a');a.href='/api/community-theme-export?id='+encodeURIComponent(theme.id);a.download=theme.id+'.zip';a.click();};
+  use.id='communityThemeUse';use.onclick=run(async()=>{
+    if(S.dirty&&!await confirmAction('Leave this draft?','Your latest unsaved changes will be discarded. Saved revisions stay in the previous build.','Discard draft'))return;
+    use.disabled=true;try{
+    const result=await api('/api/community-theme-apply',{id:theme.id,foods});S.dirty=false;
+    const note=`${theme.name} · ${theme.credit}: ${result.count} assets added to a new build. Review it, then Apply to Game.${result.skipped.length?' Unavailable here: '+result.skipped.join(', ')+'.':''}`;
+    sessionStorage.setItem('lab-build-note',note);location.reload();
+  }finally{use.disabled=false;}});
+  bar.append(back,exportButton,use);dlg.append(head,body,bar);
+}
+
 // A preset big, customized beside it (color, where it goes, a background's strength, a title's size): Use now puts it in
 // your changes, Pick keeps it for Use all. Also a whole theme from it, Export, or Back to the list.
 function detail(p){
@@ -308,13 +358,13 @@ function tour(force){
     card.style.top=Math.max(10,Math.min(box.height-200,below))+'px';
     next.focus();};
   show();}
-function take(r){P.list=r.presets||[];P.gameFiles=r.game_files||{};P.places=r.places||{};P.version=r.version||'';}
+function take(r){P.list=r.presets||[];P.gameFiles=r.game_files||{};P.places=r.places||{};P.version=r.version||'';P.community=r.community||[];}
 let loading=null;
 const load=()=>loading||(loading=api('/api/presets').then(take).catch(e=>{loading=null;throw e;}));
 async function open(group){
   if(!P.list)await load();
   if(group&&GROUPS.includes(group))P.group=group;
-  if(!P.list.some(p=>p.group===P.group))P.group=P.list[0]?.group||'Backgrounds';
+  if(P.group!=='Community themes'&&!P.list.some(p=>p.group===P.group))P.group=P.list[0]?.group||'Backgrounds';
   render();if(!dlg.open)dlg.showModal();tour(false);}
 window.LabPresets={open:run(open),get total(){return P.list?.length||0;}};
 setTimeout(()=>{if(!P.list)load().catch(()=>{});},300);   // ready before the tour and the first click

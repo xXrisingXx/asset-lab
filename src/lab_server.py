@@ -30,6 +30,7 @@ try:
     import settings as labsettings
     import suggest
     import pictures
+    import community_themes
     import simple_library
     from PIL import Image
 except Exception as broken:   # a program file damaged or missing: safe mode says so, instead of a lab that never opens
@@ -195,7 +196,9 @@ def server_for(lab, port):
                     return self.send(png(image), 'image/png', cache=bool(q.get('v')) and q.get('id', '').startswith('preset:'))
                 if path == '/api/simple-assets':   # the library in Simple: what players change, by friendly name, one card each
                     return self.send(simple_library.listing(designer, q.get('category', ''), q.get('q', '')[:100], int(q.get('offset') or 0), min(120, int(q.get('limit') or 60))))
-                if path == '/api/presets': return self.send({'presets': pictures.presets(), 'game_files': themes.pictures.game_targets(), 'places': themes.pictures.places(), 'version': pictures.version()})
+                if path == '/api/presets': return self.send({'presets': pictures.presets(), 'game_files': themes.pictures.game_targets(), 'places': themes.pictures.places(), 'version': pictures.version(), 'community': community_themes.listing()})
+                if path == '/api/community-theme-export':
+                    return self.send(community_themes.export(q.get('id', ''), themes.pictures), 'application/zip', filename='community-theme.zip')
                 if path == '/api/presets-export':   # presets to send to people: one, a category or a whole group, as a zip
                     ids, name = pictures.chosen(q)
                     return self.send(themes.pictures.export(ids, q.get('target', '')), 'application/zip', filename=f"{name}{'-game-files' if q.get('target') else ''}.zip")
@@ -305,6 +308,11 @@ def server_for(lab, port):
                     elif path == '/api/build-rename': result = builds.rename(bid, data.get('name'))
                     else: result = builds.delete(bid)
                     themes.reindex()   # its art is what Theme AI samples now
+                    return self.send(result)
+                if path == '/api/community-theme-apply':
+                    quiet()
+                    result = community_themes.apply(str(data.get('id') or ''), themes.pictures, builds, data.get('foods'))
+                    themes.reindex()
                     return self.send(result)
                 if path == '/api/chat-save': return self.send(builds.save_chat(str(data.get('id') or ''), data.get('entries'), data.get('history'), str(data.get('title') or ''), bool(data.get('named'))))
                 if path == '/api/suggest': return self.send(suggest.send(data.get('text'), VERSION))   # Settings › About › Suggestions

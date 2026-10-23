@@ -6,6 +6,8 @@
 
 Asset Lab is a Windows desktop editor for the artwork and sounds in **Mitos.is: The Game**. Find an asset, edit it by hand or describe a new look to Theme AI, then review your changes before installing them.
 
+**Presets → Community themes** contains curated theme bundles with creator credit. TRON, credited to Delta, includes a seamless grid, identity-disc viruses, menu and in-game controls, three interchangeable food designs, and a matching MITOSIS title. Preview the parts, choose artwork for each food slot, and create a separate theme build before applying it to the game. Individual foods also retain the usual all-foods or single-food placement controls.
+
 [**Download Asset Lab**](https://github.com/xXrisingXx/asset-lab/releases/latest)
 
 ### How to download and run it

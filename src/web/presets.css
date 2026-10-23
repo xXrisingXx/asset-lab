@@ -82,3 +82,17 @@
 /* A font preset: the game's own text in the style, on the game's dark, red and light grounds. */
 .pv-font-stage{align-items:center;justify-content:center;background:#16202b;padding:16px}
 .pv-font-stage img{max-width:100%;max-height:100%;object-fit:contain;image-rendering:auto}
+
+/* Credited community bundles */
+.pv-community{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.pv-community .pv-card{max-width:680px;text-align:left;padding:14px;gap:8px}
+.pv-credit{color:#74e7ef;font-weight:600}
+.pv-community-cover{display:flex;align-items:center;justify-content:space-around;background-size:256px;min-height:180px;width:100%;border-radius:12px;padding:12px;box-sizing:border-box}
+.pv-community-cover img{width:30%;max-height:160px;object-fit:contain}
+.pv-community-detail{overflow:auto;min-height:0;padding:8px 20px 20px}
+.pv-community-parts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.pv-community-parts img{height:130px;width:100%;object-fit:contain;background:#081720;border-radius:10px}
+.pv-community-foods{display:flex;flex-wrap:wrap;gap:14px;margin-top:18px}
+.pv-community-foods h3{flex-basis:100%;margin:0}
+.pv-community-foods label{display:flex;flex:1;min-width:180px;flex-direction:column;gap:6px}
+.pv-community-foods select{width:100%}

@@ -175,7 +175,7 @@ def button(name, picture, look, texture, base=None, drawn=None):
     tinted = name in TINTS
     if drawn is not None:
         art = drawn.convert('RGBA').copy()
-        if name in DIRECTIONAL: art = orient(art, glyph(picture))   # an arrow points the way the game's does
+        if name in DIRECTIONAL and not look.get('exact_symbols'): art = orient(art, glyph(picture))   # an arrow points the way the game's does
         art.thumbnail(picture.size, Image.Resampling.LANCZOS)
         out = Image.new('RGBA', picture.size, (0, 0, 0, 0))
         out.alpha_composite(art, ((picture.width - art.width) // 2, (picture.height - art.height) // 2))
