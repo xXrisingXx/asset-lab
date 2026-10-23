@@ -4916,6 +4916,104 @@
    "for": []
   },
   {
+   "id": "hide-menu-circle",
+   "name": "No menu circle",
+   "group": "Menu buttons",
+   "category": "Clean up",
+   "kind": "hide",
+   "file": "cleanup.webp",
+   "description": "Hides the circular button background. Other buttons that share this circle artwork also lose their background; their icons and click areas remain.",
+   "hide": [
+    "button-circle"
+   ],
+   "for": []
+  },
+  {
+   "id": "hide-grey-panels",
+   "name": "No grey panels (minimap)",
+   "group": "Menu buttons",
+   "category": "Clean up",
+   "kind": "hide",
+   "file": "cleanup.webp",
+   "description": "Hides the grey square behind the minimap and the shared rounded panel artwork used behind MASS and other menu panels. Text, map markers and click areas remain. This affects shared panels, not just the minimap.",
+   "hide": [
+    "rounded-bg"
+   ],
+   "for": []
+  },
+  {
+   "id": "hide-hud-toolbar",
+   "name": "No in-game toolbar",
+   "group": "Menu buttons",
+   "category": "Clean up",
+   "kind": "hide",
+   "file": "cleanup.webp",
+   "description": "Hides this toolbar artwork on phone and PC where available. The button can still be clicked; keyboard shortcuts and gameplay are unchanged.",
+   "hide": [
+    "icon-ingame-potion",
+    "icon-ingame-potion-desktop",
+    "icon-report-abuse",
+    "icon-ingame-chat",
+    "icon-ingame-chat-desktop",
+    "icon-pause-button"
+   ],
+   "for": []
+  },
+  {
+   "id": "hide-hud-potion",
+   "name": "No potion button",
+   "group": "Menu buttons",
+   "category": "Clean up",
+   "kind": "hide",
+   "file": "cleanup.webp",
+   "description": "Hides this toolbar artwork on phone and PC where available. The button can still be clicked; keyboard shortcuts and gameplay are unchanged.",
+   "hide": [
+    "icon-ingame-potion",
+    "icon-ingame-potion-desktop"
+   ],
+   "for": []
+  },
+  {
+   "id": "hide-hud-block",
+   "name": "No block player button",
+   "group": "Menu buttons",
+   "category": "Clean up",
+   "kind": "hide",
+   "file": "cleanup.webp",
+   "description": "Hides this toolbar artwork on phone and PC where available. The button can still be clicked; keyboard shortcuts and gameplay are unchanged.",
+   "hide": [
+    "icon-report-abuse"
+   ],
+   "for": []
+  },
+  {
+   "id": "hide-hud-chat",
+   "name": "No in-game chat button",
+   "group": "Menu buttons",
+   "category": "Clean up",
+   "kind": "hide",
+   "file": "cleanup.webp",
+   "description": "Hides this toolbar artwork on phone and PC where available. The button can still be clicked; keyboard shortcuts and gameplay are unchanged.",
+   "hide": [
+    "icon-ingame-chat",
+    "icon-ingame-chat-desktop"
+   ],
+   "for": []
+  },
+  {
+   "id": "hide-hud-pause",
+   "name": "No pause button",
+   "group": "Menu buttons",
+   "category": "Clean up",
+   "kind": "hide",
+   "file": "cleanup.webp",
+   "description": "Hides this toolbar artwork on phone and PC where available. The button can still be clicked; keyboard shortcuts and gameplay are unchanged.",
+   "hide": [
+    "icon-pause-button"
+   ],
+   "for": []
+  },
+  {
    "id": "mc-purple",
    "name": "Purple",
    "group": "Menu buttons",
@@ -13935,6 +14033,18 @@
     "logo"
    ],
    "category": "Community · Delta"
+  },
+  {
+   "id": "black-block-player",
+   "name": "Black block player button",
+   "group": "In-game buttons",
+   "category": "Minimal",
+   "kind": "control",
+   "file": "controls/black-block.png",
+   "description": "Replaces the sad-face block player button with a black button and a clear light block symbol in every active copy. Its click action stays the same.",
+   "for": [
+    "icon-report-abuse"
+   ]
   }
  ]
 }

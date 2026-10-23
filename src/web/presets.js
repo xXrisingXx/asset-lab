@@ -95,9 +95,9 @@ function gameFiles(q,label,name,kind,x,y){const t=gameTargets(kind);
 /* Picks: Pick keeps a preset (with its color and place) to use with others, then Use all puts every pick in your changes
    at once. One pick of each kind, or one per place: a background for the menu and others for the light and dark floors,
    a virus for each mode, a food for each size. A Clean up pick goes with a button set, not instead of it. */
-const slot=(p,where)=>p.kind==='hide'?'Clean up':COVER[where]||(p.kind==='font'&&where)?`${p.group} · ${where}`:p.group;
+const slot=(p,where)=>p.kind==='hide'?`Clean up · ${p.id}`:p.kind==='control'?`Control · ${(p.for||[]).join(',')}`:COVER[where]||(p.kind==='font'&&where)?`${p.group} · ${where}`:p.group;
 const SLOTS=[...GROUPS,'Clean up'];
-const rank=q=>SLOTS.indexOf(q.kind==='hide'?'Clean up':q.group)*10+Math.max(0,places(q).findIndex(x=>x[0]===q.where));
+const rank=q=>SLOTS.indexOf(q.kind==='hide'?'Clean up':q.group)*10+(q.kind==='control'?9:Math.max(0,places(q).findIndex(x=>x[0]===q.where)));
 const picked=()=>Object.values(P.picks).sort((a,b)=>rank(a)-rank(b));
 const isPicked=(p,where)=>Object.values(P.picks).some(q=>q.id===p.id&&(where===undefined||q.where===where));
 function pick(p){const c=custom(p),key=slot(p,c.where);
@@ -220,7 +220,7 @@ function detail(p){
     const name=el('input','picture-words');name.id='presetFontText';name.placeholder='Type a name to try it';name.maxLength=40;
     let wait=0;name.oninput=()=>{clearTimeout(wait);wait=setTimeout(()=>{c.text=name.value.trim();pic.refresh();},250);};
     section('Try it',name);}
-  if(p.kind!=='hide'&&p.kind!=='font'){
+  if(p.kind!=='hide'&&p.kind!=='font'&&p.kind!=='control'){
     // Color: one click, or typed. Anything that is not just a color goes to Theme AI with this preset.
     const chips=el('div','pv-colors');
     const paint=()=>{pic.show(url(p.id,c.color));pic.dataset.exportName=[p.name,(c.color||'').replace('#','')].filter(Boolean).join(' ');chips.querySelectorAll('button').forEach(b=>b.classList.toggle('active',(b.dataset.color||'')===(c.color||'')));sync();};
@@ -259,8 +259,9 @@ function detail(p){
   if(p.kind==='logo'){const line=el('div','pv-size');line.append(size,sizeText);
     section('Size',line,el('p','pv-note','100% fits the whole title in its place, nothing cut off. Bigger fills more of the menu, but may cut off what sticks out.'));}
   const more=()=>{dark.hidden=!/^set:(?:everywhere|arena$|arena-dark)/.test(c.where);};more();
+  if(p.description)side.append(el('p','pv-note pv-description',p.description));
   if(p.kind==='hide')side.append(el('p','pv-note','Hidden by making these pictures see-through: the game itself is not changed, and the empty spot can still be clicked.'));
-  if(sets(p))side.append(el('p','pv-note',p.kind==='menu'?'Some menu icons are colored by the game itself (the teal and pink ones): they keep that color, with this set’s shine and outline.':'Phone and PC buttons: split, eject and the joystick.'));
+  if(sets(p))side.append(el('p','pv-note',p.kind==='menu'?'Some menu icons are colored by the game itself (the teal and pink ones): they keep that color, with this set’s shine and outline.':'Phone and PC controls, plus potion, block player, chat and pause. Desktop potion and chat artwork keeps the P and T key hints. The game can still tint these pictures.'));
   now.onclick=run(async()=>{now.disabled=true;try{await use(p);render();}finally{now.disabled=false;}});
   keep.onclick=()=>{pick(p);render();};state();
   const back=btn('Back');back.onclick=render;
@@ -363,7 +364,7 @@ let loading=null;
 const load=()=>loading||(loading=api('/api/presets').then(take).catch(e=>{loading=null;throw e;}));
 async function open(group){
   if(!P.list)await load();
-  if(group&&GROUPS.includes(group))P.group=group;
+  if(group&&GROUPS.includes(group)&&P.group!==group){P.group=group;P.category='';P.scroll=0;}
   if(P.group!=='Community themes'&&!P.list.some(p=>p.group===P.group))P.group=P.list[0]?.group||'Backgrounds';
   render();if(!dlg.open)dlg.showModal();tour(false);}
 window.LabPresets={open:run(open),get total(){return P.list?.length||0;}};

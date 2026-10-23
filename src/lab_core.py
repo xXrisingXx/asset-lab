@@ -321,10 +321,15 @@ class Lab:
         record = self.root.parent / 'defaults-applied.json'
         seen = set((read_json(record, {}) or {}).get('applied') or [])
         rows = {self.pool.ident(row): row for row in self.catalog.rows.values()}
+        # Correct only removals made by an older shipped map. A player's manual removal has no "by" marker.
+        restored = [ident for ident in doc.get('restored', []) if ident in rows and f'restored:{ident}' not in seen]
+        for ident in restored:
+            if self.pool.entries.get(ident, {}).get('by') == 'Asset Lab UI map':
+                self.pool.entries.pop(ident)
         fresh = [(marks, kind, entry) for marks, kind, field in ((self.labels, 'label', 'labels'), (self.pool, 'removed', 'removed'))
                  for entry in doc.get(field) or []
                  if isinstance(entry, dict) and entry.get('id') in rows and f"{kind}:{entry['id']}" not in seen]
-        if not fresh: return
+        if not fresh and not restored: return
         for marks, kind, entry in fresh:
             if entry['id'] in marks.entries: continue
             row = rows[entry['id']]
@@ -334,7 +339,7 @@ class Lab:
             if kind == 'removed' or item['label']: marks.entries[entry['id']] = item
         for marks in (self.labels, self.pool): marks.apply(); marks.store()
         atomic_json(record, {'note': 'UI map entries Asset Lab already added once (renames and restores are kept). Delete this file to add them all again.',
-                             'applied': sorted(seen | {f"{kind}:{entry['id']}" for _, kind, entry in fresh})})
+                             'applied': sorted(seen | {f"{kind}:{entry['id']}" for _, kind, entry in fresh} | {f'restored:{ident}' for ident in restored})})
 
     def persist(self):
         if getattr(self, '_build_recovery_required', False):

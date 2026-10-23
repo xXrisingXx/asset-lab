@@ -12,8 +12,12 @@ import re
 import urllib.parse
 import numpy as np
 
-VERSION = 3
+VERSION = 4
 CUT = 0.05  # share of a rectangle's outline where opaque pixels continue outside it
+# Matched to the current in-game toolbar. Some of these names are assembled/encoded in native code;
+# absence from a plain-string scan must not classify their valid rectangles as leftovers.
+SCREEN_VERIFIED = {'icon-ingame-potion', 'icon-ingame-potion-desktop', 'icon-report-abuse',
+                   'icon-ingame-chat', 'icon-ingame-chat-desktop', 'icon-pause-button'}
 
 
 def exe_names(game):
@@ -24,7 +28,7 @@ def exe_names(game):
 
 def referenced(name, names):
     stem = re.sub(r'\.png$', '', name)
-    if name in names or stem in names: return True
+    if name in SCREEN_VERIFIED or name in names or stem in names: return True
     # Numbered families are assembled at run time: "food" + 2, "icon_resources_" + 1 + "_small".
     m = re.match(r'^(.*?[-_a-zA-Z])(\d+)(.*)$', stem)
     return bool(m and m.group(1) in names and (not m.group(3) or m.group(3) in names or m.group(3).lstrip('-_') in names))

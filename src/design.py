@@ -49,7 +49,8 @@ VIRUSES = ('virus.png', 'light_virus.png', 'spawner.png')
 # A whole-game redesign: the menu buttons (named on the game's screens: "Play button (Main menu)", "Back arrow (Menus)"), the
 # in-game buttons ("Split button (in a match, phones)") and the phone joystick; the title and the coin are not among them.
 WHOLE_GAME_BUTTONS = r'\((?:Main menu|Menus)\)$|\(in a match\b'
-INGAME_CONTROLS = {'joystick', 'joystick-bg', 'power-container', 'icon-ingame-potion', 'icon-chat'}   # and the potion slot, potion, chat
+INGAME_CONTROLS = {'joystick', 'joystick-bg', 'power-container', 'icon-ingame-potion', 'icon-ingame-potion-desktop',
+                   'icon-chat', 'icon-ingame-chat', 'icon-ingame-chat-desktop', 'icon-report-abuse', 'icon-pause-button'}
 MENU_EXTRAS = {'icon-coin', 'popup-close', 'icon-remove', 'icon-sell'}   # menu art players asked for too (the coin, the remove and sell marks)
 SPAWNER_RED = '#e0262f'   # the game paints the spawner red in maps (so players call it the red virus)
 # Store badges and sign-in buttons show other companies' logos: never redrawn with the rest of the game.

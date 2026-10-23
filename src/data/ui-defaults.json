@@ -597,19 +597,7 @@
    "why": "never on a screen and never named by the game"
   },
   {
-   "id": "sprite|theme.png|icon-ingame-chat",
-   "why": "never on a screen and never named by the game"
-  },
-  {
-   "id": "sprite|theme.png|icon-ingame-chat-desktop",
-   "why": "never on a screen and never named by the game"
-  },
-  {
    "id": "sprite|theme.png|icon-menu-private",
-   "why": "never on a screen and never named by the game"
-  },
-  {
-   "id": "sprite|theme.png|icon-pause-button",
    "why": "never on a screen and never named by the game"
   },
   {
@@ -701,19 +689,7 @@
    "why": "never on a screen and never named by the game"
   },
   {
-   "id": "sprite|theme2.png|icon-ingame-chat",
-   "why": "never on a screen and never named by the game"
-  },
-  {
-   "id": "sprite|theme2.png|icon-ingame-chat-desktop",
-   "why": "never on a screen and never named by the game"
-  },
-  {
    "id": "sprite|theme2.png|icon-menu-private",
-   "why": "never on a screen and never named by the game"
-  },
-  {
-   "id": "sprite|theme2.png|icon-pause-button",
    "why": "never on a screen and never named by the game"
   },
   {
@@ -801,19 +777,7 @@
    "why": "never on a screen and never named by the game"
   },
   {
-   "id": "sprite|theme4.png|icon-ingame-chat",
-   "why": "never on a screen and never named by the game"
-  },
-  {
-   "id": "sprite|theme4.png|icon-ingame-chat-desktop",
-   "why": "never on a screen and never named by the game"
-  },
-  {
    "id": "sprite|theme4.png|icon-menu-private",
-   "why": "never on a screen and never named by the game"
-  },
-  {
-   "id": "sprite|theme4.png|icon-pause-button",
    "why": "never on a screen and never named by the game"
   },
   {
@@ -1132,5 +1096,16 @@
    "id": "audio||win.ogg",
    "why": "a sound from the studio's other games (Strike.is and others) that Mitosis never plays"
   }
+ ],
+ "restored": [
+  "sprite|theme.png|icon-ingame-chat",
+  "sprite|theme.png|icon-ingame-chat-desktop",
+  "sprite|theme.png|icon-pause-button",
+  "sprite|theme2.png|icon-ingame-chat",
+  "sprite|theme2.png|icon-ingame-chat-desktop",
+  "sprite|theme2.png|icon-pause-button",
+  "sprite|theme4.png|icon-ingame-chat",
+  "sprite|theme4.png|icon-ingame-chat-desktop",
+  "sprite|theme4.png|icon-pause-button"
  ]
 }

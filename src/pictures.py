@@ -126,7 +126,8 @@ GROUPS = {'background': 'Backgrounds', 'virus': 'Viruses', 'food': 'Food', 'menu
 # The title (the MITOSIS logo, every copy of it) and the menu clutter a Clean up preset hides (its art made fully
 # transparent: Mitosis.exe is never touched, and the empty spot can still be clicked).
 SETS['set:logo'] = 'The MITOSIS title on the main menu'
-SETS['set:cleanup'] = 'The main menu'
+SETS['set:cleanup'] = 'Selected buttons and panels'
+SETS['set:control'] = 'Every copy of this button'
 # A virus goes on both (the default), or on the light-mode one (virus.png) or the dark-mode one (light_virus.png) alone.
 VIRUS_SETS = ['set:viruses', 'set:virus-light', 'set:virus-dark']
 VIRUS_FILES = {'set:virus-light': 'virus.png', 'set:virus-dark': 'light_virus.png'}
@@ -165,6 +166,7 @@ def _presets(data):
                  group=p.get('group') or GROUPS.get(p.get('kind'), 'Other'), **{'for': list(p.get('for') or [])},
                  **({'look': dict(p.get('look') or {}), 'base': str(p.get('base') or ''), 'redrawn': str(p.get('redrawn') or '')} if p.get('kind') in BUTTON_KINDS else {}),
                  **({'hide': [str(n) for n in p.get('hide') or []]} if p.get('kind') == 'hide' else {}),
+                 **({'description': str(p['description'])} if p.get('description') else {}),
                  **({'style': dict(p.get('style') or {})} if p.get('kind') == 'font' else {})) for p in data
             if isinstance(p, dict) and re.fullmatch(r'[a-z0-9-]{1,40}', str(p.get('id', ''))) and (PRESETS / str(p.get('file', ''))).is_file()]
 
@@ -346,7 +348,7 @@ class Pictures:
                 and not r.get('legacy') and not r.get('removed')]
 
     def hide_rows(self, pid):
-        """The art a Clean up preset hides (the Discord button, the store badges, the OG tag)."""
+        """Every active copy of the buttons or shared panels a Clean up preset hides."""
         names = set(next((p.get('hide') or [] for p in presets() if p['id'] == pid), []))
         return [r for r in self.lab.catalog.rows.values() if r['name'] in names and r['editable'] and r['kind'] in ('image', 'sprite')
                 and not r.get('legacy') and not r.get('removed')]
@@ -357,6 +359,14 @@ class Pictures:
         names = set(button_sets.SETS[key][1]) if key in button_sets.SETS else set()
         return [r for r in self.lab.catalog.rows.values() if r['name'] in names and r['editable'] and r['kind'] in ('image', 'sprite')
                 and not r.get('legacy') and not r.get('removed') and r['name'] not in LOCKED]
+
+    def control_rows(self, pid):
+        """A single-control preset replaces all active atlas copies of its named control."""
+        names = set(next((p['for'] for p in presets() if p['id'] == pid and p['kind'] == 'control'), []))
+        from lab_core import LOCKED
+        return [r for r in self.lab.catalog.rows.values() if r['name'] in names and r['name'] not in LOCKED
+                and r.get('editable') and r['kind'] == 'sprite' and not r.get('legacy') and not r.get('removed')
+                and not r.get('server_only')]
 
     def buttons(self, kind):
         """name -> the game's own picture of each button in a set (the biggest copy), for the preview. Read once: the
@@ -380,6 +390,7 @@ class Pictures:
         preset = next((p for p in presets() if p['id'] == pid), None)
         if preset and preset['kind'] == 'logo': return [dict(key='set:logo', name=SETS['set:logo'], file='', size=[])] if self.logo_rows() else []
         if preset and preset['kind'] == 'hide': return [dict(key='set:cleanup', name=SETS['set:cleanup'], file='', size=[])] if self.hide_rows(pid) else []
+        if preset and preset['kind'] == 'control': return [dict(key='set:control', name=SETS['set:control'], file='', size=[])] if self.control_rows(pid) else []
         if preset and preset['kind'] in BUTTON_KINDS:   # a button set: the whole menu, or the in-game buttons (all, phone, PC)
             return [dict(key=k, name=SETS[k], file='', size=[]) for k in BUTTON_KINDS[preset['kind']] if self.button_rows(k)]
         if preset and preset['kind'] in ('background', 'virus', 'food'):
@@ -560,9 +571,18 @@ class Pictures:
                 for row in rows: self.lab.commit(row['key'], design.fit(picture, (row['width'], row['height']), scale, 0.0, 0.0), dict(picture=pid, color=color or '', scale=round(scale, 2)), persist=False)
                 self.lab.persist()
             return dict(key=key, name=SETS[key], count=len(rows))
-        if key == 'set:cleanup':   # gone from the menu: the art made fully transparent
+        if key == 'set:control':
+            rows = self.control_rows(pid)
+            if not rows: raise ValueError('This game has no matching button for this preset.')
+            picture = self.render(pid)
+            with self.lab.lock:
+                for row in rows:
+                    self.lab.commit(row['key'], design.fit(picture, (row['width'], row['height']), 1.0, 0.0, 0.0), dict(picture=pid), persist=False)
+                self.lab.persist()
+            return dict(key=key, name=SETS[key], count=len(rows))
+        if key == 'set:cleanup':   # buttons and panels: the art made fully transparent
             rows = self.hide_rows(pid)
-            if not rows: raise ValueError('This game has none of these buttons.')
+            if not rows: raise ValueError('This game has none of these buttons or panels.')
             with self.lab.lock:
                 for row in rows: self.lab.commit(row['key'], Image.new('RGBA', (row['width'], row['height']), (0, 0, 0, 0)), dict(picture=pid, hidden=True), persist=False)
                 self.lab.persist()

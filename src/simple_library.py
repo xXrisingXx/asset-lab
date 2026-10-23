@@ -16,6 +16,9 @@ CATEGORIES = [('backgrounds', 'Backgrounds'), ('buttons', 'Menu buttons'), ('ing
 FOOD_SIZES = ('Food: the smallest', 'Food: the middle one', 'Food: the biggest')
 # Names for art the UI map has no name for (or shares one: the star and rate buttons are both a star).
 NAMES = {'icon-ingame-potion': 'Potion button', 'power-container': 'Potion slot', 'joystick-bg': 'Joystick ring', 'joystick': 'Joystick',
+         'icon-ingame-potion-desktop': 'Potion button (P key)', 'icon-ingame-chat': 'In-game chat button',
+         'icon-ingame-chat-desktop': 'In-game chat button (T key)', 'icon-report-abuse': 'Block player button',
+         'icon-pause-button': 'Pause button',
          'icon-sell': 'SELL tag', 'icon-chat': 'Chat button', 'icon-remove': 'Remove X', 'icon-rate': 'Rate button (star)',
          'icon-star': 'Star button'}
 

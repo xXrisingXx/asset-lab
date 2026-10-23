@@ -58,14 +58,20 @@ def symbol(name):
             d.arc((69,46,229,210),-65,65,fill=ink,width=12)
     elif name in ('icon-coin','icon-sell'): text('$' if name=='icon-coin' else 'SELL',size=140 if name=='icon-coin' else 66)
     elif name=='icon-quest': text('!',size=190)
-    elif name=='icon-chat':
+    elif name in ('icon-chat', 'icon-ingame-chat', 'icon-ingame-chat-desktop'):
         d.rounded_rectangle((40,55,216,176),radius=24,outline=ink,width=14)
         line([(75,176),(75,211),(116,176)],13)
         for x in (82,128,174):circle((x-8,106,x+8,122),True)
-    elif name=='icon-ingame-potion':
+    elif name in ('icon-ingame-potion', 'icon-ingame-potion-desktop'):
         line([(96,44),(160,44)],14)
         line([(105,49),(105,98),(64,187),(68,208),(188,208),(192,187),(151,98),(151,49)],13)
         poly([(90,156),(166,156),(183,195),(73,195)])
+    elif name == 'icon-report-abuse':
+        circle((42,42,214,214),w=18)
+        line([(76,76),(180,180)],18)
+    elif name == 'icon-pause-button':
+        d.rounded_rectangle((69,53,109,203),radius=8,fill=ink)
+        d.rounded_rectangle((147,53,187,203),radius=8,fill=ink)
     elif name in ('button-split','button-explain-split','icon-mitosis'):
         circle((38,86,112,160),True);circle((144,86,218,160),True)
         line([(128,62),(128,184)],7)
@@ -74,12 +80,12 @@ def symbol(name):
     return im
 
 
-def make(folder):
+def make(folder, names=None):
     import sys
     sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'src'))
     import button_sets
     base=Image.open(folder/'base.png').convert('RGBA').resize((512,512),Image.Resampling.LANCZOS)
-    for name in dict.fromkeys(button_sets.MENU+button_sets.PHONE+button_sets.PC+button_sets.HUD):
+    for name in dict.fromkeys(names if names is not None else button_sets.MENU+button_sets.PHONE+button_sets.PC+button_sets.HUD):
         if name in ('icon-play','icon-menu-settings'):continue
         if name in ('joystick','joystick-bg','power-container'):
             if name=='joystick':out=base.copy()
@@ -91,14 +97,19 @@ def make(folder):
             out=base.copy();g=symbol(name)
             # Keep original keyboard/mouse hints on the desktop variants.
             pc=name.startswith('button-explain-')
-            g.thumbnail((200,180) if pc else (200,200),Image.Resampling.LANCZOS)
-            out.alpha_composite(g,((512-g.width)//2,135 if pc else (512-g.height)//2))
+            toolbar_key={'icon-ingame-potion-desktop':'P','icon-ingame-chat-desktop':'T'}.get(name)
+            g.thumbnail((200,180) if pc or toolbar_key else (200,200),Image.Resampling.LANCZOS)
+            out.alpha_composite(g,((512-g.width)//2,135 if pc or toolbar_key else (512-g.height)//2))
             if pc:
                 d=ImageDraw.Draw(out);font=ImageFont.truetype('C:/Windows/Fonts/arialbd.ttf',25)
                 d.rounded_rectangle((154,322,184,363),radius=8,outline='#d7fcff',width=2)
                 d.line((169,323,169,339),fill='#d7fcff',width=2)
                 d.rectangle((156 if name.endswith('split') else 171,325,167 if name.endswith('split') else 182,337),fill='#53e8f5')
                 d.text((198,329),'or '+('SPACE' if name.endswith('split') else 'W'),font=font,fill='#d7fcff')
+            elif toolbar_key:
+                d=ImageDraw.Draw(out);font=ImageFont.truetype('C:/Windows/Fonts/arialbd.ttf',44)
+                d.rounded_rectangle((229,324,283,380),radius=9,outline='#53e8f5',width=3)
+                d.text((256,353),toolbar_key,font=font,fill='#d7fcff',anchor='mm')
         if name=='icon-sell':
             out=Image.new('RGBA',(512,192));d=ImageDraw.Draw(out)
             d.rounded_rectangle((12,12,500,180),radius=30,fill='#030b10',outline='#53e8f5',width=7)
@@ -109,5 +120,18 @@ def make(folder):
         out.save(folder/'drawn'/f'{name}.webp',lossless=True)
 
 
+def make_black_block(path):
+    """A black button with a high-contrast prohibition symbol replaces the sad face."""
+    out = Image.new('RGBA', (1024, 1024))
+    d = ImageDraw.Draw(out)
+    d.rounded_rectangle((112,112,908,908), radius=88, fill='#000000', outline='#303d46', width=8)
+    d.ellipse((252,252,772,772), outline='#e6edf2', width=48)
+    d.line((348,348,676,676), fill='#e6edf2', width=48)
+    out = out.resize((256,256), Image.Resampling.LANCZOS)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    out.save(path)
+
+
 if __name__=='__main__':
     make(Path(__file__).resolve().parents[1]/'src/presets/community/tron-delta')
+    make_black_block(Path(__file__).resolve().parents[1]/'src/presets/controls/black-block.png')

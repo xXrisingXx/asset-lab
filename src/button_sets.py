@@ -15,7 +15,7 @@ import numpy as np
 from PIL import Image, ImageFilter
 
 ROOT = Path(__file__).resolve().parent
-VERSION = 3   # bump when previews or buttons are drawn differently: kept previews are made again
+VERSION = 4   # includes the desktop toolbar and its restored atlas entries
 TINT_COLORS = json.loads((ROOT / 'data' / 'ui-tints.json').read_text(encoding='utf-8'))['tints']   # name -> the game's color for it
 TINTS = set(TINT_COLORS)
 # The main menu's buttons (not the coin, the title or the store badges: they keep their own look) ...
@@ -27,7 +27,9 @@ MENU = ['icon-play', 'icon-menu-settings', 'icon-menu-profile', 'icon-friends', 
 # also show their mouse and keyboard keys.
 PHONE = ['button-split', 'button-eject', 'joystick', 'joystick-bg']
 PC = ['button-explain-split', 'button-explain-eject']
-HUD = ['power-container', 'icon-ingame-potion', 'icon-chat']   # on both: the potion slot, the potion and chat buttons
+TOOLBAR = ['icon-ingame-potion', 'icon-ingame-potion-desktop', 'icon-report-abuse',
+           'icon-ingame-chat', 'icon-ingame-chat-desktop', 'icon-pause-button']
+HUD = ['power-container', 'icon-chat'] + TOOLBAR
 SETS = {'set:menu-buttons': ('All the main menu buttons', MENU), 'set:ingame-buttons': ('Every in-game button: phone and PC', PHONE + PC + HUD),
         'set:ingame-phone': ('In-game buttons on phones (split, eject, joystick)', PHONE + HUD), 'set:ingame-pc': ('In-game buttons on PC', PC + HUD)}
 LIGHT = np.array([-0.45, -0.6, 0.66]) / np.linalg.norm([-0.45, -0.6, 0.66])   # from the top left, like the game's own art
@@ -153,7 +155,7 @@ def orient(art, game):
 
 
 INGAME_SYMBOL = 0.62   # an in-game button's symbol is bigger on its face: it is read at a glance in a match
-GLYPH_INNER = {'button-split', 'button-eject', 'button-explain-split', 'button-explain-eject', 'icon-ingame-potion'}
+GLYPH_INNER = {'button-split', 'button-eject', 'button-explain-split', 'button-explain-eject', *TOOLBAR}
 RINGS = {'joystick-bg', 'power-container'}   # rings stay rings: the set's material on them
 SYMBOL_TEXT = {'icon-coin': '$'}   # the coin on a set's button: its dollar sign
 
@@ -197,8 +199,8 @@ def sheet(buttons, look, texture, kind, small=False, base=None, drawn=None):
     """A preview of the set: its buttons (name -> the game's picture) laid out the way a player meets them."""
     cell = (64 if small else 112) if kind != 'ingame' else (84 if small else 190)   # in-game buttons are few and big
     if kind == 'ingame':
-        names = [n for n in ('button-split', 'button-eject', 'joystick-bg', 'button-explain-split', 'button-explain-eject', 'icon-ingame-potion',
-                             'icon-chat', 'power-container') if n in buttons]
+        names = [n for n in ('button-split', 'button-eject', 'joystick-bg', 'button-explain-split', 'button-explain-eject',
+                             *TOOLBAR, 'icon-chat', 'power-container') if n in buttons]
         if small: names = names[:3]
     else:
         names = [n for n in MENU if n in buttons and n != 'icon-play']
